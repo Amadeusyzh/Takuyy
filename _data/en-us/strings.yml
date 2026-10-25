@@ -1,0 +1,162 @@
+archive:
+  category_suffix: in this category
+  prefix: an archive of
+  tag_suffix: with this tag
+  year_suffix: from this year
+bibliography:
+  abstract: Abs
+  awarded: Awarded
+  blog: Blog
+  book_prefix: In
+  code: Code
+  last_author_prefix: and
+  poster: Poster
+  slides: Slides
+  supp: Supp
+  video: Video
+  website: Website
+blog:
+  navigation_title: blog
+categories:
+  fun: fun
+  work: work
+citation:
+  bibtex: 'or as a BibTeX entry:'
+  introduction: 'If you found this useful, please cite this as:'
+collections:
+  books: books
+  posts: posts
+contact_note: You can even add a little note about which of these is the best way to reach you.
+cv:
+  address: Address
+  area: Area
+  awarder: Awarder
+  awards: Awards
+  basics: General information
+  certificates: Certificates
+  city: City
+  countryCode: Country code
+  courses: Courses
+  date: Date
+  education: Education
+  email: Email
+  endDate: End date
+  fluency: Fluency
+  highlights: Highlights
+  image: Image
+  institution: Institution
+  interests: Interests
+  issuer: Issuer
+  keywords: Keywords
+  label: Label
+  language: Language
+  languages: Languages
+  level: Level
+  location: Location
+  name: Name
+  network: Network
+  organization: Organization
+  phone: Phone
+  position: Position
+  postalCode: Postal Code
+  present: Present
+  profiles: Profiles
+  projects: Projects
+  publications: Publications
+  publisher: Publisher
+  reference: Reference
+  references: References
+  region: Region
+  releaseDate: Release date
+  score: Score
+  skills: Skills
+  startDate: Start date
+  studyType: Study type
+  summary: Summary
+  table_of_contents: Table of Contents
+  title: Title
+  url: Url
+  username: Username
+  volunteer: Volunteer
+  work: Work
+footer:
+  copyright: Copyright
+  last_updated: 'Last updated:'
+footer_text: Powered by <a href="https://jekyllrb.com/" target="_blank">Jekyll</a> with the <a href="https://github.com/george-gca/multi-language-al-folio">al-folio</a> theme. Hosted by <a href="https://pages.github.com/" target="_blank">GitHub Pages</a>.
+language_name: English
+latest_posts: latest posts
+months:
+  long:
+    april: April
+    august: August
+    december: December
+    february: February
+    january: January
+    july: July
+    june: June
+    march: March
+    may: May
+    november: November
+    october: October
+    september: September
+  short:
+    april: Apr
+    august: Aug
+    december: Dec
+    february: Feb
+    january: Jan
+    july: Jul
+    june: Jun
+    march: Mar
+    may: May
+    november: Nov
+    october: Oct
+    september: Sep
+news: news
+newsletter:
+  back: Back
+  error: Oops! Something went wrong, please try again.
+  subscribe: subscribe
+  subscribe_to_receive: 'Subscribe to be notified of future articles:'
+  subscribed: You have successfully subscribed to the newsletter.
+  too_many_signups: Too many signups, please try again in a little while
+  wait: Please wait...
+no_news: No news so far...
+no_posts: No posts so far...
+pagination:
+  page: page
+post:
+  created_by: by
+  created_in: Created in
+  last_updated: last updated in
+references: References
+related_posts:
+  description: 'Here are some more articles you might like to read next:'
+  title: Enjoy Reading This Article?
+search:
+  dark_theme:
+    description: Change the theme of the site to Dark
+    title: Change theme to dark
+  dropdown: Dropdown
+  email: Send an email
+  footer:
+    close: to close
+    navigate: to navigate
+    parent: move to parent
+    select: to select
+  languages: Languages
+  light_theme:
+    description: Change the theme of the site to Light
+    title: Change theme to light
+  navigation: Navigation menu
+  news: News
+  placeholder: Type to start searching
+  posts: Posts
+  projects: Projects
+  socials: Socials
+  system_theme:
+    description: Change the theme of the site to System Default
+    title: Use system default theme
+  theme: Theme
+selected_publications: selected publications
+site_description: 'Personal website: research, publications, CV and blog.'

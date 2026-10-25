@@ -1,0 +1,162 @@
+archive:
+  category_suffix: （このカテゴリ）
+  prefix: アーカイブ
+  tag_suffix: （このタグ）
+  year_suffix: （この年）
+bibliography:
+  abstract: 概要
+  awarded: 受賞
+  blog: ブログ
+  book_prefix: 収録：
+  code: コード
+  last_author_prefix: and
+  poster: ポスター
+  slides: スライド
+  supp: 補足資料
+  video: 動画
+  website: ウェブサイト
+blog:
+  navigation_title: ブログ
+categories:
+  fun: 雑記
+  work: 研究
+citation:
+  bibtex: BibTeX 形式：
+  introduction: 本記事が役に立った場合は、以下のように引用してください：
+collections:
+  books: 書籍
+  posts: 記事
+contact_note: ご連絡はメールにてお願いします。
+cv:
+  address: 住所
+  area: 分野
+  awarder: 授与機関
+  awards: 受賞歴
+  basics: 基本情報
+  certificates: 資格
+  city: 都市
+  countryCode: 国コード
+  courses: コース
+  date: 日付
+  education: 学歴
+  email: メール
+  endDate: 終了日
+  fluency: 習熟度
+  highlights: ハイライト
+  image: 写真
+  institution: 機関
+  interests: 研究興味
+  issuer: 発行者
+  keywords: キーワード
+  label: ラベル
+  language: 言語
+  languages: 言語
+  level: レベル
+  location: 所在地
+  name: 氏名
+  network: ネットワーク
+  organization: 組織
+  phone: 電話
+  position: 職位
+  postalCode: 郵便番号
+  present: 現在
+  profiles: プロフィール
+  projects: プロジェクト
+  publications: 業績
+  publisher: 出版社
+  reference: 推薦
+  references: 推薦者
+  region: 地域
+  releaseDate: 公開日
+  score: スコア
+  skills: スキル
+  startDate: 開始日
+  studyType: 学位
+  summary: 概要
+  table_of_contents: 目次
+  title: タイトル
+  url: URL
+  username: ユーザー名
+  volunteer: ボランティア
+  work: 職歴
+footer:
+  copyright: Copyright
+  last_updated: 最終更新：
+footer_text: <a href="https://jekyllrb.com/" target="_blank">Jekyll</a> と <a href="https://github.com/george-gca/multi-language-al-folio">al-folio</a> テーマで構築、<a href="https://pages.github.com/" target="_blank">GitHub Pages</a> でホスト。
+language_name: 日本語
+latest_posts: 最新記事
+months:
+  long:
+    april: 4月
+    august: 8月
+    december: 12月
+    february: 2月
+    january: 1月
+    july: 7月
+    june: 6月
+    march: 3月
+    may: 5月
+    november: 11月
+    october: 10月
+    september: 9月
+  short:
+    april: 4月
+    august: 8月
+    december: 12月
+    february: 2月
+    january: 1月
+    july: 7月
+    june: 6月
+    march: 3月
+    may: 5月
+    november: 11月
+    october: 10月
+    september: 9月
+news: ニュース
+newsletter:
+  back: 戻る
+  error: エラーが発生しました。もう一度お試しください。
+  subscribe: 購読
+  subscribe_to_receive: 新しい記事の通知を受け取る：
+  subscribed: 購読が完了しました。
+  too_many_signups: リクエストが多すぎます。しばらくしてからお試しください
+  wait: お待ちください...
+no_news: ニュースはまだありません
+no_posts: 記事はまだありません
+pagination:
+  page: ページ
+post:
+  created_by: 著者
+  created_in: 投稿日
+  last_updated: 最終更新
+references: 参考文献
+related_posts:
+  description: こちらの記事もおすすめです：
+  title: この記事はいかがでしたか？
+search:
+  dark_theme:
+    description: ダークテーマに切り替える
+    title: ダークテーマ
+  dropdown: ドロップダウン
+  email: メールを送る
+  footer:
+    close: 閉じる
+    navigate: 移動
+    parent: 上へ
+    select: 選択
+  languages: 言語
+  light_theme:
+    description: ライトテーマに切り替える
+    title: ライトテーマ
+  navigation: ナビゲーション
+  news: ニュース
+  placeholder: 検索キーワードを入力
+  posts: 記事
+  projects: プロジェクト
+  socials: SNS
+  system_theme:
+    description: システム設定に合わせる
+    title: システムのテーマ
+  theme: テーマ
+selected_publications: 主要論文
+site_description: 個人ウェブサイト：研究・業績・CV・ブログ。

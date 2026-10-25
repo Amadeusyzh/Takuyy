@@ -1,0 +1,65 @@
+# Edit this file to update the CV page (en-us). Section types: map, time_table, list, nested_list.
+- title: General Information
+  type: map
+  contents:
+    - name: Full Name
+      value: Your Name
+    - name: Affiliation
+      value: Waseda University, Tokyo, Japan
+    - name: Email
+      value: you@example.com
+    - name: Languages
+      value: Chinese (native), English, Japanese
+
+- title: Education
+  type: time_table
+  contents:
+    - title: Ph.D. in Computer Science
+      institution: Waseda University, Tokyo, Japan
+      year: 2024 - present
+      description:
+        - Advisor: Prof. XXX
+    - title: M.S. in Computer Science
+      institution: Waseda University, Tokyo, Japan
+      year: 2022 - 2024
+      description:
+        - Thesis: Your thesis title
+    - title: B.S. in Computer Science
+      institution: Your University, City, Country
+      year: 2018 - 2022
+
+- title: Research Experience
+  type: time_table
+  contents:
+    - title: Research Intern
+      institution: Company / Lab, City
+      year: 2025
+      description:
+        - Worked on ...
+    - title: Research Assistant
+      institution: XXX Lab, Waseda University
+      year: 2022 - present
+
+- title: Honors and Awards
+  type: time_table
+  contents:
+    - year: 2025
+      items:
+        - Scholarship / fellowship name
+    - year: 2024
+      items:
+        - Best paper award / competition prize
+
+- title: Academic Service
+  type: map
+  contents:
+    - name: Reviewer
+      value: NeurIPS, ICLR, ICML, CVPR, ACL
+
+- title: Skills
+  type: map
+  contents:
+    - name: Programming
+      value: Python, C++, CUDA
+    - name: Frameworks
+      value: PyTorch, JAX, Hugging Face Transformers

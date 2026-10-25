@@ -1,0 +1,65 @@
+# Edit this file to update the CV page (ja-jp). Section types: map, time_table, list, nested_list.
+- title: 基本情報
+  type: map
+  contents:
+    - name: 氏名
+      value: あなたの名前
+    - name: 所属
+      value: 早稲田大学（東京）
+    - name: メール
+      value: you@example.com
+    - name: 言語
+      value: 中国語（母語）、英語、日本語
+
+- title: 学歴
+  type: time_table
+  contents:
+    - title: 博士（情報科学）
+      institution: 早稲田大学（東京）
+      year: 2024 - 現在
+      description:
+        - 指導教員：XXX 教授
+    - title: 修士（情報科学）
+      institution: 早稲田大学（東京）
+      year: 2022 - 2024
+      description:
+        - 学位論文：論文タイトル
+    - title: 学士（情報科学）
+      institution: 出身大学（都市・国）
+      year: 2018 - 2022
+
+- title: 研究経歴
+  type: time_table
+  contents:
+    - title: リサーチインターン
+      institution: 企業 / 研究所（都市）
+      year: 2025
+      description:
+        - …に従事
+    - title: リサーチアシスタント
+      institution: 早稲田大学 XXX 研究室
+      year: 2022 - 現在
+
+- title: 受賞歴
+  type: time_table
+  contents:
+    - year: 2025
+      items:
+        - 奨学金・フェローシップ名
+    - year: 2024
+      items:
+        - 最優秀論文賞 / コンペティション入賞
+
+- title: 学術貢献
+  type: map
+  contents:
+    - name: 査読
+      value: NeurIPS, ICLR, ICML, CVPR, ACL
+
+- title: スキル
+  type: map
+  contents:
+    - name: プログラミング
+      value: Python, C++, CUDA
+    - name: フレームワーク
+      value: PyTorch, JAX, Hugging Face Transformers

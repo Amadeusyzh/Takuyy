@@ -1,0 +1,162 @@
+archive:
+  category_suffix: （此分类）
+  prefix: 归档
+  tag_suffix: （此标签）
+  year_suffix: （此年份）
+bibliography:
+  abstract: 摘要
+  awarded: 获奖
+  blog: 博客
+  book_prefix: 收录于
+  code: 代码
+  last_author_prefix: 和
+  poster: 海报
+  slides: 幻灯片
+  supp: 补充材料
+  video: 视频
+  website: 主页
+blog:
+  navigation_title: 博客
+categories:
+  fun: 随笔
+  work: 研究
+citation:
+  bibtex: 或使用 BibTeX：
+  introduction: 如果本文对你有帮助，请引用：
+collections:
+  books: 书籍
+  posts: 文章
+contact_note: 欢迎通过邮件联系我。
+cv:
+  address: 地址
+  area: 方向
+  awarder: 颁发机构
+  awards: 荣誉奖项
+  basics: 基本信息
+  certificates: 证书
+  city: 城市
+  countryCode: 国家代码
+  courses: 课程
+  date: 日期
+  education: 教育背景
+  email: 邮箱
+  endDate: 结束日期
+  fluency: 熟练度
+  highlights: 亮点
+  image: 照片
+  institution: 机构
+  interests: 研究兴趣
+  issuer: 颁发者
+  keywords: 关键词
+  label: 标签
+  language: 语言
+  languages: 语言
+  level: 水平
+  location: 所在地
+  name: 姓名
+  network: 网络
+  organization: 组织
+  phone: 电话
+  position: 职位
+  postalCode: 邮编
+  present: 至今
+  profiles: 主页
+  projects: 项目
+  publications: 论文发表
+  publisher: 出版方
+  reference: 推荐
+  references: 推荐人
+  region: 地区
+  releaseDate: 发布日期
+  score: 成绩
+  skills: 技能
+  startDate: 开始日期
+  studyType: 学位
+  summary: 简介
+  table_of_contents: 目录
+  title: 标题
+  url: 链接
+  username: 用户名
+  volunteer: 志愿经历
+  work: 工作经历
+footer:
+  copyright: 版权所有
+  last_updated: 最后更新：
+footer_text: 基于 <a href="https://jekyllrb.com/" target="_blank">Jekyll</a> 与 <a href="https://github.com/george-gca/multi-language-al-folio">al-folio</a> 主题构建，托管于 <a href="https://pages.github.com/" target="_blank">GitHub Pages</a>。
+language_name: 中文
+latest_posts: 最新文章
+months:
+  long:
+    april: 4月
+    august: 8月
+    december: 12月
+    february: 2月
+    january: 1月
+    july: 7月
+    june: 6月
+    march: 3月
+    may: 5月
+    november: 11月
+    october: 10月
+    september: 9月
+  short:
+    april: 4月
+    august: 8月
+    december: 12月
+    february: 2月
+    january: 1月
+    july: 7月
+    june: 6月
+    march: 3月
+    may: 5月
+    november: 11月
+    october: 10月
+    september: 9月
+news: 动态
+newsletter:
+  back: 返回
+  error: 出错了，请重试。
+  subscribe: 订阅
+  subscribe_to_receive: 订阅以接收新文章通知：
+  subscribed: 订阅成功。
+  too_many_signups: 请求过多，请稍后再试
+  wait: 请稍候...
+no_news: 暂无动态
+no_posts: 暂无文章
+pagination:
+  page: 页
+post:
+  created_by: 作者
+  created_in: 发布于
+  last_updated: 最后更新于
+references: 参考文献
+related_posts:
+  description: 你可能还想阅读：
+  title: 喜欢这篇文章吗？
+search:
+  dark_theme:
+    description: 切换为深色主题
+    title: 深色主题
+  dropdown: 下拉菜单
+  email: 发送邮件
+  footer:
+    close: 关闭
+    navigate: 导航
+    parent: 返回上级
+    select: 选择
+  languages: 语言
+  light_theme:
+    description: 切换为浅色主题
+    title: 浅色主题
+  navigation: 导航菜单
+  news: 动态
+  placeholder: 输入以搜索
+  posts: 文章
+  projects: 项目
+  socials: 社交账号
+  system_theme:
+    description: 跟随系统主题
+    title: 系统默认主题
+  theme: 主题
+selected_publications: 代表性论文
+site_description: 个人主页：研究、论文、简历与博客。
