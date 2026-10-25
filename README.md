@@ -4,9 +4,9 @@
 
 | 语言 | 网址 |
 | --- | --- |
-| English（默认） | `https://takuyy.github.io/` |
-| 中文 | `https://takuyy.github.io/zh-cn/` |
-| 日本語 | `https://takuyy.github.io/ja-jp/` |
+| English（默认） | `https://amadeusyzh.github.io/Takuyy/` |
+| 中文 | `https://amadeusyzh.github.io/Takuyy/zh-cn/` |
+| 日本語 | `https://amadeusyzh.github.io/Takuyy/ja-jp/` |
 
 ## 需要修改的地方
 
@@ -56,15 +56,15 @@ toc:
 
 ## 部署到 GitHub Pages
 
-1. 在 GitHub 上新建一个名为 `Takuyy.github.io` 的**公开**仓库，把本项目推送到 `main` 分支。
-2. 仓库 **Settings → Actions → General → Workflow permissions**，选择 **Read and write permissions**。
-3. 推送后 GitHub Actions 会自动构建，生成 `gh-pages` 分支（在 **Actions** 页面查看进度）。
-4. 仓库 **Settings → Pages → Build and deployment**，Source 选 **Deploy from a branch**，分支选 **`gh-pages`**、目录 `/ (root)`。
-5. 几分钟后访问 `https://takuyy.github.io/`。
+仓库：[Amadeusyzh/Takuyy](https://github.com/Amadeusyzh/Takuyy)，网址：`https://amadeusyzh.github.io/Takuyy/`
+
+1. 仓库 **Settings → Actions → General → Workflow permissions**，选择 **Read and write permissions**。
+2. push 到 `main` 后，GitHub Actions 会自动构建并生成 `gh-pages` 分支（在 **Actions** 页面查看进度）。
+3. 仓库 **Settings → Pages → Build and deployment**，Source 选 **Deploy from a branch**，分支选 **`gh-pages`**、目录 `/ (root)`。
 
 之后每次 push 到 `main`，网站都会自动更新。
 
-> 如果仓库名不是 `takuyy.github.io`（例如 `homepage`），需要把 `_config.yml` 里的 `baseurl` 改成 `/homepage`。
+> 想用更短的网址 `https://amadeusyzh.github.io/`：把仓库改名为 `Amadeusyzh.github.io`，再把 `_config.yml` 里的 `baseurl` 改成空。
 
 ## 本地预览
 
