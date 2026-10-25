@@ -1,4 +1,5 @@
 ---
+published: false # template: set to true (or delete this line) to show
 page_id: project_1
 layout: page
 title: プロジェクト 1

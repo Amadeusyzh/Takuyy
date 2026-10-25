@@ -1,4 +1,5 @@
 ---
+published: false # template: set to true (or delete this line) to show
 page_id: project_2
 layout: page
 title: Open-source Toolkit

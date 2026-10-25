@@ -1,65 +1,63 @@
-# Edit this file to update the CV page (en-us). Section types: map, time_table, list, nested_list.
 - title: General Information
   type: map
   contents:
     - name: Full Name
-      value: Your Name
+      value: Zehua Yang
     - name: Affiliation
-      value: Waseda University, Tokyo, Japan
-    - name: Email
-      value: you@example.com
-    - name: Languages
-      value: Chinese (native), English, Japanese
+      value: Yoshie Laboratory, Graduate School of Information, Production and Systems, Waseda University
+    # - name: Email          # TODO
+    #   value: you@example.com
 
 - title: Education
   type: time_table
   contents:
-    - title: Ph.D. in Computer Science
-      institution: Waseda University, Tokyo, Japan
-      year: 2024 - present
+    - title: Ph.D. Student (2nd year)
+      institution: Graduate School of Information, Production and Systems, Waseda University, Japan
+      year: 2025 - present
       description:
-        - Advisor: Prof. XXX
-    - title: M.S. in Computer Science
-      institution: Waseda University, Tokyo, Japan
-      year: 2022 - 2024
-      description:
-        - Thesis: Your thesis title
-    - title: B.S. in Computer Science
-      institution: Your University, City, Country
-      year: 2018 - 2022
+        - Information Architecture Course, Yoshie Laboratory
 
-- title: Research Experience
-  type: time_table
-  contents:
-    - title: Research Intern
-      institution: Company / Lab, City
-      year: 2025
-      description:
-        - Worked on ...
-    - title: Research Assistant
-      institution: XXX Lab, Waseda University
-      year: 2022 - present
+# ---------------------------------------------------------------------------
+# TODO: uncomment and fill in the sections below when ready.
+# Section types: map (name/value pairs), time_table (dated entries), list, nested_list.
+# ---------------------------------------------------------------------------
 
-- title: Honors and Awards
-  type: time_table
-  contents:
-    - year: 2025
-      items:
-        - Scholarship / fellowship name
-    - year: 2024
-      items:
-        - Best paper award / competition prize
+#    - title: Master's degree (TODO)
+#      institution: University, Country
+#      year: 20XX - 20XX
+#      description:
+#        - "Thesis: ..."
+#    - title: Bachelor's degree (TODO)
+#      institution: University, Country
+#      year: 20XX - 20XX
+#   ^ paste these under the Education section above
 
-- title: Academic Service
-  type: map
-  contents:
-    - name: Reviewer
-      value: NeurIPS, ICLR, ICML, CVPR, ACL
+# - title: Research Experience
+#   type: time_table
+#   contents:
+#     - title: Research Intern
+#       institution: Company / Lab, City
+#       year: 20XX
+#       description:
+#         - Worked on ...
 
-- title: Skills
-  type: map
-  contents:
-    - name: Programming
-      value: Python, C++, CUDA
-    - name: Frameworks
-      value: PyTorch, JAX, Hugging Face Transformers
+# - title: Honors and Awards
+#   type: time_table
+#   contents:
+#     - year: 20XX
+#       items:
+#         - Scholarship / award name
+
+# - title: Academic Service
+#   type: map
+#   contents:
+#     - name: Reviewer
+#       value: Conference / Journal names
+
+# - title: Skills
+#   type: map
+#   contents:
+#     - name: Programming
+#       value: Python, ...
+#     - name: Languages
+#       value: Chinese (native), Japanese, English

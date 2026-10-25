@@ -4,7 +4,7 @@ layout: page
 title: プロジェクト
 permalink: /projects/
 description: "研究プロジェクトとオープンソースソフトウェア。"
-nav: true
+nav: false # TODO: set to true once you add projects in _projects/
 nav_order: 2
 display_categories: [work]
 horizontal: false

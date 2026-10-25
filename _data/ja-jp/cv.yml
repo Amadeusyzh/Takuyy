@@ -1,65 +1,63 @@
-# Edit this file to update the CV page (ja-jp). Section types: map, time_table, list, nested_list.
 - title: 基本情報
   type: map
   contents:
     - name: 氏名
-      value: あなたの名前
+      value: 楊 沢華（ヨウ タクカ / Zehua Yang）
     - name: 所属
-      value: 早稲田大学（東京）
-    - name: メール
-      value: you@example.com
-    - name: 言語
-      value: 中国語（母語）、英語、日本語
+      value: 早稲田大学大学院 情報生産システム研究科 吉江研究室
+    # - name: Email          # TODO
+    #   value: you@example.com
 
 - title: 学歴
   type: time_table
   contents:
-    - title: 博士（情報科学）
-      institution: 早稲田大学（東京）
-      year: 2024 - 現在
+    - title: 博士後期課程 2年
+      institution: 早稲田大学大学院 情報生産システム研究科
+      year: 2025 - 現在
       description:
-        - 指導教員：XXX 教授
-    - title: 修士（情報科学）
-      institution: 早稲田大学（東京）
-      year: 2022 - 2024
-      description:
-        - 学位論文：論文タイトル
-    - title: 学士（情報科学）
-      institution: 出身大学（都市・国）
-      year: 2018 - 2022
+        - 情報アーキテクチャコース 吉江研究室
 
-- title: 研究経歴
-  type: time_table
-  contents:
-    - title: リサーチインターン
-      institution: 企業 / 研究所（都市）
-      year: 2025
-      description:
-        - …に従事
-    - title: リサーチアシスタント
-      institution: 早稲田大学 XXX 研究室
-      year: 2022 - 現在
+# ---------------------------------------------------------------------------
+# TODO: uncomment and fill in the sections below when ready.
+# Section types: map (name/value pairs), time_table (dated entries), list, nested_list.
+# ---------------------------------------------------------------------------
 
-- title: 受賞歴
-  type: time_table
-  contents:
-    - year: 2025
-      items:
-        - 奨学金・フェローシップ名
-    - year: 2024
-      items:
-        - 最優秀論文賞 / コンペティション入賞
+#    - title: Master's degree (TODO)
+#      institution: University, Country
+#      year: 20XX - 20XX
+#      description:
+#        - "Thesis: ..."
+#    - title: Bachelor's degree (TODO)
+#      institution: University, Country
+#      year: 20XX - 20XX
+#   ^ paste these under the Education section above
 
-- title: 学術貢献
-  type: map
-  contents:
-    - name: 査読
-      value: NeurIPS, ICLR, ICML, CVPR, ACL
+# - title: Research Experience
+#   type: time_table
+#   contents:
+#     - title: Research Intern
+#       institution: Company / Lab, City
+#       year: 20XX
+#       description:
+#         - Worked on ...
 
-- title: スキル
-  type: map
-  contents:
-    - name: プログラミング
-      value: Python, C++, CUDA
-    - name: フレームワーク
-      value: PyTorch, JAX, Hugging Face Transformers
+# - title: Honors and Awards
+#   type: time_table
+#   contents:
+#     - year: 20XX
+#       items:
+#         - Scholarship / award name
+
+# - title: Academic Service
+#   type: map
+#   contents:
+#     - name: Reviewer
+#       value: Conference / Journal names
+
+# - title: Skills
+#   type: map
+#   contents:
+#     - name: Programming
+#       value: Python, ...
+#     - name: Languages
+#       value: Chinese (native), Japanese, English

@@ -4,7 +4,7 @@ layout: page
 title: projects
 permalink: /projects/
 description: "Research projects and open-source software."
-nav: true
+nav: false # TODO: set to true once you add projects in _projects/
 nav_order: 2
 display_categories: [work]
 horizontal: false

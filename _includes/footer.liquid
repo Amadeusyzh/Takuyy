@@ -2,9 +2,7 @@
   &copy;
   {{- site.data[site.active_lang].strings.footer.copyright }}
   {{ site.time | date: '%Y' }}
-  {{ site.first_name }}
-  {{ site.middle_name }}
-  {{ site.last_name }}. {{ site.data[site.active_lang].strings.footer_text }}
+  {% if site.data[site.active_lang].strings.author.name %}{{ site.data[site.active_lang].strings.author.name }}{% else %}{{ site.first_name }} {{ site.middle_name }} {{ site.last_name }}{% endif %}. {{ site.data[site.active_lang].strings.footer_text }}
   {% if site.impressum_path %}
     <a href="{{ site.url }}{{ site.baseurl }}{{ site.impressum_path }}">Impressum</a>.
   {% endif %}

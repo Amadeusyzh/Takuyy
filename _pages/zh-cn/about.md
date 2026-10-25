@@ -3,17 +3,18 @@ page_id: about
 layout: about
 title: 关于
 permalink: /
-subtitle: 博士生 · 早稻田大学 · 日本东京
+subtitle: 博士生 · 早稻田大学 吉江研究室
 
 profile:
   align: right
   image: prof_pic.jpg
   image_circular: true # crops the image to make it circular
   more_info: >
-    <p>早稻田大学</p>
-    <p>日本 东京</p>
+    <p>吉江研究室</p>
+    <p>早稻田大学 信息生产系统研究科</p>
+    <p>日本 福冈县 北九州市</p>
 
-selected_papers: true # includes a list of papers marked as "selected={true}"
+selected_papers: false # TODO: set to true once papers in _bibliography/papers.bib are marked selected={true}
 social: true # includes social icons at the bottom of the page
 
 announcements:
@@ -27,12 +28,14 @@ latest_posts:
   limit: 3 # leave blank to include all the blog posts
 ---
 
-我是[早稻田大学](https://www.waseda.jp/top/)的博士生，研究方向为**机器学习**与**人工智能**。*（请替换为你自己的简介。）*
+我是[早稻田大学](https://www.waseda.jp/top/)信息生产系统研究科（IPS）信息架构方向吉江研究室的博士二年级学生。
 
-我的研究兴趣包括：
+<!-- TODO: 有研究室网址后可给“吉江研究室”加链接。用 2–4 句话介绍你的研究：研究什么问题、用什么方法、有什么意义。 -->
 
-- **方向 A** —— 例如大语言模型、推理、对齐
-- **方向 B** —— 例如多模态学习、视觉-语言模型
-- **方向 C** —— 例如高效训练与推理
+### 研究兴趣
 
-欢迎通过邮件联系我，交流合作。
+<!-- TODO: 把"即将更新"换成列表，例如
+- **大语言模型** —— 推理、对齐
+- **多模态学习** —— 视觉-语言模型
+-->
+*即将更新。*

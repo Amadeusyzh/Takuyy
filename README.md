@@ -4,27 +4,28 @@
 
 | 语言 | 网址 |
 | --- | --- |
-| English（默认） | `https://<用户名>.github.io/` |
-| 中文 | `https://<用户名>.github.io/zh-cn/` |
-| 日本語 | `https://<用户名>.github.io/ja-jp/` |
+| English（默认） | `https://takuyy.github.io/` |
+| 中文 | `https://takuyy.github.io/zh-cn/` |
+| 日本語 | `https://takuyy.github.io/ja-jp/` |
 
 ## 需要修改的地方
 
-搜索 `YOUR_GITHUB_USERNAME`、`YOUR_SCHOLAR_ID`、`you@example.com`、`Your Name` 可以找到所有占位符。
+所有待补充的地方都用 `TODO` 标出（搜索 `TODO` 即可找到），页面上显示为“即将更新 / Coming soon / 準備中”。
 
 | 内容 | 文件 |
 | --- | --- |
-| 姓名、网址、图标 | `_config.yml`（`first_name`、`last_name`、`url`、`icon`；`scholar:` 下的姓名用于在论文列表中高亮自己） |
+| 网址、图标 | `_config.yml`（`url`、`icon`；`scholar:` 下的姓名用于在论文列表中高亮自己） |
+| 各语言显示的姓名 | `_data/<语言>/strings.yml` 里的 `author.name` / `author.name_sub` |
 | 头像 | 替换 `assets/img/prof_pic.jpg`（建议正方形） |
 | 首页简介 | `_pages/en-us/about.md`、`_pages/zh-cn/about.md`、`_pages/ja-jp/about.md` |
-| 论文列表 | `_bibliography/papers.bib`（三种语言共用；`selected={true}` 的论文会显示在首页） |
+| 论文列表 | `_bibliography/papers.bib`（三种语言共用；`selected={true}` 的论文会显示在首页，同时把 `about.md` 里的 `selected_papers` 改为 `true`） |
 | 论文缩略图 | 放到 `assets/img/publication_preview/`，在 bib 里写 `preview={xxx.png}` |
 | 简历（网页版） | `_data/<语言>/cv.yml` |
 | 简历（PDF） | `assets/pdf/<语言>/cv.pdf` |
 | 社交链接 | `_data/socials.yml`（邮箱、Google Scholar、GitHub、ORCID、OpenReview、X 等） |
 | 动态 / News | `_news/<语言>/*.md` |
 | 博客 | `_posts/<语言>/YYYY-MM-DD-标题.md` |
-| 项目 | `_projects/<语言>/*.md` |
+| 项目 | `_projects/<语言>/*.md`（目前是隐藏的模板，写好后删掉 `published: false`，并把 `projects.md` 的 `nav` 改为 `true`） |
 | 界面文字翻译 | `_data/<语言>/strings.yml` |
 
 ### 多语言规则
@@ -55,15 +56,15 @@ toc:
 
 ## 部署到 GitHub Pages
 
-1. 在 GitHub 上新建一个名为 `<用户名>.github.io` 的**公开**仓库，把本项目推送到 `main` 分支。
+1. 在 GitHub 上新建一个名为 `Takuyy.github.io` 的**公开**仓库，把本项目推送到 `main` 分支。
 2. 仓库 **Settings → Actions → General → Workflow permissions**，选择 **Read and write permissions**。
 3. 推送后 GitHub Actions 会自动构建，生成 `gh-pages` 分支（在 **Actions** 页面查看进度）。
 4. 仓库 **Settings → Pages → Build and deployment**，Source 选 **Deploy from a branch**，分支选 **`gh-pages`**、目录 `/ (root)`。
-5. 几分钟后访问 `https://<用户名>.github.io/`。
+5. 几分钟后访问 `https://takuyy.github.io/`。
 
 之后每次 push 到 `main`，网站都会自动更新。
 
-> 如果仓库名不是 `<用户名>.github.io`（例如 `homepage`），需要把 `_config.yml` 里的 `baseurl` 改成 `/homepage`。
+> 如果仓库名不是 `takuyy.github.io`（例如 `homepage`），需要把 `_config.yml` 里的 `baseurl` 改成 `/homepage`。
 
 ## 本地预览
 

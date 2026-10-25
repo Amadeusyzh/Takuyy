@@ -1535,3 +1535,12 @@ figure.cover {
 mjx-container[jax="CHTML"][display="true"] {
   overflow-x: auto;
 }
+
+// Romanized / alternate name shown next to the main name on the about page
+.post-title .name-sub {
+  font-size: 0.45em;
+  font-weight: 300;
+  color: var(--global-text-color-light);
+  margin-left: 0.4em;
+  white-space: nowrap;
+}

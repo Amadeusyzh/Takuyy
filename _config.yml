@@ -3,13 +3,13 @@
 # -----------------------------------------------------------------------------
 
 title: blank # the website title (if blank, full name will be used instead)
-first_name: Your
+first_name: Zehua
 middle_name:
-last_name: Name
+last_name: Yang
 keywords: machine learning, artificial intelligence, research, blog # add your own keywords or leave empty
 icon: 🧠 # the emoji used as the favicon (alternatively, provide image name in /assets/img/)
 
-url: https://YOUR_GITHUB_USERNAME.github.io # the base hostname & protocol for your site
+url: https://takuyy.github.io # the base hostname & protocol for your site
 baseurl: # the subpath of your site, e.g. /blog/. Leave blank for root
 last_updated: false # set to true if you want to display last updated in the footer
 impressum_path: # set to path to include impressum link in the footer, use the same path as permalink in a page, helps to conform with EU GDPR
@@ -250,7 +250,7 @@ jekyll-archives:
       tags: "/blog/:type/:name/"
       categories: "/blog/:type/:name/"
 
-display_tags: ["research", "notes", "tutorial"] # these tags will be displayed on the front page of your blog
+display_tags: ["research", "notes"] # these tags will be displayed on the front page of your blog
 display_categories: [] # these categories will be displayed on the front page of your blog
 
 # -----------------------------------------------------------------------------
@@ -258,8 +258,8 @@ display_categories: [] # these categories will be displayed on the front page of
 # -----------------------------------------------------------------------------
 
 scholar:
-  last_name: [Name]
-  first_name: [Your, Y.]
+  last_name: [Yang]
+  first_name: [Zehua, Z.]
 
   style: apa
   locale: en

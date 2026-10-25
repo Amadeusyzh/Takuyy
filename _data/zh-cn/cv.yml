@@ -1,65 +1,63 @@
-# Edit this file to update the CV page (zh-cn). Section types: map, time_table, list, nested_list.
 - title: 基本信息
   type: map
   contents:
     - name: 姓名
-      value: 你的名字
+      value: 杨泽华（Zehua Yang）
     - name: 单位
-      value: 早稻田大学，日本东京
-    - name: 邮箱
-      value: you@example.com
-    - name: 语言
-      value: 中文（母语）、英语、日语
+      value: 早稻田大学 信息生产系统研究科 吉江研究室
+    # - name: Email          # TODO
+    #   value: you@example.com
 
 - title: 教育背景
   type: time_table
   contents:
-    - title: 博士，计算机科学
-      institution: 早稻田大学，日本东京
-      year: 2024 - 至今
+    - title: 博士（在读，二年级）
+      institution: 早稻田大学 信息生产系统研究科，日本
+      year: 2025 - 至今
       description:
-        - 导师：XXX 教授
-    - title: 硕士，计算机科学
-      institution: 早稻田大学，日本东京
-      year: 2022 - 2024
-      description:
-        - 学位论文：你的论文题目
-    - title: 学士，计算机科学
-      institution: 你的大学，城市，国家
-      year: 2018 - 2022
+        - 信息架构方向，吉江研究室
 
-- title: 研究经历
-  type: time_table
-  contents:
-    - title: 研究实习生
-      institution: 公司 / 实验室，城市
-      year: 2025
-      description:
-        - 负责……
-    - title: 研究助理
-      institution: 早稻田大学 XXX 研究室
-      year: 2022 - 至今
+# ---------------------------------------------------------------------------
+# TODO: uncomment and fill in the sections below when ready.
+# Section types: map (name/value pairs), time_table (dated entries), list, nested_list.
+# ---------------------------------------------------------------------------
 
-- title: 荣誉奖项
-  type: time_table
-  contents:
-    - year: 2025
-      items:
-        - 奖学金名称
-    - year: 2024
-      items:
-        - 最佳论文奖 / 竞赛奖项
+#    - title: Master's degree (TODO)
+#      institution: University, Country
+#      year: 20XX - 20XX
+#      description:
+#        - "Thesis: ..."
+#    - title: Bachelor's degree (TODO)
+#      institution: University, Country
+#      year: 20XX - 20XX
+#   ^ paste these under the Education section above
 
-- title: 学术服务
-  type: map
-  contents:
-    - name: 审稿人
-      value: NeurIPS, ICLR, ICML, CVPR, ACL
+# - title: Research Experience
+#   type: time_table
+#   contents:
+#     - title: Research Intern
+#       institution: Company / Lab, City
+#       year: 20XX
+#       description:
+#         - Worked on ...
 
-- title: 技能
-  type: map
-  contents:
-    - name: 编程语言
-      value: Python, C++, CUDA
-    - name: 框架
-      value: PyTorch, JAX, Hugging Face Transformers
+# - title: Honors and Awards
+#   type: time_table
+#   contents:
+#     - year: 20XX
+#       items:
+#         - Scholarship / award name
+
+# - title: Academic Service
+#   type: map
+#   contents:
+#     - name: Reviewer
+#       value: Conference / Journal names
+
+# - title: Skills
+#   type: map
+#   contents:
+#     - name: Programming
+#       value: Python, ...
+#     - name: Languages
+#       value: Chinese (native), Japanese, English

@@ -3,17 +3,18 @@ page_id: about
 layout: about
 title: about
 permalink: /
-subtitle: PhD Student · Waseda University · Tokyo, Japan
+subtitle: Ph.D. Student · Yoshie Lab · Waseda University
 
 profile:
   align: right
   image: prof_pic.jpg
   image_circular: true # crops the image to make it circular
   more_info: >
-    <p>Waseda University</p>
-    <p>Tokyo, Japan</p>
+    <p>Yoshie Laboratory</p>
+    <p>Graduate School of IPS, Waseda University</p>
+    <p>Kitakyushu, Fukuoka, Japan</p>
 
-selected_papers: true # includes a list of papers marked as "selected={true}"
+selected_papers: false # TODO: set to true once papers in _bibliography/papers.bib are marked selected={true}
 social: true # includes social icons at the bottom of the page
 
 announcements:
@@ -27,12 +28,14 @@ latest_posts:
   limit: 3 # leave blank to include all the blog posts
 ---
 
-I am a PhD student at [Waseda University](https://www.waseda.jp/top/en), working on **machine learning** and **artificial intelligence**. *(Replace this paragraph with your own bio.)*
+I am a second-year Ph.D. student in the Yoshie Laboratory, Information Architecture Course, Graduate School of Information, Production and Systems (IPS), [Waseda University](https://www.waseda.jp/top/en).
 
-My research interests include:
+<!-- TODO: link the lab name once you have the URL. Add 2–4 sentences about your research: the problem you work on, your approach, and why it matters. -->
 
-- **Topic A** — e.g. large language models, reasoning, alignment
-- **Topic B** — e.g. multimodal learning, vision-language models
-- **Topic C** — e.g. efficient training and inference
+### Research Interests
 
-Feel free to reach out by email if you are interested in collaboration.
+<!-- TODO: replace "Coming soon" with a list, e.g.
+- **Large language models** — reasoning, alignment
+- **Multimodal learning** — vision-language models
+-->
+*Coming soon.*

@@ -3,17 +3,18 @@ page_id: about
 layout: about
 title: ホーム
 permalink: /
-subtitle: 博士課程 · 早稲田大学 · 東京
+subtitle: 博士後期課程 · 早稲田大学 吉江研究室
 
 profile:
   align: right
   image: prof_pic.jpg
   image_circular: true # crops the image to make it circular
   more_info: >
-    <p>早稲田大学</p>
-    <p>東京都</p>
+    <p>吉江研究室</p>
+    <p>早稲田大学大学院 情報生産システム研究科</p>
+    <p>福岡県北九州市</p>
 
-selected_papers: true # includes a list of papers marked as "selected={true}"
+selected_papers: false # TODO: set to true once papers in _bibliography/papers.bib are marked selected={true}
 social: true # includes social icons at the bottom of the page
 
 announcements:
@@ -27,12 +28,14 @@ latest_posts:
   limit: 3 # leave blank to include all the blog posts
 ---
 
-[早稲田大学](https://www.waseda.jp/top/)の博士課程に在籍しており、**機械学習**と**人工知能**の研究をしています。*（ここをご自身の紹介文に置き換えてください。）*
+[早稲田大学](https://www.waseda.jp/top/)大学院 情報生産システム研究科（IPS）情報アーキテクチャコース 吉江研究室 の博士後期課程2年に在籍しています。
 
-主な研究テーマ：
+<!-- TODO: 研究室の URL があればリンクを追加。研究内容を 2〜4 文で紹介（取り組んでいる課題・アプローチ・意義など）。 -->
 
-- **テーマ A** —— 例：大規模言語モデル、推論、アライメント
-- **テーマ B** —— 例：マルチモーダル学習、Vision-Language モデル
-- **テーマ C** —— 例：効率的な学習と推論
+### 研究テーマ
 
-共同研究などに興味のある方は、お気軽にメールでご連絡ください。
+<!-- TODO: 「準備中」をリストに置き換えてください。例：
+- **大規模言語モデル** —— 推論、アライメント
+- **マルチモーダル学習** —— Vision-Language モデル
+-->
+*準備中。*

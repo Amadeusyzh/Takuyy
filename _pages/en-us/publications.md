@@ -12,7 +12,10 @@ nav_order: 1
 
 <!-- Bibsearch Feature -->
 
-{% include bib_search.liquid %}
+<!-- TODO: remove the line below after adding papers to _bibliography/papers.bib -->
+*Coming soon.*
+
+<!-- {% include bib_search.liquid %} -->
 
 <div class="publications">
 
