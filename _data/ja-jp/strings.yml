@@ -82,6 +82,18 @@ cv:
   username: ユーザー名
   volunteer: ボランティア
   work: 職歴
+demo:
+  blend: ブレンド k
+  caption: GPU 上で動く小さなリアルタイムレンダラーです。各ピクセルから飛ばしたレイが、距離関数だけで定義されたシーンを sphere tracing し、smooth minimum で形状を滑らかに融合、ソフトシャドウとアンビエントオクルージョンで陰影をつけています。ドラッグで視点を回転できます。
+  hint: ドラッグで回転
+  nogl: お使いのブラウザは WebGL に対応していないため、デモを表示できません。
+  normals: 法線
+  play: 一時停止
+  reset: リセット
+  resume: 再生
+  shaded: シェーディング
+  steps: ステップ数
+  title: インタラクティブデモ：レイマーチング × 符号付き距離場
 footer:
   copyright: Copyright
   last_updated: 最終更新：

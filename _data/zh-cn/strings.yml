@@ -82,6 +82,18 @@ cv:
   username: 用户名
   volunteer: 志愿经历
   work: 工作经历
+demo:
+  blend: 融合系数 k
+  caption: 一个跑在你 GPU 上的实时小渲染器：每个像素发出一条光线，在仅由距离函数定义的场景中做 sphere tracing；物体之间用 smooth minimum 平滑融合，再加上软阴影和环境光遮蔽。拖动画面可以旋转视角。
+  hint: 拖动旋转视角
+  nogl: 你的浏览器不支持 WebGL，无法运行此演示。
+  normals: 法线
+  play: 暂停
+  reset: 重置
+  resume: 播放
+  shaded: 着色
+  steps: 步进次数
+  title: 交互小实验：光线步进 + 有向距离场
 footer:
   copyright: 版权所有
   last_updated: 最后更新：

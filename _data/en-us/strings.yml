@@ -82,6 +82,18 @@ cv:
   username: Username
   volunteer: Volunteer
   work: Work
+demo:
+  blend: Blend k
+  caption: A tiny real-time renderer running on your GPU. Every pixel shoots a ray that “sphere-traces” a scene defined only by distance functions; the shapes are merged with a smooth minimum, then lit with soft shadows and ambient occlusion. Drag to orbit the camera.
+  hint: drag to orbit
+  nogl: Your browser does not support WebGL, so the demo cannot run.
+  normals: Normals
+  play: Pause
+  reset: Reset
+  resume: Play
+  shaded: Shaded
+  steps: Step count
+  title: 'Interactive: Ray-Marching Signed Distance Fields'
 footer:
   copyright: Copyright
   last_updated: 'Last updated:'

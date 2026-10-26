@@ -34,8 +34,10 @@ I am a second-year Ph.D. student in the Yoshie Laboratory, Information Architect
 
 ### Research Interests
 
-<!-- TODO: replace "Coming soon" with a list, e.g.
-- **Large language models** — reasoning, alignment
-- **Multimodal learning** — vision-language models
--->
-*Coming soon.*
+- **Embodied AI**
+- **World Models**
+- **AR / VR**
+- **Human-Computer Interaction (HCI)**
+- **Computer Graphics**
+
+{% include sdf_demo.liquid %}
