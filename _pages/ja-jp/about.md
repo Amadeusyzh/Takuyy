@@ -40,4 +40,4 @@ latest_posts:
 - **ヒューマンコンピュータインタラクション**（HCI）
 - **コンピュータグラフィックス**
 
-{% include sdf_demo.liquid %}
+{% include lab.liquid %}

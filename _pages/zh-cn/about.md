@@ -40,4 +40,4 @@ latest_posts:
 - **人机交互**（HCI）
 - **计算机图形学**
 
-{% include sdf_demo.liquid %}
+{% include lab.liquid %}

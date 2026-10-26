@@ -40,4 +40,4 @@ I am a second-year Ph.D. student in the Yoshie Laboratory, Information Architect
 - **Human-Computer Interaction (HCI)**
 - **Computer Graphics**
 
-{% include sdf_demo.liquid %}
+{% include lab.liquid %}

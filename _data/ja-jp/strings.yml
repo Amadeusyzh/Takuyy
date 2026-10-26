@@ -82,22 +82,35 @@ cv:
   username: ユーザー名
   volunteer: ボランティア
   work: 職歴
-demo:
-  blend: ブレンド k
-  caption: GPU 上で動く小さなリアルタイムレンダラーです。各ピクセルから飛ばしたレイが、距離関数だけで定義されたシーンを sphere tracing し、smooth minimum で形状を滑らかに融合、ソフトシャドウとアンビエントオクルージョンで陰影をつけています。ドラッグで視点を回転できます。
-  hint: ドラッグで回転
-  nogl: お使いのブラウザは WebGL に対応していないため、デモを表示できません。
-  normals: 法線
-  play: 一時停止
-  reset: リセット
-  resume: 再生
-  shaded: シェーディング
-  steps: ステップ数
-  title: インタラクティブデモ：レイマーチング × 符号付き距離場
 footer:
   copyright: Copyright
   last_updated: 最終更新：
 footer_text: <a href="https://jekyllrb.com/" target="_blank">Jekyll</a> と <a href="https://github.com/george-gca/multi-language-al-folio">al-folio</a> テーマで構築、<a href="https://pages.github.com/" target="_blank">GitHub Pages</a> でホスト。
+lab:
+  ball: ボール
+  cloth_caption: 40 × 40 の布を、拡張位置ベース動力学（XPBD、Macklin ら 2016）と多数の小さなサブステップでリアルタイムに解いています。この種のソルバーはゲームエンジンや VR、さらに身体性エージェントや世界モデルの学習データを生成する物理シミュレータでも使われています。布をドラッグすると引っ張れます。「カット」に切り替えてなぞると切断でき、強く引っ張りすぎると破れます。背景をドラッグすると視点を回転できます。
+  cloth_hint: 布をドラッグで引っ張る · 背景ドラッグで回転
+  cloth_stats: 粒子 {p} · 拘束 {c} · サブステップ {s} · ソルバー {ms} ms
+  cut: カット
+  fov_caption: Apple Vision Pro や Meta Quest Pro などのヘッドセットで使われている、視線追跡型の中心窩レンダリング（Foveated Rendering）です。人間の視力は中心窩（視野の約 5°）の外側で急激に低下するため、注視点（カーソル位置を視線とみなします）の周辺だけをフル解像度でレイマーチングし、外側は 1/2、1/4 の解像度で描画して滑らかに合成しています。「領域を表示」で各シェーディングレートの領域を確認できます。カーソルを止めると、視線がサッカード（跳躍性眼球運動）を模擬して動きます。
+  fov_hint: カーソルを動かす＝視線
+  fov_stats: シェーディング画素：ネイティブの {pct}%（{x} 分の 1）· {fps} fps
+  foveation: 中心窩レンダリング
+  grab: つかむ
+  intro: 研究に関連する 2 つのリアルタイムデモです。WebGL でゼロから実装しており、すべてブラウザ上で動作します。
+  nogl: お使いのブラウザは WebGL に対応していないため、デモを表示できません。
+  play: 一時停止
+  radius: 中心窩の半径
+  regions: 領域を表示
+  release: ピンを外す
+  reset: リセット
+  resume: 再生
+  stiffness: 剛性
+  tab_cloth: 布シミュレーション · XPBD
+  tab_fov: 中心窩レンダリング · VR
+  tear: 破れる
+  title: インタラクティブラボ
+  wind: 風
 language_name: 日本語
 latest_posts: 最新記事
 months:

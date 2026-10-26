@@ -82,22 +82,35 @@ cv:
   username: Username
   volunteer: Volunteer
   work: Work
-demo:
-  blend: Blend k
-  caption: A tiny real-time renderer running on your GPU. Every pixel shoots a ray that “sphere-traces” a scene defined only by distance functions; the shapes are merged with a smooth minimum, then lit with soft shadows and ambient occlusion. Drag to orbit the camera.
-  hint: drag to orbit
-  nogl: Your browser does not support WebGL, so the demo cannot run.
-  normals: Normals
-  play: Pause
-  reset: Reset
-  resume: Play
-  shaded: Shaded
-  steps: Step count
-  title: 'Interactive: Ray-Marching Signed Distance Fields'
 footer:
   copyright: Copyright
   last_updated: 'Last updated:'
 footer_text: Powered by <a href="https://jekyllrb.com/" target="_blank">Jekyll</a> with the <a href="https://github.com/george-gca/multi-language-al-folio">al-folio</a> theme. Hosted by <a href="https://pages.github.com/" target="_blank">GitHub Pages</a>.
+lab:
+  ball: Ball
+  cloth_caption: A 40 × 40 cloth simulated with Extended Position-Based Dynamics (XPBD, Macklin et al. 2016) using many small substeps, the same family of solvers found in game engines, VR, and the physics simulators that generate training data for embodied agents and world models. Drag the cloth to pull it, switch to Cut and swipe to slice it, or stretch it hard until it tears. Drag empty space to orbit the camera.
+  cloth_hint: drag cloth to pull · drag background to orbit
+  cloth_stats: '{p} particles · {c} constraints · {s} substeps · solver {ms} ms'
+  cut: Cut
+  fov_caption: Eye-tracked foveated rendering, as used in headsets such as Apple Vision Pro and Meta Quest Pro. Visual acuity drops sharply outside the fovea (about 5° of the visual field), so the scene is ray-marched at full resolution only where you look (your cursor is the simulated gaze), at 1/2 and 1/4 resolution further out, and the layers are blended together. Turn on the overlay to see the shading-rate regions. When the cursor is idle, the gaze performs simulated saccades.
+  fov_hint: 'move the cursor: it is your gaze'
+  fov_stats: 'shaded pixels: {pct}% of native ({x}× fewer) · {fps} fps'
+  foveation: Foveation
+  grab: Grab
+  intro: Two small real-time demos related to my research, written from scratch in WebGL and running entirely in your browser.
+  nogl: Your browser does not support WebGL, so this demo cannot run.
+  play: Pause
+  radius: Fovea radius
+  regions: Show regions
+  release: Release pins
+  reset: Reset
+  resume: Play
+  stiffness: Stiffness
+  tab_cloth: Cloth Simulation · XPBD
+  tab_fov: Foveated Rendering · VR
+  tear: Tearing
+  title: Interactive Lab
+  wind: Wind
 language_name: English
 latest_posts: latest posts
 months:
