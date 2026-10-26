@@ -70,6 +70,13 @@ ninja.data = [{
           window.open("/Takuyy/feed.xml", "_blank");
         },
       },{
+        id: 'social-scholar',
+        title: 'Google Scholar',
+        section: '社交账号',
+        handler: () => {
+          window.open("https://scholar.google.com/citations?user=8wyZlsEAAAAJ", "_blank");
+        },
+      },{
           id: 'lang-en-us',
           title: 'en-us',
           section: '语言',
