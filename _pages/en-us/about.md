@@ -14,7 +14,7 @@ profile:
     <p>Graduate School of IPS, Waseda University</p>
     <p>Kitakyushu, Fukuoka, Japan</p>
 
-selected_papers: false # TODO: set to true once papers in _bibliography/papers.bib are marked selected={true}
+selected_papers: true # includes a list of papers marked as "selected={true}"
 social: true # includes social icons at the bottom of the page
 
 announcements:

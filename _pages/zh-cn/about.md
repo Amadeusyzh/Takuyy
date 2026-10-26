@@ -14,7 +14,7 @@ profile:
     <p>早稻田大学 信息生产系统研究科</p>
     <p>日本 福冈县 北九州市</p>
 
-selected_papers: false # TODO: set to true once papers in _bibliography/papers.bib are marked selected={true}
+selected_papers: true # includes a list of papers marked as "selected={true}"
 social: true # includes social icons at the bottom of the page
 
 announcements:
