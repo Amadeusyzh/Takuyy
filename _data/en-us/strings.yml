@@ -87,29 +87,69 @@ footer:
   last_updated: 'Last updated:'
 footer_text: Powered by <a href="https://jekyllrb.com/" target="_blank">Jekyll</a> with the <a href="https://github.com/george-gca/multi-language-al-folio">al-folio</a> theme. Hosted by <a href="https://pages.github.com/" target="_blank">GitHub Pages</a>.
 lab:
+  aperture: Aperture
   ball: Ball
+  bounces: Bounces
   cloth_caption: A 40 × 40 cloth simulated with Extended Position-Based Dynamics (XPBD, Macklin et al. 2016) using many small substeps, the same family of solvers found in game engines, VR, and the physics simulators that generate training data for embodied agents and world models. Drag the cloth to pull it, switch to Cut and swipe to slice it, or stretch it hard until it tears. Drag empty space to orbit the camera.
   cloth_hint: drag cloth to pull · drag background to orbit
   cloth_stats: '{p} particles · {c} constraints · {s} substeps · solver {ms} ms'
   cut: Cut
+  denoise: Denoise
   fov_caption: Eye-tracked foveated rendering, as used in headsets such as Apple Vision Pro and Meta Quest Pro. Visual acuity drops sharply outside the fovea (about 5° of the visual field), so the scene is ray-marched at full resolution only where you look (your cursor is the simulated gaze), at 1/2 and 1/4 resolution further out, and the layers are blended together. Turn on the overlay to see the shading-rate regions. When the cursor is idle, the gaze performs simulated saccades.
   fov_hint: 'move the cursor: it is your gaze'
   fov_stats: 'shaded pixels: {pct}% of native ({x}× fewer) · {fps} fps'
   foveation: Foveation
+  g_centers: Centers
+  g_count: Gaussians shown
+  g_depth: Depth
+  g_ellip: Ellipsoids
+  g_overdraw: Overdraw
+  g_render: Rendered
+  g_scale: Splat scale
+  g_sh: View-dependent (SH)
+  g_spin: Auto-rotate
   grab: Grab
-  intro: Two small real-time demos related to my research, written from scratch in WebGL and running entirely in your browser.
+  gs_caption: 3D Gaussian Splatting (Kerbl et al., SIGGRAPH 2023) represents a scene as millions of anisotropic 3D Gaussians and renders photorealistic novel views in real time, which makes it a key representation for AR/VR capture and world models. Here about 85,000 Gaussians form a procedurally generated bonsai, a nod to the paper's well-known scene. Every frame, each Gaussian's 3D covariance is projected into a 2D ellipse through the Jacobian of the perspective transform (EWA splatting). All Gaussians are then depth-sorted with a 16-bit counting sort and alpha-composited back to front. A first-order view-dependent term mimics spherical harmonics, so the highlights on the glazed pot move as you orbit. Switch views to see the ellipsoids, the centres, or how many splats overlap each pixel. Drag to orbit; click inside, then scroll to zoom.
+  gs_hint: drag to orbit · click, then scroll to zoom
+  gs_stats: '{n} Gaussians · sort {ms} ms · {fps} fps'
+  intro: Four real-time graphics demos related to my research, written from scratch in WebGL and running entirely in your browser.
+  light: Light size
+  m_diffuse: Diffuse
+  m_frosted: Frosted
+  m_glass: Glass
+  m_metal: Metal
+  m_mirror: Mirror
+  m_plastic: Plastic
   nogl: Your browser does not support WebGL, so this demo cannot run.
+  nogl2: This demo needs WebGL 2 with floating-point render targets, which your browser does not support.
+  nosel: Click an object to edit its material
+  obj0: Glass sphere
+  obj1: Gold sphere
+  obj2: Box
+  obj3: Small sphere
   play: Pause
+  pt_caption: A physically based path tracer running in your GPU's fragment shaders. Every pixel traces light paths with up to 8 bounces through a Cornell box. Surfaces use a GGX microfacet BRDF with visible-normal sampling (Heitz 2018), and dielectrics refract with exact Fresnel. Direct light comes from next-event estimation combined with BSDF sampling by multiple importance sampling (Veach 1995); switch between BSDF, NEE and MIS and shrink the light to see why it matters. Samples accumulate progressively, and while you interact an edge-avoiding à-trous wavelet denoiser (Dammertz et al. 2010), guided by normal, depth and albedo buffers, cleans up the image. This is the same idea behind SVGF in real-time ray tracing. Click an object to select it and edit its material, drag it to move it, drag the background to orbit, and double-click to focus the thin-lens camera.
+  pt_hint: 'click: select · drag: move / orbit · double-click: focus'
+  pt_stats: '{spp} spp · {mps} M paths/s · {res}'
   radius: Fovea radius
   regions: Show regions
   release: Release pins
   reset: Reset
   resume: Play
+  roughness: Roughness
+  sampling: Sampling
   stiffness: Stiffness
-  tab_cloth: Cloth Simulation · XPBD
-  tab_fov: Foveated Rendering · VR
+  tab_cloth: Cloth · XPBD
+  tab_fov: Foveated Rendering
+  tab_gs: Gaussian Splatting
+  tab_pt: Path Tracing
   tear: Tearing
   title: Interactive Lab
+  v_albedo: Albedo
+  v_depth: Depth
+  v_final: Final
+  v_noisy: Noisy
+  v_normal: Normals
   wind: Wind
 language_name: English
 latest_posts: latest posts

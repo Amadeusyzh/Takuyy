@@ -3,8 +3,9 @@
   .lab { clear: both; margin: 2.2rem 0 1rem; }
   .lab h3 { margin-bottom: 0.3rem; font-size: 1.35rem; }
   .lab-intro { font-size: 0.9rem; color: var(--global-text-color-light); margin-bottom: 0.8rem; }
-  .lab-tabs { display: flex; gap: 0; border-bottom: 1px solid var(--global-divider-color); margin-bottom: 0.8rem; }
-  .lab-tabs button { background: none; border: 0; border-bottom: 2px solid transparent; margin-bottom: -1px; padding: 0.4rem 0.9rem; color: var(--global-text-color-light); font-size: 0.9rem; cursor: pointer; }
+  .lab-tabs { display: flex; gap: 0; border-bottom: 1px solid var(--global-divider-color); margin-bottom: 0.8rem; overflow-x: auto; scrollbar-width: none; }
+  .lab-tabs::-webkit-scrollbar { display: none; }
+  .lab-tabs button { background: none; border: 0; border-bottom: 2px solid transparent; margin-bottom: -1px; padding: 0.4rem 0.9rem; color: var(--global-text-color-light); font-size: 0.9rem; cursor: pointer; white-space: nowrap; flex: none; }
   .lab-tabs button[aria-selected="true"] { color: var(--global-theme-color); border-bottom-color: var(--global-theme-color); font-weight: 600; }
   .lab-panel[hidden] { display: none; }
   .lab-stage { position: relative; border: 1px solid var(--global-divider-color); border-radius: 8px; overflow: hidden; background: #0e1014; }
@@ -24,16 +25,90 @@
     .lab-stage .lab-hint { display: none; }
     .lab-stage .lab-stats { font-size: 0.62rem; }
   }
+  .pt-editor { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem 0.9rem; margin-top: 0.5rem; padding: 0.5rem 0.7rem; border: 1px dashed var(--global-divider-color); border-radius: 6px; font-size: 0.85rem; }
+  .pt-selname { font-weight: 600; }
+  .pt-material { display: contents; }
+  .pt-material[hidden] { display: none; }
+  .pt-swatches { display: inline-flex; gap: 4px; }
+  .pt-swatch { width: 20px; height: 20px; border-radius: 50%; border: 1px solid var(--global-divider-color); padding: 0; cursor: pointer; }
   .lab-caption { margin-top: 0.6rem; font-size: 0.85rem; line-height: 1.55; color: var(--global-text-color-light); }
 </style>
-<section class="lab" id="lab" data-nogl="{{ t.nogl }}">
+<section class="lab" id="lab" data-nogl="{{ t.nogl }}" data-nogl2="{{ t.nogl2 }}">
   <h3>{{ t.title }}</h3>
   <p class="lab-intro">{{ t.intro }}</p>
   <div class="lab-tabs" role="tablist">
-    <button type="button" role="tab" aria-selected="true" aria-controls="lab-cloth" id="lab-tab-cloth">{{ t.tab_cloth }}</button>
+    <button type="button" role="tab" aria-selected="true" aria-controls="lab-pt" id="lab-tab-pt">{{ t.tab_pt }}</button>
+    <button type="button" role="tab" aria-selected="false" aria-controls="lab-gs" id="lab-tab-gs">{{ t.tab_gs }}</button>
+    <button type="button" role="tab" aria-selected="false" aria-controls="lab-cloth" id="lab-tab-cloth">{{ t.tab_cloth }}</button>
     <button type="button" role="tab" aria-selected="false" aria-controls="lab-fov" id="lab-tab-fov">{{ t.tab_fov }}</button>
   </div>
-  <div class="lab-panel" role="tabpanel" id="lab-cloth" aria-labelledby="lab-tab-cloth" data-stats="{{ t.cloth_stats }}">
+  <div class="lab-panel" role="tabpanel" id="lab-pt" aria-labelledby="lab-tab-pt" data-stats="{{ t.pt_stats }}" data-nosel="{{ t.nosel }}" data-obj0="{{ t.obj0 }}" data-obj1="{{ t.obj1 }}" data-obj2="{{ t.obj2 }}" data-obj3="{{ t.obj3 }}">
+    <div class="lab-stage">
+      <canvas aria-label="{{ t.tab_pt }}" role="img" style="touch-action: none; cursor: pointer"></canvas>
+      <span class="lab-hint">{{ t.pt_hint }}</span>
+      <span class="lab-stats"></span>
+    </div>
+    <div class="lab-controls">
+      <span>{{ t.sampling }}</span>
+      <div class="lab-seg" role="group">
+        <button type="button" class="lab-b" data-mode="0">BSDF</button>
+        <button type="button" class="lab-b" data-mode="1">NEE</button>
+        <button type="button" class="lab-b" data-mode="2">MIS</button>
+      </div>
+      <button type="button" class="lab-b lab-solo" data-toggle="denoise" aria-pressed="true">{{ t.denoise }}</button>
+      <div class="lab-seg" role="group">
+        <button type="button" class="lab-b" data-view="0">{{ t.v_final }}</button>
+        <button type="button" class="lab-b" data-view="1">{{ t.v_noisy }}</button>
+        <button type="button" class="lab-b" data-view="2">{{ t.v_albedo }}</button>
+        <button type="button" class="lab-b" data-view="3">{{ t.v_normal }}</button>
+        <button type="button" class="lab-b" data-view="4">{{ t.v_depth }}</button>
+      </div>
+      <label>{{ t.bounces }} <input type="range" data-input="bounces" min="1" max="8" step="1"></label>
+      <label>{{ t.light }} <input type="range" data-input="light" min="0" max="1" step="0.01"></label>
+      <label>{{ t.aperture }} <input type="range" data-input="aperture" min="0" max="0.15" step="0.005"></label>
+      <button type="button" class="lab-b lab-solo" data-action="reset">{{ t.reset }}</button>
+    </div>
+    <div class="pt-editor">
+      <span class="pt-selname"></span>
+      <div class="pt-material" hidden>
+        <div class="lab-seg" role="group">
+          <button type="button" class="lab-b" data-preset="diffuse">{{ t.m_diffuse }}</button>
+          <button type="button" class="lab-b" data-preset="plastic">{{ t.m_plastic }}</button>
+          <button type="button" class="lab-b" data-preset="metal">{{ t.m_metal }}</button>
+          <button type="button" class="lab-b" data-preset="mirror">{{ t.m_mirror }}</button>
+          <button type="button" class="lab-b" data-preset="glass">{{ t.m_glass }}</button>
+          <button type="button" class="lab-b" data-preset="frosted">{{ t.m_frosted }}</button>
+        </div>
+        <label>{{ t.roughness }} <input type="range" data-input="rough" min="0" max="1" step="0.01"></label>
+        <div class="pt-swatches"></div>
+      </div>
+    </div>
+    <p class="lab-caption">{{ t.pt_caption }}</p>
+  </div>
+  <div class="lab-panel" role="tabpanel" id="lab-gs" aria-labelledby="lab-tab-gs" data-stats="{{ t.gs_stats }}" hidden>
+    <div class="lab-stage">
+      <canvas aria-label="{{ t.tab_gs }}" role="img" style="touch-action: pan-y; cursor: grab"></canvas>
+      <span class="lab-hint">{{ t.gs_hint }}</span>
+      <span class="lab-stats"></span>
+    </div>
+    <div class="lab-controls">
+      <div class="lab-seg" role="group">
+        <button type="button" class="lab-b" data-gmode="0" aria-pressed="true">{{ t.g_render }}</button>
+        <button type="button" class="lab-b" data-gmode="1" aria-pressed="false">{{ t.g_ellip }}</button>
+        <button type="button" class="lab-b" data-gmode="2" aria-pressed="false">{{ t.g_centers }}</button>
+        <button type="button" class="lab-b" data-gmode="3" aria-pressed="false">{{ t.g_overdraw }}</button>
+        <button type="button" class="lab-b" data-gmode="4" aria-pressed="false">{{ t.g_depth }}</button>
+      </div>
+      <div class="lab-seg" role="group">
+        <button type="button" class="lab-b" data-toggle="sh">{{ t.g_sh }}</button>
+        <button type="button" class="lab-b" data-toggle="spin">{{ t.g_spin }}</button>
+      </div>
+      <label>{{ t.g_scale }} <input type="range" data-input="gscale" min="0.1" max="1.6" step="0.01" value="1"></label>
+      <label>{{ t.g_count }} <input type="range" data-input="gcount" min="0.02" max="1" step="0.01" value="1"></label>
+    </div>
+    <p class="lab-caption">{{ t.gs_caption }}</p>
+  </div>
+  <div class="lab-panel" role="tabpanel" id="lab-cloth" aria-labelledby="lab-tab-cloth" data-stats="{{ t.cloth_stats }}" hidden>
     <div class="lab-stage">
       <canvas aria-label="{{ t.tab_cloth }}" role="img"></canvas>
       <span class="lab-hint">{{ t.cloth_hint }}</span>
@@ -73,3 +148,5 @@
   </div>
 </section>
 <script defer src="{{ '/assets/js/lab.js' | relative_url }}"></script>
+<script defer src="{{ '/assets/js/lab-pathtracer.js' | relative_url }}"></script>
+<script defer src="{{ '/assets/js/lab-splats.js' | relative_url }}"></script>

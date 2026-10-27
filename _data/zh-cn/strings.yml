@@ -87,29 +87,69 @@ footer:
   last_updated: 最后更新：
 footer_text: 基于 <a href="https://jekyllrb.com/" target="_blank">Jekyll</a> 与 <a href="https://github.com/george-gca/multi-language-al-folio">al-folio</a> 主题构建，托管于 <a href="https://pages.github.com/" target="_blank">GitHub Pages</a>。
 lab:
+  aperture: 光圈
   ball: 小球
+  bounces: 弹射次数
   cloth_caption: 一块 40 × 40 的布料，用扩展位置动力学（XPBD，Macklin 等，2016）配合大量小子步实时求解。这类求解器广泛用于游戏引擎、VR，以及为具身智能体和世界模型生成训练数据的物理仿真器。拖动布料可以拉扯它；切换到「剪切」后划过布料可以把它剪开；用力拉扯超过极限它会被撕裂。拖动空白处可以旋转视角。
   cloth_hint: 拖动布料拉扯 · 拖动背景旋转视角
   cloth_stats: '{p} 个粒子 · {c} 个约束 · {s} 个子步 · 求解 {ms} ms'
   cut: 剪切
+  denoise: 降噪
   fov_caption: 眼动追踪注视点渲染（Foveated Rendering），Apple Vision Pro、Meta Quest Pro 等头显都在使用。人眼只有中央凹（约 5° 视野）看得最清楚，越往外视力下降越快，所以场景只在你注视的地方（鼠标位置即模拟的视线）用全分辨率光线步进渲染，外圈依次降到 1/2 和 1/4 分辨率，最后平滑融合。打开「显示分区」可以看到各个着色率区域；鼠标不动时，视线会模拟人眼的扫视（saccade）运动。
   fov_hint: 移动鼠标：它就是你的视线
   fov_stats: 着色像素：原生的 {pct}%（减少 {x} 倍）· {fps} fps
   foveation: 注视点渲染
+  g_centers: 中心点
+  g_count: 显示数量
+  g_depth: 深度
+  g_ellip: 椭球
+  g_overdraw: 重叠热图
+  g_render: 渲染
+  g_scale: 高斯尺寸
+  g_sh: 视角相关颜色（SH）
+  g_spin: 自动旋转
   grab: 拉扯
-  intro: 两个和我研究方向相关的实时小 demo，用 WebGL 从零手写，完全在你的浏览器里运行。
+  gs_caption: 3D 高斯泼溅（3D Gaussian Splatting，Kerbl 等，SIGGRAPH 2023）把场景表示为数百万个各向异性的 3D 高斯，能实时渲染照片级的新视角，是 AR/VR 场景采集和世界模型中的关键表示。这里约 85,000 个高斯组成了一棵程序化生成的盆景（致敬论文中著名的 bonsai 场景）。每一帧，每个高斯的 3D 协方差都通过透视变换的雅可比矩阵投影成屏幕上的 2D 椭圆（EWA splatting），然后对所有高斯做深度排序（16 位计数排序），再从后往前进行 alpha 合成。一阶的视角相关颜色项模拟了球谐函数：旋转时能看到釉面花盆上的高光在移动。切换视图可以看到椭球体、中心点，以及每个像素被多少个高斯覆盖。拖动旋转；点击画面后滚动滚轮可缩放。
+  gs_hint: 拖动旋转 · 点击后滚轮缩放
+  gs_stats: '{n} 个高斯 · 排序 {ms} ms · {fps} fps'
+  intro: 四个和我研究方向相关的实时图形学 demo，用 WebGL 从零手写，完全在你的浏览器里运行。
+  light: 光源大小
+  m_diffuse: 漫反射
+  m_frosted: 磨砂玻璃
+  m_glass: 玻璃
+  m_metal: 金属
+  m_mirror: 镜面
+  m_plastic: 塑料
   nogl: 你的浏览器不支持 WebGL，无法运行此演示。
+  nogl2: 此演示需要支持浮点渲染目标的 WebGL 2，你的浏览器不支持。
+  nosel: 点击物体以编辑材质
+  obj0: 玻璃球
+  obj1: 金球
+  obj2: 方块
+  obj3: 小球
   play: 暂停
+  pt_caption: 一个运行在 GPU 片元着色器里的基于物理的路径追踪器：每个像素在康奈尔盒中追踪最多 8 次弹射的光路。表面采用 GGX 微表面 BRDF 并使用可见法线分布采样（Heitz 2018），玻璃等电介质按精确 Fresnel 方程折射。直接光照用下一事件估计（NEE），并通过多重重要性采样（MIS，Veach 1995）与 BSDF 采样结合——切换 BSDF / NEE / MIS 并把光源调小，就能看出它的作用。样本逐帧渐进累积；交互时由法线、深度、反照率 G-buffer 引导的边缘保持 à-trous 小波降噪器（Dammertz 等 2010）清理画面，这与实时光追中 SVGF 的思路相同。点击物体可选中并编辑材质，拖动物体可移动，拖动背景可旋转视角，双击可让薄透镜相机对焦。
+  pt_hint: 点击：选中 · 拖动：移动 / 旋转 · 双击：对焦
+  pt_stats: '{spp} spp · {mps} M 路径/秒 · {res}'
   radius: 中央凹半径
   regions: 显示分区
   release: 松开挂钩
   reset: 重置
   resume: 播放
+  roughness: 粗糙度
+  sampling: 采样
   stiffness: 刚度
-  tab_cloth: 布料模拟 · XPBD
-  tab_fov: 注视点渲染 · VR
+  tab_cloth: 布料 · XPBD
+  tab_fov: 注视点渲染
+  tab_gs: 3D 高斯泼溅
+  tab_pt: 路径追踪
   tear: 可撕裂
   title: 交互实验室
+  v_albedo: 反照率
+  v_depth: 深度
+  v_final: 最终
+  v_noisy: 原始噪声
+  v_normal: 法线
   wind: 风
 language_name: 中文
 latest_posts: 最新文章
