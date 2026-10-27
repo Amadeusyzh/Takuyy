@@ -264,7 +264,7 @@
     "    o = vec4(vColor.rgb, 1.0);",
     "  } else if (uMode == 3) {", // overdraw heat map: additive (alpha 0)
     "    float a = exp(-0.5 * r2); if (a < 1.0 / 255.0) discard;",
-    "    o = vec4(vec3(0.05, 0.022, 0.008), 0.0);",
+    "    o = vec4(vec3(0.012, 0.0045, 0.0015) * a, 0.0);",
     "  } else {",
     "    float a = vColor.a * exp(-0.5 * r2);",
     "    if (a < 1.0 / 255.0) discard;",
