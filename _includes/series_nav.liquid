@@ -1,0 +1,31 @@
+{% comment %}
+  Series navigation for multi-part blog series. A post opts in with front matter:
+    series: graphics          (one of the keys in strings.yml -> series)
+    series_order: 3
+  include.position is "top" (collapsible table of contents) or "bottom" (previous / next).
+{% endcomment %}
+{% assign s = site.data[site.active_lang].strings.series %}
+{% assign items = site.posts | where: "series", page.series | sort: "series_order" %}
+{% if items.size > 1 %}
+  {% assign idx = 0 %}
+  {% for p in items %}{% if p.series_order == page.series_order %}{% assign idx = forloop.index0 %}{% endif %}{% endfor %}
+  {% if include.position == "top" %}
+    <details class="series-nav">
+      <summary>
+        <i class="fa-solid fa-layer-group"></i> {{ s.label }}: <strong>{{ s[page.series] | default: page.series }}</strong>
+        &middot; {{ idx | plus: 1 }} / {{ items.size }}
+      </summary>
+      <ol>
+        {% for p in items %}
+          <li>{% if p.series_order == page.series_order %}<strong>{{ p.title }}</strong>{% else %}<a href="{{ p.url | relative_url }}">{{ p.title }}</a>{% endif %}</li>
+        {% endfor %}
+      </ol>
+    </details>
+  {% else %}
+    <nav class="series-pager">
+      {% assign previ = idx | minus: 1 %}{% if idx > 0 %}{% assign prev = items[previ] %}<a class="prev" href="{{ prev.url | relative_url }}">&larr; {{ prev.title }}</a>{% else %}<span></span>{% endif %}
+      {% assign nexti = idx | plus: 1 %}
+      {% if nexti < items.size %}{% assign nxt = items[nexti] %}<a class="next" href="{{ nxt.url | relative_url }}">{{ nxt.title }} &rarr;</a>{% endif %}
+    </nav>
+  {% endif %}
+{% endif %}

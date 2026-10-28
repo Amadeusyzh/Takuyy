@@ -74,9 +74,11 @@ layout: default
       </div>
       <hr>
     {% endif %}
+    {% if page.series %}{% include series_nav.liquid position="top" %}{% endif %}
     <div id="markdown-content">
       {{ content }}
     </div>
+    {% if page.series %}{% include series_nav.liquid position="bottom" %}{% endif %}
   </article>
 
   {% if page.citation %}

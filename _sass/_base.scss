@@ -1544,3 +1544,25 @@ mjx-container[jax="CHTML"][display="true"] {
   margin-left: 0.4em;
   white-space: nowrap;
 }
+
+// multi-part blog series (see _includes/series_nav.liquid)
+.series-nav {
+  margin: 0 0 1.5rem;
+  padding: 0.6rem 1rem;
+  border: 1px solid var(--global-divider-color);
+  border-left: 4px solid var(--global-theme-color);
+  border-radius: 6px;
+  font-size: 0.9rem;
+  summary { cursor: pointer; }
+  ol { margin: 0.6rem 0 0.2rem; padding-left: 1.4rem; }
+}
+.series-pager {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  margin: 2.5rem 0 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--global-divider-color);
+  font-size: 0.9rem;
+  .next { margin-left: auto; text-align: right; }
+}

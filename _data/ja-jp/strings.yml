@@ -21,8 +21,14 @@ bibliography:
 blog:
   navigation_title: ブログ
 categories:
+  embodied-ai: 身体性 AI
   fun: 雑記
+  graphics: グラフィックス
+  neural-rendering: ニューラルレンダリング
+  notes: 雑記
+  roadmap: ロードマップ
   work: 研究
+  world-models: 世界モデル
 citation:
   bibtex: BibTeX 形式：
   introduction: 本記事が役に立った場合は、以下のように引用してください：
@@ -294,4 +300,11 @@ search:
     title: システムのテーマ
   theme: テーマ
 selected_publications: 主要論文
+series:
+  embodied-ai: 身体性 AI
+  graphics: ゼロから学ぶコンピュータグラフィックス
+  label: シリーズ
+  neural-rendering: ニューラルレンダリングと 3D ガウシアンスプラッティング
+  roadmap: 学習ロードマップ
+  world-models: 世界モデル
 site_description: 個人ウェブサイト：研究・業績・CV・ブログ。

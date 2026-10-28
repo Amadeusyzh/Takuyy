@@ -21,8 +21,14 @@ bibliography:
 blog:
   navigation_title: blog
 categories:
+  embodied-ai: embodied AI
   fun: fun
+  graphics: graphics
+  neural-rendering: neural rendering
+  notes: notes
+  roadmap: roadmap
   work: work
+  world-models: world models
 citation:
   bibtex: 'or as a BibTeX entry:'
   introduction: 'If you found this useful, please cite this as:'
@@ -295,4 +301,11 @@ search:
     title: Use system default theme
   theme: Theme
 selected_publications: selected publications
+series:
+  embodied-ai: Embodied AI
+  graphics: Computer Graphics from Scratch
+  label: Series
+  neural-rendering: Neural Rendering & 3D Gaussian Splatting
+  roadmap: Learning Roadmap
+  world-models: World Models
 site_description: 'Personal website: research, publications, CV and blog.'

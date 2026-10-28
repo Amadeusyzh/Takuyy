@@ -21,8 +21,14 @@ bibliography:
 blog:
   navigation_title: 博客
 categories:
+  embodied-ai: 具身智能
   fun: 随笔
+  graphics: 图形学
+  neural-rendering: 神经渲染
+  notes: 随笔
+  roadmap: 学习路线
   work: 研究
+  world-models: 世界模型
 citation:
   bibtex: 或使用 BibTeX：
   introduction: 如果本文对你有帮助，请引用：
@@ -294,4 +300,11 @@ search:
     title: 系统默认主题
   theme: 主题
 selected_publications: 代表性论文
+series:
+  embodied-ai: 具身智能
+  graphics: 从零开始的计算机图形学
+  label: 系列
+  neural-rendering: 神经渲染与 3D 高斯泼溅
+  roadmap: 学习路线
+  world-models: 世界模型
 site_description: 个人主页：研究、论文、简历与博客。
