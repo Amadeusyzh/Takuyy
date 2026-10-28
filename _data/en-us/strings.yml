@@ -122,16 +122,26 @@ lab:
   g_spin: Auto-rotate
   grab: Grab
   gs_caption: 'An editable open world made of around 200,000 3D Gaussians, in the spirit of generative world models such as Genie 3 and World Labs'' Marble. Describe a world or pick a preset. A keyword-driven procedural generator stands in for a learned model here: it reads the prompt (in English, Chinese or Japanese) and builds the terrain, lakes, forests, villages and weather. Everything is drawn with the 3D Gaussian Splatting pipeline (Kerbl et al. 2023): EWA projection of each covariance, a depth sort in a Web Worker, and back-to-front alpha compositing. Unlike a frozen capture, the Gaussians stay live. They are relit on the GPU for any time of day, cast sun shadows through a splatted shadow map, sway in the wind and follow the seasons. Terrain Gaussians re-derive their height, normal, orientation and material from an editable heightfield every frame. You can sculpt and paint the land, place or erase trees, rocks, cabins and lanterns, flood the valley, and walk through it in first person
-    (Walk, then WASD and drag to look).'
+    (Walk, then WASD and drag to look). You can also open a real capture: Load .ply, or drop a file onto the view, shows any standard 3DGS .ply with plain 3DGS shading.'
   gs_hint: 'drag: orbit · shift/right-drag: pan · click, then scroll: zoom'
   gs_stats: '{n} Gaussians · {o} objects · sort {ms} ms · {fps} fps'
+  gs_stats_capture: '{n} Gaussians · captured scene · sort {ms} ms · {fps} fps'
+  gw_back: 'Back to generated world'
   gw_brush: Brush
+  gw_drop: 'Drop a 3DGS .ply file here'
+  gw_flip: 'Flip up axis'
   gw_fog: Fog
   gw_full: 'Too many Gaussians: erase something first'
   gw_generate: Generate
+  gw_load: 'Load .ply'
   gw_loaded: World ready
   gw_loading: Generating world…
   gw_placeholder: Describe a world, e.g. snowy pine valley with a frozen lake at dawn
+  gw_ply_bad: 'Not a supported file. Expected a binary little-endian 3DGS .ply with x, y, z, f_dc_0..2, opacity, scale_0..2 and rot_0..3'
+  gw_ply_big: 'File too large (limit {mb} MB)'
+  gw_ply_capped: '{total} Gaussians in the file, more than the limit of {cap}: showing the {cap} most significant'
+  gw_ply_loaded: '{n} Gaussians loaded'
+  gw_ply_loading: 'Reading {name}…'
   gw_presets:
   - Alpine lake at dawn with a pine forest and a small village
   - Autumn forest valley at sunset
@@ -167,7 +177,7 @@ lab:
   gw_understood: 'Understood:'
   gw_water: Water level
   gw_wind: Wind
-  intro: Four real-time graphics demos related to my research, written from scratch in WebGL and running entirely in your browser.
+  intro: Five real-time graphics demos related to my research, written from scratch in WebGL and running entirely in your browser.
   light: Light size
   m_diffuse: Diffuse
   m_frosted: Frosted
@@ -199,6 +209,17 @@ lab:
   reset: Reset
   resume: Play
   roughness: Roughness
+  rs_animate: 'Animate lights'
+  rs_candidates: 'Candidates M'
+  rs_caption: 'Direct lighting from hundreds of small neon lights, with exactly one shadow ray per pixel per frame and no denoiser, so all remaining noise is visible. Uniform sampling picks a random light, and most picks are far away or dim, so the alley turns into speckles. RIS (resampled importance sampling) draws M random candidates, keeps one in a tiny reservoir with probability proportional to its unshadowed contribution, and corrects its weight so the estimate stays unbiased. ReSTIR (Bitterli et al., SIGGRAPH 2020) goes further: each pixel merges its reservoir with last frame''s reservoir at the reprojected position (temporal reuse) and then with a few neighbours'' (spatial reuse), so every pixel draws on thousands of candidates for the cost of one shadow ray. Look at the wet asphalt and the walls between the signs: the noise drops sharply from left to right, while blinking signs and drifting lanterns show how the reservoirs follow lights that move. The reservoirs live in floating-point textures that are ping-ponged between frames.'
+  rs_hint: 'drag: look around · double-click: recentre'
+  rs_lights: 'Lights'
+  rs_ris: 'RIS'
+  rs_spatial: 'ReSTIR: temporal + spatial'
+  rs_stats: '{n} lights · M = {m} candidates/pixel · 1 spp · {mode} · {fps} fps · {res}'
+  rs_temporal: 'ReSTIR: temporal'
+  rs_uniform: 'Uniform'
+  rs_walk: 'Move camera'
   s_autumn: Autumn
   s_spring: Spring
   s_summer: Summer
@@ -217,6 +238,7 @@ lab:
   tab_fov: Foveated Rendering
   tab_gs: Gaussian World
   tab_pt: Path Tracing
+  tab_rs: 'Many Lights · ReSTIR'
   tear: Tearing
   title: Interactive Lab
   v_albedo: Albedo

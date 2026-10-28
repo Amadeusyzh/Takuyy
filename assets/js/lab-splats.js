@@ -28,7 +28,8 @@
 
   // splat types (must match the shader)
   var T_TERRAIN = 0, T_GRASS = 1, T_LEAF = 2, T_NEEDLE = 3, T_BLOSSOM = 4, T_SOLID = 5,
-    T_WATER = 6, T_CLOUD = 7, T_EMISSIVE = 8, T_FLOWER = 9, T_BACKDROP = 10;
+    T_WATER = 6, T_CLOUD = 7, T_EMISSIVE = 8, T_FLOWER = 9, T_BACKDROP = 10, T_CAPTURE = 11;
+  var PLY_MAX_MB = 900;
 
   var KEYWORDS = {"winter": ["winter", "snow", "snowy", "frozen", "ice", "\u51ac", "\u96ea", "\u51b0", "\u6c37"], "autumn": ["autumn", "fall", "maple", "\u79cb", "\u7ea2\u53f6", "\u7d05\u8449", "\u67ab"], "spring": ["spring", "sakura", "cherry", "blossom", "\u6625", "\u685c", "\u6a31"], "summer": ["summer", "\u590f"], "night": ["night", "moon", "midnight", "star", "\u591c", "\u665a", "\u6708", "\u661f"], "dawn": ["dawn", "sunrise", "morning", "\u9ece\u660e", "\u65e5\u51fa", "\u6e05\u6668", "\u65e9\u6668", "\u671d", "\u591c\u660e\u3051"], "sunset": ["sunset", "dusk", "evening", "golden", "\u9ec4\u660f", "\u508d\u665a", "\u65e5\u843d", "\u5915"], "noon": ["noon", "midday", "\u6b63\u5348", "\u4e2d\u5348", "\u767d\u5929", "\u663c"], "lake": ["lake", "pond", "river", "water", "\u6e56", "\u6c60", "\u6cb3", "\u5ddd"], "island": ["island", "ocean", "sea", "beach", "coast", "\u5c9b", "\u5cf6", "\u6d77", "\u6c99\u6ee9", "\u30d3\u30fc\u30c1"], "desert": ["desert", "dune", "oasis", "\u6c99\u6f20", "\u7802\u6f20", "\u7802\u4e18", "\u7eff\u6d32", "\u30aa\u30a2\u30b7\u30b9"], "mountain": ["mountain", "alpine", "peak", "\u5c71", "\u5cf0", "\u5cb3", "\u30a2\u30eb\u30d7\u30b9"], "flat": ["plain", "prairie", "field", "\u8349\u539f", "\u5e73\u539f", "\u91ce\u539f"], "forest": ["forest", "woods", "jungle", "\u68ee", "\u6797"], "pine": ["pine", "conifer", "fir", "spruce", "\u677e", "\u6749", "\u9488\u53f6", "\u91dd\u8449"], "village": ["village", "house", "cabin", "town", "hut", "\u6751", "\u5c4b", "\u623f", "\u5bb6", "\u5c0f\u5c4b", "\u96c6\u843d"], "flowers": ["flower", "garden", "meadow", "\u82b1"], "lantern": ["lantern", "lamp", "\u706f", "\u706f\u7c60", "\u63d0\u706f", "\u706f\u7b3c"], "fog": ["fog", "mist", "haze", "\u96fe", "\u9727", "\u9744"], "wind": ["wind", "storm", "breeze", "\u98ce", "\u98a8", "\u5d50"]};
 
@@ -180,7 +181,7 @@
     "    return s;",
     "  }",
     "  if (s.type == 7) { s.p.x = mod(s.p.x + uTime * 0.7 * (0.3 + uWind) + uWorld, 2.0 * uWorld) - uWorld; return s; }",
-    "  if (s.type == 10) return s;",
+    "  if (s.type >= 10) return s;", // backdrop and captured splats are static
     "  float hb = hAt(t4.xy);",
     "  float rel = s.p.y;",
     "  s.p.y += hb;",
@@ -285,6 +286,8 @@
     "  vec3 col;",
     "  if (s.type == 7) {",
     "    col = mix(uSkyAmb * 1.4 + uLightCol * 0.6, uHorizon, 0.25) * s.alb;",
+    "  } else if (s.type == 11) {", // captured scene: plain 3DGS colour, no relighting
+    "    col = s.alb;",
     "  } else if (s.type == 10) {",
     "    col = mix(s.alb * (uSkyAmb + uLightCol * 0.35), uHorizon, 0.55);",
     "  } else if (s.type == 6) {",
@@ -310,7 +313,7 @@
     "    if (foliage) col += s.alb * uLightCol * 0.25 * pow(max(dot(-V, uLightDir), 0.0), 4.0) * sh;", // translucency
     "    if (s.type == 8) col = mix(vec3(0.12, 0.15, 0.2) * (amb + uLightCol * 0.3), s.alb * 1.6, uNight);",
     "  }",
-    "  if (s.type != 10) col = mix(col, uFogCol, 1.0 - exp(-dist * uFog));",
+    "  if (s.type < 10) col = mix(col, uFogCol, 1.0 - exp(-dist * uFog));",
     "  if (uMode == 3) col = mix(vec3(0.9, 0.95, 1.0), vec3(0.05, 0.1, 0.3), clamp(dist / 80.0, 0.0, 1.0));",
     // EWA projection of the 3D covariance
     "  float z = -cam.z;",
@@ -456,7 +459,7 @@
   World.prototype.updatePos = function (i) {
     var o = i * TPS * 4, d = this.data, t = d[o + 18], y = d[o + 1];
     if (t === T_WATER) y = this.water;
-    else if (t !== T_CLOUD && t !== T_BACKDROP) y += this.hAt(d[o + 16], d[o + 17]);
+    else if (t !== T_CLOUD && t !== T_BACKDROP && t !== T_CAPTURE) y += this.hAt(d[o + 16], d[o + 17]);
     this.posW[i * 3] = d[o];
     this.posW[i * 3 + 1] = y;
     this.posW[i * 3 + 2] = d[o + 2];
@@ -816,6 +819,107 @@
     return null;
   };
 
+  // ========================================================== PLY import
+  // Reads a standard 3DGS training output (binary little-endian PLY with
+  // x, y, z, f_dc_0..2, optional f_rest_*, opacity as a logit, scale_0..2 as
+  // logs and rot_0..3 as a quaternion w, x, y, z). Throws "bad" otherwise.
+  var PLY_SIZES = { char: 1, int8: 1, uchar: 1, uint8: 1, short: 2, int16: 2, ushort: 2, uint16: 2, int: 4, int32: 4, uint: 4, uint32: 4, float: 4, float32: 4, double: 8, float64: 8 };
+  var PLY_REQUIRED = ["x", "y", "z", "f_dc_0", "f_dc_1", "f_dc_2", "opacity", "scale_0", "scale_1", "scale_2", "rot_0", "rot_1", "rot_2", "rot_3"];
+  function parsePly(buf) {
+    var bytes = new Uint8Array(buf), head = "", end = -1;
+    for (var i = 0; i < Math.min(bytes.length, 1 << 16); i++) {
+      head += String.fromCharCode(bytes[i]);
+      if (bytes[i] === 10 && /(^|\n)end_header\r?\n$/.test(head)) { end = i + 1; break; }
+    }
+    if (end < 0) throw new Error("bad");
+    var lines = head.split(/\r?\n/), elems = [], el = null;
+    if (lines[0].trim() !== "ply") throw new Error("bad");
+    lines.forEach(function (ln) {
+      var w = ln.trim().split(/\s+/);
+      if (w[0] === "format" && w[1] !== "binary_little_endian") throw new Error("bad");
+      if (w[0] === "element") { el = { name: w[1], count: +w[2], props: [], stride: 0, list: false }; elems.push(el); }
+      else if (w[0] === "property" && el) {
+        if (w[1] === "list") { el.list = true; return; }
+        var size = PLY_SIZES[w[1]];
+        if (!size) throw new Error("bad");
+        el.props.push({ name: w[2], type: w[1], off: el.stride });
+        el.stride += size;
+      }
+    });
+    var offset = end, vert = null;
+    for (var e = 0; e < elems.length && !vert; e++) {
+      if (elems[e].name === "vertex") vert = elems[e];
+      else if (elems[e].list) throw new Error("bad");
+      else offset += elems[e].count * elems[e].stride;
+    }
+    if (!vert || vert.list || !(vert.count > 0) || offset + vert.count * vert.stride > bytes.length) throw new Error("bad");
+    var dv = new DataView(buf), props = {};
+    vert.props.forEach(function (p) { props[p.name] = p; });
+    var get = {};
+    PLY_REQUIRED.forEach(function (name) {
+      var p = props[name];
+      if (!p) throw new Error("bad");
+      var off = offset + p.off, s = vert.stride;
+      get[name] = p.type === "float" || p.type === "float32" ? function (i) { return dv.getFloat32(off + i * s, true); }
+        : p.type === "double" || p.type === "float64" ? function (i) { return dv.getFloat64(off + i * s, true); }
+        : function () { throw new Error("bad"); };
+    });
+    var shRest = vert.props.filter(function (p) { return /^f_rest_/.test(p.name); }).length;
+    return { n: vert.count, get: get, shRest: shRest };
+  }
+
+  // Converts parsed splats into the renderer's layout (type T_CAPTURE), keeping
+  // at most `cap` of them (the most significant by opacity x volume). The scene
+  // is recentred on its median and scaled so most of it fits in a 10-unit ball.
+  // flip = rotate 180 degrees about x (3DGS / COLMAP captures are usually y-down).
+  function buildCapture(W, ply, cap, flip) {
+    var g = ply.get, n = ply.n, keep = null, i, k;
+    var C0 = 0.28209479177387814;
+    function sigmoid(v) { return 1 / (1 + Math.exp(-v)); }
+    if (n > cap) {
+      var imp = new Float32Array(n);
+      for (i = 0; i < n; i++) imp[i] = sigmoid(g.opacity(i)) * Math.exp(g.scale_0(i) + g.scale_1(i) + g.scale_2(i));
+      var step = Math.max(1, Math.floor(n / 200000)), sample = [];
+      for (i = 0; i < n; i += step) sample.push(imp[i]);
+      sample.sort(function (a, b) { return a - b; });
+      var thr = sample[Math.min(sample.length - 1, Math.floor((1 - cap / n) * sample.length))];
+      keep = new Uint32Array(cap);
+      k = 0;
+      for (i = 0; i < n && k < cap; i++) if (imp[i] > thr) keep[k++] = i;
+      for (i = 0; i < n && k < cap; i++) if (imp[i] === thr) keep[k++] = i; // ties last
+      keep = keep.subarray(0, k);
+    }
+    var count = keep ? keep.length : n;
+    function idx(j) { return keep ? keep[j] : j; }
+    // robust framing: median centre, 80th-percentile radius
+    var sy = flip ? -1 : 1, st = Math.max(1, Math.floor(count / 50000)), xs = [], ys = [], zs = [];
+    for (k = 0; k < count; k += st) { i = idx(k); xs.push(g.x(i)); ys.push(sy * g.y(i)); zs.push(sy * g.z(i)); }
+    function median(a) { a = a.slice().sort(function (p, q) { return p - q; }); return a[a.length >> 1]; }
+    var c = [median(xs), median(ys), median(zs)], ds = [];
+    for (k = 0; k < xs.length; k++) ds.push(Math.hypot(xs[k] - c[0], ys[k] - c[1], zs[k] - c[2]));
+    ds.sort(function (p, q) { return p - q; });
+    var r = ds[Math.floor(ds.length * 0.8)] || 1, s = 10 / r;
+    W.n = 0;
+    W.objects = [];
+    W.water = 0;
+    for (k = 0; k < count; k++) {
+      i = idx(k);
+      var qw = g.rot_0(i), qx = g.rot_1(i), qy = g.rot_2(i), qz = g.rot_3(i);
+      var ql = Math.hypot(qw, qx, qy, qz) || 1;
+      qw /= ql; qx /= ql; qy /= ql; qz /= ql;
+      // columns of the rotation matrix = principal axes of the Gaussian
+      var a0 = [1 - 2 * (qy * qy + qz * qz), sy * 2 * (qx * qy + qw * qz), sy * 2 * (qx * qz - qw * qy)];
+      var a1 = [2 * (qx * qy - qw * qz), sy * (1 - 2 * (qx * qx + qz * qz)), sy * 2 * (qy * qz + qw * qx)];
+      var a2 = [2 * (qx * qz + qw * qy), sy * 2 * (qy * qz - qw * qx), sy * (1 - 2 * (qx * qx + qy * qy))];
+      var sc = [Math.exp(g.scale_0(i)) * s, Math.exp(g.scale_1(i)) * s, Math.exp(g.scale_2(i)) * s];
+      var col = [Math.max(0, 0.5 + C0 * g.f_dc_0(i)), Math.max(0, 0.5 + C0 * g.f_dc_1(i)), Math.max(0, 0.5 + C0 * g.f_dc_2(i))];
+      var x = (g.x(i) - c[0]) * s, y = (sy * g.y(i) - c[1]) * s, z = (sy * g.z(i) - c[2]) * s;
+      if (!isFinite(x + y + z + sc[0] + sc[1] + sc[2])) continue;
+      W.push(T_CAPTURE, x, y, z, 0, 0, [a0, a1, a2], sc, col, [0, 1, 0], sigmoid(g.opacity(i)), 0);
+    }
+    return { total: n, kept: W.n };
+  }
+
   // ============================================================= sorting
   // Runs inside a Web Worker (or on the main thread as a fallback).
   function sortCore(pos, n, eye, f) {
@@ -995,12 +1099,13 @@
     }
 
     // ------------------------------------------------------------- sorting
-    var worker = null, sortBusy = false, sortMs = 0, sortId = 0, posDirty = true;
+    var worker = null, sortBusy = false, sortMs = 0, sortId = 0, sortEpoch = 0, posDirty = true;
     try {
       var src = "var SORT = " + sortCore.toString() + ";\n(" + workerMain.toString() + ")();";
       worker = new Worker(URL.createObjectURL(new Blob([src], { type: "application/javascript" })));
       worker.onmessage = function (e) {
         sortBusy = false;
+        if (e.data.id < sortEpoch) return; // sorted before the scene was swapped
         gl.bindBuffer(gl.ARRAY_BUFFER, orderBuf);
         gl.bufferSubData(gl.ARRAY_BUFFER, 0, e.data.order);
         drawCount = e.data.n;
@@ -1120,8 +1225,10 @@
       } else {
         var cp = Math.cos(cam.pitch);
         eye = [cam.target[0] + cam.dist * cp * Math.sin(cam.yaw), cam.target[1] + cam.dist * Math.sin(cam.pitch), cam.target[2] + cam.dist * cp * Math.cos(cam.yaw)];
-        var gh = world.hAt(eye[0], eye[2]);
-        if (eye[1] < gh + 1) eye[1] = gh + 1;
+        if (!capture) {
+          var gh = world.hAt(eye[0], eye[2]);
+          if (eye[1] < gh + 1) eye[1] = gh + 1;
+        }
         fwd = norm3([cam.target[0] - eye[0], cam.target[1] - eye[1], cam.target[2] - eye[2]]);
       }
       var right = norm3(cross(fwd, [0, 1, 0])), up = cross(right, fwd);
@@ -1220,11 +1327,11 @@
     }
     var flashEl = panel.querySelector(".gw-flash");
     var flashTimer = 0;
-    function flash(msg) {
+    function flash(msg, ms) {
       flashEl.textContent = msg;
       flashEl.style.opacity = "1";
       clearTimeout(flashTimer);
-      flashTimer = setTimeout(function () { flashEl.style.opacity = "0"; }, 2200);
+      flashTimer = setTimeout(function () { flashEl.style.opacity = "0"; }, ms || 2200);
     }
     function runGenerate(text) {
       flash(panel.dataset.loading);
@@ -1317,6 +1424,92 @@
     syncFns.push(slider("water", "waterOffset"));
     function syncControls() { syncFns.forEach(function (f) { f(); }); }
 
+    // ------------------------------------------------------ captured scenes
+    // A loaded .ply replaces the generated world in "capture" mode; the
+    // generated world is kept and comes back unchanged.
+    var capture = null, genWorld = world, genCam = null, lastPly = null;
+    var stage = panel.querySelector(".lab-stage");
+    var fileIn = ui.querySelector(".gw-file");
+    function fmtMsg(tpl, vals) { return tpl.replace(/\{(\w+)\}/g, function (_, k) { return vals[k]; }); }
+    function swapWorld(w) {
+      world = w;
+      drawCount = 0;
+      sortEpoch = sortId + 1;
+      uploadRows(0, world.n);
+      posDirty = true;
+      shadowDirty = true;
+      lastSort.n = -1;
+      brushPoint = null;
+    }
+    function showCapture(ply, flip) {
+      if (!capture) capture = { world: new World(), flip: flip };
+      capture.flip = flip;
+      var res = buildCapture(capture.world, ply, CAPACITY, flip);
+      if (world === genWorld) genCam = { target: cam.target.slice(), yaw: cam.yaw, pitch: cam.pitch, dist: cam.dist };
+      if (st.tool !== "orbit") ui.querySelector('[data-tool="orbit"]').click();
+      Array.prototype.forEach.call(ui.querySelectorAll(".gw-gen"), function (el) { el.hidden = true; });
+      Array.prototype.forEach.call(ui.querySelectorAll(".gw-cap"), function (el) { el.hidden = false; });
+      swapWorld(capture.world);
+      cam.target = [0, 0, 0];
+      cam.yaw = 0;
+      cam.pitch = 0.25;
+      cam.dist = 24;
+      return res;
+    }
+    function loadFile(file) {
+      if (!file) return;
+      if (file.size > PLY_MAX_MB * 1048576) { flash(fmtMsg(panel.dataset.plyBig, { mb: PLY_MAX_MB }), 5000); return; }
+      flash(fmtMsg(panel.dataset.plyLoading, { name: file.name }), 60000);
+      var reader = new FileReader();
+      reader.onerror = function () { flash(panel.dataset.plyBad, 6000); };
+      reader.onload = function () {
+        setTimeout(function () {
+          var ply, res;
+          try {
+            ply = parsePly(reader.result);
+            res = showCapture(ply, true);
+          } catch (err) {
+            if (window.console) console.warn(err);
+            flash(panel.dataset.plyBad, 6000);
+            return;
+          }
+          lastPly = ply;
+          if (res.total > res.kept) flash(fmtMsg(panel.dataset.plyCapped, { total: res.total.toLocaleString(), cap: CAPACITY.toLocaleString() }), 7000);
+          else flash(fmtMsg(panel.dataset.plyLoaded, { n: res.kept.toLocaleString() }), 3000);
+          kick();
+        }, 30);
+      };
+      reader.readAsArrayBuffer(file);
+    }
+    ui.querySelector('[data-action="load-ply"]').addEventListener("click", function () { fileIn.click(); });
+    fileIn.addEventListener("change", function () {
+      loadFile(fileIn.files[0]);
+      fileIn.value = "";
+    });
+    ui.querySelector('[data-action="flip"]').addEventListener("click", function () {
+      if (lastPly) showCapture(lastPly, !capture.flip);
+    });
+    ui.querySelector('[data-action="back"]').addEventListener("click", function () {
+      if (world === genWorld) return;
+      Array.prototype.forEach.call(ui.querySelectorAll(".gw-gen"), function (el) { el.hidden = false; });
+      Array.prototype.forEach.call(ui.querySelectorAll(".gw-cap"), function (el) { el.hidden = true; });
+      swapWorld(genWorld);
+      capture = null; // frees the capture buffers
+      lastPly = null;
+      if (genCam) { cam.target = genCam.target; cam.yaw = genCam.yaw; cam.pitch = genCam.pitch; cam.dist = genCam.dist; }
+      syncControls();
+    });
+    var dragDepth = 0;
+    stage.addEventListener("dragenter", function (e) { e.preventDefault(); dragDepth++; stage.classList.add("gw-dragover"); });
+    stage.addEventListener("dragover", function (e) { e.preventDefault(); e.dataTransfer.dropEffect = "copy"; });
+    stage.addEventListener("dragleave", function () { if (--dragDepth <= 0) { dragDepth = 0; stage.classList.remove("gw-dragover"); } });
+    stage.addEventListener("drop", function (e) {
+      e.preventDefault();
+      dragDepth = 0;
+      stage.classList.remove("gw-dragover");
+      if (e.dataTransfer.files && e.dataTransfer.files.length) loadFile(e.dataTransfer.files[0]);
+    });
+
     // -------------------------------------------------------------- pointer
     var drag = null, engaged = false, keys = {};
     canvas.tabIndex = 0;
@@ -1352,13 +1545,17 @@
       drag.y = m[1];
       if (drag.mode === "orbit") {
         cam.yaw -= dx * 0.006;
-        cam.pitch = Math.max(0.05, Math.min(1.45, cam.pitch + dy * 0.005));
+        cam.pitch = Math.max(capture ? -1.45 : 0.05, Math.min(1.45, cam.pitch + dy * 0.005));
       } else if (drag.mode === "walk") {
         cam.walkYaw += dx * 0.005;
         cam.walkPitch = Math.max(-1.2, Math.min(1.2, cam.walkPitch - dy * 0.005));
       } else if (drag.mode === "pan") {
         var k = cam.dist * 0.0016;
         var r = B.right, f = norm3([B.fwd[0], 0, B.fwd[2]]);
+        if (capture) { // pan in the image plane
+          for (var c3 = 0; c3 < 3; c3++) cam.target[c3] += (-B.right[c3] * dx + B.up[c3] * dy) * k;
+          return;
+        }
         cam.target[0] -= (r[0] * dx - f[0] * dy) * k;
         cam.target[2] -= (r[2] * dx - f[2] * dy) * k;
         cam.target[1] = Math.max(world.hAt(cam.target[0], cam.target[2]), world.water) + 1.5;
@@ -1382,7 +1579,7 @@
     canvas.addEventListener("wheel", function (e) {
       if (!engaged) return;
       e.preventDefault();
-      cam.dist = Math.max(4, Math.min(110, cam.dist * Math.exp(e.deltaY * 0.0012)));
+      cam.dist = Math.max(capture ? 0.5 : 4, Math.min(110, cam.dist * Math.exp(e.deltaY * 0.0012)));
     }, { passive: false });
     canvas.addEventListener("keydown", function (e) {
       keys[e.key.toLowerCase()] = true;
@@ -1452,7 +1649,7 @@
       }
 
       // 1. shadow map (splat centres as points, depth only)
-      if (st.shadows && (shadowDirty || st.wind > 0.01 && frames % 30 === 0)) {
+      if (!capture && st.shadows && (shadowDirty || st.wind > 0.01 && frames % 30 === 0)) {
         gl.bindFramebuffer(gl.FRAMEBUFFER, shadowFbo);
         gl.viewport(0, 0, SHADOW_RES, SHADOW_RES);
         gl.clearDepth(1);
@@ -1472,9 +1669,13 @@
         shadowDirty = false;
       }
 
-      // 2. sky
+      // 2. sky (a plain backdrop for captured scenes)
       gl.viewport(0, 0, w, h);
       gl.disable(gl.BLEND);
+      if (capture) {
+        gl.clearColor(0.06, 0.065, 0.075, 1);
+        gl.clear(gl.COLOR_BUFFER_BIT);
+      } else {
       gl.useProgram(Psky.p);
       var su = Psky.u;
       gl.uniform3fv(su.uFwd, B.fwd); gl.uniform3fv(su.uRight, B.right); gl.uniform3fv(su.uUp, B.up);
@@ -1482,6 +1683,7 @@
       gl.uniform1f(su.uTanHalf, B.tanHalf); gl.uniform1f(su.uAspect, B.aspect); gl.uniform1f(su.uNight, E.night);
       gl.bindVertexArray(quadVao);
       gl.drawArrays(gl.TRIANGLES, 0, 3);
+      }
 
       // 3. Gaussians, back to front
       gl.enable(gl.BLEND);
@@ -1543,7 +1745,7 @@
       }
       if (++frames % 15 === 0) {
         var alive = world.objects.filter(function (o) { return o.alive; }).length;
-        statsEl.textContent = statsTpl.replace("{n}", world.n.toLocaleString()).replace("{o}", alive).replace("{ms}", sortMs.toFixed(1)).replace("{fps}", Math.round(fps));
+        statsEl.textContent = (capture ? panel.dataset.statsCapture : statsTpl).replace("{n}", world.n.toLocaleString()).replace("{o}", alive).replace("{ms}", sortMs.toFixed(1)).replace("{fps}", Math.round(fps));
       }
     }
 
