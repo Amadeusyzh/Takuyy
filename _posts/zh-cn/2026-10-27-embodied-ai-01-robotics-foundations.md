@@ -226,7 +226,7 @@ print("Jacobian error:", np.abs(J_num - jacobian(q)).max())   # ~1e-10
 
 ## 4. 逆运动学
 
-**逆运动学**（inverse kinematics, IK）求 $q$ 使得 $x(q) = x^\*$。它可能无解、有有限个解或有无穷多个解。
+**逆运动学**（inverse kinematics, IK）求 $q$ 使得 $$x(q) = x^{\ast}$$。它可能无解、有有限个解或有无穷多个解。
 
 ### 解析 IK
 
@@ -244,7 +244,7 @@ IKFast（OpenRAVE）等工具可以自动生成这类求解器。
 
 ### 数值 IK：牛顿法、雅可比转置、伪逆
 
-对一般机械臂我们迭代求解。在当前 $q$ 处线性化：$x^\* - x(q) \approx J\,\Delta q$。可选方案：
+对一般机械臂我们迭代求解。在当前 $q$ 处线性化：$$x^{\ast} - x(q) \approx J\,\Delta q$$。可选方案：
 
 - **雅可比转置**：$\Delta q = \alpha J^\top e$。计算便宜，对 $\tfrac12\lVert e\rVert^2$ 总是下降方向，但慢。
 - **伪逆（高斯-牛顿）**：对宽矩阵 $J$，$\Delta q = J^+ e$，$J^+ = J^\top(JJ^\top)^{-1}$。在解附近很快，但在奇异位形
@@ -302,7 +302,7 @@ M(q)\,\ddot q + C(q,\dot q)\,\dot q + g(q) = \tau + J(q)^\top \mathcal{F}_{\text
 $$
 
 其中 $M(q)$ 是对称正定的**质量矩阵**（mass matrix），$C\dot q$ 是科氏力与离心力项，$g(q)$ 是重力项，$\tau$ 是关节力矩，
-$\mathcal{F}_{\text{ext}}$ 是外部力旋量（例如接触力）。它们来自拉格朗日量 $L = \tfrac12 \dot q^\top M(q)\dot q - V(q)$ 的
+$$\mathcal{F}_{\text{ext}}$$ 是外部力旋量（例如接触力）。它们来自拉格朗日量 $L = \tfrac12 \dot q^\top M(q)\dot q - V(q)$ 的
 欧拉-拉格朗日方程。两个标准问题：
 
 - **逆动力学**（inverse dynamics）：给定 $q, \dot q, \ddot q$，求 $\tau$。递归牛顿-欧拉算法（RNEA）以 $O(n)$ 完成。
@@ -400,7 +400,7 @@ $\tau = J^\top\left(K_d (x_d - x) - D_d\,\dot x\right) + g(q)$。低刚度带来
 
 在离散化的 C-space（栅格或格子图）上，**A\***（Hart、Nilsson 与 Raphael 1968）按
 $f(n) = g(n) + h(n)$ 的顺序扩展节点，即已付代价加上对剩余代价的启发式估计。若 $h$ **可采纳**（admissible，从不高估），
-A\* 返回最优路径；若它还**一致**（consistent，$h(n) \le c(n,n') + h(n')$），则任何节点都无需重复扩展。Dijkstra 就是
+A\* 返回最优路径；若它还**一致**（consistent，$$h(n) \le c(n,n') + h(n')$$），则任何节点都无需重复扩展。Dijkstra 就是
 $h = 0$ 的 A\*。栅格规模随维数指数增长，所以 A\* 用于二维/三维的移动机器人、落脚点规划和离散格子图，而不是
 7 自由度机械臂。
 

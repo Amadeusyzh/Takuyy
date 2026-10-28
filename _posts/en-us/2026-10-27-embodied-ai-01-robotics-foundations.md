@@ -234,7 +234,7 @@ print("Jacobian error:", np.abs(J_num - jacobian(q)).max())   # ~1e-10
 
 ## 4. Inverse kinematics
 
-**Inverse kinematics** (IK) asks for $q$ such that $x(q) = x^\*$. It can have zero, finitely many, or
+**Inverse kinematics** (IK) asks for $q$ such that $$x(q) = x^{\ast}$$. It can have zero, finitely many, or
 infinitely many solutions.
 
 ### Analytic IK
@@ -255,7 +255,7 @@ as IKFast (OpenRAVE) generate these solvers automatically.
 
 ### Numerical IK: Newton, Jacobian transpose, pseudoinverse
 
-For general arms we iterate. Linearize around the current $q$: $x^\* - x(q) \approx J\,\Delta q$. Options:
+For general arms we iterate. Linearize around the current $q$: $$x^{\ast} - x(q) \approx J\,\Delta q$$. Options:
 
 - **Jacobian transpose**: $\Delta q = \alpha J^\top e$. Cheap, always a descent direction for
   $\tfrac12\lVert e\rVert^2$, but slow.
@@ -316,7 +316,7 @@ M(q)\,\ddot q + C(q,\dot q)\,\dot q + g(q) = \tau + J(q)^\top \mathcal{F}_{\text
 $$
 
 with the symmetric positive-definite **mass matrix** $M(q)$, Coriolis and centrifugal terms $C\dot q$,
-gravity $g(q)$, joint torques $\tau$ and external wrenches $\mathcal{F}_{\text{ext}}$ (e.g. contacts). They come
+gravity $g(q)$, joint torques $\tau$ and external wrenches $$\mathcal{F}_{\text{ext}}$$ (e.g. contacts). They come
 from the Euler-Lagrange equations with Lagrangian $L = \tfrac12 \dot q^\top M(q)\dot q - V(q)$.
 Two standard problems:
 
@@ -424,7 +424,7 @@ free space explicitly.
 On a discretized C-space (grid or lattice), **A\*** (Hart, Nilsson and Raphael 1968) expands nodes in order of
 $f(n) = g(n) + h(n)$, cost-so-far plus a heuristic estimate of cost-to-go. If $h$ is **admissible**
 (never overestimates) A\* returns an optimal path; if it is also **consistent**
-($h(n) \le c(n,n') + h(n')$) no node needs to be re-expanded. Dijkstra is A\* with $h = 0$. Grids scale
+($$h(n) \le c(n,n') + h(n')$$) no node needs to be re-expanded. Dijkstra is A\* with $h = 0$. Grids scale
 exponentially with dimension, so A\* is used for mobile robots in 2-D/3-D, footstep planning and
 discretized lattices, not for 7-DoF arms.
 
