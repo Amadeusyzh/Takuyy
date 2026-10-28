@@ -417,7 +417,7 @@ SfM 点是稀疏的，只出现在有显著特征的地方。**多视图立体�
 
 ## 练习
 
-1. 证明 $E = [\mathbf t]_\times R$ 的奇异值为 $(\lVert\mathbf t\rVert, \lVert\mathbf t\rVert, 0)$。提示：$[\mathbf t]_\times$ 的奇异值为 $(\lVert\mathbf t\rVert, \lVert\mathbf t\rVert, 0)$，且 $R$ 是正交矩阵。
+1. 证明 $E = [\mathbf t]\_\times R$ 的奇异值为 $(\lVert\mathbf t\rVert, \lVert\mathbf t\rVert, 0)$。提示：$[\mathbf t]\_\times$ 的奇异值为 $(\lVert\mathbf t\rVert, \lVert\mathbf t\rVert, 0)$，且 $R$ 是正交矩阵。
 2. 从 `eight_point` 中去掉 Hartley 归一化，绘制 Sampson 误差随像素噪声变化的曲线。结果会变差多少？
 3. 给合成图像加入径向畸变（$k_1 = -0.2$），在不对其建模的情况下运行整条管线，观察重建出的点如何弯曲。然后把 $k_1$ 作为一个参数加入光束法平差。
 4. 把 `triangulate` 扩展到 $N$ 个视图，并计算每个点的三角化角；剔除小于 1.5° 的点。

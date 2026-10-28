@@ -417,7 +417,7 @@ SfM の点は疎で、特徴的な模様がある場所にしか存在しませ�
 
 ## 演習
 
-1. $E = [\mathbf t]_\times R$ の特異値が $(\lVert\mathbf t\rVert, \lVert\mathbf t\rVert, 0)$ であることを示してください。ヒント：$[\mathbf t]_\times$ の特異値は $(\lVert\mathbf t\rVert, \lVert\mathbf t\rVert, 0)$ であり、$R$ は直交行列です。
+1. $E = [\mathbf t]\_\times R$ の特異値が $(\lVert\mathbf t\rVert, \lVert\mathbf t\rVert, 0)$ であることを示してください。ヒント：$[\mathbf t]\_\times$ の特異値は $(\lVert\mathbf t\rVert, \lVert\mathbf t\rVert, 0)$ であり、$R$ は直交行列です。
 2. `eight_point` から Hartley 正規化を取り除き、ピクセルノイズに対する Sampson 誤差をプロットしてください。どの程度悪化するでしょうか。
 3. 合成画像に放射方向の歪み（$k_1 = -0.2$）を加え、それをモデル化せずにパイプラインを実行して、再構成された点がどのように曲がるかを観察してください。その後、$k_1$ をバンドル調整のパラメータとして追加してください。
 4. `triangulate` を $N$ ビューに拡張し、点ごとに三角測量角を計算してください。1.5° 未満の点は棄却します。

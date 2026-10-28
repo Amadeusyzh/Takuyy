@@ -417,7 +417,7 @@ The Gaussian World demo in the [interactive lab]({{ '/' | relative_url }}#lab) u
 
 ## Exercises
 
-1. Show that $E = [\mathbf t]_\times R$ has singular values $(\lVert\mathbf t\rVert, \lVert\mathbf t\rVert, 0)$. Hint: $[\mathbf t]_\times$ has singular values $(\lVert\mathbf t\rVert, \lVert\mathbf t\rVert, 0)$ and $R$ is orthogonal.
+1. Show that $E = [\mathbf t]\_\times R$ has singular values $(\lVert\mathbf t\rVert, \lVert\mathbf t\rVert, 0)$. Hint: $[\mathbf t]\_\times$ has singular values $(\lVert\mathbf t\rVert, \lVert\mathbf t\rVert, 0)$ and $R$ is orthogonal.
 2. Remove the Hartley normalization from `eight_point` and plot the Sampson error versus pixel noise. How much worse does it get?
 3. Add radial distortion ($k_1 = -0.2$) to the synthetic images, run the pipeline without modelling it, and observe how the reconstructed points bend. Then add $k_1$ as a parameter in the bundle adjustment.
 4. Extend `triangulate` to $N$ views and compute the triangulation angle per point; reject points below 1.5°.
