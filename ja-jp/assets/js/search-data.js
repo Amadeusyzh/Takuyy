@@ -36,12 +36,144 @@ ninja.data = [{
           },
         },{id: "nav-cv",
           title: "CV",
-          description: "",
+          description: "右のボタンから PDF 版をダウンロードできます。",
           section: "ナビゲーション",
           handler: () => {
             window.location.href = "/Takuyy/ja-jp/cv/";
           },
-        },{id: "post-物理ベースシミュレーション-粒子-布-pbd-と-xpbd",
+        },{id: "post-身体性-ai-xr-hci-データ-操作者-パートナーとしての人",
+        
+          title: "身体性 AI × XR・HCI：データ、操作者、パートナーとしての人",
+        
+        description: "人のモーションキャプチャとウェアラブルセンシング、一人称視点データ（Ego4D、Project Aria）、ロボットのデータ収集のための VR/AR 遠隔操作、ヒューマンロボットインタラクション、デジタルツインと複合現実インターフェース、そして身体性 AI・世界モデル・AR/VR・HCI・グラフィックスが交わる研究機会を紹介します。",
+        section: "記事",
+        handler: () => {
+          
+            window.location.href = "/Takuyy/ja-jp/blog/2026/embodied-ai-06-embodied-ai-meets-xr-and-hci/";
+          
+        },
+      },{id: "post-vision-language-action-モデル-rt-2-openvla-pi0-gr00t-gemini-robotics",
+        
+          title: "Vision-Language-Action モデル：RT-2、OpenVLA、pi0、GR00T、Gemini Robotics",
+        
+        description: "ロボット基盤モデルの作り方：RT-1・RT-2 から Octo、OpenVLA、pi0/pi0.5、GR00T N1、Gemini Robotics まで。行動のトークン化とフローマッチングの行動ヘッド、クロスエンボディメント学習、評価、そして世界モデルがロボット学習にどう入ってくるかを解説します。",
+        section: "記事",
+        handler: () => {
+          
+            window.location.href = "/Takuyy/ja-jp/blog/2026/embodied-ai-05-vision-language-action-models/";
+          
+        },
+      },{id: "post-模倣学習-行動クローニング-dagger-act-diffusion-policy",
+        
+          title: "模倣学習：行動クローニング、DAgger、ACT、Diffusion Policy",
+        
+        description: "デモンストレーションからロボットのスキルを学ぶ：共変量シフトと DAgger、Transformer によるアクションチャンキング（ACT/ALOHA）、Diffusion Policy、遠隔操作と UMI によるデータ収集、大規模なクロスエンボディメントデータセットを、実行可能な拡散方策の学習例とともに解説します。",
+        section: "記事",
+        handler: () => {
+          
+            window.location.href = "/Takuyy/ja-jp/blog/2026/embodied-ai-04-imitation-learning/";
+          
+        },
+      },{id: "post-身体性-ai-のシミュレーションプラットフォーム-mujoco-isaac-habitat-maniskill-genesis",
+        
+          title: "身体性 AI のシミュレーションプラットフォーム：MuJoCo、Isaac、Habitat、ManiSkill、Genesis",
+        
+        description: "ロボットシミュレータが実際に何を計算しているのか（動力学、接触、レンダリング、センサ）、現在の主要なプラットフォームとベンチマーク、微分可能・GPU 並列シミュレーション、そして MuJoCo/MJX の実践例を紹介します。",
+        section: "記事",
+        handler: () => {
+          
+            window.location.href = "/Takuyy/ja-jp/blog/2026/embodied-ai-03-simulation-platforms/";
+          
+        },
+      },{id: "post-ロボットのための強化学習-mdp-から-ppo-sac-sim-to-real-まで",
+        
+          title: "ロボットのための強化学習：MDP から PPO、SAC、Sim-to-Real まで",
+        
+        description: "MDP、価値関数、方策勾配、PPO と SAC、報酬設計、ドメインランダム化、そして Sim-to-Real の RL を主流にした脚移動の成果を、コンパクトな PyTorch の PPO とともに解説します。",
+        section: "記事",
+        handler: () => {
+          
+            window.location.href = "/Takuyy/ja-jp/blog/2026/embodied-ai-02-reinforcement-learning-for-robots/";
+          
+        },
+      },{id: "post-ロボティクスの基礎-座標変換-運動学-制御-計画",
+        
+          title: "ロボティクスの基礎：座標変換、運動学、制御、計画",
+        
+        description: "SE(3)、順・逆運動学、ヤコビアン、動力学の概観、PID とインピーダンス制御、A*/RRT による計画を、3 リンクアームの NumPy コード付きで解説します。",
+        section: "記事",
+        handler: () => {
+          
+            window.location.href = "/Takuyy/ja-jp/blog/2026/embodied-ai-01-robotics-foundations/";
+          
+        },
+      },{id: "post-スマホ撮影から-vr-まで-3d-gaussian-splatting-ハンズオンチュートリアル",
+        
+          title: "スマホ撮影から VR まで：3D Gaussian Splatting ハンズオンチュートリアル",
+        
+        description: "実践的なステップバイステップのワークフローです：写真や動画を撮影し、COLMAP を実行し、公式コード、gsplat、または nerfstudio の splatfacto で 3DGS を学習させ、.ply をクリーンアップしてエクスポートし、Web と VR ヘッドセットで表示します。よくある失敗パターンとその対処法も紹介します。",
+        section: "記事",
+        handler: () => {
+          
+            window.location.href = "/Takuyy/ja-jp/blog/2026/neural-rendering-06-capture-to-vr-tutorial/";
+          
+        },
+      },{id: "post-3dgs-の先へ-gaussian-splatting-研究フロンティアの地図",
+        
+          title: "3DGS の先へ：Gaussian Splatting 研究フロンティアの地図",
+        
+        description: "3D Gaussian Splatting 以降に登場した研究の体系的なサーベイです：アンチエイリアシング、表面、動的シーン、圧縮、SLAM、フィードフォワード再構成、生成、リライティング、物理、セマンティクス、AR/VR について、各方向の核となるアイデアと代表的な論文を紹介します。",
+        section: "記事",
+        handler: () => {
+          
+            window.location.href = "/Takuyy/ja-jp/blog/2026/neural-rendering-05-3dgs-frontiers/";
+          
+        },
+      },{id: "post-3d-gaussian-splatting-徹底解説",
+        
+          title: "3D Gaussian Splatting 徹底解説",
+        
+        description: "3DGS の手法の全体像：ガウシアンのパラメータ、回転とスケールからの共分散、ヤコビ行列を用いた EWA 投影、0.3 のローパスフィルタ、タイルベースの微分可能ラスタライズ、アルファブレンディングと勾配、適応的密度制御、学習レシピを Python コード付きで解説します。",
+        section: "記事",
+        handler: () => {
+          
+            window.location.href = "/Takuyy/ja-jp/blog/2026/neural-rendering-04-3d-gaussian-splatting/";
+          
+        },
+      },{id: "post-高速な放射輝度場-グリッド-テンソル-ハッシュエンコーディング",
+        
+          title: "高速な放射輝度場：グリッド、テンソル、ハッシュエンコーディング",
+        
+        description: "NeRF がなぜ遅いのか、そして明示的表現とハイブリッド表現がそれをどう解決したのかを解説します：Plenoxels、DVGO、TensoRF、Instant-NGP のマルチ解像度ハッシュエンコーディング（PyTorch コード付き）、Zip-NeRF、そして nerfstudio ツールボックス。",
+        section: "記事",
+        handler: () => {
+          
+            window.location.href = "/Takuyy/ja-jp/blog/2026/neural-rendering-03-fast-radiance-fields/";
+          
+        },
+      },{id: "post-nerf-ニューラル放射輝度場と微分可能なボリュームレンダリング",
+        
+          title: "NeRF：ニューラル放射輝度場と微分可能なボリュームレンダリング",
+        
+        description: "ボリュームレンダリング方程式とその数値求積、位置エンコーディング、NeRF の MLP、階層的サンプリングと光度損失を解説し、最小限の PyTorch NeRF 実装と、後続研究の Mip-NeRF、Mip-NeRF 360、NeRF in the Wild を紹介します。",
+        section: "記事",
+        handler: () => {
+          
+            window.location.href = "/Takuyy/ja-jp/blog/2026/neural-rendering-02-nerf/";
+          
+        },
+      },{id: "post-カメラと多視点幾何-ピクセルから姿勢へ",
+        
+          title: "カメラと多視点幾何：ピクセルから姿勢へ",
+        
+        description: "ピンホールカメラ、内部パラメータと外部パラメータ、レンズ歪み、エピポーラ幾何、8点アルゴリズム、三角測量、バンドル調整、COLMAP による Structure-from-Motion、多視点ステレオを NumPy コード付きで解説します。",
+        section: "記事",
+        handler: () => {
+          
+            window.location.href = "/Takuyy/ja-jp/blog/2026/neural-rendering-01-cameras-and-multiview-geometry/";
+          
+        },
+      },{id: "post-物理ベースシミュレーション-粒子-布-pbd-と-xpbd",
         
           title: "物理ベースシミュレーション：粒子、布、PBD と XPBD",
         
@@ -133,6 +265,13 @@ ninja.data = [{
           title: 'ウェブサイトを公開しました。ブログもぜひご覧ください。',
           description: "",
           section: "ニュース",},{
+        id: 'social-cv',
+        title: 'CV',
+        section: 'SNS',
+        handler: () => {
+          window.open("/Takuyy/assets/pdf/ja-jp//assets/pdf/[LANG]/cv.pdf", "_blank");
+        },
+      },{
         id: 'social-github',
         title: 'GitHub',
         section: 'SNS',
