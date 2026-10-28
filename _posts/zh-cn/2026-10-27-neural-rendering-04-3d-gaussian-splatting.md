@@ -1,6 +1,6 @@
 ---
 layout: post
-title: "3D 高斯泼溅：从头到尾"
+title: "3D 高斯泼溅完全解析"
 date: 2026-10-27 12:04:00+0900
 description: "完整的 3DGS 方法：高斯参数、由旋转与缩放构造协方差、基于雅可比矩阵的 EWA 投影、0.3 低通滤波、基于图块的可微光栅化、α 混合与梯度、自适应密度控制以及训练配方，附 Python 代码。"
 categories: neural-rendering

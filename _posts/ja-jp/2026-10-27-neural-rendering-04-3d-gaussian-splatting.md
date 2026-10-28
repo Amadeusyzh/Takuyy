@@ -1,6 +1,6 @@
 ---
 layout: post
-title: "3D Gaussian Splatting を端から端まで"
+title: "3D Gaussian Splatting 徹底解説"
 date: 2026-10-27 12:04:00+0900
 description: "3DGS の手法の全体像：ガウシアンのパラメータ、回転とスケールからの共分散、ヤコビ行列を用いた EWA 投影、0.3 のローパスフィルタ、タイルベースの微分可能ラスタライズ、アルファブレンディングと勾配、適応的密度制御、学習レシピを Python コード付きで解説します。"
 categories: neural-rendering
