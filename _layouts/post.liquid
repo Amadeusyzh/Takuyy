@@ -57,7 +57,7 @@ layout: default
               <i class="fa-solid fa-tag fa-sm"></i> {{ category -}}
             </a>
           {% else %}
-            <i class="fa-solid fa-tag fa-sm"></i> {{ category }}
+            <i class="fa-solid fa-tag fa-sm"></i> {{ site.data[site.active_lang].strings.categories[category] | default: category }}
           {% endif %}
           {% unless forloop.last %}
             &nbsp;
