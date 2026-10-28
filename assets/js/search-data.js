@@ -41,7 +41,18 @@ ninja.data = [{
           handler: () => {
             window.location.href = "/Takuyy/cv/";
           },
-        },{id: "post-embodied-ai-meets-xr-and-hci-humans-as-data-operators-and-partners",
+        },{id: "post-learning-roadmap-from-computer-graphics-to-3d-gaussian-splatting-world-models-and-embodied-ai",
+        
+          title: "Learning roadmap: from computer graphics to 3D Gaussian Splatting, world models and embodied...",
+        
+        description: "The map of this blog: four series, in order, with what to learn at each stage.",
+        section: "Posts",
+        handler: () => {
+          
+            window.location.href = "/Takuyy/blog/2026/roadmap-01-learning-roadmap/";
+          
+        },
+      },{id: "post-embodied-ai-meets-xr-and-hci-humans-as-data-operators-and-partners",
         
           title: "Embodied AI meets XR and HCI: humans as data, operators and partners",
         
@@ -105,6 +116,61 @@ ninja.data = [{
         handler: () => {
           
             window.location.href = "/Takuyy/blog/2026/embodied-ai-01-robotics-foundations/";
+          
+        },
+      },{id: "post-predict-don-39-t-generate-jepa-evaluating-world-models-and-open-problems",
+        
+          title: "Predict, don&#39;t generate? JEPA, evaluating world models, and open problems",
+        
+        description: "LeCun&#39;s path towards autonomous machine intelligence, I-JEPA, V-JEPA and V-JEPA 2, the predictive-vs-generative debate, how world models are evaluated (physics, controllability, planning), and the open problems that lead into embodied AI.",
+        section: "Posts",
+        handler: () => {
+          
+            window.location.href = "/Takuyy/blog/2026/world-models-05-jepa-evaluation-and-open-problems/";
+          
+        },
+      },{id: "post-explicit-worlds-3d-and-4d-world-generation",
+        
+          title: "Explicit worlds: 3D and 4D world generation",
+        
+        description: "Generating explicit 3D and 4D worlds: score distillation (DreamFusion, VSD), multi-view diffusion, scene growing with inpainting and depth (Text2Room, LucidDreamer, WonderJourney, WonderWorld), Gaussian scene generation, 4D generation, World Labs&#39; Marble, and the trade-offs against pixel-space video world models.",
+        section: "Posts",
+        handler: () => {
+          
+            window.location.href = "/Takuyy/blog/2026/world-models-04-3d-and-4d-world-generation/";
+          
+        },
+      },{id: "post-video-generation-as-world-simulation-sora-genie-gamengen-and-beyond",
+        
+          title: "Video generation as world simulation: Sora, Genie, GameNGen and beyond",
+        
+        description: "How video generators became interactive world simulators: the Sora report, Genie 1-3, GameNGen, UniSim, GAIA-1, NVIDIA Cosmos, latent action models, and the open problems of memory, consistency and physics.",
+        section: "Posts",
+        handler: () => {
+          
+            window.location.href = "/Takuyy/blog/2026/world-models-03-video-world-simulators/";
+          
+        },
+      },{id: "post-the-generative-toolkit-vaes-tokenizers-transformers-diffusion-and-flow-matching",
+        
+          title: "The generative toolkit: VAEs, tokenizers, Transformers, diffusion and flow matching",
+        
+        description: "The generative models modern world models are built from: VAE and ELBO, VQ-VAE tokenizers, autoregressive Transformers, DDPM, the score/SDE view, DDIM, latent diffusion, classifier-free guidance, flow matching and DiT, with runnable PyTorch.",
+        section: "Posts",
+        handler: () => {
+          
+            window.location.href = "/Takuyy/blog/2026/world-models-02-generative-modeling-foundations/";
+          
+        },
+      },{id: "post-what-is-a-world-model-from-dyna-to-dreamer-and-muzero",
+        
+          title: "What is a world model? From Dyna to Dreamer and MuZero",
+        
+        description: "Definitions and history of world models: MDPs, model-based RL, Ha &amp; Schmidhuber&#39;s World Models, PlaNet, Dreamer V1-V3 and MuZero, with a PyTorch RSSM and imagination rollouts.",
+        section: "Posts",
+        handler: () => {
+          
+            window.location.href = "/Takuyy/blog/2026/world-models-01-what-is-a-world-model/";
           
         },
       },{id: "post-from-phone-capture-to-vr-a-hands-on-3d-gaussian-splatting-tutorial",

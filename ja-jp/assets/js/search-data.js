@@ -41,7 +41,18 @@ ninja.data = [{
           handler: () => {
             window.location.href = "/Takuyy/ja-jp/cv/";
           },
-        },{id: "post-身体性-ai-xr-hci-データ-操作者-パートナーとしての人",
+        },{id: "post-学習ロードマップ-コンピュータグラフィックスから-3d-ガウシアンスプラッティング-世界モデル-身体性-ai-まで",
+        
+          title: "学習ロードマップ：コンピュータグラフィックスから 3D ガウシアンスプラッティング、世界モデル、身体性 AI まで",
+        
+        description: "このブログの地図です。4 つのシリーズを順番に、各段階で何を学ぶかをまとめました。",
+        section: "記事",
+        handler: () => {
+          
+            window.location.href = "/Takuyy/ja-jp/blog/2026/roadmap-01-learning-roadmap/";
+          
+        },
+      },{id: "post-身体性-ai-xr-hci-データ-操作者-パートナーとしての人",
         
           title: "身体性 AI × XR・HCI：データ、操作者、パートナーとしての人",
         
@@ -105,6 +116,61 @@ ninja.data = [{
         handler: () => {
           
             window.location.href = "/Takuyy/ja-jp/blog/2026/embodied-ai-01-robotics-foundations/";
+          
+        },
+      },{id: "post-生成ではなく予測を-jepa-世界モデルの評価-そして未解決の課題",
+        
+          title: "生成ではなく予測を？JEPA、世界モデルの評価、そして未解決の課題",
+        
+        description: "LeCun が示す自律的機械知能への道、I-JEPA、V-JEPA と V-JEPA 2、予測型対生成型の論争、世界モデルの評価方法（物理、制御可能性、プランニング）、そして身体性AI へとつながる未解決の課題。",
+        section: "記事",
+        handler: () => {
+          
+            window.location.href = "/Takuyy/ja-jp/blog/2026/world-models-05-jepa-evaluation-and-open-problems/";
+          
+        },
+      },{id: "post-明示的な世界-3d-4d-世界生成",
+        
+          title: "明示的な世界：3D・4D 世界生成",
+        
+        description: "明示的な 3D・4D 世界の生成：スコア蒸留（DreamFusion、VSD）、マルチビュー拡散、インペインティングと深度によるシーン拡張（Text2Room、LucidDreamer、WonderJourney、WonderWorld）、ガウシアンによるシーン生成、4D 生成、World Labs の Marble、そしてピクセル空間の動画世界モデルとのトレードオフを解説します。",
+        section: "記事",
+        handler: () => {
+          
+            window.location.href = "/Takuyy/ja-jp/blog/2026/world-models-04-3d-and-4d-world-generation/";
+          
+        },
+      },{id: "post-世界シミュレーションとしての動画生成-sora-genie-gamengen-そしてその先へ",
+        
+          title: "世界シミュレーションとしての動画生成：Sora、Genie、GameNGen、そしてその先へ",
+        
+        description: "動画生成モデルはいかにしてインタラクティブな世界シミュレータになったのか：Sora の技術レポート、Genie 1-3、GameNGen、UniSim、GAIA-1、NVIDIA Cosmos、潜在行動モデル、そして記憶・一貫性・物理という未解決の課題。",
+        section: "記事",
+        handler: () => {
+          
+            window.location.href = "/Takuyy/ja-jp/blog/2026/world-models-03-video-world-simulators/";
+          
+        },
+      },{id: "post-生成モデルの道具箱-vae-トークナイザ-トランスフォーマー-拡散モデル-フローマッチング",
+        
+          title: "生成モデルの道具箱：VAE、トークナイザ、トランスフォーマー、拡散モデル、フローマッチング",
+        
+        description: "現代の世界モデルを構成する生成モデル：VAE と ELBO、VQ-VAE トークナイザ、自己回帰トランスフォーマー、DDPM、スコア/SDE の視点、DDIM、潜在拡散、classifier-free guidance、フローマッチング、DiT を、実行可能な PyTorch コードとともに解説します。",
+        section: "記事",
+        handler: () => {
+          
+            window.location.href = "/Takuyy/ja-jp/blog/2026/world-models-02-generative-modeling-foundations/";
+          
+        },
+      },{id: "post-世界モデルとは何か-dyna-から-dreamer-muzero-まで",
+        
+          title: "世界モデルとは何か？ Dyna から Dreamer、MuZero まで",
+        
+        description: "世界モデルの定義と歴史：MDP、モデルベース強化学習、Ha &amp; Schmidhuber の World Models、PlaNet、Dreamer V1-V3、MuZero を、PyTorch による RSSM と想像ロールアウトの実装とともに解説します。",
+        section: "記事",
+        handler: () => {
+          
+            window.location.href = "/Takuyy/ja-jp/blog/2026/world-models-01-what-is-a-world-model/";
           
         },
       },{id: "post-スマホ撮影から-vr-まで-3d-gaussian-splatting-ハンズオンチュートリアル",

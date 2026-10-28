@@ -41,7 +41,18 @@ ninja.data = [{
           handler: () => {
             window.location.href = "/Takuyy/zh-cn/cv/";
           },
-        },{id: "post-具身智能遇上-xr-与-hci-作为数据-操作者与伙伴的人",
+        },{id: "post-学习路线-从计算机图形学到-3d-高斯泼溅-世界模型与具身智能",
+        
+          title: "学习路线：从计算机图形学到 3D 高斯泼溅、世界模型与具身智能",
+        
+        description: "这个博客的地图：四个系列，按顺序学习，以及每个阶段要掌握什么。",
+        section: "文章",
+        handler: () => {
+          
+            window.location.href = "/Takuyy/zh-cn/blog/2026/roadmap-01-learning-roadmap/";
+          
+        },
+      },{id: "post-具身智能遇上-xr-与-hci-作为数据-操作者与伙伴的人",
         
           title: "具身智能遇上 XR 与 HCI：作为数据、操作者与伙伴的人",
         
@@ -105,6 +116,61 @@ ninja.data = [{
         handler: () => {
           
             window.location.href = "/Takuyy/zh-cn/blog/2026/embodied-ai-01-robotics-foundations/";
+          
+        },
+      },{id: "post-预测-而非生成-jepa-世界模型的评估与开放问题",
+        
+          title: "预测，而非生成？JEPA、世界模型的评估与开放问题",
+        
+        description: "LeCun 的自主机器智能之路、I-JEPA、V-JEPA 与 V-JEPA 2，预测式与生成式之争，世界模型如何评估（物理、可控性、规划），以及通向具身智能的开放问题。",
+        section: "文章",
+        handler: () => {
+          
+            window.location.href = "/Takuyy/zh-cn/blog/2026/world-models-05-jepa-evaluation-and-open-problems/";
+          
+        },
+      },{id: "post-显式世界-3d-与-4d-世界生成",
+        
+          title: "显式世界：3D 与 4D 世界生成",
+        
+        description: "生成显式的 3D 与 4D 世界：分数蒸馏（DreamFusion、VSD）、多视角扩散、基于修复与深度的场景生长（Text2Room、LucidDreamer、WonderJourney、WonderWorld）、高斯场景生成、4D 生成、World Labs 的 Marble，以及与像素空间视频世界模型之间的权衡。",
+        section: "文章",
+        handler: () => {
+          
+            window.location.href = "/Takuyy/zh-cn/blog/2026/world-models-04-3d-and-4d-world-generation/";
+          
+        },
+      },{id: "post-视频生成即世界模拟-sora-genie-gamengen-及其后",
+        
+          title: "视频生成即世界模拟：Sora、Genie、GameNGen 及其后",
+        
+        description: "视频生成器如何成为可交互的世界模拟器：Sora 技术报告、Genie 1-3、GameNGen、UniSim、GAIA-1、NVIDIA Cosmos、潜在动作模型，以及记忆、一致性与物理方面的开放问题。",
+        section: "文章",
+        handler: () => {
+          
+            window.location.href = "/Takuyy/zh-cn/blog/2026/world-models-03-video-world-simulators/";
+          
+        },
+      },{id: "post-生成式工具箱-vae-tokenizer-transformer-扩散模型与流匹配",
+        
+          title: "生成式工具箱：VAE、tokenizer、Transformer、扩散模型与流匹配",
+        
+        description: "构成现代世界模型的生成模型：VAE 与 ELBO、VQ-VAE tokenizer、自回归 Transformer、DDPM、score/SDE 视角、DDIM、潜在扩散、无分类器引导、流匹配与 DiT，并附可运行的 PyTorch 代码。",
+        section: "文章",
+        handler: () => {
+          
+            window.location.href = "/Takuyy/zh-cn/blog/2026/world-models-02-generative-modeling-foundations/";
+          
+        },
+      },{id: "post-什么是世界模型-从-dyna-到-dreamer-与-muzero",
+        
+          title: "什么是世界模型？从 Dyna 到 Dreamer 与 MuZero",
+        
+        description: "世界模型的定义与发展历史：MDP、基于模型的强化学习、Ha &amp; Schmidhuber 的 World Models、PlaNet、Dreamer V1-V3 与 MuZero，并附带 PyTorch 实现的 RSSM 与想象推演。",
+        section: "文章",
+        handler: () => {
+          
+            window.location.href = "/Takuyy/zh-cn/blog/2026/world-models-01-what-is-a-world-model/";
           
         },
       },{id: "post-从手机拍摄到-vr-3d-高斯泼溅动手实践教程",
