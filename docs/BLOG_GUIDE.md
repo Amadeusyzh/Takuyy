@@ -119,3 +119,49 @@ The build must finish without Liquid or Kramdown errors, and each post must appe
 - Only add files under `_posts/*/`, `assets/img/blog/<series>/` and `docs/reading-lists/<series>.md`.
   Do not edit shared files (`_config.yml`, `_data/`, `_layouts/`, `_includes/`, other tracks' posts).
   If something shared is needed, describe it in your final report instead.
+
+## 10. Visualization (required)
+
+Formulas alone are too abstract. Every concept that has a spatial or geometric meaning must be
+shown, not only written: "dry" math is paired with a picture of what it means in space.
+
+**Density.** Aim for roughly one figure per major section (typically 6-12 per post), placed right
+next to the formula or code it explains. Each figure has a caption (in the post's language) that
+says what to look at, and the surrounding text refers to it ("as the figure shows, ...").
+
+**Static figures** (Python, reproducible):
+- Scripts live in `bin/figures/<series>/` (one script per post, e.g. `graphics_01.py`, plus a
+  `make_all.py`), import the shared style with
+  `sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1])); from style import *`
+  and write SVGs to `assets/img/blog/<series>/<NN>-<name>.svg`. Do not edit `bin/figures/style.py`.
+- Prefer real geometry computed with NumPy over decorative drawings: coordinate axes with tick
+  marks, vectors with components, before/after transforms, 3D plots (mplot3d) of frames, frusta,
+  ellipsoids, rays, hemispheres, sample points, lobes, trajectories, loss/value curves, and toy
+  data that you actually run through the algorithm (e.g. a real rasterized triangle, real
+  Monte Carlo samples, a real DDPM forward process on 2D data, a real RRT tree).
+- Keep text inside figures language-neutral (symbols, numbers, short code names). If words are
+  needed, render three variants `name_en.svg`, `name_zh.svg`, `name_ja.svg` with
+  `label(lang, en=..., zh=..., ja=...)` and include with `localized="true"`.
+- Legible on phones: figure width around 8-10 inches at font size 15 (the style default),
+  thick lines, no tiny annotations. White background (the site frames it in dark mode).
+
+Embed with:
+
+```liquid
+{% include blog_figure.liquid path="assets/img/blog/graphics/01-dot-product.svg" caption="Dot product as projection: ..." %}
+{% include blog_figure.liquid path="assets/img/blog/graphics/02-pipeline.svg" localized="true" width="80%" caption="..." %}
+```
+
+**Interactive widgets** (2-4 per series, for the ideas that benefit most from manipulation, e.g.
+dragging a vector and watching dot/cross products update, rotating a camera frustum, moving a
+3D Gaussian and seeing its 2D projection, stepping a diffusion process, dragging an IK target):
+- One self-contained file per widget: `assets/js/widgets/<series>-<name>.js`, plain JS + Canvas 2D,
+  SVG or WebGL, no external libraries, ASCII only (use \u escapes for non-ASCII strings).
+- It must find its containers with `document.querySelectorAll('[data-widget="<series>-<name>"]')`,
+  read `el.dataset.lang` (`en` / `zh` / `ja`) for its UI text, size itself to the container width
+  (responsive, works with touch: pointer events), and draw on a light background.
+- Embed with `{% include widget.liquid name="<series>-<name>" height="380" caption="..." %}`.
+
+Before committing, open the built page in headless Chromium (Playwright is preinstalled:
+`require('playwright')`) at phone width (390 px) and desktop width, take screenshots, and check
+that figures are legible and widgets work (no console errors except blocked CDN requests).

@@ -1566,3 +1566,45 @@ mjx-container[jax="CHTML"][display="true"] {
   font-size: 0.9rem;
   .next { margin-left: auto; text-align: right; }
 }
+
+// ---------------------------------------------------------------- blog visuals
+// wide display math scrolls horizontally on small screens instead of overflowing
+.post-content mjx-container[display="true"] {
+  display: block;
+  overflow-x: auto;
+  overflow-y: hidden;
+  max-width: 100%;
+  padding: 0.2rem 0;
+}
+.blog-fig {
+  margin: 1.6rem auto;
+  max-width: var(--fig-w, 100%);
+  text-align: center;
+  img {
+    width: 100%;
+    height: auto;
+    border-radius: 8px;
+    background: #fff; // figures are drawn on white; keeps them readable in dark mode
+    border: 1px solid var(--global-divider-color);
+  }
+  figcaption {
+    margin-top: 0.5rem;
+    font-size: 0.85rem;
+    line-height: 1.5;
+    color: var(--global-text-color-light);
+    text-align: left;
+  }
+}
+.blog-widget {
+  margin: 1.6rem 0 0.4rem;
+  border: 1px solid var(--global-divider-color);
+  border-radius: 8px;
+  overflow: hidden;
+  position: relative;
+  touch-action: pan-y;
+}
+.blog-widget-caption {
+  font-size: 0.85rem;
+  color: var(--global-text-color-light);
+  margin-bottom: 1.6rem;
+}

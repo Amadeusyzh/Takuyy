@@ -1,0 +1,11 @@
+{% comment %}
+  Interactive widget for blog posts. Usage:
+    {% include widget.liquid name="graphics-dot-cross" height="380" %}
+  Loads assets/js/widgets/<name>.js, which must find its container with
+  document.querySelectorAll('[data-widget="<name>"]') and render into it (canvas / SVG / WebGL).
+  The container carries data-lang (en / zh / ja) for any UI text.
+{% endcomment %}
+{% assign w_lang = site.active_lang | split: '-' | first %}
+<div class="blog-widget" data-widget="{{ include.name }}" data-lang="{{ w_lang }}" style="min-height: {{ include.height | default: 360 }}px"></div>
+{% if include.caption %}<p class="blog-widget-caption">{{ include.caption | markdownify | remove: '<p>' | remove: '</p>' | strip }}</p>{% endif %}
+<script defer src="{{ '/assets/js/widgets/' | append: include.name | append: '.js' | relative_url }}"></script>

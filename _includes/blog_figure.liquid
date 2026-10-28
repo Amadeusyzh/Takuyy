@@ -1,0 +1,18 @@
+{% comment %}
+  Blog figure. Usage (caption written in the post's own language):
+    {% include blog_figure.liquid path="assets/img/blog/graphics/01-dot-product.svg" alt="..." caption="..." %}
+  Optional: width="70%" (max width on wide screens), localized="true" (the file has _en/_zh/_ja
+  variants: path is given WITHOUT the suffix, e.g. ".../01-pipeline.svg" -> ".../01-pipeline_zh.svg").
+{% endcomment %}
+{% assign fig_path = include.path %}
+{% if include.localized %}
+  {% assign lang_suffix = site.active_lang | split: '-' | first %}
+  {% assign fig_ext = include.path | split: '.' | last %}
+  {% assign base_len = include.path.size | minus: fig_ext.size | minus: 1 %}
+  {% assign fig_base = include.path | slice: 0, base_len %}
+  {% assign fig_path = fig_base | append: '_' | append: lang_suffix | append: '.' | append: fig_ext %}
+{% endif %}
+<figure class="blog-fig"{% if include.width %} style="--fig-w: {{ include.width }}"{% endif %}>
+  <img src="{{ fig_path | relative_url }}" alt="{{ include.alt | default: include.caption | markdownify | strip_html | strip | escape }}" loading="lazy" decoding="async">
+  {% if include.caption %}<figcaption>{{ include.caption | markdownify | remove: '<p>' | remove: '</p>' | strip }}</figcaption>{% endif %}
+</figure>
