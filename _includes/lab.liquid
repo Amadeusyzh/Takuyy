@@ -41,7 +41,9 @@
   .gw-tag-label { color: var(--global-text-color-light); }
   .gw-tag { background: var(--global-theme-color); color: var(--global-bg-color); border-radius: 4px; padding: 0 0.4rem; }
   .gw-ui [hidden] { display: none !important; }
-  .lab-stage .gw-flash { position: absolute; left: 50%; top: 45%; transform: translate(-50%, -50%); padding: 0.4rem 0.9rem; border-radius: 6px; background: rgba(0, 0, 0, 0.55); color: #fff; font-size: 0.85rem; pointer-events: none; opacity: 0; transition: opacity 0.4s; }
+  .lab-stage .gw-flash { position: absolute; left: 50%; top: 45%; transform: translate(-50%, -50%); max-width: 90%; text-align: center; padding: 0.4rem 0.9rem; border-radius: 6px; background: rgba(0, 0, 0, 0.55); color: #fff; font-size: 0.85rem; pointer-events: none; opacity: 0; transition: opacity 0.4s; }
+  .lab-stage .gw-drop { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; border: 2px dashed rgba(255, 255, 255, 0.7); border-radius: 8px; background: rgba(0, 0, 0, 0.45); color: #fff; font-size: 0.95rem; pointer-events: none; opacity: 0; transition: opacity 0.2s; }
+  .lab-stage.gw-dragover .gw-drop { opacity: 1; }
   .lab-caption { margin-top: 0.6rem; font-size: 0.85rem; line-height: 1.55; color: var(--global-text-color-light); }
 </style>
 <section class="lab" id="lab" data-nogl="{{ t.nogl }}" data-nogl2="{{ t.nogl2 }}">
@@ -49,6 +51,7 @@
   <p class="lab-intro">{{ t.intro }}</p>
   <div class="lab-tabs" role="tablist">
     <button type="button" role="tab" aria-selected="true" aria-controls="lab-pt" id="lab-tab-pt">{{ t.tab_pt }}</button>
+    <button type="button" role="tab" aria-selected="false" aria-controls="lab-rs" id="lab-tab-rs">{{ t.tab_rs }}</button>
     <button type="button" role="tab" aria-selected="false" aria-controls="lab-gs" id="lab-tab-gs">{{ t.tab_gs }}</button>
     <button type="button" role="tab" aria-selected="false" aria-controls="lab-cloth" id="lab-tab-cloth">{{ t.tab_cloth }}</button>
     <button type="button" role="tab" aria-selected="false" aria-controls="lab-fov" id="lab-tab-fov">{{ t.tab_fov }}</button>
@@ -96,22 +99,50 @@
     </div>
     <p class="lab-caption">{{ t.pt_caption }}</p>
   </div>
-  <div class="lab-panel" role="tabpanel" id="lab-gs" aria-labelledby="lab-tab-gs" data-stats="{{ t.gs_stats }}" data-understood="{{ t.gw_understood }}" data-loading="{{ t.gw_loading }}" data-loaded="{{ t.gw_loaded }}" data-full="{{ t.gw_full }}" data-tags='{{ t.gw_tags | jsonify }}' hidden>
+  <div class="lab-panel" role="tabpanel" id="lab-rs" aria-labelledby="lab-tab-rs" data-stats="{{ t.rs_stats }}" hidden>
+    <div class="lab-stage">
+      <canvas aria-label="{{ t.tab_rs }}" role="img" style="touch-action: none; cursor: grab"></canvas>
+      <span class="lab-hint">{{ t.rs_hint }}</span>
+      <span class="lab-stats"></span>
+    </div>
+    <div class="lab-controls">
+      <div class="lab-seg" role="group">
+        <button type="button" class="lab-b" data-rmode="0">{{ t.rs_uniform }}</button>
+        <button type="button" class="lab-b" data-rmode="1">{{ t.rs_ris }}</button>
+        <button type="button" class="lab-b" data-rmode="2">{{ t.rs_temporal }}</button>
+        <button type="button" class="lab-b" data-rmode="3">{{ t.rs_spatial }}</button>
+      </div>
+      <span>{{ t.rs_lights }}</span>
+      <div class="lab-seg" role="group">
+        <button type="button" class="lab-b" data-lights="128">128</button>
+        <button type="button" class="lab-b" data-lights="512">512</button>
+        <button type="button" class="lab-b" data-lights="1024">1024</button>
+      </div>
+      <label>{{ t.rs_candidates }} <input type="range" data-input="candidates" min="1" max="64" step="1"> <span class="rs-m"></span></label>
+      <div class="lab-seg" role="group">
+        <button type="button" class="lab-b" data-toggle="animate">{{ t.rs_animate }}</button>
+        <button type="button" class="lab-b" data-toggle="walk">{{ t.rs_walk }}</button>
+      </div>
+    </div>
+    <p class="lab-caption">{{ t.rs_caption }}</p>
+  </div>
+  <div class="lab-panel" role="tabpanel" id="lab-gs" aria-labelledby="lab-tab-gs" data-stats="{{ t.gs_stats }}" data-understood="{{ t.gw_understood }}" data-loading="{{ t.gw_loading }}" data-loaded="{{ t.gw_loaded }}" data-full="{{ t.gw_full }}" data-stats-capture="{{ t.gs_stats_capture }}" data-ply-loading="{{ t.gw_ply_loading }}" data-ply-loaded="{{ t.gw_ply_loaded }}" data-ply-capped="{{ t.gw_ply_capped }}" data-ply-bad="{{ t.gw_ply_bad }}" data-ply-big="{{ t.gw_ply_big }}" data-drop="{{ t.gw_drop }}" data-tags='{{ t.gw_tags | jsonify }}' hidden>
     <div class="lab-stage">
       <canvas aria-label="{{ t.tab_gs }}" role="img" style="touch-action: none; cursor: grab; outline: none"></canvas>
       <span class="lab-hint">{{ t.gs_hint }}</span>
       <span class="lab-stats"></span>
       <span class="gw-flash"></span>
+      <span class="gw-drop">{{ t.gw_drop }}</span>
     </div>
     <div class="gw-ui">
-      <div class="gw-promptbar">
+      <div class="gw-promptbar gw-gen">
         <input type="text" class="gw-prompt" placeholder="{{ t.gw_placeholder }}" aria-label="{{ t.gw_placeholder }}">
         <button type="button" class="lab-b lab-solo gw-go" data-action="generate">{{ t.gw_generate }}</button>
         <button type="button" class="lab-b lab-solo" data-action="random">{{ t.gw_random }}</button>
       </div>
-      <div class="gw-presets">{% for pr in t.gw_presets %}<button type="button" class="gw-chip" data-preset-prompt="{{ pr }}">{{ pr }}</button>{% endfor %}</div>
-      <div class="gw-tags"></div>
-      <div class="lab-controls">
+      <div class="gw-presets gw-gen">{% for pr in t.gw_presets %}<button type="button" class="gw-chip" data-preset-prompt="{{ pr }}">{{ pr }}</button>{% endfor %}</div>
+      <div class="gw-tags gw-gen"></div>
+      <div class="lab-controls gw-gen">
         <div class="lab-seg" role="group">
           <button type="button" class="lab-b" data-tool="orbit">{{ t.t_orbit }}</button>
           <button type="button" class="lab-b" data-tool="walk">{{ t.t_walk }}</button>
@@ -141,7 +172,7 @@
         </div>
         <label class="gw-brush" hidden>{{ t.gw_brush }} <input type="range" data-input="brush" min="1" max="12" step="0.5"></label>
       </div>
-      <div class="lab-controls">
+      <div class="lab-controls gw-gen">
         <label>{{ t.gw_time }} <input type="range" data-input="time" min="0" max="24" step="0.05"> <span class="gw-time-label"></span></label>
         <div class="lab-seg" role="group">
           <button type="button" class="lab-b" data-season="0">{{ t.s_spring }}</button>
@@ -156,6 +187,8 @@
           <button type="button" class="lab-b" data-toggle="shadows">{{ t.gw_shadows }}</button>
           <button type="button" class="lab-b" data-toggle="timelapse">{{ t.gw_timelapse }}</button>
         </div>
+      </div>
+      <div class="lab-controls">
         <div class="lab-seg" role="group">
           <button type="button" class="lab-b" data-gmode="0">{{ t.g_render }}</button>
           <button type="button" class="lab-b" data-gmode="1">{{ t.g_ellip }}</button>
@@ -163,6 +196,10 @@
           <button type="button" class="lab-b" data-gmode="4">{{ t.g_overdraw }}</button>
           <button type="button" class="lab-b" data-gmode="3">{{ t.g_depth }}</button>
         </div>
+        <button type="button" class="lab-b lab-solo" data-action="load-ply">{{ t.gw_load }}</button>
+        <input type="file" class="gw-file" accept=".ply" hidden>
+        <button type="button" class="lab-b lab-solo gw-cap" data-action="flip" hidden>{{ t.gw_flip }}</button>
+        <button type="button" class="lab-b lab-solo gw-cap" data-action="back" hidden>{{ t.gw_back }}</button>
       </div>
     </div>
     <p class="lab-caption">{{ t.gs_caption }}</p>
@@ -208,4 +245,5 @@
 </section>
 <script defer src="{{ '/assets/js/lab.js' | relative_url }}"></script>
 <script defer src="{{ '/assets/js/lab-pathtracer.js' | relative_url }}"></script>
+<script defer src="{{ '/assets/js/lab-restir.js' | relative_url }}"></script>
 <script defer src="{{ '/assets/js/lab-splats.js' | relative_url }}"></script>

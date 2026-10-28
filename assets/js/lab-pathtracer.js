@@ -793,7 +793,7 @@
         statsEl.textContent = statsTpl
           .replace("{spp}", spp)
           .replace("{mps}", (raysPerSec / 1e6).toFixed(1))
-          .replace("{res}", W + "×" + H);
+          .replace("{res}", W + "\u00d7" + H);
     }
 
     // run only while visible
