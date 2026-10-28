@@ -31,6 +31,17 @@
   .pt-material[hidden] { display: none; }
   .pt-swatches { display: inline-flex; gap: 4px; }
   .pt-swatch { width: 20px; height: 20px; border-radius: 50%; border: 1px solid var(--global-divider-color); padding: 0; cursor: pointer; }
+  .gw-promptbar { display: flex; gap: 0.5rem; margin-top: 0.6rem; }
+  .gw-prompt { flex: 1; min-width: 0; padding: 0.35rem 0.6rem; border: 1px solid var(--global-divider-color); border-radius: 6px; background: var(--global-bg-color); color: var(--global-text-color); font-size: 0.9rem; }
+  .lab button.gw-go { background: var(--global-theme-color); color: var(--global-bg-color); }
+  .gw-presets { display: flex; flex-wrap: wrap; gap: 0.35rem; margin-top: 0.45rem; }
+  .gw-chip { border: 1px solid var(--global-divider-color); border-radius: 999px; background: transparent; color: var(--global-text-color-light); font-size: 0.75rem; padding: 0.15rem 0.6rem; cursor: pointer; }
+  .gw-chip:hover { color: var(--global-theme-color); border-color: var(--global-theme-color); }
+  .gw-tags { display: flex; flex-wrap: wrap; gap: 0.3rem; align-items: center; margin-top: 0.4rem; font-size: 0.75rem; min-height: 1.2rem; }
+  .gw-tag-label { color: var(--global-text-color-light); }
+  .gw-tag { background: var(--global-theme-color); color: var(--global-bg-color); border-radius: 4px; padding: 0 0.4rem; }
+  .gw-ui [hidden] { display: none !important; }
+  .lab-stage .gw-flash { position: absolute; left: 50%; top: 45%; transform: translate(-50%, -50%); padding: 0.4rem 0.9rem; border-radius: 6px; background: rgba(0, 0, 0, 0.55); color: #fff; font-size: 0.85rem; pointer-events: none; opacity: 0; transition: opacity 0.4s; }
   .lab-caption { margin-top: 0.6rem; font-size: 0.85rem; line-height: 1.55; color: var(--global-text-color-light); }
 </style>
 <section class="lab" id="lab" data-nogl="{{ t.nogl }}" data-nogl2="{{ t.nogl2 }}">
@@ -85,26 +96,74 @@
     </div>
     <p class="lab-caption">{{ t.pt_caption }}</p>
   </div>
-  <div class="lab-panel" role="tabpanel" id="lab-gs" aria-labelledby="lab-tab-gs" data-stats="{{ t.gs_stats }}" hidden>
+  <div class="lab-panel" role="tabpanel" id="lab-gs" aria-labelledby="lab-tab-gs" data-stats="{{ t.gs_stats }}" data-understood="{{ t.gw_understood }}" data-loading="{{ t.gw_loading }}" data-loaded="{{ t.gw_loaded }}" data-full="{{ t.gw_full }}" data-tags='{{ t.gw_tags | jsonify }}' hidden>
     <div class="lab-stage">
-      <canvas aria-label="{{ t.tab_gs }}" role="img" style="touch-action: pan-y; cursor: grab"></canvas>
+      <canvas aria-label="{{ t.tab_gs }}" role="img" style="touch-action: none; cursor: grab; outline: none"></canvas>
       <span class="lab-hint">{{ t.gs_hint }}</span>
       <span class="lab-stats"></span>
+      <span class="gw-flash"></span>
     </div>
-    <div class="lab-controls">
-      <div class="lab-seg" role="group">
-        <button type="button" class="lab-b" data-gmode="0" aria-pressed="true">{{ t.g_render }}</button>
-        <button type="button" class="lab-b" data-gmode="1" aria-pressed="false">{{ t.g_ellip }}</button>
-        <button type="button" class="lab-b" data-gmode="2" aria-pressed="false">{{ t.g_centers }}</button>
-        <button type="button" class="lab-b" data-gmode="3" aria-pressed="false">{{ t.g_overdraw }}</button>
-        <button type="button" class="lab-b" data-gmode="4" aria-pressed="false">{{ t.g_depth }}</button>
+    <div class="gw-ui">
+      <div class="gw-promptbar">
+        <input type="text" class="gw-prompt" placeholder="{{ t.gw_placeholder }}" aria-label="{{ t.gw_placeholder }}">
+        <button type="button" class="lab-b lab-solo gw-go" data-action="generate">{{ t.gw_generate }}</button>
+        <button type="button" class="lab-b lab-solo" data-action="random">{{ t.gw_random }}</button>
       </div>
-      <div class="lab-seg" role="group">
-        <button type="button" class="lab-b" data-toggle="sh">{{ t.g_sh }}</button>
-        <button type="button" class="lab-b" data-toggle="spin">{{ t.g_spin }}</button>
+      <div class="gw-presets">{% for pr in t.gw_presets %}<button type="button" class="gw-chip" data-preset-prompt="{{ pr }}">{{ pr }}</button>{% endfor %}</div>
+      <div class="gw-tags"></div>
+      <div class="lab-controls">
+        <div class="lab-seg" role="group">
+          <button type="button" class="lab-b" data-tool="orbit">{{ t.t_orbit }}</button>
+          <button type="button" class="lab-b" data-tool="walk">{{ t.t_walk }}</button>
+          <button type="button" class="lab-b" data-tool="place">{{ t.t_place }}</button>
+          <button type="button" class="lab-b" data-tool="erase">{{ t.t_erase }}</button>
+          <button type="button" class="lab-b" data-tool="raise">{{ t.t_raise }}</button>
+          <button type="button" class="lab-b" data-tool="lower">{{ t.t_lower }}</button>
+          <button type="button" class="lab-b" data-tool="smooth">{{ t.t_smooth }}</button>
+          <button type="button" class="lab-b" data-tool="paint">{{ t.t_paint }}</button>
+        </div>
+        <div class="lab-seg gw-objs" role="group" hidden>
+          <button type="button" class="lab-b" data-obj="tree">{{ t.o_tree }}</button>
+          <button type="button" class="lab-b" data-obj="pine">{{ t.o_pine }}</button>
+          <button type="button" class="lab-b" data-obj="sakura">{{ t.o_sakura }}</button>
+          <button type="button" class="lab-b" data-obj="rock">{{ t.o_rock }}</button>
+          <button type="button" class="lab-b" data-obj="flowers">{{ t.o_flowers }}</button>
+          <button type="button" class="lab-b" data-obj="cabin">{{ t.o_cabin }}</button>
+          <button type="button" class="lab-b" data-obj="lantern">{{ t.o_lantern }}</button>
+        </div>
+        <div class="lab-seg gw-biomes" role="group" hidden>
+          <button type="button" class="lab-b" data-biome="1">{{ t.b_grass }}</button>
+          <button type="button" class="lab-b" data-biome="2">{{ t.b_meadow }}</button>
+          <button type="button" class="lab-b" data-biome="3">{{ t.b_sand }}</button>
+          <button type="button" class="lab-b" data-biome="4">{{ t.b_snow }}</button>
+          <button type="button" class="lab-b" data-biome="5">{{ t.b_rock }}</button>
+          <button type="button" class="lab-b" data-biome="6">{{ t.b_path }}</button>
+        </div>
+        <label class="gw-brush" hidden>{{ t.gw_brush }} <input type="range" data-input="brush" min="1" max="12" step="0.5"></label>
       </div>
-      <label>{{ t.g_scale }} <input type="range" data-input="gscale" min="0.1" max="1.6" step="0.01" value="1"></label>
-      <label>{{ t.g_count }} <input type="range" data-input="gcount" min="0.02" max="1" step="0.01" value="1"></label>
+      <div class="lab-controls">
+        <label>{{ t.gw_time }} <input type="range" data-input="time" min="0" max="24" step="0.05"> <span class="gw-time-label"></span></label>
+        <div class="lab-seg" role="group">
+          <button type="button" class="lab-b" data-season="0">{{ t.s_spring }}</button>
+          <button type="button" class="lab-b" data-season="1">{{ t.s_summer }}</button>
+          <button type="button" class="lab-b" data-season="2">{{ t.s_autumn }}</button>
+          <button type="button" class="lab-b" data-season="3">{{ t.s_winter }}</button>
+        </div>
+        <label>{{ t.gw_wind }} <input type="range" data-input="wind" min="0" max="2.5" step="0.05"></label>
+        <label>{{ t.gw_fog }} <input type="range" data-input="fog" min="0" max="0.06" step="0.001"></label>
+        <label>{{ t.gw_water }} <input type="range" data-input="water" min="-2" max="2.5" step="0.05"></label>
+        <div class="lab-seg" role="group">
+          <button type="button" class="lab-b" data-toggle="shadows">{{ t.gw_shadows }}</button>
+          <button type="button" class="lab-b" data-toggle="timelapse">{{ t.gw_timelapse }}</button>
+        </div>
+        <div class="lab-seg" role="group">
+          <button type="button" class="lab-b" data-gmode="0">{{ t.g_render }}</button>
+          <button type="button" class="lab-b" data-gmode="1">{{ t.g_ellip }}</button>
+          <button type="button" class="lab-b" data-gmode="2">{{ t.g_centers }}</button>
+          <button type="button" class="lab-b" data-gmode="4">{{ t.g_overdraw }}</button>
+          <button type="button" class="lab-b" data-gmode="3">{{ t.g_depth }}</button>
+        </div>
+      </div>
     </div>
     <p class="lab-caption">{{ t.gs_caption }}</p>
   </div>

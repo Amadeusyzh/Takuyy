@@ -88,6 +88,12 @@ footer:
 footer_text: Powered by <a href="https://jekyllrb.com/" target="_blank">Jekyll</a> with the <a href="https://github.com/george-gca/multi-language-al-folio">al-folio</a> theme. Hosted by <a href="https://pages.github.com/" target="_blank">GitHub Pages</a>.
 lab:
   aperture: Aperture
+  b_grass: Grass
+  b_meadow: Meadow
+  b_path: Path
+  b_rock: Rock
+  b_sand: Sand
+  b_snow: Snow
   ball: Ball
   bounces: Bounces
   cloth_caption: A 40 × 40 cloth simulated with Extended Position-Based Dynamics (XPBD, Macklin et al. 2016) using many small substeps, the same family of solvers found in game engines, VR, and the physics simulators that generate training data for embodied agents and world models. Drag the cloth to pull it, switch to Cut and swipe to slice it, or stretch it hard until it tears. Drag empty space to orbit the camera.
@@ -109,9 +115,52 @@ lab:
   g_sh: View-dependent (SH)
   g_spin: Auto-rotate
   grab: Grab
-  gs_caption: 3D Gaussian Splatting (Kerbl et al., SIGGRAPH 2023) represents a scene as millions of anisotropic 3D Gaussians and renders photorealistic novel views in real time, which makes it a key representation for AR/VR capture and world models. Here about 85,000 Gaussians form a procedurally generated bonsai, a nod to the paper's well-known scene. Every frame, each Gaussian's 3D covariance is projected into a 2D ellipse through the Jacobian of the perspective transform (EWA splatting). All Gaussians are then depth-sorted with a 16-bit counting sort and alpha-composited back to front. A first-order view-dependent term mimics spherical harmonics, so the highlights on the glazed pot move as you orbit. Switch views to see the ellipsoids, the centres, or how many splats overlap each pixel. Drag to orbit; click inside, then scroll to zoom.
-  gs_hint: drag to orbit · click, then scroll to zoom
-  gs_stats: '{n} Gaussians · sort {ms} ms · {fps} fps'
+  gs_caption: 'An editable open world made of around 200,000 3D Gaussians, in the spirit of generative world models such as Genie 3 and World Labs'' Marble. Describe a world or pick a preset. A keyword-driven procedural generator stands in for a learned model here: it reads the prompt (in English, Chinese or Japanese) and builds the terrain, lakes, forests, villages and weather. Everything is drawn with the 3D Gaussian Splatting pipeline (Kerbl et al. 2023): EWA projection of each covariance, a depth sort in a Web Worker, and back-to-front alpha compositing. Unlike a frozen capture, the Gaussians stay live. They are relit on the GPU for any time of day, cast sun shadows through a splatted shadow map, sway in the wind and follow the seasons. Terrain Gaussians re-derive their height, normal, orientation and material from an editable heightfield every frame. You can sculpt and paint the land, place or erase trees, rocks, cabins and lanterns, flood the valley, and walk through it in first person
+    (Walk, then WASD and drag to look).'
+  gs_hint: 'drag: orbit · shift/right-drag: pan · click, then scroll: zoom'
+  gs_stats: '{n} Gaussians · {o} objects · sort {ms} ms · {fps} fps'
+  gw_brush: Brush
+  gw_fog: Fog
+  gw_full: 'Too many Gaussians: erase something first'
+  gw_generate: Generate
+  gw_loaded: World ready
+  gw_loading: Generating world…
+  gw_placeholder: Describe a world, e.g. snowy pine valley with a frozen lake at dawn
+  gw_presets:
+  - Alpine lake at dawn with a pine forest and a small village
+  - Autumn forest valley at sunset
+  - Sakura village at night with lanterns
+  - Snowy mountains with pine trees at noon
+  - Desert oasis at sunset
+  - Misty island in summer with flowers
+  gw_random: Surprise me
+  gw_shadows: Shadows
+  gw_tags:
+    autumn: autumn
+    dawn: dawn
+    desert: desert
+    flowers: flowers
+    fog: fog
+    forest: forest
+    island: island
+    lake: lake
+    lantern: lanterns
+    meadow: meadow
+    mountain: mountains
+    night: night
+    noon: noon
+    pine: pine forest
+    spring: spring
+    summer: summer
+    sunset: sunset
+    village: village
+    wind: wind
+    winter: winter
+  gw_time: Time
+  gw_timelapse: Time-lapse
+  gw_understood: 'Understood:'
+  gw_water: Water level
+  gw_wind: Wind
   intro: Four real-time graphics demos related to my research, written from scratch in WebGL and running entirely in your browser.
   light: Light size
   m_diffuse: Diffuse
@@ -123,6 +172,13 @@ lab:
   nogl: Your browser does not support WebGL, so this demo cannot run.
   nogl2: This demo needs WebGL 2 with floating-point render targets, which your browser does not support.
   nosel: Click an object to edit its material
+  o_cabin: Cabin
+  o_flowers: Flowers
+  o_lantern: Lantern
+  o_pine: Pine
+  o_rock: Rock
+  o_sakura: Sakura
+  o_tree: Tree
   obj0: Glass sphere
   obj1: Gold sphere
   obj2: Box
@@ -137,11 +193,23 @@ lab:
   reset: Reset
   resume: Play
   roughness: Roughness
+  s_autumn: Autumn
+  s_spring: Spring
+  s_summer: Summer
+  s_winter: Winter
   sampling: Sampling
   stiffness: Stiffness
+  t_erase: Erase
+  t_lower: Lower
+  t_orbit: Orbit
+  t_paint: Paint
+  t_place: Place
+  t_raise: Raise
+  t_smooth: Smooth
+  t_walk: Walk
   tab_cloth: Cloth · XPBD
   tab_fov: Foveated Rendering
-  tab_gs: Gaussian Splatting
+  tab_gs: Gaussian World
   tab_pt: Path Tracing
   tear: Tearing
   title: Interactive Lab

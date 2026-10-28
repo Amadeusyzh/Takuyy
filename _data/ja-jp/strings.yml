@@ -88,6 +88,12 @@ footer:
 footer_text: <a href="https://jekyllrb.com/" target="_blank">Jekyll</a> と <a href="https://github.com/george-gca/multi-language-al-folio">al-folio</a> テーマで構築、<a href="https://pages.github.com/" target="_blank">GitHub Pages</a> でホスト。
 lab:
   aperture: 絞り
+  b_grass: 草地
+  b_meadow: 花畑
+  b_path: 小道
+  b_rock: 岩場
+  b_sand: 砂地
+  b_snow: 雪原
   ball: ボール
   bounces: 反射回数
   cloth_caption: 40 × 40 の布を、拡張位置ベース動力学（XPBD、Macklin ら 2016）と多数の小さなサブステップでリアルタイムに解いています。この種のソルバーはゲームエンジンや VR、さらに身体性エージェントや世界モデルの学習データを生成する物理シミュレータでも使われています。布をドラッグすると引っ張れます。「カット」に切り替えてなぞると切断でき、強く引っ張りすぎると破れます。背景をドラッグすると視点を回転できます。
@@ -109,9 +115,51 @@ lab:
   g_sh: 視点依存色（SH）
   g_spin: 自動回転
   grab: つかむ
-  gs_caption: 3D ガウシアンスプラッティング（Kerbl ら、SIGGRAPH 2023）は、シーンを数百万個の異方性 3D ガウシアンで表現し、写実的な新規視点をリアルタイムに描画する手法で、AR/VR のキャプチャや世界モデルの重要な表現になっています。ここでは約 85,000 個のガウシアンで、手続き的に生成した盆栽（論文で有名な bonsai シーンへのオマージュ）を構成しています。毎フレーム、各ガウシアンの 3D 共分散を透視変換のヤコビアンで画面上の 2D 楕円に射影し（EWA スプラッティング）、全ガウシアンを深度ソート（16 ビット計数ソート）して奥から手前へアルファ合成します。1 次の視点依存色項で球面調和関数を模しているため、回転すると釉薬のかかった鉢のハイライトが動きます。表示を切り替えると、楕円体・中心点・各ピクセルの重なり数を確認できます。ドラッグで回転、クリック後にスクロールでズームできます。
-  gs_hint: ドラッグで回転 · クリック後スクロールでズーム
-  gs_stats: ガウシアン {n} 個 · ソート {ms} ms · {fps} fps
+  gs_caption: 約 20 万個の 3D ガウシアンでできた、編集可能なオープンワールドです。Genie 3 や World Labs の Marble といった生成型ワールドモデルに着想を得ています。世界を言葉で描写するかプリセットを選ぶと生成されます。ここでは学習済みモデルの代わりに、キーワードベースの手続き的ジェネレーターが日本語・英語・中国語のプロンプトを読み取り、地形・湖・森・集落・天候を作ります。描画はすべて 3D Gaussian Splatting（Kerbl ら 2023）のパイプラインで行っています：共分散の EWA 射影、Web Worker での深度ソート、奥から手前へのアルファ合成です。固定されたキャプチャとは違い、ここでのガウシアンは「生きて」います。任意の時刻に合わせて GPU 上で再ライティングされ、スプラット型シャドウマップで太陽の影を落とし、風に揺れ、季節に応じて変化します。地形のガウシアンは毎フレーム、編集可能なハイトフィールドから高さ・法線・向き・材質を導き直します。地形の造形やペイント、木・岩・小屋・灯籠の配置と消去、水位を上げて谷を沈めることができ、一人称で歩き回ることもできます（「歩く」を選び、WASD で移動、ドラッグで視点）。
+  gs_hint: ドラッグ：周回 · Shift/右ドラッグ：移動 · クリック後スクロール：ズーム
+  gs_stats: ガウシアン {n} 個 · オブジェクト {o} · ソート {ms} ms · {fps} fps
+  gw_brush: ブラシ
+  gw_fog: 霧
+  gw_full: ガウシアン数が上限です。先にいくつか消してください
+  gw_generate: 生成
+  gw_loaded: 生成しました
+  gw_loading: 世界を生成中…
+  gw_placeholder: 世界を言葉で描写してください（例：夜明けの凍った湖と雪の松林）
+  gw_presets:
+  - 夜明けの高原の湖と松林、小さな集落
+  - 夕暮れの秋の森の谷
+  - 提灯が灯る夜の桜の村
+  - 正午の雪山と松の木
+  - 夕焼けの砂漠のオアシス
+  - 霧に包まれた夏の花の島
+  gw_random: おまかせ
+  gw_shadows: 影
+  gw_tags:
+    autumn: 秋
+    dawn: 夜明け
+    desert: 砂漠
+    flowers: 花
+    fog: 霧
+    forest: 森
+    island: 島
+    lake: 湖
+    lantern: 灯籠
+    meadow: 草原
+    mountain: 山岳
+    night: 夜
+    noon: 正午
+    pine: 松林
+    spring: 春
+    summer: 夏
+    sunset: 夕暮れ
+    village: 集落
+    wind: 強風
+    winter: 冬
+  gw_time: 時刻
+  gw_timelapse: タイムラプス
+  gw_understood: 解釈：
+  gw_water: 水位
+  gw_wind: 風
   intro: 研究に関連する 4 つのリアルタイムグラフィックスデモです。WebGL でゼロから実装しており、すべてブラウザ上で動作します。
   light: 光源サイズ
   m_diffuse: 拡散
@@ -123,6 +171,13 @@ lab:
   nogl: お使いのブラウザは WebGL に対応していないため、デモを表示できません。
   nogl2: このデモには浮動小数点レンダーターゲットに対応した WebGL 2 が必要ですが、お使いのブラウザは対応していません。
   nosel: オブジェクトをクリックして材質を編集
+  o_cabin: 小屋
+  o_flowers: 花
+  o_lantern: 灯籠
+  o_pine: 松
+  o_rock: 岩
+  o_sakura: 桜
+  o_tree: 広葉樹
   obj0: ガラス球
   obj1: 金の球
   obj2: 箱
@@ -137,11 +192,23 @@ lab:
   reset: リセット
   resume: 再生
   roughness: 粗さ
+  s_autumn: 秋
+  s_spring: 春
+  s_summer: 夏
+  s_winter: 冬
   sampling: サンプリング
   stiffness: 剛性
+  t_erase: 消去
+  t_lower: 沈降
+  t_orbit: 周回
+  t_paint: ペイント
+  t_place: 配置
+  t_raise: 隆起
+  t_smooth: 平滑化
+  t_walk: 歩く
   tab_cloth: 布 · XPBD
   tab_fov: 中心窩レンダリング
-  tab_gs: 3D ガウシアンスプラッティング
+  tab_gs: ガウシアンワールド
   tab_pt: パストレーシング
   tear: 破れる
   title: インタラクティブラボ

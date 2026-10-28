@@ -88,6 +88,12 @@ footer:
 footer_text: 基于 <a href="https://jekyllrb.com/" target="_blank">Jekyll</a> 与 <a href="https://github.com/george-gca/multi-language-al-folio">al-folio</a> 主题构建，托管于 <a href="https://pages.github.com/" target="_blank">GitHub Pages</a>。
 lab:
   aperture: 光圈
+  b_grass: 草地
+  b_meadow: 花海
+  b_path: 小路
+  b_rock: 岩石
+  b_sand: 沙地
+  b_snow: 雪地
   ball: 小球
   bounces: 弹射次数
   cloth_caption: 一块 40 × 40 的布料，用扩展位置动力学（XPBD，Macklin 等，2016）配合大量小子步实时求解。这类求解器广泛用于游戏引擎、VR，以及为具身智能体和世界模型生成训练数据的物理仿真器。拖动布料可以拉扯它；切换到「剪切」后划过布料可以把它剪开；用力拉扯超过极限它会被撕裂。拖动空白处可以旋转视角。
@@ -109,9 +115,51 @@ lab:
   g_sh: 视角相关颜色（SH）
   g_spin: 自动旋转
   grab: 拉扯
-  gs_caption: 3D 高斯泼溅（3D Gaussian Splatting，Kerbl 等，SIGGRAPH 2023）把场景表示为数百万个各向异性的 3D 高斯，能实时渲染照片级的新视角，是 AR/VR 场景采集和世界模型中的关键表示。这里约 85,000 个高斯组成了一棵程序化生成的盆景（致敬论文中著名的 bonsai 场景）。每一帧，每个高斯的 3D 协方差都通过透视变换的雅可比矩阵投影成屏幕上的 2D 椭圆（EWA splatting），然后对所有高斯做深度排序（16 位计数排序），再从后往前进行 alpha 合成。一阶的视角相关颜色项模拟了球谐函数：旋转时能看到釉面花盆上的高光在移动。切换视图可以看到椭球体、中心点，以及每个像素被多少个高斯覆盖。拖动旋转；点击画面后滚动滚轮可缩放。
-  gs_hint: 拖动旋转 · 点击后滚轮缩放
-  gs_stats: '{n} 个高斯 · 排序 {ms} ms · {fps} fps'
+  gs_caption: 一个由约 20 万个 3D 高斯组成、可编辑的开放世界，灵感来自 Genie 3、World Labs Marble 等生成式世界模型。输入一段描述或选择预设即可生成世界——这里用一个基于关键词的程序化生成器代替学习得到的模型：它读取中文、英文或日文提示词，生成地形、湖泊、森林、村庄和天气。所有内容都按 3D Gaussian Splatting（Kerbl 等 2023）的管线渲染：协方差的 EWA 投影、在 Web Worker 中做深度排序、从后往前 alpha 合成。与冻结的采集结果不同，这里的高斯是“活”的：它们在 GPU 上按一天中任意时刻重新打光，通过泼溅式阴影贴图投射阳光阴影，随风摆动、随四季变化；地形高斯每一帧都从可编辑的高度场重新推导自己的高度、法线、朝向和材质。你可以雕刻、涂刷地形，放置或擦除树木、岩石、小木屋和灯笼，抬高水位淹没山谷，还能第一人称漫游其中（选「漫游」，WASD 移动，拖动转向）。
+  gs_hint: 拖动：环视 · Shift/右键拖动：平移 · 点击后滚轮：缩放
+  gs_stats: '{n} 个高斯 · {o} 个物体 · 排序 {ms} ms · {fps} fps'
+  gw_brush: 笔刷
+  gw_fog: 雾
+  gw_full: 高斯数量已达上限，请先擦除一些物体
+  gw_generate: 生成
+  gw_loaded: 世界已生成
+  gw_loading: 正在生成世界……
+  gw_placeholder: 描述一个世界，例如：黎明时分结冰湖泊旁的雪中松林
+  gw_presets:
+  - 黎明的高山湖泊，松林和小村庄
+  - 黄昏的秋日森林山谷
+  - 夜晚挂满灯笼的樱花村
+  - 正午的雪山松林
+  - 日落时的沙漠绿洲
+  - 夏天雾气笼罩、开满鲜花的小岛
+  gw_random: 随机
+  gw_shadows: 阴影
+  gw_tags:
+    autumn: 秋季
+    dawn: 黎明
+    desert: 沙漠
+    flowers: 花
+    fog: 雾
+    forest: 森林
+    island: 海岛
+    lake: 湖泊
+    lantern: 灯笼
+    meadow: 草原
+    mountain: 高山
+    night: 夜晚
+    noon: 正午
+    pine: 松林
+    spring: 春季
+    summer: 夏季
+    sunset: 黄昏
+    village: 村庄
+    wind: 大风
+    winter: 冬季
+  gw_time: 时间
+  gw_timelapse: 延时
+  gw_understood: 理解为：
+  gw_water: 水位
+  gw_wind: 风力
   intro: 四个和我研究方向相关的实时图形学 demo，用 WebGL 从零手写，完全在你的浏览器里运行。
   light: 光源大小
   m_diffuse: 漫反射
@@ -123,6 +171,13 @@ lab:
   nogl: 你的浏览器不支持 WebGL，无法运行此演示。
   nogl2: 此演示需要支持浮点渲染目标的 WebGL 2，你的浏览器不支持。
   nosel: 点击物体以编辑材质
+  o_cabin: 小木屋
+  o_flowers: 花丛
+  o_lantern: 灯笼
+  o_pine: 松树
+  o_rock: 岩石
+  o_sakura: 樱花树
+  o_tree: 阔叶树
   obj0: 玻璃球
   obj1: 金球
   obj2: 方块
@@ -137,11 +192,23 @@ lab:
   reset: 重置
   resume: 播放
   roughness: 粗糙度
+  s_autumn: 秋
+  s_spring: 春
+  s_summer: 夏
+  s_winter: 冬
   sampling: 采样
   stiffness: 刚度
+  t_erase: 擦除
+  t_lower: 降低
+  t_orbit: 环视
+  t_paint: 涂刷
+  t_place: 放置
+  t_raise: 抬高
+  t_smooth: 平滑
+  t_walk: 漫游
   tab_cloth: 布料 · XPBD
   tab_fov: 注视点渲染
-  tab_gs: 3D 高斯泼溅
+  tab_gs: 高斯世界
   tab_pt: 路径追踪
   tear: 可撕裂
   title: 交互实验室
