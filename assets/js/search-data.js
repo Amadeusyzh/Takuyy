@@ -41,7 +41,84 @@ ninja.data = [{
           handler: () => {
             window.location.href = "/Takuyy/cv/";
           },
-        },{id: "post-hello-world",
+        },{id: "post-physically-based-simulation-particles-cloth-pbd-and-xpbd",
+        
+          title: "Physically based simulation: particles, cloth, PBD and XPBD",
+        
+        description: "Time integrators, mass-spring cloth, Position Based Dynamics and a full derivation of XPBD, with a NumPy cloth solver, plus a tour of rigid bodies and particle fluids.",
+        section: "Posts",
+        handler: () => {
+          
+            window.location.href = "/Takuyy/blog/2026/graphics-07-physically-based-simulation/";
+          
+        },
+      },{id: "post-real-time-ray-tracing-rt-hardware-denoising-restir-and-neural-caches",
+        
+          title: "Real-time ray tracing: RT hardware, denoising, ReSTIR and neural caches",
+        
+        description: "How games path trace at one sample per pixel: acceleration structures and RT cores, hybrid pipelines, temporal reuse, à-trous/SVGF denoising, ReSTIR resampling, TAA, DLSS and neural radiance caching.",
+        section: "Posts",
+        handler: () => {
+          
+            window.location.href = "/Takuyy/blog/2026/graphics-06-real-time-ray-tracing/";
+          
+        },
+      },{id: "post-ray-tracing-and-path-tracing-from-intersections-to-unbiased-global-illumination",
+        
+          title: "Ray tracing and path tracing: from intersections to unbiased global illumination",
+        
+        description: "Ray-sphere and Möller-Trumbore intersection, BVHs with the SAH, Monte Carlo integration, importance sampling, Russian roulette, next-event estimation and MIS, ending in a compact NumPy path tracer.",
+        section: "Posts",
+        handler: () => {
+          
+            window.location.href = "/Takuyy/blog/2026/graphics-05-ray-and-path-tracing/";
+          
+        },
+      },{id: "post-physically-based-rendering-radiometry-the-rendering-equation-and-ggx",
+        
+          title: "Physically based rendering: radiometry, the rendering equation and GGX",
+        
+        description: "From watts to radiance, the rendering equation, BRDF properties, the GGX microfacet model, the metallic-roughness workflow and split-sum image-based lighting, with numerical checks and a GLSL shader.",
+        section: "Posts",
+        handler: () => {
+          
+            window.location.href = "/Takuyy/blog/2026/graphics-04-physically-based-rendering/";
+          
+        },
+      },{id: "post-shading-and-textures-lighting-models-normal-maps-filtering-and-shadows",
+        
+          title: "Shading and textures: lighting models, normal maps, filtering and shadows",
+        
+        description: "Lambert, Phong and Blinn-Phong, flat/Gouraud/Phong shading, UVs and tangent space, mipmaps and anisotropic filtering, and shadow mapping with bias and PCF, with NumPy and GLSL code.",
+        section: "Posts",
+        handler: () => {
+          
+            window.location.href = "/Takuyy/blog/2026/graphics-03-shading-and-textures/";
+          
+        },
+      },{id: "post-rasterization-from-triangles-to-pixels",
+        
+          title: "Rasterization: from triangles to pixels",
+        
+        description: "The MVP pipeline, the perspective matrix derived step by step, clipping, edge functions, perspective-correct interpolation, the z-buffer and anti-aliasing, plus a complete software rasterizer in NumPy.",
+        section: "Posts",
+        handler: () => {
+          
+            window.location.href = "/Takuyy/blog/2026/graphics-02-rasterization/";
+          
+        },
+      },{id: "post-the-graphics-roadmap-and-the-math-toolkit",
+        
+          title: "The graphics roadmap and the math toolkit",
+        
+        description: "Where computer graphics goes from here to neural rendering, and the linear algebra you need first: vectors, homogeneous coordinates, rotations, coordinate spaces and normals.",
+        section: "Posts",
+        handler: () => {
+          
+            window.location.href = "/Takuyy/blog/2026/graphics-01-roadmap-and-math/";
+          
+        },
+      },{id: "post-hello-world",
         
           title: "Hello World",
         
