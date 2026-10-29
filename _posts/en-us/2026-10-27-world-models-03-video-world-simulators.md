@@ -31,6 +31,10 @@ A video model learns $p_\theta(x_{1:T} \mid c)$ for clips $x_{1:T}$ and conditio
 4. **Plausible dynamics**: objects fall, collide and occlude as in the target domain (a game's rules or real physics).
 5. **Speed**: for interaction it must run in real time, typically 20-30 frames per second.
 
+Requirement 1 is the important structural one; the figure shows the loop that every interactive model below runs.
+
+{% include blog_figure.liquid path="assets/img/blog/world-models/03-next-frame.svg" localized="true" width="85%" caption="Interactive next-frame prediction: the model sees a window of the last $N$ frames and actions and generates $x_{t+1}$, which is appended to the context while the oldest frame drops out. Everything the model 'knows' about the world must fit in this window, and its own errors are fed back in at the next step." %}
+
 Each system below solves a different subset of these. A compact way to compare them:
 
 | System | Year | Domain | Generator | Action input | Interactive in real time? |
@@ -44,6 +48,10 @@ Each system below solves a different subset of these. A compact way to compare t
 | Cosmos (NVIDIA) | 2025 | physical AI (robots, driving) | diffusion and AR world foundation models | via post-training | depends on model |
 | Genie 3 (Google DeepMind) | 2025 | general 3D worlds from text | not published | navigation + text "world events" | yes, 24 fps at 720p (per announcement) |
 
+On a time axis (months of the arXiv submissions or official announcements):
+
+{% include blog_figure.liquid path="assets/img/blog/world-models/03-timeline.svg" caption="Timeline of the systems in this post, plus DIAMOND (post 1) and Diffusion Forcing (Section 6). Orange: interactive in real time; purple: action-conditioned; grey: no action input. Within about two years the field went from offline, action-conditioned video prediction to real-time, playable worlds." %}
+
 ## 2. Sora: "Video generation models as world simulators"
 
 OpenAI's February 2024 technical report, ["Video generation models as world simulators"](https://openai.com/index/video-generation-models-as-world-simulators/), describes Sora at a high level (it explicitly omits model and implementation details):
@@ -51,6 +59,10 @@ OpenAI's February 2024 technical report, ["Video generation models as world simu
 - A **video compression network** maps raw video to a latent that is compressed in space and time (post 2, Section 6).
 - The latent is cut into **spacetime patches**, which act as tokens for a **diffusion Transformer** (post 2, Section 9). Because the model sees a variable-length set of patches, it can be trained on videos of native **duration, resolution and aspect ratio** instead of cropping everything to a fixed square.
 - Training videos are re-captioned with a descriptive captioner (the technique from DALL·E 3), and short user prompts are expanded by a language model.
+
+Spacetime patches are easiest to see in 3D:
+
+{% include blog_figure.liquid path="assets/img/blog/world-models/03-spacetime-patches.svg" width="75%" caption="A compressed video latent of $4 \times 4 \times 6$ (time, height, width) cut into $2 \times 2 \times 2$ spacetime patches, drawn slightly apart: each coloured block becomes one token, 12 in total. A longer, larger or wider video simply yields more tokens, which is why the model can train on native durations and aspect ratios. (The sizes here are illustrative; the report does not give Sora's patch sizes.)" %}
 
 The report's main claim is in its title: scaling video generation produces **emergent simulation capabilities**, which it lists as 3D consistency under camera motion, long-range coherence and object permanence (sometimes), simple interactions that change world state (a painter leaving strokes, a bite in a burger), and "simulating digital worlds" (it can render Minecraft while controlling the player with a basic policy). The same report lists failures: it does not accurately model the physics of many basic interactions such as glass shattering, and interactions like eating do not always yield correct state changes.
 
@@ -66,6 +78,10 @@ To train $p(x_{t+1} \mid x_{\le t}, a_t)$ you need action labels, but the vast m
 2. A **latent action model** (LAM) that infers a discrete action $\tilde a_t$ between consecutive frames (Section 3.2).
 3. A **dynamics model**, a MaskGIT-style ST-Transformer that predicts the next frame's tokens from past tokens and latent actions: $p(z_{t+1} \mid z_{\le t}, \tilde a_{\le t})$.
 
+The figure shows how the three parts are wired during training and during play.
+
+{% include blog_figure.liquid path="assets/img/blog/world-models/03-genie.svg" localized="true" caption="Genie. Training (top) needs only video: the tokenizer turns frames into tokens, the latent action model infers a code $\tilde a_t$ from each pair of consecutive frames, and the dynamics model learns to predict the next frame's tokens from past tokens and codes. Playing (bottom): the latent action model is discarded and the user chooses one of the 8 codes at every step." %}
+
 At inference time the LAM is discarded. A user (or an agent) picks one of the latent actions at every step, and the dynamics model plus tokenizer decoder render the result. Genie can be prompted with images it has never seen, including sketches and photographs, turning them into playable 2D worlds. The same recipe trained on robot videos learned consistent latent actions for a robot arm, and the paper shows that latent actions inferred from expert videos can be used to train a policy for an unseen game with very few labeled samples.
 
 ### 3.2 Latent action models
@@ -78,6 +94,10 @@ $$
 $$
 
 Because the past frames are given to the decoder, the cheapest way to use the 3-bit bottleneck is to encode **what changed and is not predictable from the past**, which in a game is mostly the player's input. The same principle appears in **LAPO** (Schmidt & Jiang, "Learning to Act without Actions", ICLR 2024, [arXiv:2312.10812](https://arxiv.org/abs/2312.10812)), which recovers latent-action policies and world models from Procgen videos and maps latent actions to real ones with a tiny labeled set. An older alternative is **VPT** (Baker et al., NeurIPS 2022, [arXiv:2206.11795](https://arxiv.org/abs/2206.11795)): train an inverse dynamics model on a small amount of labeled Minecraft play and use it to pseudo-label 70k hours of internet video.
+
+The figure shows why the bottleneck forces the code to mean 'action':
+
+{% include blog_figure.liquid path="assets/img/blog/world-models/03-lam.svg" localized="true" width="85%" caption="Latent action model. The encoder sees the past and the next frame, but only 3 bits ($\lvert\mathcal{A}\rvert = 8$ codes) pass to the decoder. Since the decoder already receives the past frames (dashed), the only useful thing to send through the bottleneck is what changed and cannot be predicted from the past, which in a game is mostly the player's input." %}
 
 Latent actions have known weaknesses: they can capture changes not caused by the agent (camera shake, other characters), they are not aligned across domains, and a small discrete codebook cannot express continuous control well. Section 8 has a runnable toy LAM.
 
@@ -102,7 +122,15 @@ Here $N$ is the number of past frames and actions in the context (64 in the pape
 
 The decisive trick is **noise augmentation of the context**. During training, the *conditioning* frames are corrupted with Gaussian noise of a random level, and that level is given to the model as an input. The model therefore learns to correct errors in its own context, which stops the autoregressive drift that otherwise destroys rollouts within a few seconds. The authors also fine-tune the latent decoder to reduce artifacts in the HUD, sample with only 4 DDIM steps, and report next-frame PSNR of 29.4 (comparable to lossy JPEG); human raters were only slightly better than chance at telling short clips of the real game from the simulation.
 
+Put together, one denoising pass of GameNGen looks like this:
+
+{% include blog_figure.liquid path="assets/img/blog/world-models/03-gamengen.svg" localized="true" caption="GameNGen as described in the paper: past frames are encoded by the Stable Diffusion autoencoder, corrupted with Gaussian noise of a random level $\sigma$ (which is also given to the model), and concatenated along channels with the noisy latent of the next frame. Embeddings of the past actions replace the text conditioning of the U-Net, and 4 DDIM steps produce $x_{t+1}$." %}
+
 GameNGen's limitation is equally instructive: with about three seconds of visual context, it has **no long-term memory**. Game state that is not visible on screen (such as which areas you have visited) persists only through what the HUD shows. DIAMOND (post 1) reached similar conclusions on CS:GO.
+
+The figure sketches why a finite context window means no long-term memory.
+
+{% include blog_figure.liquid path="assets/img/blog/world-models/03-memory.svg" localized="true" width="85%" caption="Top-down sketch of a walk around a loop. At $t_1$ the agent sees the red landmark. At $t_2$ it faces the same place again, but the context window (orange segment) only covers the last part of the walk, so nothing in the model's input says what the landmark looked like. The model must re-imagine it, and the result need not match." %}
 
 ## 5. Action-conditioned real-world simulators
 
@@ -126,6 +154,10 @@ All interactive models generate frame by frame (or chunk by chunk) and condition
 - **Diffusion Forcing** (Chen et al., NeurIPS 2024, [arXiv:2407.01392](https://arxiv.org/abs/2407.01392)): give every frame in a sequence its **own independent noise level** during training. A causal model trained this way can denoise the next frames while past frames are clean or only slightly noisy, keeps the future uncertain and stabilizes long rollouts; it also enables guidance over whole future trajectories for planning.
 - **Causal attention with KV caching** so that each new frame costs a constant amount of compute, and **step distillation** (few-step or one-step samplers) to reach real-time rates.
 - **Memory mechanisms**: longer context windows, compressed memories of past frames, retrieval of frames by camera pose, or an explicit 3D representation of the scene. The last option leads directly to [post 4]({{ '/blog/2026/world-models-04-3d-and-4d-world-generation/' | relative_url }}).
+
+The schemes differ only in which noise levels the frames of a training sequence get, as the figure shows.
+
+{% include blog_figure.liquid path="assets/img/blog/world-models/03-diffusion-forcing.svg" localized="true" width="85%" caption="Noise level per frame (white = clean, dark = pure noise; grey = not part of the input). Full-sequence diffusion uses one level for the whole clip; next-frame prediction keeps the past clean and noises only the frame to predict; Diffusion Forcing samples an independent level for every frame. At sampling time this allows a causal 'pyramid' schedule (bottom right), where each frame is denoised a little behind its predecessor, so the near future is sharper than the far future." %}
 
 ## 7. What is still missing
 
@@ -199,6 +231,10 @@ with torch.no_grad():
 ```
 
 On this toy the five hidden actions typically map to distinct codes with high purity, and repeatedly pressing the "right" code moves the dot one cell to the right per step. Things to try: add a second, *uncontrolled* dot that moves randomly and see whether the codes start to encode its motion as well (a known failure mode of LAMs), or shrink the codebook to 4 and see which actions merge. Also replace `ConvEncoder` by an MLP on the concatenated frames: the reconstruction loss still goes down, but code purity drops to about 0.2-0.3 (close to chance), because the decoder also sees the current position and the meaning of each code can then change from one region of the grid to another. Latent actions are only consistent across states if the architecture or the training forces them to be, which is a real issue for LAMs trained on diverse video.
+
+We ran the script, and also the MLP-encoder variant described above, with the same seed:
+
+{% include blog_figure.liquid path="assets/img/blog/world-models/03-lam-results.svg" caption="Top: fraction of transitions of each hidden action assigned to each of the 8 learned codes. With the translation-invariant ConvEncoder every action has its own code (mean purity 0.96; 'down' is split over two codes); with an MLP encoder the codes are mixed (mean purity 0.25, close to chance). Bottom: 'playing' the ConvEncoder world model by feeding the 'right' code four times from column 3: the dot moves one cell per step to column 7, while small decoder errors accumulate as background noise." %}
 
 ## Representative papers
 
