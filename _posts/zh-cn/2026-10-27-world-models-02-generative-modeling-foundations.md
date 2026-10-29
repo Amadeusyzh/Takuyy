@@ -57,9 +57,17 @@ $$
 
 为了让梯度能够穿过对 $z$ 的采样，将其写成 $z = \mu_\phi(x) + \sigma_\phi(x) \odot \epsilon$，其中 $\epsilon \sim \mathcal{N}(0, I)$。这样随机性就落在了一个输入上，梯度可以流经 $\mu$ 和 $\sigma$。Dreamer 的动作和随机状态（第 1 篇）用的也是同样的技巧，即重参数化技巧（reparameterization trick）。
 
+下图展示了随机性被放到了哪里，以及梯度走的是哪条路径。
+
+{% include blog_figure.liquid path="assets/img/blog/world-models/02-reparam.svg" localized="true" width="85%" caption="重参数化：编码器输出 $\mu$ 和 $\sigma$，噪声 $\epsilon$ 作为外部输入进入（虚线），$z = \mu + \sigma \odot \epsilon$ 是这三者的确定性函数。因此重建损失可以对编码器求导（红色箭头）。" %}
+
 ### 2.3 VAE 擅长什么、不擅长什么
 
 使用高斯解码器时，$-\ln p_\theta(x \mid z)$ 就是 L2 损失，它会对不确定性取平均，从而生成**模糊**的样本。用 $\beta$ 加权 KL 项（$\beta$-VAE）可以在重建质量和更规整的潜在空间之间做权衡；过强的解码器则可能完全忽略 $z$（**后验坍缩**，posterior collapse）。在现代系统中，VAE 本身很少充当生成器，而是作为一个**感知压缩器**（perceptual compressor）：一个 KL 权重很小、并加上感知损失和对抗损失的卷积自编码器，把一张 $256 \times 256 \times 3$ 的图像映射为比如 $32 \times 32 \times 4$ 的潜变量，然后由扩散模型在其上工作（第 6 节）。
+
+为了在一个能画出来的潜空间中看到 KL 与重建之间的权衡，我们在玩具数据上训练了两个二维潜变量的小 VAE：每张 16 像素的“图像”里有一个高斯凸起（位置 $c$ 和宽度随机），一个用 $\beta = 1$，一个用 $\beta = 0.05$。
+
+{% include blog_figure.liquid path="assets/img/blog/world-models/02-vae-latent.svg" caption="70 个测试输入的编码器后验 $q_\phi(z\mid x)$：圆点是均值，椭圆是一个标准差，颜色表示真实的凸起位置；虚线圆和点线圆是先验 $\mathcal{N}(0, I)$ 的 1 倍和 2 倍标准差等高线。$\beta = 1$ 时后验较宽且留在先验之内（KL 为 4.4 nats）。$\beta = 0.05$ 时后验缩成一个点（KL 为 8.2 nats）：重建更好，但模型几乎退化成确定性的自编码器。两种情况下，位置都沿潜空间平滑变化。" %}
 
 ## 3. VQ-VAE 与视觉 tokenizer
 
@@ -76,6 +84,10 @@ $$
 $$
 
 其中第二项把码本向量拉向编码器输出，第三项（**承诺损失**，commitment loss；论文中 $\beta = 0.25$）让编码器保持在其所选码字附近。许多实现会用指数滑动平均（exponential moving average）更新来替代码本项。
+
+在二维中，可以直接把量化这一步画出来：每个码本向量都拥有一个 Voronoi 单元。
+
+{% include blog_figure.liquid path="assets/img/blog/world-models/02-vq-voronoi.svg" width="75%" caption="由 $K = 12$ 个向量组成的码本（星号），用 VQ 损失中的码本项在二维编码器输出（灰点：一个圆环加中心的一团）上训练得到。彩色区域是 argmin 的 Voronoi 单元：落在某个单元中的每个 $z_e$ 都会被替换成该单元的码（橙色箭头）。解码器只会看到这 12 个星号，也就是每个位置 12 种 token 之一。" %}
 
 ```python
 import torch
@@ -117,6 +129,10 @@ $$
 
 带有**因果注意力掩码**（causal attention mask）的仅解码器（decoder-only）Transformer 在训练时可以并行计算全部 $N$ 个条件分布（**教师强制**，teacher forcing），损失为交叉熵之和 $-\sum_i \ln p_\theta(x_i \mid x_{\lt i})$。对于世界模型，序列中帧 token 与动作交替出现，例如 `[frame_1 tokens][a_1][frame_2 tokens][a_2]...`，这样对下一帧 token 的预测就以过去的帧和动作为条件。
 
+下图给出了这样一个交错序列（三个各含 4 个 token 的帧和两个动作）的因果掩码。
+
+{% include blog_figure.liquid path="assets/img/blog/world-models/02-ar-mask.svg" width="70%" caption="因果注意力掩码：第 $i$ 行只能关注列 $j \le i$（按 token 类型着色，灰色表示被遮挡）。高亮的一行是 $a_2$ 所在的位置，它的输出根据前两帧和两个动作来预测第 3 帧的第一个 token。在教师强制下，全部 14 行在一次并行前向中算完。" %}
+
 实践中有两个问题：
 
 - **采样代价**：生成一个 $16 \times 16$ token 的帧需要 256 个顺序步骤。**MaskGIT**（Chang et al., CVPR 2022）转而训练一个*双向* Transformer 来预测被随机掩码的 token，并通过保留置信度最高的预测，在大约 8-16 个并行细化步骤内解码出一帧；Genie 的动力学模型就采用了这种解码方式。
@@ -141,6 +157,12 @@ x_t = \sqrt{\bar\alpha_t}\, x_0 + \sqrt{1-\bar\alpha_t}\, \epsilon,\ \ \epsilon 
 $$
 
 当 $T$ 足够大且调度合适时，$\bar\alpha_T \approx 0$，$x_T$ 基本就是纯噪声。
+
+下图把这个闭式公式用在第 10 节的二维玩具数据（8 个高斯的混合）上，调度与那里相同（线性）。
+
+{% include blog_figure.liquid path="assets/img/blog/world-models/02-forward.svg" width="85%" caption="1500 个样本上的前向过程 $x_t = \sqrt{\bar\alpha_t}\,x_0 + \sqrt{1-\bar\alpha_t}\,\epsilon$（颜色表示混合成分；$t$ 是第 10 节代码中从 0 开始的步数）。各簇先变模糊，然后向原点收缩并合并；到 $t = 400$（$\bar\alpha_t = 0.19$）时各成分已经重叠，$t = 999$ 时整团点与 $\mathcal{N}(0, I)$ 已无法区分。" %}
+
+{% include blog_figure.liquid path="assets/img/blog/world-models/02-schedule.svg" width="85%" caption="线性调度 $\beta_t \in [10^{-4}, 0.02]$、$T = 1000$ 时闭式公式的两个系数。信号权重与噪声权重在 $t \approx 259$ 处相交，此时信噪比 $\bar\alpha_t / (1-\bar\alpha_t)$ 为 1；最后 $\bar\alpha_T \approx 4 \times 10^{-5}$。竖线标出了上一张图中快照所在的时刻。" %}
 
 ### 5.2 反向过程与损失
 
@@ -172,6 +194,10 @@ $$
 
 因此训练过程非常简单：取一张图像、一个随机时间步和随机噪声，加噪，然后回归噪声。祖先采样（ancestral sampling）则从 $t = T$ 到 $1$ 执行 $x_{t-1} = \mu_\theta(x_t, t) + \sigma_t z$，其中 $\sigma_t^2 = \beta_t$ 或 $\tilde\beta_t$。
 
+用完全按第 10 节训练的网络运行反向链，过程如下：
+
+{% include blog_figure.liquid path="assets/img/blog/world-models/02-reverse.svg" width="85%" caption="用第 10 节的噪声预测 MLP（训练 4000 步）进行祖先 DDPM 采样（1000 步）；图中是 1500 个样本的快照，十字标出真实的模式。前几百步几乎看不到变化，圆环在 $t \approx 150$ 左右形成，各模式直到最后 50 步才分开。在 $t = 0$ 时，98.5% 的样本落在某个模式 0.5 范围内，8 个模式全部被覆盖。" %}
+
 等价的**参数化方式**（parameterization）也很常见：直接预测 $x_0$，或者预测“速度” $v = \sqrt{\bar\alpha_t}\,\epsilon - \sqrt{1-\bar\alpha_t}\,x_0$（许多视频模型采用后者，因为它在调度的两端都表现良好）。
 
 ### 5.3 score 视角与 SDE
@@ -185,6 +211,10 @@ s_\theta(x_t, t) := -\frac{\epsilon_\theta(x_t, t)}{\sqrt{1-\bar\alpha_t}} \appr
 $$
 
 噪声预测损失（在加权意义下）就是**去噪分数匹配**（denoising score matching；Vincent, 2011），去噪器估计的是在每个噪声水平上指向数据的梯度场（Song & Ermon 的 NCSN，NeurIPS 2019）。
+
+对于二维玩具数据，每个加噪边缘分布的真实分数都有闭式解，因此可以拿它来检验训练好的去噪器。
+
+{% include blog_figure.liquid path="assets/img/blog/world-models/02-score-field.svg" width="85%" caption="箭头表示训练好的网络给出的 $-\epsilon_\theta(x_t, t)$ 的方向（上），以及精确的 $-\mathbb{E}[\epsilon \mid x_t] = \sqrt{1-\bar\alpha_t}\,\nabla \ln p_t$ 的方向（下）；灰点是 $x_t$ 的样本。$t$ 较小时，向量场指向最近的模式；$t$ 较大时，加噪后的边缘分布只是一团，向量场指向它的中心。在 $t = 30$、200、600 时，学到的方向与精确方向的平均余弦相似度分别为 0.94、0.97、0.99。" %}
 
 Song 等人（ICLR 2021）在连续时间下统一了这两种视角。前向**随机微分方程**（stochastic differential equation, SDE）$dx = f(x, t)\,dt + g(t)\,dw$ 把数据扩散为噪声；DDPM 是**方差保持**（variance-preserving）SDE $dx = -\tfrac{1}{2}\beta(t)\,x\,dt + \sqrt{\beta(t)}\,dw$ 的离散化。根据 Anderson 定理，该过程可以按照**反向 SDE**（reverse SDE）在时间上倒着运行：
 
@@ -200,6 +230,8 @@ $$
 
 把分数替换为 $s_\theta$，就可以用任意 SDE 或 ODE 求解器来采样。ODE 视角解释了为什么存在步数少得多的采样器，能够给出精确似然，并把扩散模型与流匹配联系起来（第 8 节）。
 
+{% include widget.liquid name="world-models-diffusion-explorer" height="560" caption="动手试试：拖动滑块改变 $t$。前向模式下，样本用固定的 $\epsilon$ 加噪；反向模式下，500 个噪声样本用确定性 DDIM（100 步）去噪，并按最终落入的模式着色。箭头表示当前 $t$ 下精确分数的方向。拖动黑色探针：黑色箭头是 $-\mathbb{E}[\epsilon \mid x_t]$（缩放 0.5 倍），橙色曲线是从探针到 $t = 0$ 的概率流路径。" %}
+
 ### 5.4 DDIM：快速确定性采样
 
 **DDIM**（Song, Meng, Ermon, ICLR 2021）注意到训练损失只依赖于边缘分布 $q(x_t \mid x_0)$，因此可以使用任何具有相同边缘分布的非马尔可夫过程。它的更新先预测干净样本，再把它重新加噪到 $t-1$ 的噪声水平：
@@ -211,6 +243,10 @@ $$
 
 当 $\sigma_t = 0$ 时，采样器是确定性的（即概率流 ODE 的一种离散化），可以在时间步的子序列上运行（例如 1000 步中取 50 步），并把每个噪声向量映射到唯一的样本，从而支持反演（inversion）和插值。当 $\sigma_t = \eta\sqrt{\tilde\beta_t}$ 且 $\eta = 1$ 时，它退化为 DDPM。
 
+下图让两种采样器从同样的四个噪声向量出发。
+
+{% include blog_figure.liquid path="assets/img/blog/world-models/02-ddim-vs-ddpm.svg" caption="用训练好的玩具模型，从噪声（圆点）到样本（方块）的轨迹。左：DDPM 祖先采样在 1000 步中的每一步都注入新的噪声，因此路径四处游走，最终落在毫不相干的模式上。右：$\eta = 0$ 的 DDIM 用 50 步沿一条平滑的确定性路径前进，因此每个噪声向量恰好对应一个样本；在 2000 个样本中，94.9% 落在某个模式 0.5 范围内，8 个模式全部覆盖。" %}
+
 ## 6. 潜在扩散
 
 在 $256 \times 256 \times 3$ 的像素上运行扩散模型代价很高，视频就更不用说了，而且图像中的大部分比特都是人眼无法感知的细节。**潜在扩散**（latent diffusion；Rombach et al., CVPR 2022；Stable Diffusion 的基础）先训练一次自编码器（$\mathcal{E}, \mathcal{D}$，带 KL 或 VQ 正则化，以及感知损失 + GAN 损失），然后在 $z = \mathcal{E}(x)$ 上运行扩散：
@@ -220,6 +256,10 @@ $$
 $$
 
 其中 $\tau_\theta(c)$ 对条件进行编码（例如文本，通过交叉注意力输入）。几乎每一个视频世界模型都是这个意义上的潜在模型：Sora 的“时空 patch”就是压缩后视频潜变量上的 patch，而 GameNGen 是在 Stable Diffusion v1.4 上微调得到的。
+
+下图概括了数据流。
+
+{% include blog_figure.liquid path="assets/img/blog/world-models/02-latent-diffusion.svg" localized="true" caption="潜在扩散：一个只训练一次、随后冻结的自编码器（$\mathcal{E}$、$\mathcal{D}$）把 $256 \times 256 \times 3$ 的图像映射为 $32 \times 32 \times 4$ 的潜变量（数值少了 48 倍）。所有扩散步骤都在潜变量上进行，条件通过 $\tau_\theta$ 注入；只有最终的潜变量才被解码回像素。" %}
 
 ## 7. 无分类器引导
 
@@ -237,6 +277,10 @@ $$
 
 $w$ 越大，样本与条件越吻合，但多样性越低。在以动作为条件的世界模型中，同样的技巧被用在**动作**（或过去的帧）上：GameNGen 等模型利用引导让模型更忠实地响应玩家的输入。
 
+对于 8 个高斯的玩具数据，条件分数（单个成分）和无条件分数（整个混合）都可以精确求出，因此下图展示的是不含任何网络误差时引导的效果。
+
+{% include blog_figure.liquid path="assets/img/blog/world-models/02-cfg.svg" caption="使用精确分数的无分类器引导（类别 = 混合成分；DDIM，200 步，每个子图使用同样的 600 个噪声向量）。上：类别 0（紫色，右侧）和类别 3（橙色，左上）的样本。下：放大类别 0；虚线圆是真实类别的两个标准差。$w = 1$ 精确地重现了该类别。$w = 3$ 和 $w = 7$ 让样本变得窄得多，同时还把它们推离其他类别，跑到真实数据之外（平均偏移 0.16 和 0.33）：引导是用多样性、最终还会用保真度去换取“更像这个类别”。" %}
+
 ## 8. 流匹配与整流流
 
 扩散模型的 ODE 视角启发了一个更简单的方案：直接学习一个把噪声输运到数据的速度场。**流匹配**（flow matching；Lipman et al., ICLR 2023）和**整流流**（rectified flow；Liu, Gong, Liu, ICLR 2023）使用噪声样本 $x_0 \sim \mathcal{N}(0, I)$ 与数据样本 $x_1$ 之间的直线插值：
@@ -253,6 +297,10 @@ $$
 
 虽然每个目标都只是某一个特定样本对的速度，但最优解是条件期望 $v^\ast(x, t) = \mathbb{E}[x_1 - x_0 \mid x_t = x]$，而这恰好就是**边缘**速度场，其 ODE $dx/dt = v^\ast(x, t)$ 把 $\mathcal{N}(0, I)$ 输运到 $p_{\mathrm{data}}$；条件目标与边缘目标的梯度是一致的。采样就是普通的 ODE 积分（Euler 或 Heun 方法），从 $t = 0$ 积分到 $1$。
 
+下图对同样的噪声点与数据点配对，比较两种方法的逐对路径。
+
+{% include blog_figure.liquid path="assets/img/blog/world-models/02-flow-vs-diffusion.svg" caption="同样的 10 组（噪声, 数据）配对；黑点是噪声，方块是数据（注意两个标题中相反的命名约定）。左：从 $t = 999$ 到 $0$ 描出的高斯扩散插值是一段弧线，每 50 步一个点。右：流匹配插值是一条以恒定速度走过的直线段（点位于等间隔的时间步）。这些都是用作回归目标的条件路径；采样器实际积分的边缘 ODE 会在不同配对相互交叉的地方弯曲（试试下面的交互组件）。" %}
+
 注意事项：
 
 - 约定各不相同：整流流和 Stable Diffusion 3 把数据放在 $t = 0$、噪声放在 $t = 1$。照搬公式之前，请先阅读每篇论文的定义。
@@ -260,9 +308,19 @@ $$
 - 整流流的 **reflow** 过程会在（噪声，生成样本）对上重新训练，使轨迹进一步变直，从而支持极少步数的采样。
 - Esser et al., "Scaling Rectified Flow Transformers for High-Resolution Image Synthesis"（ICML 2024）表明，采用 Transformer 骨干的整流流具有良好的扩展性；许多近期的视频模型都使用流匹配进行训练。
 
+实践中真正重要的是需要多少个求解步。下图用极少的均匀步数对玩具混合分布的精确边缘向量场进行积分。
+
+{% include blog_figure.liquid path="assets/img/blog/world-models/02-few-step.svg" width="85%" caption="在精确向量场上走 $N$ 个求解步后 1500 个样本的终点：扩散用 DDIM（$\eta = 0$，均匀时间步），流匹配用 Euler 法。只走一步时两者都落在数据均值上，这是单步能给出的最佳猜测。走 4 步时，流匹配已让 89% 的样本靠近某个模式，而 DDIM 只有 14%；走 16 步时两者接近（100% 与 98%）。具体数字取决于时间网格，但这个差距正是流模型在少步采样中受欢迎的原因。" %}
+
+{% include widget.liquid name="world-models-flow-paths" height="560" caption="动手试试：拖动黑色的噪声样本。细曲线是扩散（橙色，DDIM）和流匹配（紫色，Euler）的精确 ODE 路径，点位于等间隔的时间步，可以看出速度；粗虚线是只用 $N$ 步（滑块）的同一求解器，方块是它们的终点。两条精确路径终止于同一个数据点：对高斯路径而言，两个 ODE 只相差空间和时间的重新缩放（$x_{\mathrm{fm}} = x_{\mathrm{vp}} / (\sqrt{\bar\alpha_t} + \sqrt{1-\bar\alpha_t})$）。不同的是沿路径的速度，而这决定了 $N$ 步求解器能离最近的模式多近。" %}
+
 ## 9. 扩散 Transformer（DiT）
 
 去噪器最初是一个 U-Net。**DiT**（Diffusion Transformer；Peebles & Xie, ICCV 2023）用一个作用于潜在 patch 的普通 Vision Transformer 取代了它：潜变量被切成 $p \times p$ 的 patch，经过线性嵌入，由 Transformer 块处理，再还原为 patch 网格的原始形状以预测噪声（以及方差）。时间步和类别条件通过**自适应层归一化**（adaptive layer norm）注入：一个小型 MLP 把条件映射为每个块的缩放和平移参数，在 **adaLN-Zero** 变体中还会映射出一个初始化为零的门控，使每个块在初始时都是恒等映射。论文表明，随着模型变深/变宽或 patch 尺寸变小，样本质量随计算量（Gflops）稳步提升；DiT-XL/2 在类别条件的 ImageNet 256x256 上达到了 2.27 的 FID。
+
+下图追踪了 DiT 中的一次去噪步骤。
+
+{% include blog_figure.liquid path="assets/img/blog/world-models/02-dit.svg" caption="DiT：带噪潜变量被切成 $p \times p$ 的图块（这里 $8 \times 8$ 的潜变量、$p = 2$ 得到 16 个 token），加上位置嵌入后由 $N$ 个 Transformer 块处理。时间步和类别通过 adaLN-Zero 注入：一个 MLP 为每个块生成缩放 $\gamma$、平移 $\beta$ 以及初始化为零的门控 $\alpha$。输出的 token 再拼回（unpatchify）成预测的噪声（以及方差）。$p$ 减半，token 数就变为四倍。" %}
 
 这对世界模型为什么重要：Transformer 把视频看作只是一个更长的 patch 序列。Sora 的技术报告描述的正是这一点：一个作用于压缩视频潜变量之上**时空 patch**（spacetime patches）的扩散 Transformer，在时长、分辨率和宽高比各不相同的视频上训练。以动作或过去的帧为条件，就变成了“更多的 token”或“更多的 adaLN 输入”。
 
