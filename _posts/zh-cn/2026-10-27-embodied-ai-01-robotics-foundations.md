@@ -62,6 +62,10 @@ $$
 若 $R(t)$ 是一条轨迹，则 $\dot R R^\top = [\omega_s]$ 给出固定（空间）坐标系下的角速度，$R^\top \dot R = [\omega_b]$
 给出物体坐标系下的角速度。
 
+下图展示了 Rodrigues 公式的几何含义：$v$ 沿旋转轴的分量保持不变，其余部分绕轴转过角度 $\theta$，扫出一个圆。
+
+{% include blog_figure.liquid path="assets/img/blog/embodied-ai/01-rotation-axis-angle.svg" caption="右手系、z 轴朝上的轴角旋转。紫色单位轴 $\hat\omega$ 与角度 $\theta = 110°$ 把 $v$（橙色）映射为 $e^{[\hat\omega]\theta}v$（青色）。两条虚线交于 $(\hat\omega^\top v)\hat\omega$，即 $v$ 中不动的部分；点线圆是 $v$ 转一整圈的轨迹。" %}
+
 ### 刚体运动：SE(3)
 
 完整的位姿（位置 $p$ 与姿态 $R$）是一个齐次变换
@@ -81,6 +85,10 @@ $$
 机器人的整个"场景图"（世界、基座、各连杆、相机、夹爪、物体）就是一棵由这样的变换组成的树。例如手眼标定
 （hand-eye calibration）就是估计固定变换 $T_{\text{gripper},\text{camera}}$ 的问题。
 
+把机器人的场景图画成三维图，它就是一串坐标系，每个坐标系都相对于它的父坐标系摆放：
+
+{% include blog_figure.liquid path="assets/img/blog/embodied-ai/01-frame-chain.svg" caption="空间三关节机械臂的坐标系链（标准 DH，$a=(0, 0.55, 0.45)$，$\alpha=(\pi/2,0,0)$，$d=(0.45,0,0)$），世界坐标系 $\lbrace w\rbrace $ 为右手系、z 轴朝上。红、绿、蓝箭头分别是各坐标系的 $x, y, z$ 轴。把虚线上的变换从左到右相乘就得到末端位姿 $T_{w3}$，再乘一个固定变换就得到腕部相机 $\lbrace c\rbrace $。" %}
+
 ### 运动旋量与螺旋
 
 刚体的速度是一个**运动旋量**（twist）$\mathcal{V} = (\omega, v) \in \mathbb{R}^6$，记
@@ -92,6 +100,10 @@ $\mathcal{S}$ 与距离 $\theta$ 变为 SE(3) 的元素。这就是 *Modern Robo
 做学习的人为什么要关心？因为动作空间就是位姿。用网络预测旋转意味着要选择表示：欧拉角有不连续性，四元数有
 $q \equiv -q$ 的二义性，而 Zhou 等人（CVPR 2019）证明连续的 6 维表示（$R$ 的两列，再做正交化）更容易回归。
 很多策略（例如第 4 篇的 Diffusion Policy）都采用它。
+
+Chasles 定理画出来很直观：随着 $\theta$ 增大，$e^{[\mathcal{S}]\theta}$ 让坐标系沿着绕螺旋轴的螺旋线运动。
+
+{% include blog_figure.liquid path="assets/img/blog/embodied-ai/01-screw-motion.svg" caption="用矩阵指数计算的螺旋运动。螺旋轴（点划线）为过点 $(0.6, 0, 0)$ 的 z 方向，节距 $h = 0.12$（每弧度），即 $\mathcal{S} = (\omega, -\omega\times p + h\omega)$。每个三色坐标架是不同 $\theta$ 下的 $e^{[\mathcal{S}]\theta}$：它在绕轴转动的同时沿轴平移。" %}
 
 ## 2. 正运动学
 
@@ -129,6 +141,10 @@ $$
 混用两种约定是经典的 bug 来源。实践中机器人用 URDF 或 MJCF 文件（第 3 篇）描述，每个关节存一个完整变换，
 Pinocchio、Drake、MuJoCo、PyBullet 等库会替你算 FK。DH 仍值得掌握，因为它让结构一目了然，而且多数教科书和
 数据手册都用它来介绍运动学。
+
+下图把四个参数画在两条相邻的关节轴上。从左到右读这个变换：绕 $z_{i-1}$ 转 $\theta_i$，沿它平移 $d_i$，再沿新的 $x_i$ 平移 $a_i$，最后绕 $x_i$ 转 $\alpha_i$。
+
+{% include blog_figure.liquid path="assets/img/blog/embodied-ai/01-dh-parameters.svg" caption="标准 DH 参数，用文中的 `dh()` 计算，$\theta_i=55°$、$d_i=0.6$、$a_i=0.9$、$\alpha_i=50°$。点划线是第 $i$ 和第 $i+1$ 个关节轴。$d_i$（橙色）沿 $z_{i-1}$ 走到公垂线的垂足；$a_i$（紫色）就是沿 $x_i$ 的公垂线；$\theta_i$ 是绕 $z_{i-1}$ 从 $x_{i-1}$（虚线副本）转到 $x_i$ 的角度；$\alpha_i$ 是绕 $x_i$ 从 $z_{i-1}$（虚线副本）转到 $z_i$ 的角度。" %}
 
 ### 用 NumPy 实现平面三连杆机械臂
 
@@ -168,6 +184,10 @@ def task(q):
 ```
 
 `pts` 给出每个关节的位置，用 matplotlib 画出机械臂只需要它。
+
+对大量随机构型运行 `task(q)`，就能看出机械臂能到达哪些位置、以及以什么朝向到达：
+
+{% include blog_figure.liquid path="assets/img/blog/embodied-ai/01-workspace.svg" caption="用随机关节角做正运动学得到的工作空间。左：二连杆臂（$a_1=1.0$，$a_2=0.8$）能到达圆环 $0.2 \le r \le 1.8$，图中两只臂分别是肘部朝上和朝下的形态。右：文中的三连杆臂能到达整个圆盘 $r \le 2.3$，颜色表示末端朝向 $\phi$。只有在橙色圆环 $0.7 \le r \le 1.3$ 内，任意 $\phi$ 都能实现（灵巧工作空间）。" %}
 
 ## 3. 雅可比矩阵与微分运动学
 
@@ -223,6 +243,10 @@ J_num = np.stack([(task(q + eps * np.eye(3)[i]) - task(q - eps * np.eye(3)[i])) 
                   for i in range(3)], axis=1)
 print("Jacobian error:", np.abs(J_num - jacobian(q)).max())   # ~1e-10
 ```
+
+速度椭圆让可操作度变得直观。随着手臂伸直，椭圆越来越扁，到奇异位形时末端已经完全无法沿径向运动：
+
+{% include blog_figure.liquid path="assets/img/blog/embodied-ai/01-manipulability.svg" caption="左：三连杆臂的四个构型及其速度椭圆的位置部分 $\lbrace J_p\dot q : \lVert\dot q\rVert\le 1\rbrace $（轴取自 `jacobian(q)` 前两行的 SVD，按 0.22 倍绘制）。几乎伸直的红色手臂对应一个指向侧面的细长椭圆。右：完整 $3\times3$ 雅可比的 Yoshikawa 可操作度 $w=\sqrt{\det JJ^\top}$，对若干随机 $q_3$ 数值计算（灰色粗线）。它们都与 $a_1a_2\lvert\sin q_2\rvert$ 重合，因此只有当前两根连杆共线（$q_2 = 0, \pm\pi$）时 $w$ 才为零。" %}
 
 ## 4. 逆运动学
 
@@ -293,6 +317,12 @@ print(err)                                  # 0.7
 是每个控制周期求解一个小型**二次规划**（quadratic program, QP），例如"在关节位置和速度限制下最小化任务误差"，
 可用 Pink、mink、Drake 等库求解。
 
+下图逐步重放了上面的 `ik_dls`，再下面的交互组件可以让你亲手拖动目标。
+
+{% include blog_figure.liquid path="assets/img/blog/embodied-ai/01-ik-dls.svg" caption="上：从 $q_0=0$（完全伸直的奇异构型）出发求解 $x^\ast=(1.2, 0.9, \pi/4)$ 时 `ik_dls` 的各次迭代，颜色从深色（$k=0$）渐变到黄色（$k=8$），点线是末端轨迹。最初几步大幅越过目标，随后迭代迅速锁定。左下：三种阻尼下每次迭代的残差；$\lambda$ 越大越稳但越慢。右下：不可达目标 $(3, 0, 0)$。$\lambda=0.5$ 时残差稳定在 0.7（最优可达值），$\lambda=0.05$ 时则在约 0.7 到 4 之间来回跳动。" %}
+
+{% include widget.liquid name="embodied-ai-ik-arm" height="440" caption="交互：拖动橙色目标（或直接点击任意位置）。三连杆臂（$a = 1.0, 0.8, 0.5$）每帧对位置任务执行几步阻尼最小二乘迭代，紫色椭圆是它的速度椭圆 $\lbrace J_p\dot q\rbrace $。把手臂拉直或把目标移到够不着的地方，可以看到椭圆塌缩；改变 $\lambda$ 可以看到阻尼如何在奇异点附近用速度换取稳定性。" %}
+
 ## 5. 动力学初探
 
 运动学忽略了力。$n$ 关节刚体系统的运动方程为
@@ -357,6 +387,10 @@ print("PD + gravity   error %.4f rad" % simulate(20, 3, 0, True))    # -0.0001
 纯 PD 会下垂约 0.19 rad，因为弹簧必须托住重量；积分项或重力模型消除了这个误差。腿式机器人的 RL 策略（第 2 篇）
 几乎总是向这样的 PD 回路输出**关节位置目标**而不是直接输出力矩；于是 PD 增益也成了"动作空间"的一部分。
 
+把同一个仿真随时间画出来，就能看出上面那些数字是怎么来的：
+
+{% include blog_figure.liquid path="assets/img/blog/embodied-ai/01-pid-step.svg" caption="上面代码中摆关节的阶跃响应（$q_{\mathrm{ref}} = \pi/3$，1 ms 半隐式欧拉）。左：纯 PD 停在离目标 0.186 rad 的地方，因为“弹簧”得托住重量；积分项或重力前馈可以消除这个误差。右：不同增益下带重力补偿的 PD。$K_d$ 小（点线）时会振荡；$K_p$ 越大越快，但也需要更多阻尼。" %}
+
 ### 计算力矩控制与操作空间控制
 
 如果模型足够好，就可以抵消非线性动力学，强加线性的误差动力学（**计算力矩控制**，computed torque，即反馈线性化）：
@@ -390,6 +424,10 @@ $\tau = J^\top\left(K_d (x_d - x) - D_d\,\dot x\right) + g(q)$。低刚度带来
 高刚度带来精确跟踪。许多学习得到的操作策略以 10 到 20 Hz 向 1 kHz 的笛卡尔阻抗控制器输出目标位姿 $x_d$；有些还会
 预测刚度（"变阻抗"，variable impedance）。
 
+下图展示了这个虚拟弹簧-阻尼器，以及当有外力推末端时刚度的选择意味着什么：
+
+{% include blog_figure.liquid path="assets/img/blog/embodied-ai/01-impedance.svg" caption="左：阻抗控制在末端 $x$ 与目标 $x_d$ 之间连上一个虚拟弹簧 $K_d$ 和阻尼器 $D_d$，产生的力旋量再经 $J^\top$ 映射为关节力矩。右：一维系统 $\Lambda_d\ddot{\tilde x} + D_d\dot{\tilde x} + K_d\tilde x = \mathcal{F}_{\mathrm{ext}}$ 在持续 1 s 的 10 N 推力（灰色）下的仿真响应。柔软的设置会让出 10 cm，对接触物很温和；刚硬的设置只让出 1 cm。点线是静态位移 $\mathcal{F}/K_d$。" %}
+
 ## 7. 运动规划
 
 规划要在 C-space 中找到从 $q_{\text{start}}$ 到 $q_{\text{goal}}$ 的无碰撞路径。工作空间里的障碍物在关节空间中变成复杂的
@@ -403,6 +441,10 @@ $f(n) = g(n) + h(n)$ 的顺序扩展节点，即已付代价加上对剩余代�
 A\* 返回最优路径；若它还**一致**（consistent，$$h(n) \le c(n,n') + h(n')$$），则任何节点都无需重复扩展。Dijkstra 就是
 $h = 0$ 的 A\*。栅格规模随维数指数增长，所以 A\* 用于二维/三维的移动机器人、落脚点规划和离散格子图，而不是
 7 自由度机械臂。
+
+启发函数正是 A\* 快的原因。在同一张栅格上，两种搜索都返回代价相同的最优路径，但 A\* 展开的格子要少得多：
+
+{% include blog_figure.liquid path="assets/img/blog/embodied-ai/01-astar.svg" caption="40 x 30 栅格上的 Dijkstra（$h=0$，左）与使用欧氏距离启发的 A\*（右），8 连通，对角代价为 $\sqrt2$（因此该启发函数既可采纳又一致）。颜色表示格子被展开的先后顺序，黑色为障碍。Dijkstra 向四面八方扩散（展开 902 次），A\* 朝目标长出一条窄带（展开 374 次），两条路径的代价都是 46.04。" %}
 
 ### 基于采样的规划：PRM、RRT、RRT\*
 
@@ -446,6 +488,12 @@ path, n = rrt(np.array([0.1, 0.1]), np.array([0.9, 0.9]))
 print(f"tree size {n}, path waypoints {len(path)}, "
       f"length {np.sum(np.linalg.norm(np.diff(path, axis=0), axis=1)):.3f}")
 ```
+
+原样运行这段代码（种子 0）就得到下图左边的树；加入选择父节点与重连的 RRT\* 则给出中间那条短得多的路径。
+
+{% include blog_figure.liquid path="assets/img/blog/embodied-ai/01-rrt.svg" caption="左：上面 `rrt` 函数在 `default_rng(0)` 下长出的树，109 个节点，路径曲折，长度 1.614，与打印结果完全一致。中：RRT\*（半径 $r_n = \min(0.5\sqrt{\log n / n},\ 0.1)$）采样 2,500 次后的结果；重连把树理顺成近似最短的分支，路径缩短到 1.24。右：五次 RRT\* 运行中最优路径长度随采样数的变化；它不断下降（渐近最优），而普通 RRT 停在它找到的第一条更长的解上（虚线，20 次运行的平均）。" %}
+
+{% include widget.liquid name="embodied-ai-planner" height="460" caption="交互：拖动起点（白色）、终点（星形）或灰色障碍物，并在 A\*、RRT 和 RRT\* 之间切换。A\* 在 8 连通栅格上搜索并给展开过的格子上色；RRT 系列会画出它们的树。点按钮可以重新采样随机树。" %}
 
 若要为三连杆机械臂而不是一个点做规划，把采样空间换成 $[-\pi,\pi]^3$，把 `free(q)` 换成"对连杆做 FK 并逐段与障碍物
 求交"即可。RRT 路径是锯齿状的，所以实际系统会先做捷径化和平滑，再在速度、加速度限制下做时间参数化
