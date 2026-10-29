@@ -53,6 +53,10 @@ $$
 
 Intuitively: add noise to the rendering, ask the diffusion model which noise it "sees", and push the rendering in the direction that makes the residual $(\hat\epsilon - \epsilon)$ small. The paper shows this is the gradient of a weighted sum of KL divergences between the noised rendering distribution $q(x_t \mid x = g(\theta))$ and the model's noisy marginal $p_\phi(x_t \mid y)$. Since $\hat\epsilon_\phi \approx -\sigma_t \nabla \ln p_t$ (post 2, Section 5.3), SDS is gradient ascent on the log-density of the noised rendering, averaged over noise levels: it is **mode seeking**.
 
+The figure traces one SDS step.
+
+{% include blog_figure.liquid path="assets/img/blog/world-models/04-sds-loop.svg" localized="true" caption="One SDS update: render the scene from a random camera, noise the rendering to a random level $t$, let the frozen text-conditioned diffusion model predict the noise, and push the residual $w(t)(\hat\epsilon_\phi - \epsilon)$ back through the differentiable renderer into $\theta$ (red). The diffusion model is never updated, and its Jacobian is never computed." %}
+
 ### 2.2 Practical consequences
 
 - DreamFusion used a very large classifier-free guidance weight ($w = 100$) to get sharp results. Combined with mode seeking, this causes the typical **over-saturated, over-smoothed** look of SDS assets and low diversity across seeds.
@@ -134,6 +138,10 @@ print(f"SDS points: mean distance to nearest mode {s_sds:.3f}, modes covered {m_
 
 The SDS points end up much closer to the mode centers than real samples are: each point climbs to a nearby density peak instead of reproducing the spread of the distribution. In 3D this is exactly the over-smoothed, "average-looking" texture of SDS assets. (Which modes are covered depends on the initialization, because each particle simply climbs the nearest hill.) Replacing $\epsilon$ in `grad` by the prediction of a second model trained on the current particles turns this into a toy VSD. Note also the **annealed** noise schedule in the loop. If $t$ is drawn uniformly over the whole range at every step, the high-noise terms dominate; the noisy marginal at large $t$ is a single blob around the data mean, so the particles are pulled toward the center of the circle instead of onto the modes (try it). Lowering the maximum timestep during optimization, as ProlificDreamer does with its two-stage time schedule, first settles the coarse layout and then the details.
 
+Running the script, and the uniform-$t$ variant, gives the following (numbers in each panel: mean distance to the nearest mode, and modes covered):
+
+{% include blog_figure.liquid path="assets/img/blog/world-models/04-sds-toy.svg" width="85%" caption="SDS on 512 free 2D points with the trained toy prior. With the annealed schedule the points first form a ring and then climb onto the modes, ending at mean distance 0.062 from the mode centres, half the spread of real samples (0.121): mode seeking. With $t$ drawn uniformly over the whole range, the high-noise terms keep pulling the points toward the centre, and they stop on a smaller circle (mean radius 1.53 instead of 2)." %}
+
 ## 3. 3D-aware priors: multi-view diffusion and feed-forward models
 
 Instead of fighting the 2D prior's lack of 3D awareness, one can fine-tune it on 3D data so that it understands cameras:
@@ -157,6 +165,10 @@ The general lesson: **generate in 2D where the data is, reconstruct in 3D where 
 3. **Estimate depth** for the new image with a monocular depth network.
 4. **Align** the predicted depth to the depth of the existing geometry on the known pixels (monocular depth is only defined up to scale and shift).
 5. **Unproject** the new pixels into 3D and **fuse** them into the scene (a mesh in Text2Room; points or Gaussians in later work).
+
+Drawn as a cycle:
+
+{% include blog_figure.liquid path="assets/img/blog/world-models/04-scene-loop.svg" localized="true" width="75%" caption="The scene-growing loop shared by Text2Room, LucidDreamer, WonderJourney and WonderWorld. Every pass adds geometry for the region that the new camera sees but the scene does not yet cover; what is added stays in the scene, so later views are consistent with it by construction." %}
 
 Text2Room splits this into a *generation* stage with carefully chosen camera trajectories, which lays out the room, and a *completion* stage that picks additional viewpoints to fill the remaining holes. Viewpoint selection matters: bad trajectories produce stretched geometry at depth discontinuities.
 
@@ -211,6 +223,10 @@ print("new points:", new_points.shape, "z range:", new_points[:, 2].min().round(
 
 In a real pipeline the alignment is often done per region or with a depth-completion network conditioned on the known depth, because a single global affine fit cannot repair a wrong depth *shape*. WonderWorld (below) calls its version **guided depth diffusion**.
 
+The figure shows what the script computes.
+
+{% include blog_figure.liquid path="assets/img/blog/world-models/04-depth-align.svg" width="75%" caption="Top: on the known pixels, scene depth is an affine function of the monocular prediction; least squares recovers $s = 2.47$, $b = 1.23$ (the true values are 2.5 and 1.2), and the error on the new pixels drops from 2.99 to 0.021. Bottom: the unprojected points in camera coordinates (OpenCV convention, $z$ forward, $y$ down; plotted with $-y$ up). Aligned new points (orange) continue the existing plane (blue); unaligned ones (grey) would float about one unit in front of the camera." %}
+
 ### 4.3 From meshes to Gaussians, and from rooms to journeys
 
 - **LucidDreamer** (Chung et al., [arXiv:2311.13384](https://arxiv.org/abs/2311.13384), 2023; later in IEEE TVCG) runs a "dreaming" step (inpaint + depth from a new view) and an "alignment" step that merges the new points into the existing point cloud, then uses the point cloud to initialize **3D Gaussian Splatting** and optimizes it on the generated images. Its input can be text, RGB or RGB-D, and the result is a domain-free scene that renders in real time. (Not to be confused with the text-to-3D object method of the same name by Liang et al., CVPR 2024.)
@@ -222,6 +238,10 @@ This family is the closest explicit analog of the interactive video world models
 ## 5. 4D: adding time
 
 A 4D world is a 3D representation plus dynamics. Two common representations: a **dynamic NeRF** (a time-conditioned field), and **deformable 3D Gaussians**, where canonical Gaussians are moved by a deformation field $\Delta\mu, \Delta q, \Delta s = D_\psi(\mu, t)$ (as in 4D Gaussian Splatting, Wu et al., CVPR 2024, [arXiv:2310.08528](https://arxiv.org/abs/2310.08528), which renders dynamic captured scenes in real time).
+
+With time as the vertical axis, a deformable Gaussian scene looks like this:
+
+{% include blog_figure.liquid path="assets/img/blog/world-models/04-4d-gaussians.svg" width="75%" caption="Deformable Gaussians in 2D + time: the same ten canonical Gaussians are drawn at $t = 0, 0.5, 1$, and the curves are the paths of their centres $\mu + \Delta\mu(\mu, t)$. The deformation here is a hand-written swirl plus drift standing in for a learned $D_\psi$; it also rotates each Gaussian. Rendering any time $t$ means deforming, then splatting as usual." %}
 
 Generation again borrows priors, now including **video** diffusion models:
 
@@ -249,6 +269,10 @@ Marble is useful as a reference point because it embodies the explicit route end
 | Generality of content | anything seen in video | mostly static scenes; unbounded and dynamic content is harder |
 | Interactivity with actions | native (action-conditioned) | requires a game engine or simulator around the asset |
 
+The core of the table is where the world state lives:
+
+{% include blog_figure.liquid path="assets/img/blog/world-models/04-explicit-vs-pixel.svg" localized="true" width="85%" caption="Where the state lives. In a pixel-space model the only state is the window of recent frames, and every frame is produced by a large network, so a revisited place is regenerated and may change. In an explicit world the state is a persistent set of primitives that a cheap renderer can draw from any camera; edits and physics act on that state directly." %}
+
 The two routes are converging. Video models are being conditioned on explicit 3D signals (camera trajectories, point clouds, depth) to improve consistency, and explicit pipelines increasingly use video models as their prior (CAT3D-style multi-view generation, 4D-fy). A plausible research direction is a **hybrid world model**: an explicit, persistent 3D/4D state that is updated by learned dynamics and rendered either by splatting or by a generative "neural renderer" for effects the explicit state cannot represent.
 
 ## 8. Try it: an editable explicit world
@@ -256,6 +280,10 @@ The two routes are converging. Video models are being conditioned on explicit 3D
 The **Gaussian World** tab of the [lab on the home page]({{ '/' | relative_url }}#lab) is a toy illustration of the explicit route. Its world is made of around 200,000 3D Gaussians rendered with the 3DGS pipeline (EWA projection, depth sort, alpha compositing). You can type a prompt or pick a preset, then sculpt the terrain, paint materials, place or erase objects, flood the valley, change the time of day and walk through it in first person.
 
 Two honest caveats. First, the generator is **procedural, not learned**: a keyword-driven program reads the prompt and builds terrain, lakes, forests and villages; a real system would replace it with a learned model such as the scene generators in Section 4. Second, its dynamics (wind, seasons, relighting) are hand-written shaders, not learned. What the demo does show well is the *benefit* of the explicit route: every edit is local, persistent and immediately consistent from every viewpoint, and rendering runs in real time in a browser, which is precisely what pixel-space world models struggle with.
+
+A static analogue of the demo shows why edits are local:
+
+{% include blog_figure.liquid path="assets/img/blog/world-models/04-terrain-edit.svg" caption="A procedural terrain made of 3200 Gaussian splats (height from a sum of sinusoid octaves, coloured by height), before and after a sculpt edit that raises a Gaussian bump. Only the 334 splats near the brush (red, 10%) change; everything else, and therefore every view of it, stays exactly as it was." %}
 
 ## Representative papers
 

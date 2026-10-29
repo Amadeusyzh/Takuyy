@@ -36,6 +36,10 @@ In June 2022 LeCun circulated a long position paper, ["A Path Towards Autonomous
 
 The agent can act in two modes. **Mode 1** is reactive: perception feeds a policy directly. **Mode 2** is deliberate planning: the actor proposes an action sequence, the world model unrolls it, the cost module scores the predicted states, and the actions are optimized by gradient descent or search to minimize total cost, much like model-predictive control. Mode-2 results can be distilled into Mode-1 policies, as Dreamer distills imagination into an actor.
 
+The figure arranges the six modules and the Mode-2 loop.
+
+{% include blog_figure.liquid path="assets/img/blog/world-models/05-architecture.svg" localized="true" width="85%" caption="LeCun's proposed architecture. Perception estimates the current state $s_0$; the actor proposes an action sequence; the world model predicts the future states $\hat s_k$; the cost module scores them; short-term memory keeps states and costs. In Mode 2 the actions are optimized against the total cost (dashed red), which is model-predictive control with a learned model. The configurator (dotted) sets up all modules for the task." %}
+
 The paper's central technical claim concerns *how the world model should be trained*. The world is only partially predictable: the exact position of every leaf on a tree in the wind is not. A generative model that must output pixels has to either model all of that irrelevant randomness or average over it (blur). LeCun argues instead for **energy-based models** trained to give low energy to compatible pairs $(x, y)$, where $x$ is the observed past and $y$ the future, and for making the prediction **in a learned representation space** in which unpredictable details can be discarded.
 
 ### 1.1 The JEPA
@@ -47,7 +51,15 @@ s_x = \mathrm{Enc}_x(x),\qquad s_y = \mathrm{Enc}_y(y),\qquad
 E(x, y, z) = D\big(s_y,\ \mathrm{Pred}(s_x, z)\big).
 $$
 
+Side by side with a generative model, the difference is where the loss is computed:
+
+{% include blog_figure.liquid path="assets/img/blog/world-models/05-jepa-vs-generative.svg" localized="true" caption="Left: a generative predictor decodes $\hat y$ and is penalized in observation space, so it must account for every pixel of $y$. Right: a JEPA encodes $y$ as well and predicts its embedding $s_y$; the target encoder is typically an EMA copy that receives no gradient, and the latent $z$ lets the predictor express several possible futures. Details of $y$ that the encoder drops never have to be predicted." %}
+
 The danger is **representation collapse**: if the encoders output a constant, the energy is zero for every pair. Approaches to prevent it fall into two groups:
+
+The energy view makes both the goal and the failure mode visible:
+
+{% include blog_figure.liquid path="assets/img/blog/world-models/05-energy.svg" caption="Left: the energy over a 2D target embedding $y$ for one fixed context $x$, when the predictor's outputs for $z \in [-1, 1]$ trace an arc of compatible futures (orange; dots at $z = -1, 0, 1$). Energy is zero along the whole arc and grows away from it, so several futures can be 'right' at once. Right: with a collapsed (constant) encoder the energy is zero everywhere, for compatible and incompatible pairs alike, so it carries no information." %}
 
 - **Contrastive** methods push up the energy of incompatible pairs (negatives). LeCun argues these scale poorly with the dimension of the representation.
 - **Regularized / non-contrastive** methods limit the information content of $s_y$ or keep the representation spread out. Examples are VICReg (variance-invariance-covariance regularization), and the **asymmetric** designs of BYOL, where the target encoder is an EMA copy of the online encoder and receives no gradients.
@@ -64,6 +76,10 @@ The position paper is a research program, not an experiment. The following paper
 2. A context encoder (ViT) $f_\theta$ processes only the visible context patches.
 3. A target encoder $f_{\bar\theta}$ processes the *full* image; the target representations are its output tokens at the target positions.
 4. A narrow ViT **predictor** $g_\phi$ takes the context tokens plus mask tokens with positional embeddings for a target block, and predicts that block's representations.
+
+The figure shows three masks drawn with the sampling ranges reported in the I-JEPA paper.
+
+{% include blog_figure.liquid path="assets/img/blog/world-models/05-ijepa-masks.svg" caption="I-JEPA masks on a $16 \times 16$ patch grid (ViT-H/14 at 224 px). Four target blocks (outlined colours) with scale 0.15-0.2 of the image and aspect ratio 0.75-1.5; one context block (blue) with scale 0.85-1.0, from which the target regions are removed. The predictor must produce the target encoder's tokens inside each outlined block from the blue patches alone." %}
 
 The loss is an L2 distance in representation space, averaged over the $M$ target blocks $B_i$:
 
@@ -94,6 +110,10 @@ a^\ast_{1:H} = \arg\min_{a_{1:H}} \Big\lVert \hat s_{H}(s_0, a_{1:H}) - s_{\math
 $$
 
 The paper reports zero-shot pick-and-place with Franka arms in two labs that were not in the training data, using only image goals. This is the JEPA program in its most complete form so far: a world model learned mostly from passive video, adapted to control with a small amount of interaction data, and used for planning in latent space.
+
+The figure runs the same procedure on a toy 2D latent space, where the L1 objective has diamond-shaped level sets.
+
+{% include blog_figure.liquid path="assets/img/blog/world-models/05-latent-planning.svg" caption="Toy latent planning with the objective above. The predictor is $\hat s_k = \hat s_{k-1} + a_k$ (each action component clipped to $\pm 0.45$), and states cannot enter the grey disc; grey diamonds are level sets of the L1 distance to the goal (star). Left: CEM over $H = 8$ actions (200 samples, 20 elites, 8 iterations) ends at L1 distance 0.23 from the goal. Right: MPC executes only the first action and re-plans; after 25 steps it is 0.15 from the goal." %}
 
 ### 3.3 Related latent-space planners
 
@@ -181,9 +201,17 @@ for variant in ["shared, no stop-grad", "EMA target", "EMA + variance reg."]:
 
 With a shared encoder and gradients through both branches, the easiest way to drive the loss to zero is to map everything to the same point, and the embedding standard deviation shrinks toward zero. The asymmetric EMA target slows this dynamic down, and the variance term rules collapse out explicitly; compare how much information about $\omega$ each variant keeps. Exact numbers depend on the seed and the number of steps, which is itself a lesson: collapse is a training *dynamic*, not just a property of the loss.
 
+We ran the script above and also logged the embedding spread during training:
+
+{% include blog_figure.liquid path="assets/img/blog/world-models/05-collapse.svg" caption="Output of the collapse toy. Top: mean per-dimension standard deviation of $s_x$ during training (log scale). Bottom: the first two principal components of 1500 embeddings, coloured by the hidden frequency $\omega$. With a shared encoder and no stop-gradient the spread falls to 0.002 and a linear probe recovers nothing about $\omega$ ($R^2 = 0.01$). The EMA target keeps the embeddings spread out ($R^2 = 0.82$), and the variance hinge pushes the spread up further without changing $R^2$ in this run." %}
+
 ## 5. How are world models evaluated?
 
 There is no single accepted benchmark. It helps to separate five questions.
+
+As a rough map, the figure shows where the three families of world models discussed in this series tend to be strong or weak on these five questions.
+
+{% include blog_figure.liquid path="assets/img/blog/world-models/05-eval-radar.svg" localized="true" width="75%" caption="Qualitative only, not measured scores: our reading of the trade-off table in post 4 and of Sections 3 and 5 here. Pixel video models look best but have limited memory and physics; explicit 3D worlds are consistent by construction but need a simulator for dynamics and actions; JEPA-style latent models produce nothing to look at (0 on that axis) but are cheap and effective for planning." %}
 
 ### 5.1 Does it look right? (perceptual quality)
 
@@ -250,6 +278,10 @@ print("delta PSNR (model that ignores actions):",
 ```
 
 The controllable toy model gets a large positive $\Delta\mathrm{PSNR}$ (perfect predictions with true actions are clamped by the `1e-10` floor, so the value is large but finite), and the model that ignores actions gets exactly zero.
+
+The figure shows what the metric compares for one example of the toy:
+
+{% include blog_figure.liquid path="assets/img/blog/world-models/05-delta-psnr.svg" caption="One example from the toy check. With the true actions the controllable model reproduces the real frame exactly (PSNR hits the $10^{-10}$ MSE floor, 100 dB); with random actions the texture is shifted to the wrong place (7.3 dB). A model that ignores actions returns the first frame in both cases, so its two PSNRs are equal and $\Delta\mathrm{PSNR} = 0$." %}
 
 ## 6. Open problems and research directions
 

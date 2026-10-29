@@ -70,12 +70,22 @@ $$
 
 如果我们*知道* $P$ 和 $R$，就可以用动态规划（值迭代，value iteration）求解。但真实的智能体通常并不知道它们。当智能体只能接收到无法揭示完整状态的观测 $o_t$（比如一张相机图像）时，问题就变成了**部分可观测 MDP**（partially observable MDP, POMDP）；此时智能体需要一个*信念*（belief），或者一个学习得到的潜在状态，来概括历史 $o_{\le t}, a_{\lt t}$。这正是下文 PlaNet 和 Dreamer 中循环潜在状态所扮演的角色。
 
+下图把这一设定的两部分并排画出：产生经验的交互循环，以及画成图的一个小型 MDP。
+
+{% include blog_figure.liquid path="assets/img/blog/world-models/01-mdp-loop.svg" localized="true" caption="左：智能体与环境的交互循环；智能体发出动作 $a_t$，环境返回下一个状态和奖励。右：一个三状态 MDP。橙色圆点是动作，灰色箭头是状态转移，标有 $P(s'\mid s,a)$ 和奖励。基于模型的智能体要学习的正是这些箭头和数字。" %}
+
 ### 2.2 无模型与基于模型
 
 - **无模型强化学习**（model-free RL；Q-learning、PPO、SAC）直接从真实转移中学习价值函数或策略。
 - **基于模型的强化学习**（model-based RL）还会额外学习 $\hat P_\theta, \hat R_\theta$，并用它们进行规划（在动作序列上搜索）或生成额外的训练数据。
 
 基于模型的强化学习的卖点在于**样本效率**（sample efficiency）：一次观测到的转移可以通过模型“重放”许多次，而且模型还能泛化到从未访问过的状态。其经典风险是**模型误差累积**（compounding model error）：单步误差 $\epsilon$ 会在长度为 $H$ 的推演中不断放大，而针对模型优化的策略会主动寻找模型出错且过于乐观的状态（模型利用，model exploitation）。下面介绍的方法中，几乎每一个设计决策都是在抵御这两个问题。
+
+为了用真实数字看到误差累积，我们只用 300 条随机转移训练了一个小 MLP $\hat P_\theta$ 来模拟带阻尼的单摆（状态 $(\theta, \omega)$、力矩 $u$、时间步长 0.05 s），然后让它与真实动力学并排做开环推演，结果如下图所示。
+
+{% include blog_figure.liquid path="assets/img/blog/world-models/01-model-error.svg" caption="左：零力矩下，从三个初始状态出发的真实轨迹（实线）与模型轨迹（虚线）。单步预测几乎完美，但推演仍会慢慢失去相位同步。右：500 个随机初始状态、随机动作下状态误差的中位数（双对数坐标）。误差大致随推演步数 $k$ 线性增长（点线：单步误差乘以 $k$），100 步后约为单步误差的 100 倍。" %}
+
+{% include widget.liquid name="world-models-latent-rollout" height="420" caption="动手试试：在相平面上拖动橙色的初始状态，改变推演步数 $H$ 和恒定力矩 $u$。黑色实线是真实单摆，紫色虚线是学到的模型；右侧面板画出每一步 $k$ 两者的距离。$\omega$ 很大（单摆越过顶点转圈）的初始状态正是 300 个训练样本稀疏的区域。" %}
 
 ### 2.3 Dyna：学习、规划与反应
 
@@ -84,6 +94,10 @@ Sutton 的 **Dyna** 架构（Sutton, "Dyna, an integrated architecture for learn
 1. **行动**：在真实环境中行动，并进行一次普通的 Q-learning 更新。
 2. **模型学习**：存储观测到的转移 $(s, a) \to (r, s^\prime)$。
 3. **规划**：重复 $n$ 次，采样一个之前见过的 $(s, a)$，向模型询问 $(r, s^\prime)$，并在这个*模拟*的转移上做同样的 Q-learning 更新。
+
+下图展示了这三步如何共享同一个价值函数：真实经验既直接更新 $Q$，也用来训练模型，而模型再产生额外的模拟更新。
+
+{% include blog_figure.liquid path="assets/img/blog/world-models/01-dyna.svg" localized="true" width="85%" caption="Dyna：蓝色箭头是普通的无模型强化学习；橙色路径（先学习模型，再规划）是世界模型额外带来的部分。每个真实步做 $n$ 次规划更新，每条真实转移都会被重复利用很多次。" %}
 
 下面是在带墙的小型网格世界上运行的表格型 Dyna-Q。用 NumPy 一秒钟就能跑完：
 
@@ -144,6 +158,10 @@ for n in [0, 5, 50]:
 
 当 `n_planning=0`（即普通 Q-learning）时，智能体需要很多个回合才能把奖励传播回起点；而每走一步真实步就做 50 步规划时，只需几个回合就能找到一条短路径。这就是世界模型全部承诺的缩影：**真实数据昂贵，想象数据廉价**。后面的所有内容，都是把查找表 `model` 换成能够泛化的神经网络，把表格型 Q 换成神经网络形式的 actor 和 critic。
 
+我们用 20 个随机种子运行了上面的脚本，结果如下图。
+
+{% include blog_figure.liquid path="assets/img/blog/world-models/01-dyna-q.svg" caption="Dyna-Q 脚本的输出，对 20 个种子取平均。右：n_planning = 0、5、50 时每个回合的步数（对数坐标）。有了规划，智能体只需几个回合就能达到最终水平（10 步最短路径加上 ε-贪婪探索带来的几步），而不是大约 25 个回合。左：学到的价值 $\max_a Q(s,a)$（颜色越深越高）以及 n_planning = 50 时 50 个回合后的贪婪路径。" %}
+
 ## 3. “World Models”（Ha & Schmidhuber, 2018）
 
 Ha 和 Schmidhuber 的论文（[arXiv:1803.10122](https://arxiv.org/abs/1803.10122)；NeurIPS 2018 版本的标题为 "Recurrent World Models Facilitate Policy Evolution"）让这个术语流行起来，并附带了一篇令人印象深刻的交互式文章。智能体由三部分组成：
@@ -151,6 +169,10 @@ Ha 和 Schmidhuber 的论文（[arXiv:1803.10122](https://arxiv.org/abs/1803.101
 - **V（vision，视觉）**：一个 VAE，把每一帧 64x64 的图像 $o_t$ 压缩成一个小的潜变量 $z_t$（我们会在[第 2 篇]({{ '/blog/2026/world-models-02-generative-modeling-foundations/' | relative_url }})中推导 VAE）。
 - **M（memory，记忆）**：一个 **MDN-RNN**（混合密度网络 RNN），把 $p(z_{t+1} \mid a_t, z_t, h_t)$ 建模为高斯混合，其中 $h_t$ 是 LSTM 的隐藏状态。
 - **C（controller，控制器）**：一个很小的线性策略 $a_t = W_c [z_t; h_t] + b_c$，用进化策略 CMA-ES 训练。
+
+下图展示了每个时间步中信息如何在这三部分之间流动。
+
+{% include blog_figure.liquid path="assets/img/blog/world-models/01-vmc.svg" localized="true" caption="Ha 与 Schmidhuber 的智能体：V 把画面压缩成 $z_t$；M（MDN-RNN）保存记忆 $h_t$，并在给定动作时预测下一个潜变量的分布；极小的控制器 C 把 $[z_t; h_t]$ 映射为动作。V 和 M 的训练不需要奖励，只有 C 针对回报进行优化。" %}
 
 由于几乎所有参数都集中在不需要奖励即可训练的 V 和 M 中，控制器足够小，可以用黑盒优化来训练。在 CarRacing 上，论文报告了 100 次试验的平均得分 906 $\pm$ 21；在 VizDoom 的 "Take Cover" 任务中，控制器**完全在 M 生成的梦境中**训练，然后迁移回真实游戏。这篇论文的两个教训在后来的所有工作中反复出现：
 
@@ -188,6 +210,10 @@ flowchart LR
     z1 --> dec
 ```
 
+把同一个模型沿时间展开，就得到下图：左半部分是在真实数据上滤波时的情形，右半部分是想象时的情形。
+
+{% include blog_figure.liquid path="assets/img/blog/world-models/01-rssm.svg" localized="true" caption="展开四步的 RSSM。灰色方块是确定性的 GRU 状态 $h_t$，圆圈是随机状态。滤波时（左），后验把 $h_t$ 与观测 $o_t$ 结合起来（紫色）；想象时（右）没有观测，$\hat z_t$ 从先验中采样（橙色虚线）。粗的水平箭头是确定性路径，负责把记忆传递很多步。" %}
+
 ### 4.2 训练目标
 
 RSSM 是一个序列化的 VAE。以后验作为变分分布，对观测序列的对数似然应用 Jensen 不等式（Jensen's inequality），就得到证据下界（evidence lower bound, ELBO）
@@ -208,6 +234,10 @@ $$
 
 PlaNet 没有策略网络。在每一个真实步，它都在潜在空间中运行**交叉熵方法**（cross-entropy method, CEM）：从对角高斯分布中采样 $J$ 条长度为 $H$ 的动作序列，用先验分别推演，按预测奖励之和打分，用排名前 $K$ 的序列重新拟合高斯分布，重复几次后执行均值序列的第一个动作。这就是*模型预测控制*（model-predictive control, MPC）。它是有效的，但每一步都要搜索，代价高昂，而且规划视野（planning horizon）限制了能看到多远的奖励。
 
+下图在一个玩具问题上运行 CEM：动作序列只有两个数，因此整个搜索空间都能画出来。
+
+{% include blog_figure.liquid path="assets/img/blog/world-models/01-cem.svg" caption="在一个玩具“预测回报”地形（紫色阴影）上对长度为 2 的动作序列 $(a_1, a_2)$ 运行 CEM，$J = 64$ 个样本、$K = 8$ 个精英。灰点：样本；橙点：精英；椭圆：采样用的高斯（2 个标准差）；叉号：其均值。四次迭代后，高斯收缩到较高的峰上，忽略了左上方较小的峰。" %}
+
 ## 5. Dreamer：通过潜在想象学习行为
 
 ### 5.1 DreamerV1
@@ -218,12 +248,20 @@ PlaNet 没有策略网络。在每一个真实步，它都在潜在空间中运�
 2. **世界模型学习**：采样序列，用上面的 ELBO 训练 RSSM。
 3. **在想象中学习行为**：以批次中的后验状态为起点，使用 actor 的动作将*先验*推演 $H = 15$ 步，预测奖励，并更新 actor 和 critic。
 
+下图用 2.2 节的单摆模型充当世界模型，演示第 3 阶段。
+
+{% include blog_figure.liquid path="assets/img/blog/world-models/01-imagination.svg" width="85%" caption="（时间, $\theta$, $\omega$）空间中的想象推演。黑线：一条真实轨迹。从其上的四个状态（圆点；在 Dreamer 中就是后验状态）出发，学到的模型各用五条不同的动作序列推演 $H = 15$ 步。actor 和 critic 只从这些短的想象分支中学习，而这些分支总是从真实情境出发。" %}
+
 critic $v_\psi(s_t)$ 以 **$\lambda$-回报**（$\lambda$-returns）为训练目标。它融合了所有长度的 $n$ 步回报，从而在偏差（来自 critic）和方差（来自长模型推演）之间取得平衡：
 
 $$
 V^\lambda_t = \hat r_t + \gamma \Big( (1-\lambda)\, v_\psi(s_{t+1}) + \lambda\, V^\lambda_{t+1} \Big),
 \qquad V^\lambda_H = v_\psi(s_H).
 $$
+
+把这个递推展开，就能看到 $V^\lambda$ 实际上在对哪些 $n$ 步回报取平均：
+
+{% include blog_figure.liquid path="assets/img/blog/world-models/01-lambda-return.svg" caption="$H = 15$ 时 $V^\lambda_0$ 中每个 $n$ 步回报 $G^{(n)}$（想象 $n$ 步后用 critic 自举）的权重，由上面的递推直接算出。$\lambda = 0$ 只走一步就相信 critic，$\lambda = 1$ 完全相信 15 步的模型推演。Dreamer 使用 $\lambda = 0.95$，每个短回报各占几个百分点，最长的回报占 $\lambda^{14} \approx 0.49$。" %}
 
 关键技巧在于 actor 的训练方式。由于世界模型、奖励头和 critic 都是可微的，Dreamer 通过**沿学到的动力学反向传播解析梯度**，传到 actor 经过重参数化的动作上，从而最大化 $\sum_t V^\lambda_t$：
 
@@ -257,6 +295,10 @@ $$
 - **回报归一化**（return normalization），用于 actor：优势值除以 $\max(1, S)$，其中 $S$ 是回报第 5 百分位数到第 95 百分位数之间的范围，这样熵奖励在不同的奖励尺度下都有一致的含义。
 - **Unimix 类别分布**：在类别分布中混入 1% 的均匀概率，以避免零概率尖峰和无穷大的 KL。
 
+下图用具体数字展示了前两个技巧。
+
+{% include blog_figure.liquid path="assets/img/blog/world-models/01-symlog.svg" caption="左：symlog 把量级差别很大的目标（0.01、1、1000）压缩到很小的范围内，同时在零附近接近恒等映射。右：在 DreamerV3 的 255 个桶（在 symlog 空间中均匀分布于 $[-20, 20]$）上对目标 3.7 做 two-hot 编码。相邻两个桶的权重为 0.17 和 0.83，按权重平均后的位置恰好是 symlog(3.7)。" %}
+
 官方代码：[github.com/danijar/dreamerv3](https://github.com/danijar/dreamerv3)。
 
 ## 6. MuZero：只预测重要的东西
@@ -270,6 +312,10 @@ s^0 = h_\theta(o_1, \dots, o_t), \qquad
 $$
 
 分别是表示函数、动力学函数和预测（策略与价值）函数。隐藏状态 $s^k$ 不被强加任何语义；训练它的唯一目的，是让模型沿实际执行的动作展开 $K$ 步之后，预测的奖励、价值和策略与各自的目标相匹配：
+
+沿着实际执行的动作展开，这三个函数构成下图中的链条。
+
+{% include blog_figure.liquid path="assets/img/blog/world-models/01-muzero.svg" caption="MuZero 学到的模型：表示函数 $h_\theta$ 把过去的观测映射为 $s^0$，动力学函数 $g_\theta$ 随每个动作推进隐状态并预测奖励 $r^k$，预测函数 $f_\theta$ 在每个隐状态上输出策略和价值。没有任何东西被解码回观测；损失只作用在奖励、价值和策略上。" %}
 
 $$
 \mathcal{L}_t(\theta) = \sum_{k=0}^{K} \Big[\ell^r(u_{t+k}, r^k) + \ell^v(z_{t+k}, v^k) + \ell^p(\boldsymbol{\pi}_{t+k}, \mathbf{p}^k)\Big] + c\,\lVert\theta\rVert^2,

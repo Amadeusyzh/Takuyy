@@ -31,6 +31,10 @@ related_posts: false
 4. **合理的动力学**（plausible dynamics）：物体像在目标领域（游戏规则或真实物理）中那样下落、碰撞和遮挡。
 5. **速度**：要用于交互，就必须实时运行，通常为每秒 20-30 帧。
 
+第 1 条要求在结构上最为关键；下图展示了下面每个交互式模型都在运行的循环。
+
+{% include blog_figure.liquid path="assets/img/blog/world-models/03-next-frame.svg" localized="true" width="85%" caption="交互式的逐帧预测：模型看到最近 $N$ 帧及其动作组成的窗口，生成 $x_{t+1}$，再把它加入上下文，同时最旧的一帧被移出。模型对世界的全部“认知”都必须装进这个窗口，而它自己的误差会在下一步被反馈回来。" %}
+
 下面的每个系统都解决了这些需求中的不同子集。一种简洁的比较方式如下：
 
 | 系统 | 年份 | 领域 | 生成器 | 动作输入 | 能否实时交互？ |
@@ -44,6 +48,10 @@ related_posts: false
 | Cosmos (NVIDIA) | 2025 | 物理 AI（机器人、驾驶） | 扩散与自回归世界基础模型 | 通过后训练 | 取决于具体模型 |
 | Genie 3 (Google DeepMind) | 2025 | 由文本生成通用 3D 世界 | 未公开 | 导航 + 文本“世界事件” | 是，720p 下 24 fps（据官方公告） |
 
+放到时间轴上（按 arXiv 提交或官方发布的月份）：
+
+{% include blog_figure.liquid path="assets/img/blog/world-models/03-timeline.svg" caption="本文所讨论系统的时间线，另加 DIAMOND（第 1 篇）和 Diffusion Forcing（第 6 节）。橙色：可实时交互；紫色：以动作为条件；灰色：没有动作输入。大约两年里，这个领域从离线的、以动作为条件的视频预测走到了实时可玩的世界。" %}
+
 ## 2. Sora：“视频生成模型作为世界模拟器”
 
 OpenAI 于 2024 年 2 月发布的技术报告 ["Video generation models as world simulators"](https://openai.com/index/video-generation-models-as-world-simulators/) 在较高层次上描述了 Sora（报告明确省略了模型与实现细节）：
@@ -51,6 +59,10 @@ OpenAI 于 2024 年 2 月发布的技术报告 ["Video generation models as worl
 - 一个**视频压缩网络**（video compression network）把原始视频映射到在空间和时间上都经过压缩的潜在表示（第 2 篇第 6 节）。
 - 潜在表示被切分成**时空 patch**（spacetime patches），作为**扩散 Transformer**（diffusion Transformer）的 token（第 2 篇第 9 节）。由于模型看到的是长度可变的 patch 集合，它可以在视频原生的**时长、分辨率和宽高比**上训练，而不必把所有视频都裁成固定的正方形。
 - 训练视频使用一个描述性字幕模型重新标注（即 DALL·E 3 中的技术），用户的简短提示则由语言模型进行扩写。
+
+时空图块在 3D 中最容易看清：
+
+{% include blog_figure.liquid path="assets/img/blog/world-models/03-spacetime-patches.svg" width="75%" caption="一个 $4 \times 4 \times 6$（时间、高、宽）的压缩视频潜变量被切成 $2 \times 2 \times 2$ 的时空图块，图中稍微分开画：每个彩色块成为一个 token，共 12 个。更长、更大或更宽的视频只是产生更多 token，所以模型可以在原始时长和宽高比上训练。（此处尺寸仅为示意；报告没有给出 Sora 的图块大小。）" %}
 
 报告的核心主张就写在标题里：扩大视频生成的规模会产生**涌现的模拟能力**（emergent simulation capabilities），报告列举了相机运动下的 3D 一致性、长程连贯性与物体恒存性（有时能做到）、改变世界状态的简单交互（画家留下笔触、汉堡上的一口咬痕），以及“模拟数字世界”（它能在用一个基础策略控制玩家的同时渲染 Minecraft）。同一份报告也列出了失败之处：它无法准确模拟许多基本交互的物理过程，例如玻璃碎裂；吃东西之类的交互也并不总能产生正确的状态变化。
 
@@ -66,6 +78,10 @@ OpenAI 于 2024 年 2 月发布的技术报告 ["Video generation models as worl
 2. 一个**潜在动作模型**（latent action model, LAM），推断相邻两帧之间的离散动作 $\tilde a_t$（第 3.2 节）。
 3. 一个**动力学模型**（dynamics model），即 MaskGIT 风格的 ST-Transformer，根据过去的 token 和潜在动作预测下一帧的 token：$p(z_{t+1} \mid z_{\le t}, \tilde a_{\le t})$。
 
+下图展示了这三部分在训练和游玩时分别如何连接。
+
+{% include blog_figure.liquid path="assets/img/blog/world-models/03-genie.svg" localized="true" caption="Genie。训练（上）只需要视频：tokenizer 把帧变成 token，潜在动作模型从每对相邻帧推断出一个码 $\tilde a_t$，动力学模型学习根据过去的 token 和码预测下一帧的 token。游玩（下）：丢弃潜在动作模型，由用户在每一步从 8 个码中选一个。" %}
+
 推理时 LAM 会被丢弃。用户（或智能体）在每一步从潜在动作中选择一个，再由动力学模型和 tokenizer 解码器渲染结果。Genie 可以用从未见过的图像（包括草图和照片）作为提示，把它们变成可玩的 2D 世界。同样的方法在机器人视频上训练后，为机械臂学到了一致的潜在动作；论文还表明，从专家视频中推断出的潜在动作可以用很少的标注样本为一个未见过的游戏训练策略。
 
 ### 3.2 潜在动作模型
@@ -78,6 +94,10 @@ $$
 $$
 
 由于过去的帧已经提供给了解码器，利用这个 3 比特瓶颈最划算的方式，就是编码**发生了什么变化且无法从过去预测的部分**，而在游戏中这主要就是玩家的输入。同样的原理也出现在 **LAPO**（Schmidt & Jiang, "Learning to Act without Actions", ICLR 2024, [arXiv:2312.10812](https://arxiv.org/abs/2312.10812)）中，它从 Procgen 视频中恢复潜在动作策略和世界模型，并用一个很小的标注集把潜在动作映射到真实动作。一种更早的替代方案是 **VPT**（Baker et al., NeurIPS 2022, [arXiv:2206.11795](https://arxiv.org/abs/2206.11795)）：在少量带标注的 Minecraft 游玩数据上训练一个逆动力学模型（inverse dynamics model），再用它为 7 万小时的互联网视频打伪标签。
+
+下图说明了为什么瓶颈会迫使这个码表示“动作”：
+
+{% include blog_figure.liquid path="assets/img/blog/world-models/03-lam.svg" localized="true" width="85%" caption="潜在动作模型。编码器能看到过去帧和下一帧，但只有 3 比特（$\lvert\mathcal{A}\rvert = 8$ 个码）能传给解码器。由于解码器本来就能拿到过去的帧（虚线），通过瓶颈唯一值得传递的，是那些发生了变化且无法从过去预测的东西，在游戏中这主要就是玩家的输入。" %}
 
 潜在动作有一些已知的弱点：它们可能捕捉到并非由智能体引起的变化（相机抖动、其他角色），在不同领域之间并不对齐，而且一个小的离散码本难以很好地表达连续控制。第 8 节给出了一个可运行的玩具 LAM。
 
@@ -102,7 +122,15 @@ $$
 
 决定性的技巧是**上下文噪声增强**（noise augmentation of the context）。训练时，用随机强度的高斯噪声破坏*作为条件的*帧，并把该噪声强度作为输入提供给模型。于是模型学会纠正自身上下文中的误差，从而阻止自回归漂移，否则这种漂移会在几秒内毁掉推演。作者还微调了潜在解码器以减少 HUD 中的伪影，采样只用 4 步 DDIM，并报告下一帧 PSNR 为 29.4（与有损 JPEG 相当）；人类评估者区分真实游戏与模拟的短片段时，准确率仅略高于随机猜测。
 
+把这些组合起来，GameNGen 的一次去噪过程如下：
+
+{% include blog_figure.liquid path="assets/img/blog/world-models/03-gamengen.svg" localized="true" caption="论文所描述的 GameNGen：过去的帧经 Stable Diffusion 自编码器编码，加上随机强度 $\sigma$ 的高斯噪声（$\sigma$ 也作为输入给模型），再与下一帧的带噪潜变量按通道拼接。过去动作的嵌入取代了 U-Net 的文本条件，4 步 DDIM 生成 $x_{t+1}$。" %}
+
 GameNGen 的局限同样富有启发性：由于只有约三秒的视觉上下文，它**没有长期记忆**。屏幕上不可见的游戏状态（例如你去过哪些区域）只能通过 HUD 显示的内容得以保留。DIAMOND（第 1 篇）在 CS:GO 上也得出了类似结论。
+
+下图示意了为什么有限的上下文窗口意味着没有长期记忆。
+
+{% include blog_figure.liquid path="assets/img/blog/world-models/03-memory.svg" localized="true" width="85%" caption="沿环形路线行走的俯视示意图。在 $t_1$ 时智能体看到了红色地标。到 $t_2$ 时它再次面向同一个地方，但上下文窗口（橙色线段）只覆盖了路线的最后一段，因此模型的输入里没有任何信息说明那个地标长什么样。模型只能重新“想象”它，结果不一定一致。" %}
 
 ## 5. 以动作为条件的真实世界模拟器
 
@@ -126,6 +154,10 @@ GameNGen 的局限同样富有启发性：由于只有约三秒的视觉上下�
 - **Diffusion Forcing**（Chen et al., NeurIPS 2024, [arXiv:2407.01392](https://arxiv.org/abs/2407.01392)）：训练时为序列中的每一帧赋予其**独立的噪声强度**。以这种方式训练的因果模型可以在过去帧干净或仅略带噪声的情况下对后续帧去噪，保持未来的不确定性并稳定长时推演；它还支持对整条未来轨迹施加引导，用于规划。
 - **带 KV 缓存的因果注意力**（causal attention with KV caching），使每一新帧的计算量保持恒定；以及**步数蒸馏**（step distillation）（少步或单步采样器），以达到实时速率。
 - **记忆机制**（memory mechanisms）：更长的上下文窗口、对过去帧的压缩记忆、按相机位姿检索帧，或场景的显式 3D 表示。最后一种方案直接引向[第 4 篇]({{ '/blog/2026/world-models-04-3d-and-4d-world-generation/' | relative_url }})。
+
+如下图所示，这些方案的区别仅在于训练序列中各帧被赋予怎样的噪声水平。
+
+{% include blog_figure.liquid path="assets/img/blog/world-models/03-diffusion-forcing.svg" localized="true" width="85%" caption="每一帧的噪声水平（白 = 干净，深色 = 纯噪声；灰 = 不在输入中）。全序列扩散对整段视频使用同一个水平；逐帧预测让过去保持干净，只给要预测的帧加噪；Diffusion Forcing 为每一帧独立采样噪声水平。这样在采样时就可以使用因果的“金字塔”调度（右下）：每一帧的去噪都比前一帧稍晚一些，因此近的未来比远的未来更清晰。" %}
 
 ## 7. 仍然缺少什么
 
@@ -199,6 +231,10 @@ with torch.no_grad():
 ```
 
 在这个玩具例子中，五种隐藏动作通常会以很高的纯度映射到不同的码字，反复按下“右”对应的码字会让点每步向右移动一格。可以尝试：加入第二个*不受控制*、随机移动的点，看看码字是否也开始编码它的运动（这是 LAM 的一种已知失效模式）；或者把码本缩小到 4，看看哪些动作会被合并。还可以把 `ConvEncoder` 换成作用于拼接帧的 MLP：重建损失照样下降，但码字纯度会跌到 0.2-0.3 左右（接近随机水平）。原因是解码器也能看到当前位置，于是每个码字的含义可以随网格区域而变化。只有当网络结构或训练方式强制要求时，潜在动作才会在不同状态之间保持一致，这对在多样化视频上训练的 LAM 来说是一个真实存在的问题。
+
+我们用同一个随机种子运行了这个脚本，以及上面提到的 MLP 编码器版本：
+
+{% include blog_figure.liquid path="assets/img/blog/world-models/03-lam-results.svg" caption="上：每个隐藏动作的转移被分到 8 个学到的码上的比例。使用平移不变的 ConvEncoder 时，每个动作都有自己的码（平均纯度 0.96；“down” 被分到两个码上）；使用 MLP 编码器时，码是混杂的（平均纯度 0.25，接近随机）。下：从第 3 列出发，连续四次输入“right”的码来“玩”ConvEncoder 世界模型：圆点每步右移一格，到达第 7 列，同时解码器的小误差逐渐累积成背景噪声。" %}
 
 ## 代表性论文
 
