@@ -34,6 +34,10 @@ Three properties make this wasteful:
 
 The fixes map one-to-one onto these problems: store features **locally** (grids, planes, hash tables) so a sample only touches a few parameters; **skip empty space** with an occupancy structure and stop rays early once transmittance is negligible; and make the remaining network **tiny**.
 
+The figure puts these numbers side by side (top) and shows the second problem on a toy ray (bottom): only a small fraction of the 256 samples ever receives a non-negligible weight.
+
+{% include blog_figure.liquid path="assets/img/blog/neural-rendering/03-nerf-cost.svg" localized="true" caption="Top: forward FLOPs of NeRF on a log scale, computed from the numbers in this section (one $8\times256$ MLP evaluation, a batch of 4096 rays with 256 samples each, one $800\times800$ frame, 200k training iterations). Bottom: a toy ray with one opaque surface and a faint blob, sampled at 256 uniform points. The transmittance $T(t)$ drops to zero at the surface, and only the red ticks (43 of 256 samples) have a weight $w_i>10^{-3}$: every grey tick costs a full network evaluation but contributes almost nothing." %}
+
 A useful mental model: a hybrid radiance field is
 
 $$
@@ -60,12 +64,20 @@ $$
 
 (differences between neighbouring voxels) to suppress noise in unobserved regions, and coarse-to-fine upsampling with pruning of empty voxels. The paper reports optimization about two orders of magnitude faster than NeRF at comparable quality. Its message, that the **differentiable volumetric renderer** is the key ingredient rather than the neural network, is precisely the bet 3DGS later made with a different primitive. Plenoxels built on PlenOctrees (Yu et al., ICCV 2021), which baked a trained NeRF with SH outputs into an octree for real-time rendering.
 
+The figure shows both halves of this recipe: the trilinear weights of one sample, and the voxels that survive when empty space is pruned.
+
+{% include blog_figure.liquid path="assets/img/blog/neural-rendering/03-trilinear-sparse.svg" caption="Left: trilinear interpolation inside one voxel. The sample $\mathbf x$ at fractional position (0.3, 0.65, 0.4) takes each corner's value with weight $\prod_k (x_k \text{ or } 1-x_k)$; the marker size and the number at each corner show that weight, and the eight weights sum to 1. Right: a $16^3$ grid around a sphere that keeps only the voxels the surface passes through (680 of 4096, 17%; a wedge is cut away to show that the inside is empty too). This is the idea behind pruning empty voxels in Plenoxels; the real method keeps a sparse grid at a much higher resolution." %}
+
 ### 2.2 DVGO
 
 **DVGO** (Direct Voxel Grid Optimization; Sun et al., CVPR 2022) also optimizes grids directly but keeps a little network: a dense **density grid** and a **feature grid** whose interpolated feature (plus view direction) is decoded by a shallow MLP. Two of its findings are broadly useful:
 
 - **Post-activation.** Interpolate the raw grid value first and apply the density activation (softplus, then $\alpha = 1 - e^{-\sigma\delta}$) afterwards. A trilinearly interpolated pre-activation can represent a sharp surface inside a single voxel, whereas interpolating already-activated densities cannot.
 - **Priors against bad geometry.** Directly optimized density grids readily overfit with floaters, so DVGO initializes densities low and uses view-count-based learning rates in the coarse stage.
+
+The figure reproduces the post-activation argument in 1D (Exercise 4 asks you to build it yourself).
+
+{% include blog_figure.liquid path="assets/img/blog/neural-rendering/03-post-activation.svg" caption="DVGO's post-activation in 1D. A grid of 8 cells (vertical lines are vertices) has to represent an opaque surface at $x=0.56$, inside the shaded cell (dotted target). For each scheme the 9 vertex values were fitted by least squares. Interpolating opacity (orange) or activated density (blue) can only ramp up across the whole cell, while interpolating the raw value and activating afterwards (red) puts a sharp step exactly at 0.56. Activation: softplus, then $\alpha = 1-e^{-\sigma\delta}$ with $\delta=1/64$." %}
 
 DVGO reports NeRF-comparable quality from scratch in about 15 minutes on a single GPU.
 
@@ -86,6 +98,10 @@ $$
 $$
 
 Appearance uses the same factorization to produce a feature vector, which is decoded by a small MLP or by SH. Memory drops from $O(N^3)$ to $O(N^2)$ (VM) or $O(N)$ (CP); the paper reports CP models under 4 MB trained in under 30 minutes.
+
+The figure fits both decompositions to a small volume, so you can see the trade-off.
+
+{% include blog_figure.liquid path="assets/img/blog/neural-rendering/03-tensorf.svg" caption="CP versus VM on a real volume: a tilted torus with a ball on top, sampled on a $32^3$ grid and factorized with CP (alternating least squares) and VM (each of the three terms is a rank-$R$ matrix in one unfolding, fitted by truncated SVDs). Top left: one VM term, a vector along $x$ times a matrix on the $yz$ plane. Top right: reconstruction PSNR versus parameter count; the dashed line is the dense grid. Bottom: a $z$-slice of the target and of two reconstructions of equal quality: CP needs 16 components (1536 parameters), VM only 2 (6336 parameters). Per component VM is far more expressive; per parameter, CP is very compact on this smooth toy volume." %}
 
 **K-Planes** (Fridovich-Keil et al., CVPR 2023) pushes the planar idea to $d$ dimensions: a $d$-dimensional field is represented by $\binom{d}{2}$ planes whose interpolated features are **multiplied**. For a dynamic scene $(x, y, z, t)$ this means six planes: three spatial ($xy, xz, yz$) and three space–time ($xt, yt, zt$). The same factorized-plane idea underlies many dynamic 3DGS methods (e.g. the HexPlane deformation field of 4D Gaussian Splatting, post 5).
 
@@ -117,6 +133,10 @@ Each level owns a table of $T$ feature vectors of dimension $F$. To encode a poi
 
 The paper's typical configuration is $L = 16$, $F = 2$, $T = 2^{14}$ to $2^{24}$ (e.g. $2^{19}$ for NeRF), $N_{\min} = 16$. Table entries are initialized from $\mathcal U(-10^{-4}, 10^{-4})$.
 
+The figure shows these levels for the 2D test of section 4.4.
+
+{% include blog_figure.liquid path="assets/img/blog/neural-rendering/03-hash-levels.svg" caption="The levels of the 2D test in section 4.4 ($L=16$, $N$ from 16 to 512, $T=2^{15}$), computed with the formulas above. Top: vertices per level on a log scale; green levels fit into the table and use the dense index, orange levels (from $N=203$ up) are hashed. Bottom left: the grids of levels 0, 5 and 10 over the bottom-left corner of the test image. Bottom right: at the finest level 263169 vertices share 32768 slots (8 per slot on average, and every slot is used); the red dots are the 9 vertices that the spatial hash sends to the same slot as the circled one, scattered pseudo-randomly over the image." %}
+
 ### 4.2 Why hash collisions are fine
 
 At fine levels there are far more grid vertices than table entries, so different vertices collide in the same slot. Instant-NGP simply lets them, and relies on three facts:
@@ -127,12 +147,18 @@ At fine levels there are far more grid vertices than table entries, so different
 
 $T$ is the explicit memory–quality knob: the paper shows quality rising with $\log T$ until it saturates.
 
+You can see this knob in the 2D test of section 4.4, where a NumPy re-run with $T$ from $2^{10}$ to $2^{19}$ is plotted.
+
 ### 4.3 The rest of the system
 
 - **Tiny MLPs.** For NeRF, a density MLP with one hidden layer of 64 neurons outputs 16 values, the first interpreted as log-density; a colour MLP with two hidden layers of 64 neurons takes these 16 values plus the view direction encoded in spherical harmonics up to degree 4 (16 coefficients).
 - **Occupancy grid.** A multiscale binary grid marks cells with non-negligible density. Ray marching skips empty cells and stops when transmittance falls below a threshold, so most rays evaluate only a handful of samples. The grid is updated periodically from the current density.
 - **Optimizer.** Adam with $\beta_1 = 0.9$, $\beta_2 = 0.99$, $\epsilon = 10^{-15}$ (the tiny $\epsilon$ matters because many hash entries receive rare, small gradients), with weak L2 regularization applied to the MLP weights only.
 - **Fully fused CUDA.** The MLP is evaluated by the `tiny-cuda-nn` library with all layers fused in one kernel, keeping activations in on-chip memory.
+
+The figure shows how much the occupancy grid and early termination save on a toy ray.
+
+{% include blog_figure.liquid path="assets/img/blog/neural-rendering/03-occupancy.svg" caption="Empty-space skipping on a 2D toy scene with two blobs. A $32\times32$ occupancy grid marks the 216 cells (purple) whose density exceeds 0.01. A ray that has 487 uniform samples inside the scene evaluates only the samples in occupied cells and stops once the transmittance falls below $10^{-4}$: just 37 samples (red) are evaluated, all near the first surface it hits." %}
 
 The same encoding also fits gigapixel images, signed distance functions and neural radiance caches, which is why the paper speaks of "graphics primitives".
 
@@ -212,6 +238,10 @@ On a CPU (single thread) this reaches above 40 dB within a few hundred steps (ou
 - The integer products such as $511 \times 2\,654\,435\,761$ fit comfortably in `int64`; the CUDA implementation uses `uint32` arithmetic with wrap-around, which gives different but equally good hashes.
 - The loop over levels launches many small kernels. Real implementations ([tiny-cuda-nn](https://github.com/NVlabs/tiny-cuda-nn), or the pure-PyTorch-friendly variants in nerfstudio and nerfacc) process all levels and corners in one fused kernel and write the backward pass by hand.
 
+The figure is a NumPy re-run of this test that also compares table sizes.
+
+{% include blog_figure.liquid path="assets/img/blog/neural-rendering/03-hash-fit.svg" caption="The 2D test above, re-implemented in NumPy (same encoding, MLP, Adam settings and batch size; 300 steps; PSNR measured on every other pixel). Top left: the $512\times512$ target. Top right: the reconstruction with $T=2^{15}$ after 300 steps (46.0 dB; the PyTorch run in the text printed 45.8 dB at step 250). Bottom: PSNR versus step for four table sizes. With $T=2^{19}$ every level fits and nothing collides, so its gap to $T=2^{15}$ is the price of hashing; $T=2^{10}$ and $2^{12}$ show the memory-quality knob of section 4.2." %}
+
 To use it in the NeRF of post 2, normalize sample positions into $[0,1]^3$ (with a scene contraction for unbounded scenes), replace `positional_encoding(x, L_x)` by `HashEncoding(D=3)(x)`, and shrink the MLP to one or two hidden layers of width 64.
 
 ## 5. Zip-NeRF: anti-aliasing meets grids
@@ -221,6 +251,10 @@ Grid methods are fast but **alias**: a hash grid is queried at points, so the co
 - **Multisampling.** Each conical frustum is represented by a small set of points arranged on a spiral inside it, and the hash features of those points are averaged, approximating the integral of the feature over the frustum.
 - **Scale-aware downweighting.** Features from grid levels whose cell size is smaller than the frustum's footprint are attenuated: a feature at a level with resolution $n$ is scaled by $\operatorname{erf}\!\big(1/\sqrt{8\sigma^2 n^2}\big)$, where $\sigma$ is the standard deviation of the frustum's Gaussian. This is a soft version of IPE's $e^{-\sigma^2/2}$ factor.
 - **Anti-aliased interlevel loss** between the proposal networks and the NeRF, which removes the z-aliasing ("banding") of Mip-NeRF 360's proposal supervision.
+
+The figure illustrates the first two ideas.
+
+{% include blog_figure.liquid path="assets/img/blog/neural-rendering/03-zipnerf.svg" caption="Top: Zip-NeRF's multisampling, schematically: the conical frustum of one ray interval (purple) is represented by 6 points on a spiral inside it, whose hash features are averaged. Bottom: the downweighting factor $\mathrm{erf}(1/\sqrt{8\sigma^2 n^2})$ as a function of $\sigma n$, the frustum's standard deviation measured in grid cells. Orange dots: the 16 levels of the 2D test ($n$ from 16 to 512) for a footprint $\sigma=1/64$. Coarse levels pass almost unchanged; levels whose cells are much smaller than the footprint are attenuated towards 0." %}
 
 The paper reports error rates 8%–77% lower than either Mip-NeRF 360 or grid-based baselines and training 24× faster than Mip-NeRF 360. Zip-NeRF remained one of the strongest quality references on the Mip-NeRF 360 benchmark well into the Gaussian splatting era.
 
