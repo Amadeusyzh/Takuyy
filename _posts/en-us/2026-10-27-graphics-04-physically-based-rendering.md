@@ -42,6 +42,10 @@ $$
 
 This identity lets us switch between integrating over directions and integrating over surfaces. We will use it for the area form of the rendering equation and again for light sampling in the next post.
 
+The figure shows both formulas at work.
+
+{% include blog_figure.liquid path="assets/img/blog/graphics/04-solid-angle.svg" caption="Left: the solid angle $d\omega=\sin\theta\,d\theta\,d\phi$ is the area of a small patch on the unit sphere; the $\sin\theta$ factor makes patches near the pole smaller. Right (2D slice): a surface patch $dA$ at distance $r$, tilted by $\theta'$, covers the solid angle $dA\cos\theta'/r^2$." %}
+
 A useful integral appears everywhere in shading:
 
 $$
@@ -69,6 +73,10 @@ E(x) = \int_{\Omega} L_i(x,\omega_i) \cos\theta_i \, d\omega_i .
 $$
 
 The $\cos\theta_i$ is Lambert's cosine law: a beam that arrives at a grazing angle spreads over a larger area.
+
+As the figure shows, the same beam of width $w$ covers a strip of length $w/\cos\theta$, so the power per unit area drops by $\cos\theta$.
+
+{% include blog_figure.liquid path="assets/img/blog/graphics/04-cosine-law.svg" caption="Lambert's cosine law. A beam of fixed width $w$ (and fixed power) arriving at $\theta=0^\circ$, $45^\circ$ and $70^\circ$ spreads over a footprint $w/\cos\theta$, so the irradiance $E$ falls off as $\cos\theta$." %}
 
 A **point light** with intensity $I$ at distance $r$ produces irradiance $E = I\cos\theta / r^2$ (the inverse-square law). This is the `E = I * NoL / dist2` line in the shader at the end of this post. Note that "light color times intensity" in a real-time engine is usually exactly this $I$, possibly with photometric units (candela) instead of watts.
 
@@ -104,6 +112,10 @@ $$
 
 What makes it hard is that $L_i$ is not given. In a vacuum, the radiance that arrives at $x$ from $\omega_i$ is the radiance leaving the first surface point hit by the ray, $L_i(x,\omega_i) = L_o(\mathrm{trace}(x,\omega_i), -\omega_i)$. The unknown $L$ appears on both sides, so this is a Fredholm integral equation of the second kind.
 
+The figure draws the integrand for one point $x$ under a toy sky with a sun.
+
+{% include blog_figure.liquid path="assets/img/blog/graphics/04-rendering-eq.svg" caption="The integrand of the rendering equation at a point $x$ under a toy sky with a sun (star), drawn as incoming directions $\omega_i$ on the hemisphere; arrow length and color are proportional to the value. Left: $L_i\cos\theta_i$, whose integral is the irradiance $E$. Right: the same multiplied by a glossy GGX BRDF ($\alpha=0.3$) for the viewer $\omega_o$: only directions near the mirror direction of $\omega_o$ (here the sun) still contribute." %}
+
 Kajiya wrote it in a **three-point (area) form**. Using $d\omega = dA\cos\theta'/r^2$ we can integrate over all scene surfaces $M$ instead of directions:
 
 $$
@@ -132,6 +144,10 @@ Real surfaces are rough at a scale smaller than a pixel but larger than the wave
 - $F(\omega, m)$: the **Fresnel** reflectance of each smooth microfacet;
 - $G_2(\omega_i,\omega_o,m)$: the **masking-shadowing** function, the fraction of microfacets that are visible from both the light and the viewer.
 
+The figure shows all three on a real 2D height profile.
+
+{% include blog_figure.liquid path="assets/img/blog/graphics/04-microfacet.svg" localized="true" caption="A random microfacet surface (2D profile; light at $70^\circ$ from the left, viewer at $50^\circ$ on the right). Only facets whose normal $m$ is close to the half vector $h$ (purple arrows) can mirror light from $\omega_i$ into $\omega_o$; $D$ measures how many there are. Some of them are shadowed (the ray to the light hits the surface, red) or masked (the ray to the viewer hits the surface, blue), which is what $G_2$ accounts for. Visibility is computed by tracing the rays against the profile." %}
+
 ### The Cook-Torrance specular BRDF
 
 Only microfacets whose normal is the half vector $h = (\omega_i+\omega_o)/\lVert\omega_i+\omega_o\rVert$ can mirror light from $\omega_i$ into $\omega_o$. Following Walter et al. (EGSR 2007), the macroscopic BRDF is the integral over microfacets of each facet's contribution, weighted by its projected area and visibility:
@@ -154,6 +170,10 @@ $$
 
 This is the **Cook-Torrance** form (Cook and Torrance, TOG 1982, used a Beckmann NDF and a V-cavity $G$). The $4$ comes from the Jacobian, not from an arbitrary normalization. The two cosines in the denominator come from converting between projected microsurface and macrosurface areas. Real-time code often folds $G_2$ and the denominator together into a **visibility term** $V = G_2 / (4\lvert n\cdot\omega_i\rvert\lvert n\cdot\omega_o\rvert)$.
 
+The figure plots the resulting lobes in 3D, using the GGX $D$ and the Smith visibility term defined below.
+
+{% include blog_figure.liquid path="assets/img/blog/graphics/04-brdf-lobes.svg" localized="true" caption="3D lobes of $f_r(\omega_i,\omega_o)\cos\theta_o$ over all outgoing directions $\omega_o$, for light arriving at $\theta_i=45^\circ$ (each lobe scaled to the same size; $F=1$, height-correlated Smith $G_2$). Lambert is a sphere touching the surface. The GGX lobes concentrate around the mirror direction (dashed) as $\alpha$ decreases, and the perfect mirror is the delta-function limit. At $\alpha=1$ the microfacet normals are uniform and the lobe is broad and almost diffuse." %}
+
 ### The NDF must be normalized
 
 $D$ is a density of *areas*. The projected area of all microfacets onto the macro surface must equal the macro area, which gives the normalization condition
@@ -171,6 +191,10 @@ D_{\text{GGX}}(h) = \frac{\alpha^2}{\pi\left((n\cdot h)^2(\alpha^2-1)+1\right)^2
 $$
 
 Here $\alpha$ is the roughness. As $\alpha\to 0$, $D$ approaches a delta (a mirror). At $\alpha=1$ it becomes $D = 1/\pi$, a uniform distribution of microfacet normals. Compared with the Gaussian-like Beckmann distribution, GGX has a sharp peak and a **long tail**, which produces the bright highlight with a soft halo that measured materials show.
+
+The figure compares the two distributions at the same $\alpha$.
+
+{% include blog_figure.liquid path="assets/img/blog/graphics/04-ndf.svg" caption="GGX vs Beckmann NDF at $\alpha=0.2$ and $0.5$, as a function of the angle $\theta_h$ between $h$ and $n$. Near the peak they are similar (left), but on a log scale (right) Beckmann falls off like a Gaussian while GGX keeps a long tail, which gives highlights their soft halo. Both satisfy $\int D\,(n\cdot m)\,d\omega_m=1$ (checked numerically in the figure script)." %}
 
 For anisotropic surfaces such as brushed metal, with tangent-frame components $h_x,h_y,h_z$ and roughness $\alpha_x,\alpha_y$:
 
@@ -207,6 +231,10 @@ $$
 
 To derive it, write $\tan^2\theta = (1-\cos^2\theta)/\cos^2\theta$, so that $1+\Lambda = \frac{1}{2}\left(1+\sqrt{\cos^2\theta(1-\alpha^2)+\alpha^2}/\cos\theta\right)$, and simplify.
 
+The figure plots both forms.
+
+{% include blog_figure.liquid path="assets/img/blog/graphics/04-smith-g.svg" localized="true" caption="Left: Smith masking $G_1$ for GGX. Smooth surfaces mask almost nothing until grazing angles, rough ones mask much earlier. Right: the separable product $G_1(\omega_i)G_1(\omega_o)$ (dashed) always lies below the height-correlated $G_2$ (solid), i.e. it overestimates occlusion." %}
+
 ### Fresnel and Schlick's approximation
 
 The fraction of light that a smooth interface reflects increases toward grazing angles. Even a matte floor becomes mirror-like when you look along it. The exact Fresnel equations depend on the complex index of refraction and on polarization. Schlick (Computer Graphics Forum 1994) proposed the approximation
@@ -222,6 +250,14 @@ F_0 = \left(\frac{\eta-1}{\eta+1}\right)^2 ,
 $$
 
 so glass and most plastics ($\eta\approx 1.5$) give $F_0 = 0.04$, and water ($\eta\approx 1.33$) gives about $0.02$. Metals have a high $F_0$ that varies with wavelength, which is why gold and copper reflections are colored.
+
+The figure compares Schlick's formula with the exact Fresnel equations.
+
+{% include blog_figure.liquid path="assets/img/blog/graphics/04-fresnel.svg" localized="true" caption="Exact unpolarized Fresnel reflectance (solid) vs Schlick's approximation (dashed). Left: glass ($\eta=1.5$) and water ($\eta=1.33$) reflect only 2-4% head-on but everything at grazing angles. Right: gold, using approximate complex indices for R, G and B (after Johnson and Christy 1972): a high, colored $F_0$. Schlick misses the slight dip of the exact red curve near $80^\circ$, but is otherwise close." %}
+
+To see how $D$, $V$ and $F$ work together, use the explorer below: drag inside it to move the light, and change roughness and metallic with the sliders.
+
+{% include widget.liquid name="graphics-brdf-lobe" height="440" caption="BRDF lobe explorer: a cross-section of $f_r(\omega_i,\omega_o)\cos\theta_o$ in the plane of incidence for the metallic-roughness model of section 6 (GGX, height-correlated Smith, Schlick). Drag to move the light; the dashed line is the mirror direction." %}
 
 ## 5. Checking the math numerically
 
@@ -310,6 +346,10 @@ I cross-checked these albedos with an independent Monte Carlo estimate that samp
 - The NDF and the Smith $G_1$ are exactly consistent, so the model *never creates* energy.
 - It does **lose** energy at high roughness: up to 70% at $\alpha=1$. The lost light is the light that bounces more than once between microfacets, which a single-scattering model ignores. Rough metals therefore render too dark. Energy-compensation methods (Kulla and Conty, "Revisiting Physically Based Shading at Imageworks", SIGGRAPH 2017 course; Turquin 2019) add back a multiple-scattering lobe that is precomputed from tables such as `spec_albedo`. The separable $G_2$ loses even more energy (0.525 vs 0.672 in the last line).
 
+The figure plots `spec_albedo` over all viewing angles; the dots are the values printed above.
+
+{% include blog_figure.liquid path="assets/img/blog/graphics/04-furnace.svg" localized="true" caption="White furnace test of the GGX specular lobe ($F=1$): directional albedo vs viewing angle, computed with the quadrature code above (dots: the printed values). A lossless model would follow the line at 1. The gap is the energy lost to the ignored multiple scattering, and the separable $G_2$ (dashed) loses even more." %}
+
 ## 6. The metallic-roughness workflow
 
 Artists should not have to type indices of refraction. Burley's Disney "principled" BRDF (SIGGRAPH 2012 course) and Karis's Unreal Engine 4 adaptation (SIGGRAPH 2013 course) popularized a small, intuitive parameter set, now standardized in glTF 2.0:
@@ -336,6 +376,10 @@ f_r = \underbrace{(1-F)\,\frac{c_{\text{diff}}}{\pi}}_{\text{diffuse}} + \underb
 $$
 
 The factor $(1-F)$ is a cheap way to keep energy that was already reflected specularly out of the diffuse lobe. It is an approximation; more careful layered models use the specular albedo instead. Squaring the roughness ($\alpha=r^2$) makes the slider perceptually linear. Burley observed that without it, most of the visible change would be packed into the low end of the slider.
+
+The figure runs the shader from section 8 on a grid of spheres.
+
+{% include blog_figure.liquid path="assets/img/blog/graphics/04-sphere-grid.svg" caption="The metallic-roughness model on a grid of spheres, rendered in NumPy with the shader of section 8 (one light from the upper left plus a uniform environment through the split-sum LUT; baseColor $=(0.95, 0.45, 0.12)$, $\alpha=r^2$). Top: dielectric, colored diffuse with a white highlight. Bottom: metal, no diffuse and a colored reflection. The highlight widens and dims as $r$ grows, and rough metals turn darker because of the single-scattering energy loss." %}
 
 Two practical rules: textures for `baseColor` are stored in sRGB and must be decoded to linear before lighting, and all lighting math happens in linear HDR values, with tone mapping applied at the end.
 
@@ -428,6 +472,10 @@ roughness=1.00 n.v=1.0  A=0.307 B=0.000  A+B=0.307
 ```
 
 $A+B$ is the furnace albedo with $F_0=1$. It matches the quadrature from section 5: roughness 1 and $n\cdot v = 1$ gives 0.307 in both. Notice how $B$, the Fresnel boost, grows at grazing angles for smooth surfaces. That is the bright rim you see on real objects. Karis's original code uses a Schlick-GGX approximation of $G$ with $k=\alpha/2$ for IBL, so its LUT differs slightly from this height-correlated version. Pick one $G$ and use it both for analytic lights and for the LUT.
+
+The figure shows the complete LUT computed with `integrate_brdf`.
+
+{% include blog_figure.liquid path="assets/img/blog/graphics/04-split-sum-lut.svg" caption="The split-sum environment-BRDF LUT computed with `integrate_brdf` above ($32\times32$ entries, 1024 samples each). $A$, the scale of $F_0$, is close to 1 for smooth surfaces seen head-on and drops for rough ones. $B$, the Fresnel bias, is large only at grazing angles ($n\cdot\omega_o\to 0$) on smooth surfaces: the bright rim." %}
 
 ## 8. A complete GLSL implementation
 

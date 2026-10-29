@@ -76,6 +76,10 @@ $$
 - **投影。** $\mathbf{a}$ 在单位向量 $\hat{\mathbf{b}}$ 方向上的分量是 $(\mathbf{a}\cdot\hat{\mathbf{b}})\,\hat{\mathbf{b}}$。
 - **正面还是背面。** $(\mathbf{q}-\mathbf{p})\cdot\mathbf{n}$ 的符号告诉我们点 $\mathbf{q}$ 位于平面的哪一侧。背面剔除（back-face culling）和光线-平面求交都用到它。
 
+下图使用后面代码中的两个向量 $\mathbf{a}=(1,2,2)$ 和 $\mathbf{b}=(3,0,4)$：沿 $\mathbf{b}$ 的深色线段就是投影，它的长度 $\mathbf{a}\cdot\hat{\mathbf{b}} = 2.2$ 等于点积除以 $\lVert\mathbf{b}\rVert$。
+
+{% include blog_figure.liquid path="assets/img/blog/graphics/01-dot-product.svg" width="75%" caption="点积即投影。从 **a** 的端点向 **b** 所在直线作垂线（虚线）：深色线段就是投影 (1.32, 0, 1.76)，长度为 2.2，因此 a·b = 2.2 × 5 = 11，cos θ = 11/15（θ = 42.83°）。右手坐标系，z 轴朝上绘制。" %}
+
 ### 叉积
 
 $$
@@ -86,6 +90,10 @@ $$
 $$
 
 叉积（cross product）的结果同时垂直于两个输入，遵循右手定则，其长度等于 $\mathbf{a}$ 和 $\mathbf{b}$ 张成的平行四边形面积。因此三角形 $(\mathbf{p}_0,\mathbf{p}_1,\mathbf{p}_2)$ 的法线是 $(\mathbf{p}_1-\mathbf{p}_0)\times(\mathbf{p}_2-\mathbf{p}_0)$，其长度的一半就是三角形的面积。顶点的顺序（**环绕顺序**，winding order）决定法线指向哪一侧，GPU 正是据此判断哪些面是“正面”。
+
+下图画出了下面代码中的三角形。交换两个顶点会反转绕序并翻转法线，点 $\mathbf{q}$ 的半空间测试的符号也随之翻转。
+
+{% include blog_figure.liquid path="assets/img/blog/graphics/01-cross-product.svg" caption="三角形 p0 = (0,0,0)、p1 = (1,0,0)、p2 = (0,1,0) 两条边的叉积。左：从 +z 看为逆时针绕序，得到 n = +z（右手定则：四指从 **a** 弯向 **b**，拇指指向 n）。右：交换 p1 和 p2 后 n 翻转，q = (0.2, 0.2, 0.5) 的 (q − p0)·n 的符号也随之改变。虚线平行四边形的面积为 ‖a × b‖ = 1，三角形是它的一半。" %}
 
 ```python
 import numpy as np
@@ -113,6 +121,10 @@ print("q above the triangle plane:", (q - p0) @ c > 0)         # True
 
 一个之后会用到的恒等式：三重积 $\mathbf{a}\cdot(\mathbf{b}\times\mathbf{c}) = \det[\mathbf{a}\ \mathbf{b}\ \mathbf{c}]$ 是平行六面体的有向体积。它的二维版本 $(b_x-a_x)(c_y-a_y)-(b_y-a_y)(c_x-a_x)$ 就是第 02 篇的光栅化器用来测试像素是否在三角形内部的**边函数**（edge function）。
 
+你可以亲手试试这两种乘积。下面的小工具中两个向量都在 $xy$ 平面内，所以 $\mathbf{a}\times\mathbf{b} = (0, 0, a_x b_y - a_y b_x)$，它唯一的非零分量正是这个二维边函数：把 $\mathbf{b}$ 拖过 $\mathbf{a}$ 所在的直线，观察符号的翻转。
+
+{% include widget.liquid name="graphics-dot-cross" height="400" caption="拖动 **a** 和 **b** 的端点。深色线段是 a 在 b 上的投影；阴影平行四边形的面积为 ‖a × b‖，a × b 指向屏幕外（+z）时为蓝色，指向屏幕内时为红色。" %}
+
 ## 作为线性变换的矩阵
 
 一个 $3\times 3$ 矩阵 $A$ 定义了一个线性映射 $\mathbf{x}\mapsto A\mathbf{x}$。阅读矩阵最好的方式是逐列来看：**列就是基向量的像**。
@@ -128,6 +140,10 @@ $$
 - **缩放（scale）**：$S = \operatorname{diag}(s_x, s_y, s_z)$。如果各个 $s_i$ 不相等，就是**非均匀**缩放，这对法线很重要（见下文）。
 - **绕坐标轴旋转（rotation）**：$R_x$、$R_y$、$R_z$（下面写出）。
 - **切变（shear）**：例如 $x' = x + k\,y$。
+
+按列读矩阵这一点在网格上最容易看清。下图把每种基本变换作用在整数网格和单位正方形上：红色和绿色箭头分别是 $\mathbf{e}_x$ 与 $\mathbf{e}_y$ 的像，它们就是矩阵的两列。
+
+{% include blog_figure.liquid path="assets/img/blog/graphics/01-linear-maps.svg" caption="二维网格（灰色）在恒等变换、非均匀缩放 diag(2, 0.5)、切变 x′ = x + y 和 30° 旋转下的像（紫色）。红、绿箭头是 A e_x 与 A e_y，即 A 的两列；阴影格子是单位正方形的像，面积等于 det A（旋转与切变保持面积，这里的缩放也一样：2 × 0.5 = 1）。" %}
 
 绕 $z$ 轴旋转角度 $\theta$ 的矩阵为
 
@@ -158,6 +174,10 @@ $$
 - **方向**的 $w = 0$，所以平移列乘以零。这是正确的：移动一个物体不会改变箭头指向的方向。
 - 两点之差（$w = 1 - 1 = 0$）是一个方向，点加方向仍是点。两个点相加得到 $w = 2$，这提示我们该运算没有意义，除非它是权重和为一的加权平均的一部分。
 
+从几何上看，多出来的坐标把平面抬升到更高一维的空间，平移就变成了这个大空间中的一次**切变**。下图展示二维情形：点位于平面 $w=1$ 上，方向位于平面 $w=0$ 上。
+
+{% include blog_figure.liquid path="assets/img/blog/graphics/01-homogeneous.svg" localized="true" width="80%" caption="平移 t = (1.5, 1) 写成作用在 (x, y, w) 上的 3×3 矩阵 H。H 是平行于 w = 0 平面的切变：w = 1 上由点组成的正方形平移了 t，而 w = 0 上的方向 d 完全不动。过原点的虚线表示 (3, 2, 2) 与 (1.5, 1, 1) 是同一个射影点。" %}
+
 更一般地，$w \neq 0$ 的齐次向量 $(x, y, z, w)$ 表示三维点 $(x/w, y/w, z/w)$。把四个坐标同时乘以任意非零常数，得到的是同一个点。这就是**射影几何**（projective geometry）的空间。透视投影是一个底行不为 $(0,0,0,1)$ 的 $4\times 4$ 矩阵，因此它产生的 $w$ 依赖于深度。之后除以 $w$ 的**透视除法**（perspective divide）产生了“远处的东西看起来更小”的效果。第 02 篇会推导这个矩阵。Blinn 和 Newell（1978）解释了为什么裁剪必须在这次除法*之前*、在齐次坐标中进行，第 02 篇也会讲到这一点。
 
 ### TRS 复合
@@ -169,6 +189,10 @@ M = T\,R\,S, \qquad M^{-1} = S^{-1} R^\top T^{-1}.
 $$
 
 从右往左读：物体先绕自身原点缩放，再绕自身原点旋转，最后移动到它的位置。任何其他顺序都会给出不同的、通常并不想要的结果：先平移再旋转，会让物体像行星一样绕世界原点公转。要绕枢轴点 $\mathbf{c}$ 而不是原点旋转，就用平移进行共轭：$T(\mathbf{c})\,R\,T(-\mathbf{c})$。由于每个因子都有简单的逆，整体的逆也有廉价的闭式解。场景图（scene graph，手连在手臂上，手臂连在身体上）不过是沿着从根节点出发的路径把这样的矩阵依次相乘。
+
+下图画出了下面代码中的同一个例子，包括绕支点的旋转。
+
+{% include blog_figure.liquid path="assets/img/blog/graphics/01-trs-order.svg" caption="同样三个矩阵 T = T(5,0,0)、R = Rz(90°)、S = S(2) 以两种顺序作用在一个箭头形物体（紫色）上，从 +z 方向观察。左：TRS 先缩放、再旋转、最后移动，点 p = (1,0) 落在 (5,2)。中：SRT 先把物体移到 x = 5，旋转再让它绕世界原点甩出去（点线圆弧），缩放又把距离加倍，于是 p 落在 (0,12)。右：T(c) R T(−c) 绕支点 c = (1,1) 而不是原点旋转（灰色为单独的 R）。" %}
 
 ```python
 import numpy as np
@@ -226,6 +250,10 @@ $$
 
 它们直观，也是动画工具在界面中显示的形式。但它们有一个**奇异点**。在 $\theta = \pm 90^\circ$ 时，第一个和最后一个旋转轴重合，公式只依赖于 $\psi - \phi$（$+90^\circ$ 时）或 $\psi + \phi$（$-90^\circ$ 时）。一个自由度消失了。这就是**万向节锁**（gimbal lock），名字来自惯性导航装置中的物理万向节：三个嵌套的环可能对齐，从而失去一个旋转轴。在奇异点附近，朝向的微小变化可能需要角度的巨大变化，所以对欧拉角插值会产生剧烈的旋转。此外还有 12 种合法的轴顺序（XYZ、ZYX、ZXZ……），把它们搞混是经典的 bug。
 
+下图用三个嵌套的环把这一点具体化：每个环对应 $R_z(\psi)R_y(\theta)R_x(\phi)$ 中的一次旋转，并垂直于它所绕的轴。
+
+{% include blog_figure.liquid path="assets/img/blog/graphics/01-gimbal-lock.svg" width="90%" caption="Z-Y-X 顺序的万向节环，偏航 30°、滚转 10°。蓝色：偏航环绕世界 z 轴转动；绿色：俯仰环绕偏航之后的 y 轴转动；红色：滚转环绕 Rz Ry x 即机头方向的轴转动（黑色小飞机）。俯仰为 40° 时（左），三个轴相互独立，雅可比矩阵的秩为 3。俯仰为 90° 时（右），滚转轴转到了偏航轴上（夹角 180°，即同一条直线），红环落在蓝环所在的平面内，秩降为 2。" %}
+
 ```python
 # Euler angles (Z-Y-X order: R = Rz(yaw) Ry(pitch) Rx(roll)) and gimbal lock
 def euler_zyx(yaw, pitch, roll):
@@ -265,6 +293,10 @@ R = I + \sin\theta\, K + (1-\cos\theta)\, K^2 .
 $$
 
 这恰好是矩阵指数 $R = \exp(\theta K)$。三维向量 $\boldsymbol{\omega} = \theta\mathbf{k}$（**旋转向量**，rotation vector，或称**指数映射**，exponential map）是一种最小的三参数表示，只在 $\lVert\boldsymbol{\omega}\rVert = 2\pi$ 处奇异。这使它在优化以及预测旋转的神经网络中很受欢迎（Grassia 1998 是图形学中的经典参考）。逆映射利用 $\operatorname{tr}R = 1 + 2\cos\theta$。
+
+公式背后的分解在三维中最容易看清。下图使用下面代码中的旋转轴、角度和向量。
+
+{% include blog_figure.liquid path="assets/img/blog/graphics/01-rodrigues.svg" width="80%" caption="罗德里格斯公式：k = (1,2,3)/√14，θ = 0.7，v = (0.3, −1, 2)。为了看清楚，整个图旋转到 k 朝上的坐标系中（世界坐标轴也随之旋转后画出）。平行分量（青色）保持不动；垂直分量（红色）与 k × v（绿色）张成点线圆所在的平面，v⊥ 在这个平面内转过 θ（橙色虚线），于是 v 的端点沿圆周移动到 v_rot。" %}
 
 ```python
 # Axis-angle -> rotation matrix (Rodrigues' formula)
@@ -325,6 +357,10 @@ $$
 $$
 
 如果 $q_0\cdot q_1 < 0$，先把 $q_1$ 取反，以便走较短的那条路。当 $\Omega$ 很小时，$\sin\Omega\to 0$，公式在数值上变得不稳定，因此实现会退回到归一化线性插值（**nlerp**）。nlerp 的速度不恒定，但它廉价、满足交换律，用于混合多个旋转（例如蒙皮）时仍然是好选择。
+
+下图用下面代码中的例子比较两者。由于两个四元数都位于 $(w, y)$ 平面内，经过它们的 $S^3$ 大圆在这个平面中就是普通的单位圆。
+
+{% include blog_figure.liquid path="assets/img/blog/graphics/01-slerp.svg" localized="true" caption="从单位四元数 q0 插值到 q1 = 绕 y 轴 120°。左：lerp 的点（小圆圈）在弦上均匀分布；把它们归一化（nlerp，实心点）后会落到圆弧上，但两端更密；slerp（紫色圆环）则沿圆弧均匀分布。右：所得旋转的角速度，slerp 恒为每单位 t 120°，nlerp 在约 99° 到 132° 之间变化。" %}
 
 ```python
 # Quaternions stored as (w, x, y, z)
@@ -416,6 +452,10 @@ flowchart LR
 
 不同 API 的约定不同。Direct3D 和 Vulkan 的 NDC 深度范围是 $[0,1]$ 而不是 $[-1,1]$。Vulkan 的 NDC $y$ 轴朝下。图像库通常把像素原点放在左上角。刚入门时的大多数渲染 bug 都来自这里的符号或范围不匹配，所以请把你代码库的约定写下来，一次写清楚。
 
+下图用下文的 `look_at` 和第 02 篇的透视矩阵，跟踪同一个立方体走完整条链。
+
+{% include blog_figure.liquid path="assets/img/blog/graphics/01-coordinate-spaces.svg" localized="true" caption="同一个单位立方体在各个空间中的样子（橙色点标出 (+,+,+) 角）。物体空间：以自身支点为中心。世界空间：由 M = T(1,0,0) Ry(45°) 放置，相机位于 (2,2,5) 并看向原点（灰色视锥，坐标轴 r、u、−f）。观察空间：相机位于原点，看向 −z。NDC：经过 P 和除以 w 之后，视锥变成立方体 [−1,1]³，靠近相机的部分被放大，并且 z 改为指向远离相机的方向（OpenGL 的 NDC 是左手系）。屏幕空间：视口变换把 NDC 映射到 240×240 像素的图像，第 0 行在最上方。" %}
+
 顶点着色器计算 $\mathbf{p}_{\text{clip}} = P\,V\,M\,\mathbf{p}_{\text{obj}}$，因此 $P V M$ 被称为 **MVP 矩阵**。第 02 篇会构造 $P$ 和视口变换。**视图矩阵** $V$ 是相机自身世界变换的逆。如果相机位于 $\mathbf{e}$，其正交归一的右/上/后方向轴为 $\mathbf{r}, \mathbf{u}, -\mathbf{f}$，那么它的世界矩阵是 $C = \begin{pmatrix} \mathbf{r} & \mathbf{u} & -\mathbf{f} & \mathbf{e} \\ 0 & 0 & 0 & 1 \end{pmatrix}$。由于旋转部分是正交的，其逆为
 
 $$
@@ -459,6 +499,10 @@ $$
 $$
 
 所以**法线按逆转置 $M^{-\top}$ 变换**，之后还需要重新归一化。对纯旋转有 $M^{-\top} = M$，对均匀缩放它与 $M$ 只差一个标量，所以这个区别只在非均匀缩放或切变时才重要，而那恰恰是它造成难看又难查的光照 bug 的时候。一个实用的变体是**余子式矩阵**（cofactor matrix）$\operatorname{cof}(M) = \det(M)\,M^{-\top}$，它的各列是 $M$ 各列的叉积。它不需要除法，即使 $M$ 奇异也能用，并且在 $\det M < 0$（镜像变换）时仍让法线朝外。
+
+下图用下面代码中的矩阵 $M = R_z(30^\circ)\,S(3,1,1)$ 和 45° 直线展示不这样做会出什么问题。
+
+{% include blog_figure.liquid path="assets/img/blog/graphics/01-normal-transform.svg" localized="true" caption="带法线的圆（左）被 M = Rz(30°) S(3,1,1) 拉伸成椭圆（右）。用 M 本身变换法线（红色）会让它们向拉伸方向倾斜，不再垂直于表面；用 M⁻ᵀ（绿色）则保持垂直。对于切向量为 t、法线为 n 的 45° 直线，M n 与 M t 的夹角是 143.1°，而不是 90°。" %}
 
 ```python
 # Normals must be transformed with the inverse transpose

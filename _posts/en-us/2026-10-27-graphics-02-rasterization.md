@@ -42,6 +42,10 @@ flowchart LR
   I --> J["Framebuffer"]
 ```
 
+The figure follows one real triangle through the main stages; every panel is computed with the formulas of this post.
+
+{% include blog_figure.liquid path="assets/img/blog/graphics/02-pipeline.svg" localized="true" caption="One triangle through the pipeline: (1) in view space inside the frustum (side view, the camera looks down −z); (2) after the projection and the divide, inside the NDC square; (3) mapped onto a 20 × 15 pixel grid; (4) the pixel centres that pass the edge tests; (5) those pixels shaded with perspective-correct barycentric colour interpolation; (6) their depth, interpolated linearly in screen space (darker is nearer). The triangle is tilted, so its vertices have different depths." %}
+
 The vertex positions are multiplied by the **model-view-projection** (MVP) matrix
 
 $$
@@ -71,6 +75,8 @@ u_x & u_y & u_z & -\mathbf{u}\cdot\mathbf{e}\\
 \end{bmatrix}.
 $$
 
+{% include blog_figure.liquid path="assets/img/blog/graphics/02-view-basis.svg" width="80%" caption="The look-at basis for the camera of Section 8: eye e = (2.5, 1.6, 3.5), target t = (0, 0.4, 0), approximate up u₀ = (0, 1, 0). The forward vector f points at the target, s = f × u₀ is horizontal and points to the camera's right, and the true up u = s × f leans back from u₀. The dotted arrow −f is the camera's +z axis, so the camera looks down its own −z. World axes are right-handed with y up; dotted vertical lines drop e and t to the floor y = 0." %}
+
 ## 3. Deriving the perspective projection matrix
 
 ### 3.1 Similar triangles
@@ -82,6 +88,8 @@ x' = \frac{n\,x}{-z},\qquad y' = \frac{n\,y}{-z}.
 $$
 
 The division by $-z$ is what makes distant things small. A matrix cannot divide, but homogeneous coordinates can: if we set the output $w$ component to $-z$, the later **perspective divide** $(x, y, z)/w$ performs the division for us. That fixes the last row of $P$ to $(0, 0, -1, 0)$.
+
+{% include blog_figure.liquid path="assets/img/blog/graphics/02-similar-triangles.svg" width="80%" caption="Similar triangles in the y–z plane: the ray from the eye (black square) to the point (y, z) crosses the near plane z = −n at the height y′ = n·y/(−z). The farther away the point (the larger −z), the smaller y′." %}
 
 ### 3.2 Normalizing x and y
 
@@ -123,6 +131,10 @@ $$
 
 This is exactly the matrix produced by `gluPerspective` and `glm::perspective`. Direct3D and Vulkan use a depth range of $[0,1]$ instead of $[-1,1]$, and Vulkan flips $y$, but the derivation is identical with different targets.
 
+The figure shows what $P$ followed by the divide does to the whole frustum.
+
+{% include blog_figure.liquid path="assets/img/blog/graphics/02-frustum-to-ndc.svg" caption="The view frustum (n = 1, f = 5, 60° vertical field of view, aspect 1) and the NDC cube it is mapped to. Five slices that are equally spaced in view space (z = −1 … −5) land at z<sub>ndc</sub> = −1, 0.25, 0.667, 0.875, 1: the near part of the frustum takes up most of the depth range, a preview of Section 3.4. The slanted side planes of the frustum become the flat faces of the cube." %}
+
 ### 3.4 Depth is not linear
 
 Note that $z_{\text{ndc}} = -A + B/w$ with $w = -z$: it is linear in $1/w$, not in $z$. Let us check numerically:
@@ -152,6 +164,8 @@ z_view =  -100.0   w =  100.0   z_ndc =  1.000000
 
 Half of the whole depth range is spent between 0.1 and 0.2 units from the camera. Everything beyond 10 units shares the last 2 %. This is why a tiny near plane causes **z-fighting** far away, and why modern engines use *reversed-Z* (map near to 1 and far to 0 with a floating-point depth buffer, so float precision and $1/w$ precision cancel out). The good news is the flip side of the same fact: because $z_{\text{ndc}}$ is an affine function of $1/w$, and $1/w$ is affine in screen space (Section 6), **depth can be interpolated linearly across the screen**.
 
+{% include blog_figure.liquid path="assets/img/blog/graphics/02-depth-nonlinear.svg" caption="The depth mapping for n = 0.1, f = 100, the values of the table above. (a) z<sub>ndc</sub> against the distance w on a log axis; the orange dots are the printed values, and z<sub>ndc</sub> already reaches 0 at w = 0.2. (b) Against 1/w the same curve is a straight line, which is why depth can be interpolated linearly in screen space." %}
+
 ## 4. Clipping
 
 After the projection, a point is visible if and only if
@@ -169,6 +183,10 @@ The classic algorithm is **Sutherland-Hodgman**: clip the polygon against one pl
 
 Vertex attributes (colors, UVs) are interpolated with the same $t$, which is correct because clip space is still a linear image of object space. A triangle clipped by one plane becomes a polygon with up to four vertices, which we re-triangulate as a fan.
 
+The figure shows why clipping has to come first.
+
+{% include blog_figure.liquid path="assets/img/blog/graphics/02-clipping.svg" caption="Near-plane clipping (90° field of view, n = 0.5). (a) Top view of a triangle whose vertex c lies behind the camera (red region, w < 0). (b) Dividing by w without clipping mirrors c to c′, and the rasterizer would fill the wrong triangle a′b′c′. (c) Sutherland-Hodgman cuts the triangle at z = −n into a quad (orange, fan-triangulated along the dotted diagonal in (a)); after the divide it correctly covers the lower part of the screen and runs past its edges, which the guard band handles." %}
+
 In practice only the **near plane** is essential. The side planes can be replaced by a *guard band*: we simply clamp the triangle's pixel bounding box to the screen, and the edge functions reject everything else. GPUs do the same: they clip geometrically only when a triangle would overflow the fixed-point range of the rasterizer. (The far plane can also be skipped if we let the depth test discard those fragments.)
 
 ## 5. Viewport transform
@@ -183,6 +201,8 @@ $$
 
 Pixel $(i, j)$ covers the square $[i, i+1)\times[j, j+1)$, and we sample it at its center $(i+\tfrac12, j+\tfrac12)$.
 
+{% include blog_figure.liquid path="assets/img/blog/graphics/02-viewport.svg" caption="Viewport transform for W = 12, H = 8: the NDC square (y up) is stretched onto the pixel grid, whose row 0 is at the top (y down). Pixel (i, j) is sampled at its centre (i + ½, j + ½), the gray dots." %}
+
 ## 6. Rasterizing a triangle
 
 ### 6.1 Edge functions
@@ -194,6 +214,10 @@ E_{ab}(\mathbf{p}) = (b_x - a_x)(p_y - a_y) - (b_y - a_y)(p_x - a_x),
 $$
 
 the z-component of the 2D cross product $(\mathbf{b}-\mathbf{a})\times(\mathbf{p}-\mathbf{a})$. In a y-up frame it is positive when $\mathbf{p}$ lies to the left of the directed edge, zero on the line and negative on the right. A point is inside a counter-clockwise triangle $(\mathbf{a}, \mathbf{b}, \mathbf{c})$ when all three of $E_{ab}$, $E_{bc}$, $E_{ca}$ are non-negative.
+
+The figure evaluates the three edge functions at every pixel centre of a small grid.
+
+{% include blog_figure.liquid path="assets/img/blog/graphics/02-edge-functions.svg" caption="Edge functions in a y-up frame for a counter-clockwise triangle a, b, c. The first three panels colour the pixel centres by the sign of one edge function: green (+) to the left of the directed edge, red (−) to the right. A pixel is covered exactly where all three are non-negative (bottom right)." %}
 
 Two properties make edge functions perfect for hardware:
 
@@ -216,6 +240,12 @@ $$
 $$
 
 Geometrically, $\lambda_a$ is the area of the sub-triangle opposite $\mathbf{a}$ divided by the total area. They satisfy $\mathbf{p} = \lambda_a\mathbf{a} + \lambda_b\mathbf{b} + \lambda_c\mathbf{c}$, and "inside" is equivalent to all $\lambda \ge 0$. So the same three numbers answer both questions a rasterizer asks: *is this pixel covered?* and *how do I blend the vertex attributes here?*
+
+In the left half of the figure each sub-triangle is drawn in the colour of the vertex it is opposite, and its share of the total area is that vertex's weight. The widget below lets you drag the vertices and the point yourself.
+
+{% include blog_figure.liquid path="assets/img/blog/graphics/02-barycentric.svg" caption="(a) Barycentric coordinates as area ratios: the sub-triangle p b c (red, opposite a) covers 51 % of the triangle, so λ<sub>a</sub> = 0.51, and likewise λ<sub>b</sub> = 0.25, λ<sub>c</sub> = 0.24. (b) The same triangle rasterized with the vertex colours blended by λ; the pixel at p gets exactly 0.51·red + 0.25·green + 0.24·blue." %}
+
+{% include widget.liquid name="graphics-barycentric" height="400" caption="Drag the vertices a, b, c or the point p (a tap elsewhere moves p). The buttons switch between the sign map of each edge function and the covered pixels; the readout shows E<sub>ab</sub>, E<sub>bc</sub>, E<sub>ca</sub> at p, the doubled signed area and the barycentric coordinates λ. Drag a vertex across the opposite edge to make the triangle clockwise and watch every sign flip." %}
 
 ### 6.3 Perspective-correct interpolation
 
@@ -248,9 +278,13 @@ print(beta.round(3))          # [0.909 0.091]
 
 The pixel in the middle of the screen segment is only 9 % of the way along the segment in 3D. Depth itself is the one quantity we interpolate with plain $\lambda$, because $z_{\text{ndc}}$ is already affine in screen space.
 
+{% include blog_figure.liquid path="assets/img/blog/graphics/02-persp-correct.svg" caption="(a) Side view of a segment from w = 1 to w = 10. Nine samples equally spaced on the screen (enlarged in the inset) hit the segment at the coloured dots, which crowd toward the near end; the gray ticks mark equal steps in 3D, which is what affine interpolation wrongly assumes. (b) The true 3D weight β₁ against the screen weight λ₁: for w₁ = 10 the middle pixel (λ₁ = 0.5) is only 9.1 % of the way along the segment, the number printed by the code above." %}
+
 ### 6.4 The z-buffer
 
 To resolve visibility, keep a **depth buffer** with one value per pixel, initialized to $+\infty$ (or 1). For every fragment, compare its depth with the stored one and write color and depth only if it is closer. This is the z-buffer algorithm, described by Catmull (1974) and independently by Straßer (1974). It is order-independent for opaque surfaces, needs $O(\text{pixels})$ memory, and is trivially parallel, which is why it beat every sorting-based visibility algorithm in hardware. Its weaknesses: transparency still needs sorting (or order-independent transparency tricks), and finite precision causes z-fighting (Section 3.4).
+
+{% include blog_figure.liquid path="assets/img/blog/graphics/02-zbuffer.svg" caption="A z-buffer with two interpenetrating triangles on a 48 × 36 grid, with depth interpolated linearly by λ. In T₁ and T₂ brighter means nearer; in the z-buffer panel darker means nearer (0 is the near plane). The buffer keeps the minimum depth per pixel, so the final image shows the straight intersection line where the two depth planes cross, whatever the drawing order." %}
 
 ## 7. Aliasing and anti-aliasing
 
@@ -259,6 +293,8 @@ Sampling each pixel at a single point is a *point sampling* of a signal with inf
 - **SSAA (supersampling)**: render at $s\times s$ the resolution and average (box-filter) each $s\times s$ block. Correct and simple, but costs $s^2$ times the shading, memory and bandwidth. Our rasterizer does this with one `reshape(...).mean(...)`.
 - **MSAA (multisample)**: store $N$ coverage and depth samples per pixel (typically 4 or 8, in a rotated-grid pattern), but run the fragment shader **once per pixel per triangle** and copy the result to the covered samples. At the end a *resolve* averages the samples. Edges get $N$-sample quality while interior shading costs stay at 1×. MSAA fixes geometric edges only; aliasing inside a surface (specular highlights, high-frequency textures) must be handled by texture filtering (next post) or by shading more often.
 - **Post-process and temporal methods** (FXAA, SMAA, TAA, learned upscalers such as DLSS) work on the final image, and in the temporal case reuse samples from previous frames. They dominate today because deferred shading makes MSAA expensive; we meet them in [post 6]({{ '/blog/2026/graphics-06-real-time-ray-tracing/' | relative_url }}).
+
+{% include blog_figure.liquid path="assets/img/blog/graphics/02-aliasing.svg" caption="Top: one pixel crossed by an edge, with the sample positions of 1×, 2×2 ordered-grid supersampling and the 4× rotated-grid pattern used by MSAA; filled samples are covered, and the fraction approximates the exact covered area (0.45, right). Bottom: the same triangle on a 16 × 10 grid with each pattern. One sample per pixel gives jaggies; four samples give intermediate shades along the edges, close to exact area coverage. SSAA shades every sample, MSAA shades once per pixel and only stores per-sample coverage and depth." %}
 
 ## 8. A complete software rasterizer in NumPy
 
@@ -393,7 +429,7 @@ A few notes on the design:
 
 Running it renders the same scene twice, once with perspective-correct interpolation and once with plain screen-space (affine) interpolation:
 
-![Left: perspective-correct interpolation; right: affine interpolation of the same scene]({{ '/assets/img/blog/graphics/02-persp-vs-affine.png' | relative_url }})
+{% include blog_figure.liquid path="assets/img/blog/graphics/02-persp-vs-affine.png" caption="Output of the rasterizer above (320 × 240, 2 × 2 SSAA). Left: perspective-correct interpolation; right: affine interpolation of the same scene." %}
 
 On the left the checkerboard converges correctly to the horizon. On the right the floor, which after clipping consists of a few gigantic triangles, has its UVs interpolated in screen space, and the texture collapses into a smear with a single visible seam along the diagonal. The cube looks almost identical in both, because its depth range is small: the error grows with the ratio of $w$ across a triangle. Old hardware without perspective correction hid the problem by subdividing large triangles.
 

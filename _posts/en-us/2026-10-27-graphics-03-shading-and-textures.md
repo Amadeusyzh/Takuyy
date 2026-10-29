@@ -48,6 +48,10 @@ $$
 
 where $k_d$ is the diffuse color (albedo) and $I_L$ the light intensity. In PBR we will see that the physically correct diffuse BRDF is $k_d/\pi$, and the $\pi$ is absorbed into the light units here.
 
+The figure shows the cosine law three ways: the spreading of the beam, the cosine as a polar plot, and the resulting shading of a sphere.
+
+{% include blog_figure.liquid path="assets/img/blog/graphics/03-lambert.svg" caption="Lambert's cosine law. Left: a beam of cross-section $A$ arriving at angle $\theta$ from the normal spreads over a footprint $A/\cos\theta$ (twice as long at $\theta = 60^\circ$), so the energy received per unit area falls as $\cos\theta$. Middle: $\max(0,\cos\theta)$ as a polar plot, a circle touching the surface point; the orange samples at 0°, 30° and 60° have lengths 1, 0.87 and 0.5. Right: a unit sphere shaded with $\mathbf{n}\cdot\mathbf{l}$ for $\mathbf{l} \propto (1,1,1)$ (gamma 1/2.2 as in the code below), with iso-lines of $\mathbf{n}\cdot\mathbf{l}$ and the terminator $\mathbf{n}\cdot\mathbf{l} = 0$ (red dashed), beyond which the clamp gives black." %}
+
 ### 2.2 Phong: a specular lobe around the mirror direction
 
 Shiny surfaces add a highlight that moves with the viewer. Phong (1975) modelled it as a lobe around the mirror direction
@@ -87,6 +91,10 @@ $$
 (\cos\tfrac{\alpha}{2})^{s'} \approx e^{-s'\alpha^2/8}, \qquad (\cos\alpha)^{s} \approx e^{-s\alpha^2/2}
 \quad\Rightarrow\quad s' \approx 4s .
 $$
+
+The next figure draws these vectors for $\mathbf{v}$ in the plane of $\mathbf{n}$ and $\mathbf{l}$ and checks the approximation numerically.
+
+{% include blog_figure.liquid path="assets/img/blog/graphics/03-phong-blinn-geometry.svg" caption="Phong vs Blinn-Phong geometry, all vectors pointing away from the surface. Left: $\mathbf{r}$ mirrors $\mathbf{l}$ about $\mathbf{n}$ (the dotted line is the tangential part that gets flipped), and Phong measures the angle $\alpha$ between $\mathbf{r}$ and $\mathbf{v}$. Middle: $\mathbf{h}$ bisects $\mathbf{l}$ and $\mathbf{v}$, and its angle to $\mathbf{n}$ is exactly $\alpha/2$. Right: the Phong lobe $\cos^{16}\alpha$ lies on top of the Blinn-Phong lobe $\cos^{64}(\alpha/2)$ and of the Gaussian $e^{-16\alpha^2/2}$, whereas keeping the same exponent, $\cos^{16}(\alpha/2)$, gives a much wider highlight." %}
 
 A last remark for later: the raw model is not energy conserving (a larger $s$ makes the highlight smaller *and* dimmer in total). A common fix in real-time rendering multiplies the specular term by $(s'+8)/(8\pi)$, an approximate normalization; PBR does this properly.
 
@@ -129,6 +137,10 @@ for model, s in [("phong", 16.0), ("blinn", 64.0)]:
     print(model, "max", img.max().round(3), "mean", img[inside].mean().round(3))
 ```
 
+Running the code, and repeating it with a grazing light, gives the images below.
+
+{% include blog_figure.liquid path="assets/img/blog/graphics/03-phong-blinn-spheres.svg" caption="Output of the code above (top row, $\mathbf{l}\propto(1,1,1)$) and the same renders under the grazing light $\mathbf{l}\propto(1,0,0.1)$ of Exercise 1 (bottom row); $\bar L$ is the mean brightness over the sphere. Phong with $s=16$ and Blinn-Phong with $s'=64$ are nearly identical (0.418 vs 0.416), while Blinn-Phong with the same exponent $s'=16$ has a highlight about twice as wide. Under the grazing light both highlights move toward the limb and are squeezed by foreshortening, and the two models no longer agree: the Phong spot is noticeably taller." %}
+
 ## 3. Shading frequency: flat, Gouraud and Phong shading
 
 A lighting *model* says how to compute a color from $(\mathbf{n},\mathbf{l},\mathbf{v})$; a shading *frequency* says **where** we evaluate it. Do not confuse the Phong reflection model with Phong shading (interpolation); they come from the same paper but are independent choices.
@@ -140,6 +152,10 @@ A lighting *model* says how to compute a color from $(\mathbf{n},\mathbf{l},\mat
 | Phong shading (1975) | per pixel | interpolated vertex normal, **renormalized** | correct highlights | more fragment work (negligible today) |
 
 On modern GPUs per-pixel shading is the default: the vertex shader outputs the normal, the rasterizer interpolates it (perspective-correctly), and the fragment shader renormalizes it, because a linear blend of unit vectors is shorter than unit length.
+
+The figure renders one low-poly sphere at all three frequencies with a tiny software rasterizer (the barycentric code of post 02).
+
+{% include blog_figure.liquid path="assets/img/blog/graphics/03-shading-frequency.svg" caption="The same low-poly sphere (12 × 7 segments, edges in blue), the same light $\mathbf{l}\propto(1,1,1)$ and the same Blinn-Phong model with $s'=64$, rasterized at three shading frequencies. Flat: one color per triangle from the face normal. Gouraud: colors computed at the vertices and interpolated, so the highlight is smeared out and shaped by the triangles. Phong shading: the interpolated and renormalized normal gives a round highlight and a smooth terminator, although the geometry is identical." %}
 
 **Vertex normals** for a mesh that has none are usually computed by averaging the normals of the adjacent faces. Weighting by triangle area is free: the cross product of two edges has length twice the area.
 
@@ -210,6 +226,10 @@ Real surfaces vary from point to point. Instead of storing $k_d$ per vertex we s
 - **Wrap modes** decide what happens outside $[0,1]$: repeat (tiling), clamp-to-edge, mirrored repeat.
 - **Texel centers**: texel $i$ of a texture of width $W$ covers $[i, i+1)/W$ and its center is at $(i + 0.5)/W$. Mapping $u$ to continuous texel space is $x = uW - 0.5$; forgetting the $0.5$ shifts every texture by half a texel.
 - **Color space**: albedo textures are usually stored in sRGB and must be decoded to linear before lighting (GPUs do this for `SRGB8_ALPHA8` formats); normal, roughness and other data textures are linear.
+
+The figure unwraps a cube to make seams concrete.
+
+{% include blog_figure.liquid path="assets/img/blog/graphics/03-uv-unwrap.svg" caption="UV unwrapping of a cube into a cross-shaped atlas. Every face carries the same checker in its own color, and the dark corner marks its $(u,v)=(0,0)$ corner, so you can match orientations between the 3D cube (right-handed, $y$ up) and the atlas. Edges that stay connected in the cross are continuous in the texture; all other edges are seams. The red cube edge appears twice in the atlas (right side of +y, top of +x), and so does the dashed edge (top of +y, top of −z): vertices on these edges are duplicated with two different UVs." %}
 
 ## 5. Texture filtering
 
@@ -310,6 +330,10 @@ print("no mipmap : mean %.3f std %.3f" % (point.mean(), point.std()))   # random
 print("trilinear: mean %.3f std %.3f" % (filt.mean(), filt.std()))     # ~0.5 grey, as it should be
 ```
 
+The figure shows the pyramid this code builds and the two sampled rows.
+
+{% include blog_figure.liquid path="assets/img/blog/graphics/03-mip-pyramid.svg" localized="true" caption="Top: levels $k=0$ to $4$ of the mipmap of the 256 × 256 checkerboard, drawn at their true relative sizes; each level is a 2 × 2 box filter of the previous one, and all levels together add 1/3 to the memory. At $k=3$ every check is a single texel, and from $k=4$ on black and white have been averaged into uniform grey 0.5. Bottom: the 64-pixel row from the code. Bilinear lookups in level 0 (red) jump between 0 and 1 in a pattern unrelated to the texture (standard deviation 0.48), while trilinear filtering at $\lambda = 4.87$ (green) returns the correct average 0.5." %}
+
 ### 5.4 Anisotropic filtering
 
 The mipmap assumes the pixel footprint in texture space is a square. On a floor seen at a grazing angle it is a long thin ellipse: $\rho$ along one screen axis is much larger than along the other. Isotropic mipmapping must use the larger one, so the texture becomes blurry in the other direction. **Anisotropic filtering** takes several probes along the major axis of the footprint at a finer level. A common formulation (the one in the OpenGL anisotropic filtering extension) is
@@ -319,6 +343,10 @@ N = \min\!\left(\left\lceil \frac{\rho_{\max}}{\rho_{\min}} \right\rceil,\ N_{\m
 $$
 
 then $N$ trilinear samples are averaged along the major axis; $N_{\max}$ is the user setting "16x" in a game's options menu. Summed-area tables (Crow 1984) and EWA filtering (Greene and Heckbert 1986) are higher-quality alternatives; the elliptical weighted average idea will reappear when we splat 3D Gaussians.
+
+The figure applies these filters to an infinite checkerboard floor seen in perspective.
+
+{% include blog_figure.liquid path="assets/img/blog/graphics/03-minification.svg" localized="true" caption="A checkerboard floor (the same 256 × 256 texture, repeated) seen in perspective, sampled with the functions of Section 5.3. Nearest sampling without a mipmap aliases into moiré toward the horizon. Trilinear mipmapping removes the aliasing but blurs the distant floor to grey, because there the footprint is long and thin and $\rho$ takes the larger axis. Anisotropic filtering (up to 16 probes along the major axis) keeps the checks sharp much further, close to the 64-samples-per-pixel reference. Bottom: the selected mip level $\lambda$, and the number of probes $N$, which grows toward the horizon as the footprint gets more elongated." %}
 
 In OpenGL these choices are sampler states:
 
@@ -344,6 +372,10 @@ $$
 
 A **normal map** simply precomputes $\mathbf{n}'$ for every texel and stores it in an RGB texture, typically baked from a high-polygon sculpt onto a low-polygon mesh. Components in $[-1,1]$ are encoded as colors $c = (\mathbf{n}+1)/2$; flat areas are $(0.5, 0.5, 1)$, which is why tangent-space normal maps look light blue.
 
+The figure follows a height field from the bump-mapping formula to the stored colors and the final shading.
+
+{% include blog_figure.liquid path="assets/img/blog/graphics/03-normal-map.svg" caption="Normal mapping on a flat quad. Left: a cross-section of the height field $h = 0.05\sin 20u$ (dashed, the surface we pretend to have); the geometric normal $\mathbf{N}$ (light blue) is the same everywhere, while the perturbed normals $\mathbf{n}' \propto \mathbf{N} - h_u\mathbf{T}$ (purple) tilt away from rising slopes. Middle: the tangent-space normal map of $h = 0.05\sin 20u\,\sin 20v$, encoded as $\mathbf{c} = (\mathbf{n}'+1)/2$; flat spots (tops of bumps and bottoms of dents) have the light blue $(0.5, 0.5, 1)$. Right: the flat quad lit with Lambert using the decoded normals: bumps appear although the geometry has not changed." %}
+
 ### 6.2 Tangent space
 
 The stored normals are expressed in **tangent space**, the local frame $(\mathbf{T}, \mathbf{B}, \mathbf{N})$ where $\mathbf{T}$ points along increasing $u$ and $\mathbf{B}$ along increasing $v$ on the surface. This makes the map independent of the mesh's pose and deformation, and lets one map tile or be reused across meshes. In the shader, the matrix $\text{TBN} = [\mathbf{T}\ \mathbf{B}\ \mathbf{N}]$ (columns) takes a tangent-space vector to world space:
@@ -351,6 +383,10 @@ The stored normals are expressed in **tangent space**, the local frame $(\mathbf
 $$
 \mathbf{n}_\text{world} = \operatorname{normalize}\big(\text{TBN}\,(2\mathbf{c} - 1)\big).
 $$
+
+The figure shows such frames on a curved patch.
+
+{% include blog_figure.liquid path="assets/img/blog/graphics/03-tbn.svg" caption="Tangent frames on a curved surface patch $\mathbf{p}(u,v)$ textured with a UV checker ($z$ up in this plot). At each sample point $\mathbf{T}$ (red) follows increasing $u$, $\mathbf{B}$ (green) increasing $v$, and $\mathbf{N}$ (blue) is the surface normal; $\mathbf{T}$ is Gram-Schmidt orthogonalized against $\mathbf{N}$ and $\mathbf{B} = \mathbf{N}\times\mathbf{T}$ ($w=+1$). The frame turns with the surface, so a vector stored in tangent space means the same thing everywhere, and TBN carries it to world space." %}
 
 **Deriving $\mathbf{T}$ and $\mathbf{B}$.** For a triangle with positions $\mathbf{p}_0,\mathbf{p}_1,\mathbf{p}_2$ and UVs $(u_i, v_i)$, let $\mathbf{E}_1 = \mathbf{p}_1 - \mathbf{p}_0$, $\mathbf{E}_2 = \mathbf{p}_2 - \mathbf{p}_0$, $\Delta u_1 = u_1 - u_0$ and so on. Because $\mathbf{T} = \partial\mathbf{p}/\partial u$ and $\mathbf{B} = \partial\mathbf{p}/\partial v$ are constant over a flat triangle,
 
@@ -399,6 +435,10 @@ b = b_0 + b_s \tan\theta, \qquad \tan\theta = \frac{\sqrt{1 - (\mathbf{n}\cdot\m
 $$
 
 a constant part plus a **slope-scaled** part (GPUs support it directly via `glPolygonOffset(factor, units)` in the shadow pass). Too much bias causes the opposite artifact, **Peter Panning**: shadows detach from their casters because contact regions are now considered lit. Other remedies are **normal offset** (move the lookup point along $\mathbf{n}$ by a fraction of a texel), rendering back faces into the shadow map, and tight light frusta to increase depth precision.
+
+The figure shows the mechanism in a side view of the toy scene used below.
+
+{% include blog_figure.liquid path="assets/img/blog/graphics/03-shadow-acne-geometry.svg" localized="true" caption="Why shadow acne appears: a side view of four shadow-map texels over the tilted ground $y = 0.4x$ of the toy below. The light comes from above; each texel stores the depth of the surface at its center (black dot), so the stored surface is a staircase (black steps). Left, $b = 0$: in every texel the ground left of the center lies below the step, fails the depth test against its own surface and is shaded (red), exactly half of the lit ground. Right: lowering every step by the slope-scaled bias $b = w\tan\theta$ puts all of the ground in front of the stored depth (green)." %}
 
 ### 7.3 Percentage-closer filtering (PCF)
 
@@ -482,6 +522,10 @@ const 0.5     bias=0.5000  acne   0.0%  lost shadow  10.9%
 PCF 3x3 bias=0.0125  acne  49.1%  penumbra pixels 48.41%
 PCF 3x3 bias=0.0250  acne   0.0%  penumbra pixels  3.91%
 ```
+
+Rendering the same toy gives the images below.
+
+{% include blog_figure.liquid path="assets/img/blog/graphics/03-shadow-map.svg" localized="true" caption="The shadow-map toy above, rendered. Top left: the shadow map $D(s,t)$, the depth below the light plane; the tilted ground makes it a ramp and the sphere is the dark disc. The other panels show the ground visibility inside the white dashed square, seen from the light; the red dashed circle is the true shadow, and the percentage under each panel is the acne rate (clearly lit ground in false shadow). No bias: acne stripes, one per texel column (50.0%). Slope-scaled bias: clean. Constant bias 0.5: no acne, but the shadow shrinks on the side where the ground is higher (Peter Panning). PCF 3 × 3 with the same slope-scaled bias: the acne returns (49.1%); doubling the bias removes it and leaves a soft, antialiased edge." %}
 
 Beyond basic shadow maps you will meet cascaded shadow maps (several maps for different depth ranges of a large outdoor scene), variance shadow maps (Donnelly and Lauritzen 2006, which store depth moments so the map *can* be filtered), and PCSS (Fernando 2005), which estimates the blocker distance to vary the PCF kernel size and produce contact-hardening soft shadows. Physically, soft shadows come from area lights, which path tracing handles naturally ([post 05]({{ '/blog/2026/graphics-05-ray-and-path-tracing/' | relative_url }})).
 

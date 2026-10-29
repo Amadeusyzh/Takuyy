@@ -42,6 +42,10 @@ $$
 
 借助这个恒等式，可以在“对方向积分”和“对表面积分”之间切换。后面写渲染方程的面积形式时要用它，下一篇的光源采样也会再用到。
 
+下图同时展示了这两个公式。
+
+{% include blog_figure.liquid path="assets/img/blog/graphics/04-solid-angle.svg" caption="左：立体角 $d\omega=\sin\theta\,d\theta\,d\phi$ 是单位球面上一小块的面积；因子 $\sin\theta$ 使靠近极点的小块更小。右（二维切面）：距离 $r$、倾斜 $\theta'$ 的表面微元 $dA$ 所张的立体角为 $dA\cos\theta'/r^2$。" %}
+
 着色中处处出现一个很有用的积分：
 
 $$
@@ -69,6 +73,10 @@ E(x) = \int_{\Omega} L_i(x,\omega_i) \cos\theta_i \, d\omega_i .
 $$
 
 其中的 $\cos\theta_i$ 就是 Lambert 余弦定律：以掠射角到达的光束会铺展到更大的面积上。
+
+如图所示，同一束宽度为 $w$ 的光覆盖的长度为 $w/\cos\theta$，因此单位面积上的功率按 $\cos\theta$ 下降。
+
+{% include blog_figure.liquid path="assets/img/blog/graphics/04-cosine-law.svg" caption="Lambert 余弦定律。宽度 $w$（功率）固定的光束分别以 $\theta=0^\circ$、$45^\circ$、$70^\circ$ 入射，铺展到长度为 $w/\cos\theta$ 的区域上，所以辐照度 $E$ 按 $\cos\theta$ 衰减。" %}
 
 强度为 $I$、距离为 $r$ 的**点光源**产生的辐照度为 $E = I\cos\theta / r^2$（平方反比定律）。本文最后着色器中的 `E = I * NoL / dist2` 就是这一行。注意，实时引擎中的“光源颜色乘以强度”通常正是这个 $I$，只是可能用光度学单位（坎德拉）而不是瓦特。
 
@@ -104,6 +112,10 @@ $$
 
 难点在于 $L_i$ 并非已知。在真空中，从 $\omega_i$ 到达 $x$ 的辐亮度，就是这条光线击中的第一个表面点的出射辐亮度：$L_i(x,\omega_i) = L_o(\mathrm{trace}(x,\omega_i), -\omega_i)$。未知量 $L$ 同时出现在等式两边，所以这是一个第二类 Fredholm 积分方程。
 
+下图画出了一个点 $x$ 在带太阳的玩具天空下的被积函数。
+
+{% include blog_figure.liquid path="assets/img/blog/graphics/04-rendering-eq.svg" caption="渲染方程在点 $x$ 处的被积函数（玩具天空加一个太阳，星号所示），用半球上的入射方向 $\omega_i$ 表示，箭头长度和颜色与函数值成正比。左：$L_i\cos\theta_i$，其积分就是辐照度 $E$。右：再乘以光泽 GGX BRDF（$\alpha=0.3$，观察方向 $\omega_o$）后，只有 $\omega_o$ 镜面方向附近（这里正是太阳）的方向仍有贡献。" %}
+
 Kajiya 用的是**三点（面积）形式**。利用 $d\omega = dA\cos\theta'/r^2$，可以把对方向的积分换成对场景所有表面 $M$ 的积分：
 
 $$
@@ -132,6 +144,10 @@ $$
 - $F(\omega, m)$：每个光滑微表面的 **Fresnel** 反射率；
 - $G_2(\omega_i,\omega_o,m)$：**遮蔽-阴影函数（masking-shadowing function）**，即同时对光源和观察者可见的微表面所占的比例。
 
+下图在一条真实的二维高度剖面上展示了这三个要素。
+
+{% include blog_figure.liquid path="assets/img/blog/graphics/04-microfacet.svg" localized="true" caption="随机微表面（二维剖面；光从左侧 $70^\circ$ 入射，观察者在右侧 $50^\circ$）。只有法线 $m$ 接近半程向量 $h$（紫色箭头）的微表面才能把来自 $\omega_i$ 的光镜面反射到 $\omega_o$，$D$ 描述这类微表面有多少。其中一些被阴影遮挡（指向光源的光线撞到表面，红色），或被遮蔽（指向观察者的光线撞到表面，蓝色），这正是 $G_2$ 要考虑的。可见性是用光线与剖面求交实际算出来的。" %}
+
 ### Cook-Torrance 镜面 BRDF
 
 只有法线等于半程向量 $h = (\omega_i+\omega_o)/\lVert\omega_i+\omega_o\rVert$ 的微表面，才能把光从 $\omega_i$ 镜面反射到 $\omega_o$。按照 Walter 等人（EGSR 2007）的推导，宏观 BRDF 是所有微表面贡献的积分，按投影面积和可见性加权：
@@ -154,6 +170,10 @@ $$
 
 这就是 **Cook-Torrance** 形式（Cook 和 Torrance 在 TOG 1982 中使用的是 Beckmann NDF 和 V 形槽 $G$）。分母里的 $4$ 来自雅可比行列式，而不是随意的归一化常数；分母中的两个余弦来自微观投影面积与宏观面积之间的换算。实时代码常把 $G_2$ 和分母合并为一个**可见性项（visibility term）** $V = G_2 / (4\lvert n\cdot\omega_i\rvert\lvert n\cdot\omega_o\rvert)$。
 
+下图用后文定义的 GGX $D$ 和 Smith 可见性项画出了得到的三维波瓣。
+
+{% include blog_figure.liquid path="assets/img/blog/graphics/04-brdf-lobes.svg" localized="true" caption="光以 $\theta_i=45^\circ$ 入射时，$f_r(\omega_i,\omega_o)\cos\theta_o$ 在所有出射方向 $\omega_o$ 上的三维波瓣（各波瓣缩放到相同大小；$F=1$，高度相关 Smith $G_2$）。Lambert 是一个与表面相切的球。随着 $\alpha$ 减小，GGX 波瓣向镜面方向（虚线）集中，理想镜面是 delta 函数的极限。$\alpha=1$ 时微表面法线均匀分布，波瓣宽而接近漫反射。" %}
+
 ### NDF 必须归一化
 
 $D$ 是*面积*的密度。所有微表面投影到宏观表面上的面积必须等于宏观面积，由此得到归一化条件：
@@ -171,6 +191,10 @@ D_{\text{GGX}}(h) = \frac{\alpha^2}{\pi\left((n\cdot h)^2(\alpha^2-1)+1\right)^2
 $$
 
 其中 $\alpha$ 是粗糙度。当 $\alpha\to 0$ 时，$D$ 趋于 delta（镜面）。当 $\alpha=1$ 时，$D = 1/\pi$，即微表面法线均匀分布。与类似高斯的 Beckmann 分布相比，GGX 峰值尖锐且有**长尾**，产生实测材质所表现出的“明亮高光加柔和光晕”。
+
+下图在相同 $\alpha$ 下比较了两种分布。
+
+{% include blog_figure.liquid path="assets/img/blog/graphics/04-ndf.svg" caption="$\alpha=0.2$ 和 $0.5$ 时 GGX 与 Beckmann NDF 随 $h$ 与 $n$ 夹角 $\theta_h$ 的变化。峰值附近两者相近（左），但在对数坐标下（右），Beckmann 像高斯一样迅速衰减，而 GGX 保留了长尾，这就是高光周围柔和光晕的来源。两者都满足 $\int D\,(n\cdot m)\,d\omega_m=1$（作图脚本中做了数值验证）。" %}
 
 对于拉丝金属这样的各向异性表面，用切线空间分量 $h_x,h_y,h_z$ 和粗糙度 $\alpha_x,\alpha_y$ 表示：
 
@@ -207,6 +231,10 @@ $$
 
 推导方法：写出 $\tan^2\theta = (1-\cos^2\theta)/\cos^2\theta$，于是 $1+\Lambda = \frac{1}{2}\left(1+\sqrt{\cos^2\theta(1-\alpha^2)+\alpha^2}/\cos\theta\right)$，再化简即可。
 
+下图画出了这两种形式。
+
+{% include blog_figure.liquid path="assets/img/blog/graphics/04-smith-g.svg" localized="true" caption="左：GGX 的 Smith 遮蔽函数 $G_1$。光滑表面直到掠射角之前几乎没有遮蔽，粗糙表面则早得多就开始遮蔽。右：可分离乘积 $G_1(\omega_i)G_1(\omega_o)$（虚线）总是低于高度相关的 $G_2$（实线），也就是高估了遮挡。" %}
+
 ### Fresnel 与 Schlick 近似
 
 光滑界面反射的光的比例在掠射角处会增大。即使是哑光地板，沿着它看过去也会变得像镜子。精确的 Fresnel 方程依赖复折射率和偏振。Schlick（Computer Graphics Forum 1994）提出了近似：
@@ -222,6 +250,14 @@ F_0 = \left(\frac{\eta-1}{\eta+1}\right)^2 ,
 $$
 
 所以玻璃和大多数塑料（$\eta\approx 1.5$）的 $F_0 = 0.04$，水（$\eta\approx 1.33$）约为 $0.02$。金属的 $F_0$ 很高，并且随波长变化，这就是金和铜的反射带颜色的原因。
+
+下图把 Schlick 公式与精确的 Fresnel 方程做了比较。
+
+{% include blog_figure.liquid path="assets/img/blog/graphics/04-fresnel.svg" localized="true" caption="精确的非偏振 Fresnel 反射率（实线）与 Schlick 近似（虚线）。左：玻璃（$\eta=1.5$）和水（$\eta=1.33$）正对时只反射 2-4%，掠射时几乎全部反射。右：金，R、G、B 使用近似的复折射率（参考 Johnson 和 Christy 1972）：$F_0$ 很高且带颜色。Schlick 没有表现出精确红色曲线在 $80^\circ$ 附近的轻微下凹，其余部分都很接近。" %}
+
+想直观地看到 $D$、$V$、$F$ 如何共同作用，可以用下面的交互演示：在其中拖动来移动光源，并用滑块调节 roughness 和 metallic。
+
+{% include widget.liquid name="graphics-brdf-lobe" height="440" caption="BRDF 波瓣演示：第 6 节金属度-粗糙度模型（GGX、高度相关 Smith、Schlick）的 $f_r(\omega_i,\omega_o)\cos\theta_o$ 在入射平面内的截面。拖动可以移动光源，虚线是镜面反射方向。" %}
 
 ## 5. 用数值验证数学
 
@@ -310,6 +346,10 @@ print("   separable G at alpha=1.0, theta_v=1.4:", f"{spec_albedo(1.4, 1.0, corr
 - NDF 与 Smith $G_1$ 完全自洽，所以模型*绝不会凭空产生*能量。
 - 但它在高粗糙度时会**损失**能量：$\alpha=1$ 时最多损失 70%。丢失的是在微表面之间弹射不止一次的光，而单次散射模型忽略了这部分。因此粗糙金属会渲染得偏暗。能量补偿方法（Kulla 与 Conty，“Revisiting Physically Based Shading at Imageworks”，SIGGRAPH 2017 课程；Turquin 2019）会加回一个多次散射波瓣，它由 `spec_albedo` 这样的表格预计算得到。可分离的 $G_2$ 损失的能量更多（最后一行中 0.525 对 0.672）。
 
+下图画出了 `spec_albedo` 在所有观察角度下的值，圆点是上面打印出的数值。
+
+{% include blog_figure.liquid path="assets/img/blog/graphics/04-furnace.svg" localized="true" caption="GGX 镜面波瓣的白炉测试（$F=1$）：方向反照率随观察角度的变化，用上面的数值积分代码计算（圆点为打印出的数值）。没有能量损失的模型应沿着 1 那条线。差距就是被忽略的多次散射所丢失的能量，可分离 $G_2$（虚线）丢得更多。" %}
+
 ## 6. 金属度-粗糙度工作流
 
 不应该让美术人员去输入折射率。Burley 的 Disney “principled” BRDF（SIGGRAPH 2012 课程）以及 Karis 在 Unreal Engine 4 中的改编（SIGGRAPH 2013 课程）推广了一组小而直观的参数，如今已在 glTF 2.0 中标准化：
@@ -336,6 +376,10 @@ f_r = \underbrace{(1-F)\,\frac{c_{\text{diff}}}{\pi}}_{\text{diffuse}} + \underb
 $$
 
 因子 $(1-F)$ 是一种廉价的做法，避免已经被镜面反射掉的能量再进入漫反射波瓣。它只是近似，更严谨的分层模型会改用镜面反照率。对粗糙度取平方（$\alpha=r^2$）能让滑块在感知上接近线性。Burley 发现，如果不这样做，大部分可见变化都会挤在滑块的低端。
+
+下图在一组球上运行了第 8 节的着色器。
+
+{% include blog_figure.liquid path="assets/img/blog/graphics/04-sphere-grid.svg" caption="金属度-粗糙度模型的球阵列，用 NumPy 按第 8 节的着色器渲染（一个左上方的光源，加上通过 split-sum LUT 计算的均匀环境光；baseColor $=(0.95, 0.45, 0.12)$，$\alpha=r^2$）。上排：电介质，有颜色的漫反射加白色高光。下排：金属，没有漫反射，反射带颜色。随着 $r$ 增大，高光变宽变暗；粗糙金属由于单次散射的能量损失而偏暗。" %}
 
 两条实践规则：`baseColor` 纹理以 sRGB 存储，必须先解码到线性空间再参与光照；所有光照计算都在线性 HDR 数值上进行，最后才做色调映射。
 
@@ -428,6 +472,10 @@ roughness=1.00 n.v=1.0  A=0.307 B=0.000  A+B=0.307
 ```
 
 $A+B$ 就是 $F_0=1$ 时的白炉反照率，与第 5 节的数值积分一致：粗糙度 1、$n\cdot v = 1$ 时两者都是 0.307。注意，对于光滑表面，Fresnel 增益 $B$ 在掠射角处会增大，这就是真实物体边缘的亮边。Karis 的原始代码在 IBL 中用的是 $k=\alpha/2$ 的 Schlick-GGX 近似 $G$，所以他的 LUT 与这里的高度相关版本略有不同。选定一种 $G$，并在解析光源和 LUT 中统一使用。
+
+下图是用 `integrate_brdf` 算出的完整 LUT。
+
+{% include blog_figure.liquid path="assets/img/blog/graphics/04-split-sum-lut.svg" caption="用上面的 `integrate_brdf` 计算的 split-sum 环境 BRDF LUT（$32\times32$ 项，每项 1024 个样本）。$A$ 是 $F_0$ 的缩放，光滑表面正对时接近 1，粗糙时下降。$B$ 是 Fresnel 偏移，只在光滑表面的掠射角（$n\cdot\omega_o\to 0$）处较大，这就是明亮的边缘。" %}
 
 ## 8. 完整的 GLSL 实现
 

@@ -48,6 +48,10 @@ $$
 
 其中 $k_d$ 是漫反射颜色（反照率，albedo），$I_L$ 是光源强度。在 PBR 中我们会看到，物理上正确的漫反射 BRDF 是 $k_d/\pi$，这里的 $\pi$ 被吸收进了光源的单位里。
 
+下图从三个角度展示余弦定律：光束的铺开、余弦的极坐标图，以及由此得到的球面着色。
+
+{% include blog_figure.liquid path="assets/img/blog/graphics/03-lambert.svg" caption="Lambert 余弦定律。左：截面积为 $A$、与法线成 $\theta$ 角入射的光束铺开到长度为 $A/\cos\theta$ 的区域上（$\theta = 60^\circ$ 时是两倍长），所以单位面积接收的能量按 $\cos\theta$ 衰减。中：$\max(0,\cos\theta)$ 的极坐标图，是一个与表面点相切的圆；0°、30°、60° 处的橙色样本长度分别为 1、0.87、0.5。右：用 $\mathbf{n}\cdot\mathbf{l}$ 着色的单位球，$\mathbf{l} \propto (1,1,1)$（与下文代码一样做了 1/2.2 的伽马），画出了 $\mathbf{n}\cdot\mathbf{l}$ 的等值线和明暗交界线 $\mathbf{n}\cdot\mathbf{l} = 0$（红色虚线），越过它之后截断使结果为黑色。" %}
+
 ### 2.2 Phong：围绕镜面方向的高光波瓣
 
 光滑的表面还会出现随观察者移动的高光。Phong（1975）把它建模为围绕镜面反射方向的一个波瓣（lobe）：
@@ -87,6 +91,10 @@ $$
 (\cos\tfrac{\alpha}{2})^{s'} \approx e^{-s'\alpha^2/8}, \qquad (\cos\alpha)^{s} \approx e^{-s\alpha^2/2}
 \quad\Rightarrow\quad s' \approx 4s .
 $$
+
+下图在 $\mathbf{v}$ 位于 $\mathbf{n}$ 与 $\mathbf{l}$ 所在平面内的情况下画出这些向量，并用数值验证这一近似。
+
+{% include blog_figure.liquid path="assets/img/blog/graphics/03-phong-blinn-geometry.svg" caption="Phong 与 Blinn-Phong 的几何关系，所有向量都背离表面。左：$\mathbf{r}$ 是 $\mathbf{l}$ 关于 $\mathbf{n}$ 的镜像（虚线是被翻转的切向分量），Phong 度量 $\mathbf{r}$ 与 $\mathbf{v}$ 的夹角 $\alpha$。中：$\mathbf{h}$ 平分 $\mathbf{l}$ 与 $\mathbf{v}$，它与 $\mathbf{n}$ 的夹角恰好是 $\alpha/2$。右：Phong 波瓣 $\cos^{16}\alpha$ 与 Blinn-Phong 波瓣 $\cos^{64}(\alpha/2)$ 以及高斯函数 $e^{-16\alpha^2/2}$ 几乎重合；若保持相同指数 $\cos^{16}(\alpha/2)$，高光会宽得多。" %}
 
 最后留一句给以后：原始模型并不满足能量守恒（$s$ 越大，高光越小，*总体*也越暗）。实时渲染中常见的修正是给高光项乘上 $(s'+8)/(8\pi)$，这是一个近似的归一化因子；PBR 会严格地解决这个问题。
 
@@ -129,6 +137,10 @@ for model, s in [("phong", 16.0), ("blinn", 64.0)]:
     print(model, "max", img.max().round(3), "mean", img[inside].mean().round(3))
 ```
 
+运行这段代码，并换成掠射光再运行一次，得到下面的图像。
+
+{% include blog_figure.liquid path="assets/img/blog/graphics/03-phong-blinn-spheres.svg" caption="上面代码的输出（上排，$\mathbf{l}\propto(1,1,1)$），以及练习 1 中掠射光 $\mathbf{l}\propto(1,0,0.1)$ 下的同样渲染（下排）；$\bar L$ 是球面上的平均亮度。$s=16$ 的 Phong 与 $s'=64$ 的 Blinn-Phong 几乎相同（0.418 对 0.416），而指数同为 $s'=16$ 的 Blinn-Phong 高光约宽一倍。在掠射光下，两种高光都移向球的边缘并因透视缩短而被压扁，此时两个模型不再一致：Phong 的光斑明显更高。" %}
+
 ## 3. 着色频率：平面、Gouraud 与 Phong 着色
 
 光照*模型*说明如何由 $(\mathbf{n},\mathbf{l},\mathbf{v})$ 计算颜色；着色*频率*说明**在哪里**计算它。不要把 Phong 反射模型和 Phong 着色（插值方式）混为一谈：它们出自同一篇论文，却是相互独立的选择。
@@ -140,6 +152,10 @@ for model, s in [("phong", 16.0), ("blinn", 64.0)]:
 | Phong 着色（1975） | 每个像素 | 插值后的顶点法线，**重新归一化** | 高光正确 | 片元计算更多（如今可以忽略） |
 
 在现代 GPU 上，逐像素着色是默认做法：顶点着色器输出法线，光栅化器对其做（透视校正的）插值，片元着色器再把它重新归一化，因为单位向量的线性混合会比单位长度短。
+
+下图用一个很小的软件光栅化器（第 02 篇的重心坐标代码）以三种频率渲染同一个低模球。
+
+{% include blog_figure.liquid path="assets/img/blog/graphics/03-shading-frequency.svg" caption="同一个低模球（12 × 7 段，蓝色为边）、同一光源 $\mathbf{l}\propto(1,1,1)$、同一 $s'=64$ 的 Blinn-Phong 模型，以三种着色频率光栅化。平面着色：每个三角形用面法线算出一个颜色。Gouraud：在顶点处计算颜色再插值，因此高光被抹开，形状受三角形支配。Phong 着色：插值并重新归一化的法线给出圆形高光和平滑的明暗交界线，尽管几何完全相同。" %}
 
 对于没有法线的网格，**顶点法线**通常通过对相邻面的法线取平均来计算。按三角形面积加权是免费的：两条边的叉积长度正好是面积的两倍。
 
@@ -210,6 +226,10 @@ void main() {
 - **环绕模式**（wrap mode）决定 $[0,1]$ 之外如何处理：重复（平铺）、钳制到边缘、镜像重复。
 - **纹素中心**：宽度为 $W$ 的纹理中，第 $i$ 个纹素（texel）覆盖 $[i, i+1)/W$，中心位于 $(i + 0.5)/W$。把 $u$ 映射到连续的纹素空间是 $x = uW - 0.5$；忘掉这个 $0.5$ 会让所有纹理偏移半个纹素。
 - **色彩空间**：反照率纹理通常以 sRGB 存储，光照计算前必须解码到线性空间（对 `SRGB8_ALPHA8` 等格式 GPU 会自动完成）；法线、粗糙度等数据纹理则是线性的。
+
+下图把一个立方体展开，让接缝变得具体。
+
+{% include blog_figure.liquid path="assets/img/blog/graphics/03-uv-unwrap.svg" caption="把立方体 UV 展开成十字形图集。每个面都带有同样的棋盘格，但颜色各不相同，深色角标出该面的 $(u,v)=(0,0)$ 角，便于对照三维立方体（右手系，$y$ 朝上）与图集中的朝向。在十字中保持相连的边在纹理中是连续的，其余的边都是接缝。立方体上的红色边在图集中出现两次（+y 的右边、+x 的上边），虚线边也一样（+y 的上边、−z 的上边）：这些边上的顶点会被复制，各自带有不同的 UV。" %}
 
 ## 5. 纹理过滤
 
@@ -310,6 +330,10 @@ print("no mipmap : mean %.3f std %.3f" % (point.mean(), point.std()))   # random
 print("trilinear: mean %.3f std %.3f" % (filt.mean(), filt.std()))     # ~0.5 grey, as it should be
 ```
 
+下图展示这段代码构建的金字塔以及两种采样得到的那一行像素。
+
+{% include blog_figure.liquid path="assets/img/blog/graphics/03-mip-pyramid.svg" localized="true" caption="上：256 × 256 棋盘格 Mipmap 的第 $k=0$ 到 $4$ 层，按真实相对大小绘制；每一层都是上一层的 2 × 2 盒式滤波，所有层加起来只多占 1/3 的内存。在 $k=3$ 层每个格子只剩一个纹素，从 $k=4$ 层开始黑白已被平均成均匀的 0.5 灰色。下：代码中的那一行 64 个像素。在第 0 层做双线性查询（红色）会在 0 和 1 之间跳动，图案与纹理本身无关（标准差 0.48），而 $\lambda = 4.87$ 的三线性过滤（绿色）返回正确的平均值 0.5。" %}
+
 ### 5.4 各向异性过滤
 
 Mipmap 假设像素在纹理空间中的覆盖区域是正方形。但以掠射角观察地板时，它是一个细长的椭圆：沿一个屏幕轴的 $\rho$ 远大于另一个轴。各向同性的 Mipmap 只能采用较大的那个，于是纹理在另一个方向上变得模糊。**各向异性过滤**（anisotropic filtering）在更精细的层级上沿覆盖区域的长轴做多次探测。一种常见的表述（OpenGL 各向异性过滤扩展中的做法）是
@@ -319,6 +343,10 @@ N = \min\!\left(\left\lceil \frac{\rho_{\max}}{\rho_{\min}} \right\rceil,\ N_{\m
 $$
 
 然后沿长轴对 $N$ 个三线性采样取平均；$N_{\max}$ 就是游戏设置菜单里的“16x”。求和面积表（summed-area table，Crow 1984）和 EWA 过滤（Greene 与 Heckbert 1986）是质量更高的替代方案；椭圆加权平均（elliptical weighted average）的思想会在我们泼溅（splat）三维高斯时再次出现。
+
+下图把这些过滤方法应用到透视下一块无限大的棋盘格地板上。
+
+{% include blog_figure.liquid path="assets/img/blog/graphics/03-minification.svg" localized="true" caption="透视观察的棋盘格地板（同一张 256 × 256 纹理重复平铺），用第 5.3 节的函数采样。不用 Mipmap 的最近邻采样在接近地平线处走样成摩尔纹。三线性 Mipmap 消除了走样，却把远处的地板模糊成灰色，因为那里的覆盖区域又细又长，而 $\rho$ 取的是较长的轴。各向异性过滤（沿长轴最多 16 次探测）让格子在远得多的地方依然清晰，接近每像素 64 个样本的参考图。下：所选的 Mip 层级 $\lambda$，以及探测次数 $N$；越靠近地平线覆盖区域越细长，$N$ 也越大。" %}
 
 在 OpenGL 中，这些选择都是采样器状态：
 
@@ -344,6 +372,10 @@ $$
 
 **法线贴图**（normal map）只是为每个纹素预先计算好 $\mathbf{n}'$ 并存进 RGB 纹理，通常由高模雕刻烘焙（bake）到低模网格上。$[-1,1]$ 范围的分量被编码为颜色 $c = (\mathbf{n}+1)/2$；平坦区域为 $(0.5, 0.5, 1)$，这就是切线空间法线贴图看起来是淡蓝色的原因。
 
+下图从凹凸贴图公式出发，依次展示高度场、存储的颜色和最终的着色。
+
+{% include blog_figure.liquid path="assets/img/blog/graphics/03-normal-map.svg" caption="平面四边形上的法线贴图。左：高度场 $h = 0.05\sin 20u$ 的截面（虚线，即我们假装拥有的表面）；几何法线 $\mathbf{N}$（浅蓝）处处相同，而扰动后的法线 $\mathbf{n}' \propto \mathbf{N} - h_u\mathbf{T}$（紫色）向背离上坡的方向倾斜。中：$h = 0.05\sin 20u\,\sin 20v$ 的切线空间法线贴图，编码为 $\mathbf{c} = (\mathbf{n}'+1)/2$；平坦处（凸起的顶部和凹坑的底部）是淡蓝色 $(0.5, 0.5, 1)$。右：用解码后的法线对平面四边形做 Lambert 光照：几何没有变化，却出现了凹凸。" %}
+
 ### 6.2 切线空间
 
 存储的法线表示在**切线空间**（tangent space）中，即局部坐标系 $(\mathbf{T}, \mathbf{B}, \mathbf{N})$，其中 $\mathbf{T}$ 沿表面上 $u$ 增大的方向，$\mathbf{B}$ 沿 $v$ 增大的方向。这使得贴图与网格的姿态和形变无关，也让同一张贴图可以平铺或在多个网格间复用。在着色器中，矩阵 $\text{TBN} = [\mathbf{T}\ \mathbf{B}\ \mathbf{N}]$（按列排列）把切线空间向量变换到世界空间：
@@ -351,6 +383,10 @@ $$
 $$
 \mathbf{n}_\text{world} = \operatorname{normalize}\big(\text{TBN}\,(2\mathbf{c} - 1)\big).
 $$
+
+下图展示了曲面片上的这种局部坐标系。
+
+{% include blog_figure.liquid path="assets/img/blog/graphics/03-tbn.svg" caption="贴有 UV 棋盘格的曲面片 $\mathbf{p}(u,v)$ 上的切线坐标系（本图中 $z$ 朝上）。在每个采样点，$\mathbf{T}$（红）沿 $u$ 增大的方向，$\mathbf{B}$（绿）沿 $v$ 增大的方向，$\mathbf{N}$（蓝）是表面法线；$\mathbf{T}$ 已对 $\mathbf{N}$ 做了 Gram-Schmidt 正交化，$\mathbf{B} = \mathbf{N}\times\mathbf{T}$（$w=+1$）。坐标系随表面一起转动，因此存储在切线空间中的向量在各处含义相同，再由 TBN 把它变换到世界空间。" %}
 
 **推导 $\mathbf{T}$ 和 $\mathbf{B}$。** 对于顶点位置为 $\mathbf{p}_0,\mathbf{p}_1,\mathbf{p}_2$、UV 为 $(u_i, v_i)$ 的三角形，令 $\mathbf{E}_1 = \mathbf{p}_1 - \mathbf{p}_0$，$\mathbf{E}_2 = \mathbf{p}_2 - \mathbf{p}_0$，$\Delta u_1 = u_1 - u_0$，依此类推。由于 $\mathbf{T} = \partial\mathbf{p}/\partial u$ 和 $\mathbf{B} = \partial\mathbf{p}/\partial v$ 在平坦三角形上是常量，
 
@@ -399,6 +435,10 @@ b = b_0 + b_s \tan\theta, \qquad \tan\theta = \frac{\sqrt{1 - (\mathbf{n}\cdot\m
 $$
 
 即一个常数部分加上一个**按斜率缩放**（slope-scaled）的部分（GPU 在阴影遍中通过 `glPolygonOffset(factor, units)` 直接支持）。偏移过大则会导致相反的瑕疵——**彼得·潘现象**（Peter Panning）：由于接触区域被判定为受光，阴影与投射物分离。其他补救方法包括**法线偏移**（normal offset，把查询点沿 $\mathbf{n}$ 移动一个纹素的若干分之一）、把背面渲染进阴影贴图，以及收紧光源视锥以提高深度精度。
+
+下图用后文玩具场景的侧视图展示这一机制。
+
+{% include blog_figure.liquid path="assets/img/blog/graphics/03-shadow-acne-geometry.svg" localized="true" caption="阴影痤疮的成因：后文玩具示例中倾斜地面 $y = 0.4x$ 上方四个阴影贴图纹素的侧视图。光从上方照下；每个纹素存储其中心处表面的深度（黑点），所以存储的表面是一段段台阶（黑色）。左，$b = 0$：在每个纹素中，中心左侧的地面位于台阶下方，与自身表面比较时深度测试失败而被判为阴影（红色），恰好占受光地面的一半。右：把每级台阶降低按斜率缩放的偏移 $b = w\tan\theta$ 后，整个地面都位于存储深度之前（绿色）。" %}
 
 ### 7.3 百分比渐近过滤（PCF）
 
@@ -482,6 +522,10 @@ const 0.5     bias=0.5000  acne   0.0%  lost shadow  10.9%
 PCF 3x3 bias=0.0125  acne  49.1%  penumbra pixels 48.41%
 PCF 3x3 bias=0.0250  acne   0.0%  penumbra pixels  3.91%
 ```
+
+渲染同一个玩具场景，得到下面的图像。
+
+{% include blog_figure.liquid path="assets/img/blog/graphics/03-shadow-map.svg" localized="true" caption="上面阴影贴图玩具示例的渲染结果。左上：阴影贴图 $D(s,t)$，即光源平面以下的深度；倾斜地面使它呈斜坡状，球是其中的深色圆盘。其余各图是从光源看去、白色虚线方框内地面的可见性；红色虚线圆是真实阴影，每幅图下方的百分比是痤疮比例（明确受光的地面中落入虚假阴影的比例）。无偏移：痤疮条纹，每个纹素列一条（50.0%）。按斜率缩放的偏移：干净。常数偏移 0.5：没有痤疮，但阴影在地面较高的一侧缩小了（彼得·潘现象）。偏移相同的 3 × 3 PCF：痤疮重新出现（49.1%）；偏移加倍后痤疮消失，留下柔和、抗锯齿的边缘。" %}
 
 在基础阴影贴图之外，你还会遇到级联阴影贴图（cascaded shadow maps，为大型室外场景的不同深度范围使用多张贴图）、方差阴影贴图（variance shadow maps，Donnelly 与 Lauritzen 2006，存储深度的矩，因此贴图*可以*被过滤），以及 PCSS（Fernando 2005），它估计遮挡物距离来改变 PCF 核的大小，从而产生“接触处变硬”的软阴影。从物理上说，软阴影来自面光源，而路径追踪可以自然地处理它（[第 05 篇]({{ '/blog/2026/graphics-05-ray-and-path-tracing/' | relative_url }})）。
 
