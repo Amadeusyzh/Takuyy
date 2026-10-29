@@ -45,6 +45,10 @@ flowchart LR
   G --> A
 ```
 
+放到时间轴上，在 50 Hz 策略、2 ms 物理步长的典型设置下，这个循环是这样的：
+
+{% include blog_figure.liquid path="assets/img/blog/embodied-ai/03-sim-step.svg" localized="true" caption="一个 20 ms 的控制步包含 10 个 2 ms 的物理步，每一步都做碰撞检测、接触与约束求解以及积分。策略只在控制频率上读取传感器和渲染图像，两次之间指令保持不变（零阶保持）。这就是为什么 `decimation`（每个策略步包含的物理步数）是 RL 框架中的关键设置。" %}
+
 ### 刚体动力学
 
 大多数机器人引擎使用**广义（约化）坐标**（generalized coordinates）：状态是关节向量 $q$ 及其速度 $v$，动力学就是第 1 篇中的
@@ -61,6 +65,10 @@ Featherstone 的 $O(n)$ 算法（CRBA、RNEA、ABA）计算。MuJoCo、Drake、P
 
 积分通常采用**半隐式（辛）欧拉法**：$v_{t+1} = v_t + \Delta t\,\dot v_t$，然后 $q_{t+1} = q_t \oplus \Delta t\, v_{t+1}$（其中 $\oplus$ 处理
 自由关节的四元数）。MuJoCo 还提供对阻尼项的隐式积分和 RK4 积分器；刚度大的关节和执行器常常需要隐式选项。
+
+为什么用半隐式欧拉？下图用一个故意取大的步长积分单摆。显式欧拉不断向系统注入能量，半隐式（辛）欧拉在每步代价相同的情况下让能量保持有界，RK4 很精确但每步需要四次力计算：
+
+{% include blog_figure.liquid path="assets/img/blog/embodied-ai/03-integrators.svg" caption="单摆（$g/l = 9.81$，从 $q_0 = 2$ rad 释放），用 $\Delta t = 50$ ms 积分 12 s。上：相图，虚线是精确的能量等值线。显式欧拉向外螺旋，很快就翻过顶点；半隐式欧拉停留在一条稍有变形的闭合轨道上。下：相对于初始值的能量。半隐式欧拉有几个百分点的振荡但没有漂移，正是这一性质让长时间的仿真保持稳定。" %}
 
 ### 接触与摩擦
 
@@ -93,6 +101,14 @@ Featherstone 的 $O(n)$ 算法（CRBA、RNEA、ABA）计算。MuJoCo、Drake、P
 
 实际后果：接触参数（摩擦、恢复系数、软性）是最需要随机化的量之一；减小时间步长往往比增加求解迭代更有效；而用薄物体抓取或
 处理大量接触（布料、颗粒介质、线缆）在所有仿真器里都仍然困难。
+
+两个接触条件用几何形状来理解最容易：法向是一个 L 形集合，摩擦是一个圆锥。
+
+{% include blog_figure.liquid path="assets/img/blog/embodied-ai/03-contact-model.svg" caption="左：刚性互补条件只允许两种情况：间隙为零时力为正，或者有正间隙时力为零（紫色 L 形）。软接触模型用一条光滑单调的曲线替代拐角，允许少量穿透 $\phi < 0$，换来唯一且光滑的解（橙色曲线仅作示意，并非 MuJoCo 精确的阻抗函数）。右：绕接触法向 $n$ 的库仑摩擦锥 $\lVert\lambda_t\rVert \le \mu\lambda_n$（$\mu = 0.6$）。锥内的力可以在不滑动的情况下被抵抗；虚线棱锥是 LCP 求解器使用的四棱锥线性化。" %}
+
+XPBD 的主张“刚度与迭代次数无关”可以直接用上面的更新公式来验证：
+
+{% include blog_figure.liquid path="assets/img/blog/embodied-ai/03-xpbd.svg" caption="一条 10 节链（静止长度 1.0，单位质量，顶端粒子固定）在重力下悬挂，分别用普通 PBD（约束刚度 1）和 XPBD（柔度 $\alpha = 10^{-3}$）仿真，每帧一步、步长 1/60 s。用 PBD 时，拉伸量取决于迭代次数，次数越多越接近不可伸长的链。用 XPBD 时，从 4 次迭代起链长就稳定在 1.54，恰好是刚度为 $1/\alpha$ 的弹簧链的静力学解（虚线）：决定刚度的是材料，而不是求解器的计算预算。" %}
 
 ### 执行器与传感器
 
@@ -158,6 +174,10 @@ $$
 可能让一个接触出现并产生巨大梯度，静止接触则可能给出零梯度），而长时域会像 RNN 那样产生梯度爆炸。**SHAC**（Xu 等 ICLR 2022）
 把轨迹截断为短窗口，并用学习的评论家自举，从而缓解这一问题。可微仿真最有说服力的应用是系统辨识（把摩擦和质量拟合到真实
 轨迹）、软体和布料以及逆向设计；对于接触丰富的腿式运动，大规模并行的基于采样的 RL 通常仍然胜出。
+
+一个弹跳的小球就足以说明为什么接触梯度会误导人。损失是小球 1 s 后的高度与目标之差的平方，作为初速度的函数：
+
+{% include blog_figure.liquid path="assets/img/blog/embodied-ai/03-contact-gradient.svg" caption="上：从 0.5 m 高处以不同初速度抛出的小球，恢复系数 0.6。中：用精确碰撞时刻算出的损失 $L(v_0)$，在 $t = 1$ s 前弹跳次数改变的地方出现折点。下：真实导数（黑色，对精确损失做有限差分）与对 1 ms 步长仿真器逐步求导得到的导数（红色，前向模式）的对比。仿真器梯度忽略了碰撞时刻随 $v_0$ 的移动；在这里只有一半的 $v_0$ 处两者符号一致，所以沿它做梯度下降经常会走错方向。" %}
 
 ## 4. 基准
 
@@ -268,6 +288,10 @@ contact floor-box: depth -0.00011 m, normal force 0.491 N
 - 要看场景，可以运行 `python -m mujoco.viewer` 并加载文件，或在循环中调用 `mujoco.viewer.launch_passive(model, data)`。要离屏获取
   图像（例如相机观测），使用 `mujoco.Renderer(model, 240, 320)`，在无显示器的机器上它需要 EGL 等 OpenGL 后端（`MUJOCO_GL=egl`）。
 
+在循环中记录状态并画出来，就能从空间和时间两方面看到同一次运行：
+
+{% include blog_figure.liquid path="assets/img/blog/embodied-ai/03-mujoco-example.svg" caption="用 MuJoCo 3.17 运行上面的示例（打印出的数字与 3.3.7 的输出完全相同）。上：最终状态的三维图（z 轴朝上；铰链绕 $y$ 轴转动，所以手臂在 $x$-$z$ 平面内运动），箱子静止在地面上，四个接触力各为 0.49 N，合起来恰好是 $mg = 1.962$ N。左下：在 PD 加 `qfrc_bias` 的控制下，两个关节约 0.5 s 内到达 $q_{\mathrm{ref}} = (-0.6, 1.2)$。右下：自由箱子从 0.3 m 落下，撞击时短暂下沉到 0.035 m（软接触），之后稳定在 0.0499 m。" %}
+
 ### 用 MJX 批量仿真
 
 同一个模型可以用 MJX（`pip install mujoco-mjx`）在加速器上作为一批世界运行。把上面的例子保存为 `arm_and_box.py`，然后：
@@ -300,6 +324,10 @@ print(final.shape)                           # (1024, 9)
 `vmap` 把单世界的步进变成批量步进，`jit` 负责编译；在 GPU 上，这就是"几分钟训练出运动策略"背后的模式。由于 `mjx.step` 用 JAX
 编写，对 `rollout` 使用 `jax.grad` 同样可行，这就是上面所说的可微仿真用法（但要注意接触梯度的问题）。导入 `arm_and_box` 时也会
 运行一次它的 CPU 仿真，在这里无伤大雅。
+
+这个批量计算在做什么很容易想象。没有 GPU 时，可以在 CPU 上对多个相互独立的 `MjData` 循环来做同样的实验，而这正是 `vmap` 所向量化的东西：
+
+{% include blog_figure.liquid path="assets/img/blog/embodied-ai/03-batched-worlds.svg" caption="用普通 MuJoCo 在 CPU 上复现 MJX 的实验：64 份手臂加箱子的世界，肩关节初始角在 $[-1, 1]$ rad 内均匀分布，每份在无控制的情况下步进 500 次（1 s）。左：肩关节角随时间的变化，颜色表示初始角。右：每个世界的最终角度。各个世界相互独立，所以批维度在加速器上可以完美并行。" %}
 
 ## 6. 如何选择仿真器
 

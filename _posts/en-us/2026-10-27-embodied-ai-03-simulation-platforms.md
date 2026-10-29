@@ -49,6 +49,10 @@ flowchart LR
   G --> A
 ```
 
+On a time axis, the loop looks like this for a typical setup with a 50 Hz policy and a 2 ms physics step:
+
+{% include blog_figure.liquid path="assets/img/blog/embodied-ai/03-sim-step.svg" localized="true" caption="One 20 ms control step contains ten 2 ms physics steps, each running collision detection, the contact and constraint solve, and integration. The policy reads sensors and rendered images only at the control rate, and its command is held constant in between (zero-order hold). This is why `decimation` (physics steps per policy step) is a key setting in RL frameworks." %}
+
 ### Rigid-body dynamics
 
 Most robotics engines use **generalized (reduced) coordinates**: the state is the joint vector $q$ and its velocity
@@ -67,6 +71,10 @@ between bodies. That is simpler and parallelizes well, but joint constraints dri
 Integration is usually **semi-implicit (symplectic) Euler**, $v_{t+1} = v_t + \Delta t\,\dot v_t$, then
 $q_{t+1} = q_t \oplus \Delta t\, v_{t+1}$ (where $\oplus$ handles quaternions for free joints). MuJoCo also offers
 implicit integration of damping terms and an RK4 integrator; stiff joints and actuators often require the implicit options.
+
+Why semi-implicit Euler? The figure integrates a pendulum with a deliberately large step. Explicit Euler pumps energy into the system, semi-implicit (symplectic) Euler keeps it bounded at the same cost per step, and RK4 is accurate but needs four force evaluations per step:
+
+{% include blog_figure.liquid path="assets/img/blog/embodied-ai/03-integrators.svg" caption="A pendulum ($g/l = 9.81$, released from $q_0 = 2$ rad) integrated for 12 s with $\Delta t = 50$ ms. Top: phase portraits; the dashed curve is the exact energy level. Explicit Euler spirals outward and soon goes over the top; semi-implicit Euler stays on a slightly distorted closed orbit. Bottom: energy relative to the start. Semi-implicit Euler oscillates by a few percent but does not drift, which is the property that makes long rollouts stable." %}
 
 ### Contacts and friction
 
@@ -107,6 +115,14 @@ Contacts are where simulators differ the most and where most sim-to-real problem
 Practical consequences: contact parameters (friction, restitution, softness) are among the most important things to
 randomize; small time steps help more than many solver iterations; and grasping with thin objects or many contacts
 (cloth, granular media, cables) remains hard everywhere.
+
+The two contact conditions are easiest to understand as shapes: an L-shaped set for the normal direction and a cone for friction.
+
+{% include blog_figure.liquid path="assets/img/blog/embodied-ai/03-contact-model.svg" caption="Left: the rigid complementarity condition allows either a positive force at zero gap or zero force with a positive gap (purple L). Soft models replace the corner by a smooth, monotone curve, which permits a small penetration $\phi < 0$ in exchange for a unique, smooth solution (the orange curve is illustrative, not MuJoCo's exact impedance function). Right: the Coulomb friction cone $\lVert\lambda_t\rVert \le \mu\lambda_n$ around the contact normal $n$ ($\mu = 0.6$). A force inside the cone can be resisted without slipping; the dashed pyramid is the 4-sided linearization used by LCP solvers." %}
+
+The XPBD claim, stiffness independent of the iteration count, can be checked directly with the update formula above:
+
+{% include blog_figure.liquid path="assets/img/blog/embodied-ai/03-xpbd.svg" caption="A chain of 10 links (rest length 1.0, unit masses, top particle fixed) hangs under gravity, simulated with plain PBD (constraint stiffness 1) and with XPBD (compliance $\alpha = 10^{-3}$), one 1/60 s step per frame. With PBD, the stretch depends on how many iterations you run, approaching an inextensible chain. With XPBD the chain settles at length 1.54 from 4 iterations on, exactly the static solution of springs with stiffness $1/\alpha$ (dashed): the material, not the solver budget, sets the stiffness." %}
 
 ### Actuators and sensors
 
@@ -181,6 +197,10 @@ resting contact can produce zero gradient), and long horizons produce exploding 
 learned critic. Differentiable simulation is most compelling for system identification (fitting friction and mass to
 real trajectories), soft bodies and cloth, and inverse design; for contact-rich locomotion, sampling-based RL with
 massive parallelism usually still wins.
+
+A bouncing ball is enough to see why contact gradients mislead. The loss is the squared distance between the ball's height after 1 s and a target, as a function of its initial velocity:
+
+{% include blog_figure.liquid path="assets/img/blog/embodied-ai/03-contact-gradient.svg" caption="Top: a ball dropped from 0.5 m with different initial velocities, restitution 0.6. Middle: the loss $L(v_0)$, computed with exact impact times, has kinks wherever the number of bounces before $t = 1$ s changes. Bottom: the true derivative (black, finite differences of the exact loss) versus the derivative obtained by differentiating through every step of a 1 ms time-stepped simulator (red, forward-mode). The simulator gradient ignores how the impact time shifts with $v_0$; here its sign agrees with the true one for only half of the $v_0$ values, so gradient descent on it would often go the wrong way." %}
 
 ## 4. Benchmarks
 
@@ -293,6 +313,10 @@ Things to notice:
   inside the loop. For offscreen images (e.g. camera observations) use `mujoco.Renderer(model, 240, 320)`, which needs an
   OpenGL backend such as EGL on headless machines (`MUJOCO_GL=egl`).
 
+Recording the state inside the loop and plotting it shows the same run in space and time:
+
+{% include blog_figure.liquid path="assets/img/blog/embodied-ai/03-mujoco-example.svg" caption="The example above, run with MuJoCo 3.17 (the printed numbers are identical to the 3.3.7 output). Top: the final state in 3D (z up; the hinges rotate about $y$, so the arm moves in the $x$-$z$ plane), with the box resting on the floor and its four contact forces of 0.49 N each, together exactly $mg = 1.962$ N. Bottom left: both joints reach $q_{\mathrm{ref}} = (-0.6, 1.2)$ within about 0.5 s under PD plus `qfrc_bias`. Bottom right: the free box falls from 0.3 m, briefly sinks to 0.035 m at impact (soft contact), and settles at 0.0499 m." %}
+
 ### Batched simulation with MJX
 
 The same model runs as a batch of worlds on an accelerator with MJX (`pip install mujoco-mjx`). Save the example above
@@ -327,6 +351,10 @@ print(final.shape)                           # (1024, 9)
 "train a locomotion policy in minutes". Because `mjx.step` is written in JAX, `jax.grad` through `rollout` also works,
 which is the differentiable-simulation use case above (with the caveats about contact gradients). Importing
 `arm_and_box` also runs its CPU simulation once, which is harmless here.
+
+What the batch computes is easy to picture. Without a GPU, the same experiment can be run on the CPU by looping over independent `MjData` objects, which is exactly what `vmap` vectorizes:
+
+{% include blog_figure.liquid path="assets/img/blog/embodied-ai/03-batched-worlds.svg" caption="The MJX experiment reproduced on the CPU with plain MuJoCo: 64 copies of the arm-and-box world whose shoulder starts at evenly spaced angles in $[-1, 1]$ rad, each stepped 500 times (1 s) with no control. Left: shoulder angle over time, coloured by the initial angle. Right: the final angle of each world. Every world is independent, so the batch dimension parallelizes perfectly on an accelerator." %}
 
 ## 6. Choosing a simulator
 
