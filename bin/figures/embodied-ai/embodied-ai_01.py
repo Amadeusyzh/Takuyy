@@ -15,6 +15,7 @@ from scipy.linalg import expm
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1]))
 from style import *  # noqa: E402,F401
+plt.rcParams["svg.hashsalt"] = "embodied-ai"  # deterministic SVG ids, so regenerated files do not churn
 from matplotlib.patches import Circle, Rectangle, Ellipse  # noqa: E402
 
 OUT = pathlib.Path(__file__).resolve().parents[3] / "assets/img/blog/embodied-ai"
