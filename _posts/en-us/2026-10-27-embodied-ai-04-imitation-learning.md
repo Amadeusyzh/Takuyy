@@ -51,6 +51,10 @@ mistake, and so on. Ross and Bagnell (2010) formalized this: if the learned poli
 the expert's states, the expected cost over a horizon $T$ can grow as $O(\epsilon T^2)$, while a learner trained on its
 own state distribution achieves $O(\epsilon T)$.
 
+A small experiment makes the effect visible. A point moves forward at constant speed and steers its lateral position $y$ to follow a sine-shaped path; the expert is a simple feedback law, and the learner is a radial-basis-function regressor fitted to the expert's state-action pairs:
+
+{% include blog_figure.liquid path="assets/img/blog/embodied-ai/04-covariate-shift.svg" caption="Behaviour cloning versus DAgger on the path-following toy. The 10 expert demonstrations are clean (grey band: the states they cover), while deployment adds more disturbance. Top: plain BC (red) is fine while it stays in the band, but once a disturbance pushes it out, its actions are meaningless and it drifts away from the path for good. After DAgger has labelled the learner's own states, the policy (blue) recovers like the expert. Bottom: mean tracking error over 20 rollouts; BC averages 0.131, 4.5 times the expert's 0.029, and a single DAgger iteration already brings it to the expert's level." %}
+
 ### DAgger
 
 **DAgger** (Dataset Aggregation; Ross, Gordon and Bagnell, AISTATS 2011) fixes the distribution mismatch by querying
@@ -66,6 +70,8 @@ data in many real systems), or use a privileged simulator policy as the expert, 
 distillation from post 2. Other remedies for covariate shift: inject noise during demonstrations so the data contains
 recoveries (DART), augment observations, and, most effectively in practice, predict **action chunks** (section 2).
 
+{% include blog_figure.liquid path="assets/img/blog/embodied-ai/04-dagger-loop.svg" localized="true" caption="The DAgger loop. The step that plain behaviour cloning lacks is the right column: run the current policy, let the expert label the states the policy actually visits, and add them to the dataset." %}
+
 ### Multimodality
 
 Humans solve the same task in different ways: go around an obstacle on the left or on the right, grasp a mug by
@@ -74,6 +80,10 @@ fails (straight into the obstacle). Remedies are expressive action distributions
 categorical output (RT-1, post 5), Gaussian mixtures (robomimic's BC-RNN-GMM), energy-based models (Implicit BC),
 k-means "action bins" plus offsets (Behavior Transformers), VAEs (ACT), and diffusion or flow models (Diffusion Policy).
 The code at the end of this post shows MSE BC collapsing onto the obstacle while a diffusion policy keeps both modes.
+
+The figure shows this with the toy problem trained in section 6: demonstrations pass an obstacle on the left or on the right, and the MSE regressor averages the two.
+
+{% include blog_figure.liquid path="assets/img/blog/embodied-ai/04-multimodal.svg" caption="Left: 60 demonstration chunks (grey) from `make_demos`, 40 chunks sampled from the trained Diffusion Policy (purple), and the MSE behaviour-cloning prediction (red), all for the observation at the origin. Right: the lateral offset in the middle of the chunk. The demonstrations and the diffusion samples are bimodal at about $\pm 0.5$; the MSE prediction sits at $y = 0.02$, the mean of the two modes and the one place that hits the obstacle." %}
 
 ## 2. Action chunking with transformers (ACT / ALOHA)
 
@@ -97,6 +107,10 @@ which learned tasks like opening a translucent condiment cup and slotting a batt
 **Mobile ALOHA** (Fu et al. CoRL 2024) put the system on a mobile base and showed that co-training with the static
 ALOHA data improves mobile manipulation. **ALOHA Unleashed** (Zhao et al. CoRL 2024) scaled data collection and used a
 diffusion-based policy for tasks like tying shoelaces and hanging shirts.
+
+Temporal ensembling is easiest to understand on a timeline. In the toy below, every chunk is the ideal action plus an error that grows along the chunk, as a learned policy's would:
+
+{% include blog_figure.liquid path="assets/img/blog/embodied-ai/04-temporal-ensembling.svg" caption="Top: a chunk of $k = 10$ future actions is predicted at every step (colour = prediction time); at $t = 30$, ten different chunks each contain a prediction for that step (red dots). Bottom: executing each chunk to the end and replanning every 10 steps (orange) jumps at every chunk boundary, while the temporal ensemble (purple) averages the overlapping predictions with weights $w_i = e^{-0.1 i}$, $i = 0$ for the oldest. Its mean step-to-step change is 0.124, close to the ideal 0.117, versus 0.172 for plain chunking." %}
 
 ## 3. Diffusion Policy
 
@@ -130,6 +144,10 @@ with $\beta_k = 1-\alpha_k$ and $\sigma_k^2 = \beta_k$. Since $\epsilon_\theta$ 
 $\nabla_A \log p(A \mid O)$, sampling is noisy gradient ascent on the log-density of actions, which naturally represents
 multiple modes and high-dimensional, temporally coherent action sequences.
 
+The forward process is easy to picture for an action chunk: each of its waypoints is shrunk toward the origin and blurred with Gaussian noise until nothing of the trajectory remains.
+
+{% include blog_figure.liquid path="assets/img/blog/embodied-ai/04-diffusion-forward.svg" caption="The DDPM forward process $A^k = \sqrt{\bar\alpha_k}A^0 + \sqrt{1-\bar\alpha_k}\,\epsilon$ applied to 40 demonstration chunks of the toy problem (8 waypoints each), with the cosine schedule from the code in section 6. At $k = 20$ the two families of trajectories are still visible, at $k = 50$ they are mostly gone, and at $k = 100$ the chunks are pure noise. Bottom: the signal and noise coefficients of the schedule." %}
+
 ### Design choices that matter
 
 - **Receding horizon.** Predict $T_p$ steps (e.g. 16), execute only the first $T_a$ (e.g. 8), then replan from new
@@ -144,6 +162,8 @@ multiple modes and high-dimensional, temporally coherent action sequences.
 
 Extensions include **3D Diffusion Policy** (Ze et al. RSS 2024), which conditions on point clouds, and the extended
 journal version (Chi et al. IJRR 2024).
+
+{% include blog_figure.liquid path="assets/img/blog/embodied-ai/04-receding-horizon.svg" caption="Receding-horizon execution with the values above. At $t = 0$ the policy sees the last $T_o = 2$ observations (cyan) and predicts $T_p = 16$ actions; only the first $T_a = 8$ (dark purple) are executed. At $t = 8$ it observes again and predicts a fresh chunk, discarding the unexecuted tail of the old one." %}
 
 ## 4. Collecting demonstrations
 
@@ -168,6 +188,8 @@ data interface and the robot interface identical**, recurs throughout embodied A
 Practical tips that matter more than the architecture: consistent demonstrators, calibrated cameras, synchronised
 timestamps, recording the controller's actual targets (not the measured state), and collecting recovery behaviour on
 purpose.
+
+{% include blog_figure.liquid path="assets/img/blog/embodied-ai/04-data-pipeline.svg" localized="true" caption="A demonstration pipeline. Whatever the interface, the recorder stores synchronized observations and the actions actually commanded at a fixed rate. The UMI principle is the bottom line of the figure: if the data side and the robot side share the same observation and action spaces, the dataset can train a policy for the robot directly." %}
 
 ## 5. Large datasets and cross-embodiment learning
 
@@ -290,6 +312,10 @@ it 2000: diffusion loss 0.0299, BC loss 0.0547
 diffusion: fraction left 0.56, right 0.43, mean |y| 0.484
 MSE BC:    mean y 0.022 (collapses to the average, i.e. into the obstacle)
 ```
+
+Recording the intermediate chunks of `sample` shows how the two modes emerge from noise:
+
+{% include blog_figure.liquid path="assets/img/blog/embodied-ai/04-diffusion-reverse.svg" caption="The reverse process of the trained model above (same code and seed, retrained in about 20 s), for 60 samples at the origin. Each chunk is coloured by the side it finally chooses. The left/right decision is already visible at $k = 15$; the last steps only remove noise. At $k = 0$ the samples have converged onto the two demonstrated paths (56% left and 44% right in this batch of 400), while the MSE baseline (red) goes straight through the middle." %}
 
 The diffusion policy samples both modes in roughly the demonstrated 50/50 proportion, with a lateral offset close to
 the true $0.5 \sin(\pi \cdot 4/7) \approx 0.49$ at the middle of the chunk, while MSE BC predicts $y \approx 0$:

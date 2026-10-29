@@ -43,6 +43,10 @@ BC 在专家的状态分布 $d_{\pi^{\ast}}$ 上训练，但测试时机器人�
 没有任何示范覆盖的状态，在那里它犯下更大的错误，如此循环。Ross 与 Bagnell（2010）把这一点形式化了：若学到的策略在专家状态上
 出错的概率为 $\epsilon$，则时域 $T$ 上的期望代价可能以 $O(\epsilon T^2)$ 增长，而在自身状态分布上训练的学习者可以达到 $O(\epsilon T)$。
 
+一个小实验就能让这个效应显现出来。一个点以恒定速度前进，并调整横向位置 $y$ 去跟随一条正弦路径；专家是一个简单的反馈律，学习者是拟合专家状态-动作对的径向基函数回归器：
+
+{% include blog_figure.liquid path="assets/img/blog/embodied-ai/04-covariate-shift.svg" caption="路径跟随玩具任务上的行为克隆与 DAgger。10 条专家示范很干净（灰色带：它们覆盖的状态），而部署时的扰动更大。上：普通 BC（红色）在带内表现良好，可一旦扰动把它推出带外，它的动作就失去意义，从此偏离路径。DAgger 让专家标注了学习者自己访问的状态之后，策略（蓝色）就能像专家一样纠正回来。下：20 次运行的平均跟踪误差；BC 平均为 0.131，是专家 0.029 的 4.5 倍，而只做一次 DAgger 迭代就已降到专家水平。" %}
+
 ### DAgger
 
 **DAgger**（数据集聚合，Dataset Aggregation；Ross、Gordon 与 Bagnell，AISTATS 2011）通过在学习者访问的状态上询问专家来修正
@@ -56,12 +60,18 @@ DAgger 具有无悔（no-regret）保证和 $O(\epsilon T)$ 的界，但让人�
 人**介入**（HG-DAgger，许多真实系统中的介入数据），或者用仿真中的特权策略充当专家，这正是第 2 篇中的教师-学生蒸馏。缓解协变量
 偏移的其他办法：在示范时注入噪声，让数据包含恢复行为（DART）；增强观测；以及实践中最有效的，预测**动作块**（第 2 节）。
 
+{% include blog_figure.liquid path="assets/img/blog/embodied-ai/04-dagger-loop.svg" localized="true" caption="DAgger 循环。普通行为克隆缺少的就是右边一列：运行当前策略，让专家为策略实际访问的状态打标签，再把它们加入数据集。" %}
+
 ### 多模态
 
 人类会用不同方式完成同一任务：从左边或右边绕过障碍物，抓杯柄或抓杯沿。MSE 最优的预测是各模态的**平均**，而它可能恰好是那个
 会失败的动作（直直撞上障碍物）。解决办法是表达力强的动作分布：带类别输出的离散化动作（RT-1，第 5 篇）、高斯混合（robomimic 的
 BC-RNN-GMM）、能量模型（Implicit BC）、k-means "动作箱"加偏移（Behavior Transformers）、VAE（ACT），以及扩散或流模型
 （Diffusion Policy）。本文末尾的代码展示了 MSE BC 坍缩到障碍物上，而扩散策略保留了两个模态。
+
+下图用第 6 节训练的玩具问题展示了这一点：示范从左侧或右侧绕过障碍物，而 MSE 回归把两者平均了。
+
+{% include blog_figure.liquid path="assets/img/blog/embodied-ai/04-multimodal.svg" caption="左：来自 `make_demos` 的 60 条示范动作块（灰色）、从训练好的 Diffusion Policy 采样的 40 条动作块（紫色），以及 MSE 行为克隆的预测（红色），观测都取原点。右：动作块中间位置的横向偏移。示范和扩散样本都在约 $\pm 0.5$ 处呈双峰；MSE 预测落在 $y = 0.02$，是两个峰的均值，恰好是唯一会撞上障碍物的地方。" %}
 
 ## 2. 基于 Transformer 的动作分块（ACT / ALOHA）
 
@@ -79,6 +89,10 @@ Zhao 等（RSS 2023）构建了 **ALOHA**——一个低成本的双臂遥操作
 
 **Mobile ALOHA**（Fu 等 CoRL 2024）把系统装到移动底盘上，并证明与静态 ALOHA 数据联合训练（co-training）能提升移动操作能力。
 **ALOHA Unleashed**（Zhao 等 CoRL 2024）扩大了数据采集规模，并使用基于扩散的策略完成系鞋带、挂衬衫等任务。
+
+时间集成放在时间轴上最容易理解。下面的玩具例子里，每个动作块都等于理想动作加上一个沿块增长的误差，就像学到的策略那样：
+
+{% include blog_figure.liquid path="assets/img/blog/embodied-ai/04-temporal-ensembling.svg" caption="上：每一步都预测一个包含 $k = 10$ 个未来动作的块（颜色表示预测时刻）；在 $t = 30$，有十个不同的块都包含对这一步的预测（红点）。下：把每个块执行到底、每 10 步重新规划（橙色）会在每个块的边界处跳变；时间集成（紫色）则用权重 $w_i = e^{-0.1 i}$（$i = 0$ 为最早的预测）对重叠的预测加权平均。它相邻两步之间的平均变化为 0.124，接近理想值 0.117，而普通分块执行为 0.172。" %}
 
 ## 3. Diffusion Policy
 
@@ -108,6 +122,10 @@ $$
 其中 $\beta_k = 1-\alpha_k$，$\sigma_k^2 = \beta_k$。由于 $\epsilon_\theta$（差一个比例因子）就是得分函数 $\nabla_A \log p(A \mid O)$，采样就是在动作对数
 密度上做带噪声的梯度上升，因此能自然地表示多个模态以及高维、时间上连贯的动作序列。
 
+对于动作块，前向过程很容易想象：块中的每个路径点都朝原点收缩，并被高斯噪声模糊，直到轨迹完全消失。
+
+{% include blog_figure.liquid path="assets/img/blog/embodied-ai/04-diffusion-forward.svg" caption="对玩具问题中 40 条示范动作块（每条 8 个路径点）施加 DDPM 前向过程 $A^k = \sqrt{\bar\alpha_k}A^0 + \sqrt{1-\bar\alpha_k}\,\epsilon$，使用第 6 节代码中的余弦调度。在 $k = 20$ 时仍能看出两族轨迹，$k = 50$ 时已基本消失，$k = 100$ 时动作块就是纯噪声。下：调度的信号系数和噪声系数。" %}
+
 ### 关键的设计选择
 
 - **滚动时域**（receding horizon）。预测 $T_p$ 步（例如 16），只执行前 $T_a$ 步（例如 8），然后根据新观测（$T_o = 2$ 帧）重新规划。
@@ -119,6 +137,8 @@ $$
   取代扩散，以达到实时速率。
 
 扩展工作包括以点云为条件的 **3D Diffusion Policy**（Ze 等 RSS 2024），以及扩展的期刊版本（Chi 等 IJRR 2024）。
+
+{% include blog_figure.liquid path="assets/img/blog/embodied-ai/04-receding-horizon.svg" caption="按上面的数值进行滚动时域执行。在 $t = 0$，策略看到最近 $T_o = 2$ 个观测（青色）并预测 $T_p = 16$ 个动作，只执行前 $T_a = 8$ 个（深紫色）。在 $t = 8$，它重新观测并预测一个新的动作块，丢弃旧块中未执行的部分。" %}
 
 ## 4. 采集示范
 
@@ -140,6 +160,8 @@ $$
 
 比架构更重要的实用建议：示范者保持一致、相机经过标定、时间戳同步、记录控制器的实际目标（而不是测得的状态），以及有意识地采集
 恢复行为。
+
+{% include blog_figure.liquid path="assets/img/blog/embodied-ai/04-data-pipeline.svg" localized="true" caption="示范数据流水线。无论用哪种接口，记录器都以固定频率保存同步的观测和实际下发的动作。UMI 的原则就是图中最下面那句话：只要数据端和机器人端共享相同的观测空间和动作空间，数据集就能直接训练出机器人可用的策略。" %}
 
 ## 5. 大规模数据集与跨本体学习
 
@@ -255,6 +277,10 @@ it 2000: diffusion loss 0.0299, BC loss 0.0547
 diffusion: fraction left 0.56, right 0.43, mean |y| 0.484
 MSE BC:    mean y 0.022 (collapses to the average, i.e. into the obstacle)
 ```
+
+记录 `sample` 的中间动作块，就能看到两个模式如何从噪声中浮现出来：
+
+{% include blog_figure.liquid path="assets/img/blog/embodied-ai/04-diffusion-reverse.svg" caption="上面训练好的模型的逆向过程（相同代码与种子，约 20 s 重新训练），在原点处采样 60 条。每个动作块按它最终选择的一侧着色。左右的选择在 $k = 15$ 时就已可见，最后几步只是在去噪。到 $k = 0$ 时，样本已收敛到两条示范路径上（这批 400 个样本中 56% 向左、44% 向右），而 MSE 基线（红色）从正中间直穿过去。" %}
 
 扩散策略以大致与示范相同的 50/50 比例采样出两个模态，动作块中点的横向偏移接近真实值 $0.5 \sin(\pi \cdot 4/7) \approx 0.49$；而 MSE BC
 预测 $y \approx 0$：径直穿过障碍物。它的损失也停在约 0.055，大约就是它所平均的两个模态的方差。要把它变成真正的策略：把 `obs`
