@@ -72,6 +72,10 @@ $$
 
 so its eigenvalues have modulus $\sqrt{1+\omega^2\Delta t^2}$ and the energy grows every step, for *any* $\Delta t$. Implicit Euler has eigenvalues of modulus $1/\sqrt{1+\omega^2\Delta t^2} < 1$: it is unconditionally stable but artificially damps the motion. Symplectic Euler has $\det \mathbf{A} = 1$ (it preserves phase-space area), and for $\omega \Delta t < 2$ its eigenvalues lie on the unit circle: energy oscillates around the true value instead of drifting.
 
+The figure plots these eigenvalue moduli as a function of $\omega\Delta t$.
+
+{% include blog_figure.liquid path="assets/img/blog/graphics/07-integrators-eigen.svg" caption="Largest eigenvalue modulus of the one-step map $\mathbf{A}$ for $m\ddot{x}=-kx$. Above 1 the energy grows every step (explicit Euler, for any step); below 1 it decays (implicit Euler). Symplectic Euler and Verlet (same characteristic polynomial) stay exactly on 1 up to $\omega\Delta t=2$ and blow up beyond it. The dotted line marks the experiment below, $\omega\Delta t=0.1$." %}
+
 ### Verlet
 
 **Störmer–Verlet** integration eliminates the velocity altogether:
@@ -121,6 +125,12 @@ print(f"{'verlet':10s} E/E0 = {energy(x, v) / energy(1.0, 0.0):.3f}")
 
 After 20 simulated seconds ($\omega\Delta t = 0.1$) this prints an energy ratio of about $4.4 \times 10^8$ for explicit Euler (that is $1.01^{2000}$), $0.000$ for implicit Euler, and about $1.05$ for both symplectic Euler and Verlet (bounded oscillation; the last digits depend on the phase at which you stop). This is the whole story of game physics in one table: explicit Euler explodes, implicit Euler is stable but mushy, symplectic schemes are cheap and well-behaved as long as the step is small relative to the stiffest frequency.
 
+The figures below show the same runs in phase space and over time.
+
+{% include blog_figure.liquid path="assets/img/blog/graphics/07-integrators-phase.svg" caption="Phase portraits $(x, v/\omega)$ of the script's spring ($k=100$, $m=1$, $\Delta t=0.01$) for the first 3 s (300 steps), starting at the black dot; the dashed circle is the exact orbit. Explicit Euler spirals outward, implicit Euler spirals inward, symplectic Euler and Verlet stay on a slightly tilted ellipse." %}
+
+{% include blog_figure.liquid path="assets/img/blog/graphics/07-integrators-energy.svg" caption="Energy ratio $E/E_0$ of the same runs over the full 20 s. Left (log scale): explicit Euler lies exactly on $1.01^n$ and reaches $4.4\times10^8$; implicit Euler decays to about $2\times10^{-9}$ (the 0.000 printed above). Right: the first 2 s of the two symplectic schemes, which oscillate within about 5 % of the true energy without drifting." %}
+
 ## 3. Mass-spring cloth
 
 The classic cloth model connects a grid of particles with springs. A spring between particles $a$ and $b$ with rest length $L_0$, stiffness $k_s$ and damping $k_d$ applies to $a$ the force
@@ -136,6 +146,10 @@ and $\mathbf{f}_b = -\mathbf{f}_a$. Three kinds of springs give a fabric-like re
 | Structural (stretch) | $(i,j)$–$(i+1,j)$ and $(i,j)$–$(i,j+1)$ | stretching along warp and weft |
 | Shear | the two diagonals of each grid cell | in-plane shearing |
 | Bending | $(i,j)$–$(i+2,j)$ and $(i,j)$–$(i,j+2)$ | folding (a cheap substitute for dihedral-angle bending) |
+
+The figure shows the three families on a small grid.
+
+{% include blog_figure.liquid path="assets/img/blog/graphics/07-cloth-springs.svg" localized="true" caption="The three spring families on a 5 × 5 grid, with the number of springs in each. Bending springs skip one particle; they are drawn as arcs only so that they do not hide the structural edges they run along." %}
 
 The difficulty is **stiffness**. Real cloth barely stretches, so $k_s$ must be large; the stable step for explicit or symplectic integration scales like $\Delta t \lesssim 2/\omega_{\max} \sim 2\sqrt{m/k_s}$, which becomes tiny. Baraff and Witkin's "Large Steps in Cloth Simulation" (SIGGRAPH 1998) solved this offline with implicit Euler: linearize the forces, solve one sparse linear system $\big(\mathbf{M} - \Delta t\,\partial\mathbf{f}/\partial\mathbf{v} - \Delta t^2\,\partial\mathbf{f}/\partial\mathbf{x}\big)\Delta\mathbf{v} = \Delta t\,(\mathbf{f} + \Delta t\, \partial\mathbf{f}/\partial\mathbf{x}\, \mathbf{v})$ per step with conjugate gradients. That is robust but costly to implement and tune. Position based methods take a different route.
 
@@ -165,6 +179,10 @@ $$
 $$
 
 PBD is unconditionally stable: it never adds energy through a stiff force, because there is no force, only geometry. It handles pinning ($w=0$), collisions and tearing trivially.
+
+The figure shows this projection for three mass ratios.
+
+{% include blog_figure.liquid path="assets/img/blog/graphics/07-pbd-projection.svg" caption="Projecting one stretched distance constraint with $L_0=1$. Open circles: predicted positions; filled circles: after projection, where the purple segment has exactly the rest length. Both corrections lie along $\hat{\mathbf{n}}$ and split $C$ in the ratio of the inverse masses, so the heavier particle moves less and the green cross (the center of mass) does not move. With $w_b=0$ (pinned, red), particle $a$ takes the whole correction." %}
 
 ### The problem: stiffness depends on iterations
 
@@ -258,6 +276,10 @@ flowchart LR
 ## 6. A NumPy XPBD cloth
 
 Gauss–Seidel is inherently sequential: each projection uses the positions just updated by the previous one. To vectorize it in NumPy (and to parallelize it on a GPU), we **color** the constraint graph so that constraints of the same color share no particle. Within a color all projections are independent and can run at once; colors run one after another, so the scheme is still Gauss–Seidel across colors.
+
+The figure shows what the greedy coloring produces.
+
+{% include blog_figure.liquid path="assets/img/blog/graphics/07-graph-coloring.svg" caption="Greedy coloring (the script's `color_constraints`) of a 6 × 6 cloth: the first 7 of its 12 colors, with the number of constraints in each. No two constraints of one color share a particle, so each panel is projected in one vectorized step. Last panel: constraints per color for the 20 × 20 cloth (2,202 constraints, 13 colors)." %}
 
 ```python
 import numpy as np
@@ -353,7 +375,17 @@ A 20 × 20 cloth (400 particles, 2,202 constraints, 13 colors) hangs from two co
 | $10^{-4}$ | 1.0012 | 1.032 | −1.004 |
 | $10^{-2}$ | 1.0067 | 1.183 | −1.039 |
 
+The figures below come straight from this script: the motion of the cloth over time, and the final stretch for the three compliances.
+
+{% include blog_figure.liquid path="assets/img/blog/graphics/07-cloth-drape.svg" caption="The cloth of the script ($\alpha=10^{-4}$, 15 substeps per frame) at six times, computed with `xpbd_substep`; $y$ is up and the camera looks from the $-z$ side. The two red particles are pinned. The sphere initially cuts through the cloth plane, so the first collision projection kicks the cloth toward $-z$; it swings back and comes to rest draped over the sphere." %}
+
+{% include blog_figure.liquid path="assets/img/blog/graphics/07-cloth-stretch.svg" caption="Final state after 3 s for the three compliances of the table, seen from the front (the $x$-$y$ plane), with every structural edge colored by its stretch $\ell/\ell_0$. The maxima match the table, and the stretched edges sit at the two pinned corners." %}
+
 The largest stretch is near the two pinned corners, which carry the whole weight. Even with $\alpha = 0$, one iteration per substep leaves a few percent of residual there; more substeps reduce it. Now the XPBD property: run the softest cloth ($\alpha = 10^{-2}$) for 2 s with `iters=1`, `4` and `16`. Its maximum stretch is 1.210, 1.167 and 1.167: the answer *converges* to the material's stiffness instead of getting stiffer with every iteration, as PBD with a stiffness factor would.
+
+The figure contrasts this with PBD on the same cloth.
+
+{% include blog_figure.liquid path="assets/img/blog/graphics/07-pbd-vs-xpbd.svg" caption="Left: effective stiffness $1-(1-k)^n$ of PBD with stiffness factor $k$ after $n$ iterations; the material changes when you change $n$. Right: maximum stretch of the 20 × 20 cloth after 2 s with the script (15 substeps) as a function of the iterations per substep. XPBD with $\alpha=10^{-2}$ settles at 1.167 from 4 iterations on (1.210 with one), while PBD with $k=0.25$ keeps getting stiffer with every iteration." %}
 
 Practical notes:
 
@@ -364,6 +396,10 @@ Practical notes:
 ## 7. Collisions
 
 In a position based solver, a collision is just another inequality constraint. For a sphere with center $\mathbf{c}$ and radius $r$, $C(\mathbf{x}) = \lVert\mathbf{x}-\mathbf{c}\rVert - r \ge 0$; if it is violated, project the particle to the surface: $\mathbf{x} \leftarrow \mathbf{c} + r\,(\mathbf{x}-\mathbf{c})/\lVert\mathbf{x}-\mathbf{c}\rVert$. A ground plane $y \ge y_0$ is even simpler. A thickness margin keeps cloth from visually touching the surface.
+
+The figure shows the projection and the velocity it produces.
+
+{% include blog_figure.liquid path="assets/img/blog/graphics/07-sphere-collision.svg" caption="Sphere collision as a position projection, in a cross-section through the center. Each particle moves from its previous position (open circle) to the predicted one; if that lands inside the sphere ($C<0$, red), it is moved radially to the surface (green). Since the velocity is then recomputed from the position change over the substep, the new velocity (purple) points roughly along the surface instead of into it, without any explicit impulse." %}
 
 Things a production solver adds on top:
 
@@ -383,6 +419,10 @@ The **Cloth · XPBD** tab of the interactive lab on the [home page]({{ '/' | rel
 - **Ball** and the ground are collisions handled by position projection, with extra velocity damping on contact as cheap friction. **Wind** applies a gusty force along the surface normals. **Grab** pins the particle you drag ($w = 0$ while held) and pulls it toward the cursor.
 
 Things to try: drop Stiffness to the minimum and watch the cloth become stretchy (but never unstable); pull hard to tear it; turn wind off and observe that, thanks to small steps, motion is only lightly damped.
+
+The small 2D cloth below runs the same XPBD step right in this page: a 14 × 12 grid (1 m wide, 0.2 kg) with stretch, shear and bending distance constraints, hanging from two pinned corners.
+
+{% include widget.liquid name="graphics-xpbd-cloth" height="420" caption="Drag the cloth with the mouse or a finger. The slider sets the stretch compliance $\alpha$ in m/N (shear is 4 times softer, bending fixed at 0.1); edges turn red as they stretch, and the readout shows the maximum and mean stretch. Compare n substeps × 1 iteration with 1 step × n iterations at the same n: the substeps keep the cloth much closer to its rest lengths for the same cost, the small-steps effect of Section 5." %}
 
 ## 9. Rigid bodies in one page
 
@@ -404,6 +444,10 @@ A(\mathbf{x}_i) \approx \sum_j \frac{m_j}{\rho_j} A_j\, W(\mathbf{x}_i - \mathbf
 $$
 
 Müller et al. (2003) made SPH interactive in graphics: pressure from a state equation $p_i = k(\rho_i - \rho_0)$, symmetric pressure forces $\mathbf{f}_i^{p} = -\sum_j m_j \frac{p_i + p_j}{2\rho_j}\nabla W_{ij}$, viscosity and surface tension, with the Poly6 kernel for density, the Spiky kernel's gradient for pressure, and a separate kernel for viscosity. The weakness is the same stiffness problem as cloth: near-incompressibility requires a large $k$ and therefore a tiny time step.
+
+The figure compares the three kernels.
+
+{% include blog_figure.liquid path="assets/img/blog/graphics/07-sph-kernels.svg" caption="The three kernels of Müller et al. (2003) in 3D with support $h=1$ (each integrates to 1 over the ball, checked numerically). Left: Poly6 is smooth and flat at the center, the viscosity kernel diverges at $r=0$. Middle: the gradient of Poly6 vanishes at $r=0$, so very close particles would hardly repel each other; the Spiky gradient is largest there, which is why it is used for pressure. Right: the Laplacian of the viscosity kernel, $45(h-r)/(\pi h^6)$, is positive everywhere, so viscosity only removes energy." %}
 
 **Position Based Fluids (PBF)** (Macklin and Müller, 2013) applies the PBD idea: for each particle a density constraint
 

@@ -36,6 +36,10 @@ $$
 
 where $a = W/H$ is the aspect ratio (we use square images, so $a = 1$). Turner Whitted's 1980 ray tracer traced such rays, and at each hit recursively spawned shadow, reflection and refraction rays. That gave sharp mirrors and hard shadows, but no soft shadows, glossy reflections or color bleeding: those require integrating over directions, which is what the rest of this post is about.
 
+The figure below draws these rays for a tiny $5\times5$ image of the Cornell box used in section 7, each one ending at the surface it actually hits.
+
+{% include blog_figure.liquid path="assets/img/blog/graphics/05-camera-rays.svg" caption="Primary rays of a pinhole camera at $\mathbf{e}=(0,0,3.9)$ with a 40° field of view (y up, looking down $-z$). Each ray passes through one pixel centre of the purple image plane one unit in front of the eye and ends at its first hit (black dots), computed with the section 7 intersection code." %}
+
 ## 2. Ray-primitive intersection
 
 ### Spheres
@@ -48,6 +52,10 @@ t = -b \pm \sqrt{b^2 - c'} .
 $$
 
 A negative discriminant means a miss. We take the smaller positive root; if only the larger one is positive, the ray started inside the sphere (which happens for refraction).
+
+The figure shows the three cases for rays starting outside the sphere, plus one ray that starts inside it.
+
+{% include blog_figure.liquid path="assets/img/blog/graphics/05-ray-sphere.svg" caption="Left: four rays against a sphere of radius $r$. Right: the quadratic $t^2+2bt+c'$ of each ray; its roots are the hit distances. Blue has two positive roots (enter and exit), green touches the sphere (double root), gray never reaches zero (negative discriminant, a miss), and the orange ray starts inside, so its near root is negative (hollow dot) and only the far root counts." %}
 
 ### Triangles: the Möller-Trumbore algorithm
 
@@ -68,6 +76,10 @@ t = \frac{\mathbf{e}_2\cdot\mathbf{Q}}{\det}.
 $$
 
 The algorithm needs no precomputed plane equation, and it can exit early as soon as $u$ or $v$ falls outside the triangle. A $\det$ close to zero means the ray is parallel to the triangle. The returned $u, v$ are exactly the weights used to interpolate normals and UVs at the hit point.
+
+The figure uses the same test ray as the code below.
+
+{% include blog_figure.liquid path="assets/img/blog/graphics/05-moller-trumbore.svg" caption="Möller-Trumbore on the test case of the code: the ray from $\mathbf{o}=(0.2,0.3,-1)$ along $+z$ hits the triangle $\mathbf{v}_0=(0,0,0)$, $\mathbf{v}_1=(1,0,0)$, $\mathbf{v}_2=(0,1,0)$ at $t=1$ with $(u,v)=(0.2,0.3)$. The hit point splits the triangle into three parts whose areas are the barycentric weights: red (opposite $\mathbf{v}_1$) is $u$, green (opposite $\mathbf{v}_2$) is $v$, blue is $1-u-v$. Right: the same hit in the $(u,v)$ parameter domain; the dashed ray misses because $u+v>1$." %}
 
 ```python
 import numpy as np
@@ -113,6 +125,10 @@ if __name__ == "__main__":
 
 Testing every ray against every triangle costs $O(N)$ per ray; a film frame has millions of triangles and billions of rays. A **bounding volume hierarchy** (BVH) is a binary tree in which each node stores an axis-aligned bounding box (AABB) enclosing all primitives below it. A ray that misses a box skips its whole subtree, so traversal is roughly $O(\log N)$ for well-built trees.
 
+The figure shows a BVH built with the SAH code below over a toy 2D scene, and one ray traversing it.
+
+{% include blog_figure.liquid path="assets/img/blog/graphics/05-bvh.svg" caption="Top: a SAH BVH (leaf size 2, built with the code below) over 24 boxes; outlines are coloured by tree depth, from dark (root) to light (deep). Bottom: the same tree. Traversing the purple ray as `traverse` does, filled nodes are boxes the ray entered, open nodes were tested and rejected by the slab test, and faded nodes were never tested at all. Only 5 of 25 nodes are visited before the closest hit (orange box) is found." %}
+
 **Ray-box test (slab method).** An AABB is the intersection of three slabs $l_k \le x_k \le h_k$. The ray is inside slab $k$ for $t \in [\min(t_{0k}, t_{1k}), \max(t_{0k}, t_{1k})]$ with $t_{0k} = (l_k - o_k)/d_k$ and $t_{1k} = (h_k - o_k)/d_k$. The ray hits the box iff the largest entry time is not larger than the smallest exit time. Precomputing $1/d_k$ makes this a handful of multiply-adds; IEEE infinities handle axis-parallel rays.
 
 **How to split: the surface area heuristic (SAH).** For a convex body $B$ inside a convex body $A$, the probability that a uniformly random line hitting $A$ also hits $B$ is $SA(B)/SA(A)$, the ratio of surface areas (a classic result from integral geometry). Goldsmith and Salmon (1987) and MacDonald and Booth (1990) used this to estimate the expected cost of a split of node $P$ into children $L$ and $R$:
@@ -122,6 +138,10 @@ C(L, R) = C_{\text{trav}} + \frac{SA(L)}{SA(P)}\,N_L\,C_{\text{isect}} + \frac{S
 $$
 
 and compare it with the cost $N_P\,C_{\text{isect}}$ of keeping $P$ as a leaf. A builder sorts primitive centroids along each axis, sweeps all split positions with prefix and suffix bounding boxes, and recurses on the best one. Production builders bin centroids into 16-32 buckets instead of sorting, build in parallel (or on the GPU with linear BVHs), and use wider trees (4-8 children) to match SIMD units. Hardware ray tracing (next post) is BVH traversal in fixed-function silicon.
+
+For the root of the toy scene above, the sweep looks like this:
+
+{% include blog_figure.liquid path="assets/img/blog/graphics/05-sah-cost.svg" caption="SAH cost $C(L,R)$ of every candidate split of the 24 boxes, sorted by centroid along $x$ (top) and $y$ (bottom), with $C_{\text{trav}}=C_{\text{isect}}=1$. Splits near the ends put almost everything on one side and cost nearly as much as a leaf (dashed line, 24). The builder takes the overall minimum (orange star, a split along $y$ into 11 and 13 boxes, cost about 10.4)." %}
 
 ```python
 import numpy as np
@@ -223,6 +243,10 @@ $$
 
 The estimator is **unbiased** for any valid $p$, and its standard deviation falls as $1/\sqrt{N}$ regardless of the dimension. That is why it beats quadrature in the path space. The catch is the constant: halving the noise costs $4\times$ the samples. So the game is to **reduce the variance at a fixed sample count**, and the main lever is the choice of $p$. If $p \propto f$, the variance is zero. We never know $f$ exactly (it contains the unknown $L_i$), but we can make $p$ proportional to the parts we know: the cosine, the BRDF, or the light.
 
+The next figure makes the $1/\sqrt{N}$ law visible on the irradiance integral used in the snippet below.
+
+{% include blog_figure.liquid path="assets/img/blog/graphics/05-mc-convergence.svg" caption="Error of the running estimate $\hat I_N$ for $E=\int L\cos\theta\,d\omega=\pi/2$ (the snippet below) as the number of samples grows. Thin lines are 8 individual runs, thick lines the RMSE over 400 runs. On log-log axes both techniques follow the $1/\sqrt{N}$ slope (dashed); importance sampling does not change the slope, only shifts the whole line down. At $N=64$ (dotted) the RMSE is 0.23 for uniform and 0.12 for cosine sampling." %}
+
 **Cosine-weighted hemisphere sampling.** For a Lambertian surface, $f_r = \rho/\pi$, and the integrand contains $\cos\theta$. Sampling $p(\omega) = \cos\theta/\pi$ cancels both:
 
 $$
@@ -253,6 +277,10 @@ for name, e in [("uniform", est_uniform), ("cosine", est_cosine)]:
 ```
 
 Output (64 samples, 2000 trials): both means match $\pi/2 \approx 1.5708$, but the standard deviation drops from about $0.22$ to $0.11$. Halving the noise for free is worth the same as $4\times$ more samples.
+
+The figure shows where the two samplers put their directions and the resulting spread of the estimates.
+
+{% include blog_figure.liquid path="assets/img/blog/graphics/05-hemisphere-sampling.svg" caption="Top: 350 directions from uniform hemisphere sampling (orange) and cosine-weighted sampling (blue), in the local frame with the normal $\mathbf{n}$ up. Cosine sampling concentrates directions near the normal, where $\cos\theta$ and this sky are large, and wastes few on the horizon. Bottom: histograms of the 2000 estimates of the snippet ($N=64$). Both are centred on $\pi/2$ (unbiased), but the cosine histogram is half as wide (std 0.11 vs 0.22)." %}
 
 ### Importance sampling GGX with visible normals
 
@@ -315,6 +343,12 @@ if __name__ == "__main__":
 
 Both probabilities come out at about $0.211$.
 
+The figure plots the samples from this run, and the widget after it lets you compare all three samplers yourself.
+
+{% include blog_figure.liquid path="assets/img/blog/graphics/05-ggx-vndf.svg" caption="Left: 250 microfacet normals $\mathbf{m}$ drawn by `sample_ggx_vndf` (cyan, $\alpha=0.3$) for a view direction $\omega_o$ 57° from the normal, and the reflected directions $\omega_i$ (orange), which form a lobe around the mirror direction on the far side. Right: the distribution of $\cos\theta_i$ of 20,000 sampled directions matches the analytic pdf $G_1 D/(4\cos\theta_o)$ integrated over the azimuth. About 9% of the reflected directions fall below the horizon and are discarded (weight 0)." %}
+
+{% include widget.liquid name="graphics-hemisphere-mc" height="420" caption="Interactive: pick a sampling technique and an integrand. Each dot is one sample direction, coloured by its weight $f/p$ relative to the true value (blue: small, orange: large). Uniform and cosine sampling are good for the smooth sky but fail on a narrow GGX lobe; GGX VNDF sampling is the opposite. The bars give the relative RMSE of all three at the current N; drag the hemisphere to rotate it." %}
+
 ## 6. Path tracing
 
 Applying a one-sample Monte Carlo estimate at every bounce gives the path tracing estimator for a pixel. Starting from a camera ray with throughput $\boldsymbol{\beta} = 1$:
@@ -336,6 +370,10 @@ $$
 
 It is unbiased but adds variance, so $q$ should track how much the path can still contribute; a common choice is $q = \operatorname{clamp}(\max_c \beta_c, 0.05, 0.95)$. Dark paths die early, bright ones live on.
 
+The figure checks this on a toy path whose exact value we know.
+
+{% include blog_figure.liquid path="assets/img/blog/graphics/05-russian-roulette.svg" caption="A white furnace toy: every bounce has albedo $a=0.73$ and adds 1 unit of light, so the path is worth $\sum_k a^k = 1/(1-a)\approx 3.704$. Left: cutting paths at a fixed maximum depth is biased low, by $a^D/(1-a)$. Russian roulette with $q=\operatorname{clamp}(\beta,0.05,0.95)$ from the third bounce, as in the post's code, has the right mean (3.697 over 200,000 paths). Right: how many bounces the roulette paths survive; most stop at the third bounce, a few run for 10 or more." %}
+
 ### Next-event estimation
 
 With pure BSDF sampling, a path only collects light when it happens to hit an emitter. For a small light this is rare and the image is full of fireflies; for a point light it never happens. **Next-event estimation** (NEE) samples a point $\mathbf{y}$ on the light directly at every bounce and traces a shadow ray. The direct-lighting integral, written over the light's area $A$, is
@@ -352,6 +390,10 @@ $$
 
 If we add NEE, a BSDF-sampled ray that later hits the light must not count that emission again, or direct light is counted twice. The simplest fix ignores emission hit by BSDF rays (except from the camera and after perfectly specular bounces, which NEE cannot handle). The better fix is MIS.
 
+The figure follows one path through a 2D slice of the scene and shows the shadow rays NEE adds at each vertex.
+
+{% include blog_figure.liquid path="assets/img/blog/graphics/05-path-nee.svg" caption="One camera path in the plane $x=0$ of the section 7 Cornell box (camera on the right at $z=3.9$, light on the ceiling, the two spheres in profile). At every vertex $\mathbf{x}_k$ NEE picks a random point on the light (orange dots) and traces a shadow ray: yellow rays reach the light and contribute $f_r L_e V\cos\theta_x\cos\theta_y A/\lVert\mathbf{x}-\mathbf{y}\rVert^2$; the dashed ray from $\mathbf{x}_3$ is blocked by a sphere ($V=0$). The purple segments are the BSDF-sampled continuation. Directions were hand-picked for readability; the hits and visibility are computed." %}
+
 ### Multiple importance sampling
 
 Light sampling is excellent for small lights and rough surfaces; BSDF sampling is excellent for large lights and glossy surfaces, where a random point on the light almost never falls inside the narrow lobe. Neither wins everywhere. Veach and Guibas (1995) showed how to combine several techniques in one unbiased estimator. With $n_i$ samples $X_{i,j}$ from technique $i$ and weights $w_i$ that sum to one wherever $f \ne 0$:
@@ -367,9 +409,18 @@ The intuition: each sample is weighted by how good its technique is *at that poi
 - NEE sample: weight $w_l = p_l^2/(p_l^2 + p_b^2)$, where $p_b$ is the BSDF pdf of the light direction.
 - BSDF sample that hits the light: weight $w_b = p_b^2/(p_b^2 + p_l^2)$, where $p_l$ is the light pdf (in solid angle) of that direction.
 
+
+The figure shows the weights and what they buy on a 1D toy problem.
+
+{% include blog_figure.liquid path="assets/img/blog/graphics/05-mis.svg" caption="Top: balance and power heuristic weights for one light sample ($w_l$, solid) and one BSDF sample ($w_b$, dashed) as a function of $p_l/p_b$; the power heuristic switches more sharply to the better technique. Bottom: a 1D toy integral, a Gaussian BSDF lobe of width $s$ times a light window, estimated with two samples. Narrow lobes (glossy) favour BSDF sampling, wide lobes (rough) favour light sampling, and MIS stays close to the better of the two without knowing in advance which one that is." %}
+
 ### Progressive accumulation
 
 A path tracer is naturally **progressive**: render one sample per pixel per frame and keep a running mean, $\bar{I}_s = \bar{I}_{s-1} + (I_s - \bar{I}_{s-1})/s$. The image starts noisy and converges as $1/\sqrt{s}$. When the camera or the scene changes, the accumulation restarts (or, in real time, is reprojected and blended, see the next post).
+
+The figure shows this convergence with the NumPy renderer of the next section.
+
+{% include blog_figure.liquid path="assets/img/blog/graphics/05-spp.svg" caption="Progressive accumulation with the section 7 path tracer (100 x 100 pixels, MIS, up to 6 bounces): the running mean after 1, 4, 16 and 256 samples per pixel. Each 4x more samples halves the noise. Soft shadows, red and green colour bleeding and the indirectly lit ceiling emerge as the noise fades." %}
 
 ## 7. A compact path tracer in NumPy
 
@@ -509,6 +560,10 @@ if __name__ == "__main__":
 ```
 
 At 160 x 160 pixels with 64 samples per pixel and up to 6 bounces, it runs in about 9 seconds on one CPU core and writes `cornell.ppm` (any image viewer, or `python -c "from PIL import Image; Image.open('cornell.ppm').save('cornell.png')"`, can open it). You should see soft shadows under the spheres, red and green color bleeding on the floor and on the spheres, and a darker ceiling lit only by indirect light. A good sanity test for any MIS implementation: replace the weights with "BSDF only" ($w_b = 1$, $w_l = 0$) and "NEE only" ($w_b = 0$, $w_l = 1$). All three versions must converge to the same mean image; only the noise differs. In this scene, the means of the three versions agree to within the Monte Carlo noise, and the BSDF-only image is visibly noisier.
+
+The figure runs exactly this sanity test.
+
+{% include blog_figure.liquid path="assets/img/blog/graphics/05-estimators.svg" caption="The three estimators of section 6 with the renderer above at 16 samples per pixel: BSDF sampling only, NEE only, and MIS with the power heuristic (bottom right: MIS at 256 spp for reference). The small light makes BSDF-only sampling almost useless (most paths never hit it), while NEE and MIS are already clean. The numbers are the mean radiance of each estimator at 256 spp (48 x 48 pixels): all three converge to the same answer within the Monte Carlo noise." %}
 
 Natural extensions: GGX materials with the VNDF sampler from section 5, a triangle mesh with the BVH from section 3, and a thin-lens camera (sample the ray origin on a disk aperture, aim it at the focal plane) for depth of field.
 

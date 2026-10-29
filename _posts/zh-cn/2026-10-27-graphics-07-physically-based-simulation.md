@@ -72,6 +72,10 @@ $$
 
 因此其特征值的模为 $\sqrt{1+\omega^2\Delta t^2}$，能量每一步都在增长，而且对*任意* $\Delta t$ 都如此。隐式欧拉法的特征值模为 $1/\sqrt{1+\omega^2\Delta t^2} < 1$：它无条件稳定，但会人为地衰减运动。辛欧拉法满足 $\det \mathbf{A} = 1$（保持相空间面积），并且当 $\omega \Delta t < 2$ 时特征值位于单位圆上：能量在真实值附近振荡，而不会漂移。
 
+下图把这些特征值的模画成 $\omega\Delta t$ 的函数。
+
+{% include blog_figure.liquid path="assets/img/blog/graphics/07-integrators-eigen.svg" caption="弹簧 $m\ddot{x}=-kx$ 单步映射 $\mathbf{A}$ 的最大特征值模。大于 1 时能量每步增长（显式欧拉法，任何步长都如此）；小于 1 时能量衰减（隐式欧拉法）。辛欧拉法和 Verlet（特征多项式相同）在 $\omega\Delta t=2$ 之前恰好等于 1，超过后发散。点线标出下文实验所用的 $\omega\Delta t=0.1$。" %}
+
 ### Verlet 积分
 
 **Störmer–Verlet** 积分完全消去了速度：
@@ -121,6 +125,12 @@ print(f"{'verlet':10s} E/E0 = {energy(x, v) / energy(1.0, 0.0):.3f}")
 
 模拟 20 秒后（$\omega\Delta t = 0.1$），程序输出的能量比为：显式欧拉法约 $4.4 \times 10^8$（即 $1.01^{2000}$），隐式欧拉法 $0.000$，辛欧拉法和 Verlet 都约为 $1.05$（有界振荡；最后几位数字取决于停止时刻的相位）。这一张表就道尽了游戏物理的全部故事：显式欧拉法会爆炸，隐式欧拉法稳定但"软塌塌"，辛方法既便宜又表现良好——只要步长相对于最高频率足够小。
 
+下面两张图从相空间和时间两个角度展示同一组运行结果。
+
+{% include blog_figure.liquid path="assets/img/blog/graphics/07-integrators-phase.svg" caption="脚本中弹簧（$k=100$，$m=1$，$\Delta t=0.01$）前 3 秒（300 步）的相图 $(x, v/\omega)$，从黑点出发；虚线圆是精确轨道。显式欧拉向外螺旋，隐式欧拉向内螺旋，辛欧拉和 Verlet 保持在一个略微倾斜的椭圆上。" %}
+
+{% include blog_figure.liquid path="assets/img/blog/graphics/07-integrators-energy.svg" caption="同一组运行在完整 20 秒内的能量比 $E/E_0$。左（对数坐标）：显式欧拉恰好落在 $1.01^n$ 上，最终达到 $4.4\times10^8$；隐式欧拉衰减到约 $2\times10^{-9}$（即上面打印的 0.000）。右：两种辛格式的前 2 秒，能量在真实值附近约 5% 的范围内振荡而不漂移。" %}
+
 ## 3. 质点-弹簧布料
 
 经典的布料模型用弹簧连接网格上的粒子。粒子 $a$ 与 $b$ 之间的弹簧，静止长度为 $L_0$，刚度为 $k_s$，阻尼为 $k_d$，它对 $a$ 施加的力为
@@ -136,6 +146,10 @@ $$
 | 结构（拉伸）弹簧 | $(i,j)$–$(i+1,j)$ 和 $(i,j)$–$(i,j+1)$ | 沿经向与纬向的拉伸 |
 | 剪切弹簧 | 每个网格单元的两条对角线 | 面内剪切 |
 | 弯曲弹簧 | $(i,j)$–$(i+2,j)$ 和 $(i,j)$–$(i,j+2)$ | 折叠（二面角弯曲的廉价替代） |
+
+下图在一个小网格上画出了这三类弹簧。
+
+{% include blog_figure.liquid path="assets/img/blog/graphics/07-cloth-springs.svg" localized="true" caption="5 × 5 网格上的三类弹簧及其数量。弯曲弹簧跳过一个粒子；画成弧线只是为了不遮住与之重合的结构弹簧。" %}
 
 难点在于**刚度**（stiffness）。真实布料几乎不可拉伸，所以 $k_s$ 必须很大；而显式或辛积分的稳定步长大致满足 $\Delta t \lesssim 2/\omega_{\max} \sim 2\sqrt{m/k_s}$，会变得极小。Baraff 和 Witkin 的 "Large Steps in Cloth Simulation"（SIGGRAPH 1998）用隐式欧拉法在离线场景中解决了这个问题：将力线性化，每步用共轭梯度法求解一个稀疏线性系统 $\big(\mathbf{M} - \Delta t\,\partial\mathbf{f}/\partial\mathbf{v} - \Delta t^2\,\partial\mathbf{f}/\partial\mathbf{x}\big)\Delta\mathbf{v} = \Delta t\,(\mathbf{f} + \Delta t\, \partial\mathbf{f}/\partial\mathbf{x}\, \mathbf{v})$。这种方法鲁棒，但实现和调参代价都很高。基于位置的方法走了另一条路。
 
@@ -165,6 +179,10 @@ $$
 $$
 
 PBD 是无条件稳定的：它永远不会通过刚性力注入能量，因为根本没有力，只有几何。固定点（$w=0$）、碰撞和撕裂都能轻松处理。
+
+下图展示了三种质量比下的这一投影。
+
+{% include blog_figure.liquid path="assets/img/blog/graphics/07-pbd-projection.svg" caption="投影一个被拉长的距离约束（$L_0=1$）。空心圆：预测位置；实心圆：投影之后，紫色线段的长度恰好等于静止长度。两个修正都沿 $\hat{\mathbf{n}}$，并按逆质量之比分配 $C$，因此较重的粒子移动较少，绿色叉号（质心）保持不动。当 $w_b=0$（固定点，红色）时，粒子 $a$ 承担全部修正。" %}
 
 ### 问题：刚度依赖于迭代次数
 
@@ -258,6 +276,10 @@ flowchart LR
 ## 6. 用 NumPy 实现 XPBD 布料
 
 Gauss–Seidel 本质上是串行的：每次投影都使用前一次刚刚更新的位置。为了在 NumPy 中向量化（以及在 GPU 上并行化），我们对约束图进行**着色**（graph coloring），使同一颜色的约束不共享任何粒子。同一颜色内的所有投影相互独立，可以同时执行；不同颜色依次执行，因此在颜色之间仍然是 Gauss–Seidel。
+
+下图展示了贪心着色的结果。
+
+{% include blog_figure.liquid path="assets/img/blog/graphics/07-graph-coloring.svg" caption="对 6 × 6 布料做贪心着色（脚本中的 `color_constraints`）：显示其 12 种颜色中的前 7 种及每种颜色的约束数。同一颜色的任意两个约束都不共享粒子，因此每个子图都可以用一次向量化操作完成投影。最后一个子图：20 × 20 布料每种颜色的约束数（共 2,202 个约束，13 种颜色）。" %}
 
 ```python
 import numpy as np
@@ -353,7 +375,17 @@ if __name__ == "__main__":
 | $10^{-4}$ | 1.0012 | 1.032 | −1.004 |
 | $10^{-2}$ | 1.0067 | 1.183 | −1.039 |
 
+下面两张图直接来自这个脚本：布料随时间的运动，以及三种柔度下的最终拉伸。
+
+{% include blog_figure.liquid path="assets/img/blog/graphics/07-cloth-drape.svg" caption="脚本中的布料（$\alpha=10^{-4}$，每帧 15 个子步）在六个时刻的状态，由 `xpbd_substep` 计算；$y$ 轴向上，相机从 $-z$ 一侧观察。两个红色粒子被固定。球一开始穿过布料平面，所以第一次碰撞投影把布料踢向 $-z$；随后布料摆回并最终搭在球上静止。" %}
+
+{% include blog_figure.liquid path="assets/img/blog/graphics/07-cloth-stretch.svg" caption="三种柔度下 3 秒后的最终状态（正视图，$x$-$y$ 平面），每条结构边按拉伸量 $\ell/\ell_0$ 着色。最大值与表格一致，拉伸最大的边集中在两个固定角。" %}
+
 最大拉伸出现在两个固定角附近，它们承受了全部重量。即使 $\alpha = 0$，每个子步只迭代一次也会在那里留下几个百分点的残差；增加子步数可以减小它。现在来看 XPBD 的特性：用 `iters=1`、`4` 和 `16` 分别运行最软的布料（$\alpha = 10^{-2}$）2 秒，其最大拉伸分别为 1.210、1.167 和 1.167：结果*收敛*到材料本身的刚度，而不是像带刚度系数的 PBD 那样随每次迭代变得更刚。
+
+下图在同一块布料上把它与 PBD 作对比。
+
+{% include blog_figure.liquid path="assets/img/blog/graphics/07-pbd-vs-xpbd.svg" caption="左：带刚度系数 $k$ 的 PBD 在 $n$ 次迭代后的有效刚度 $1-(1-k)^n$，改变 $n$ 材料就随之改变。右：用脚本（15 个子步）模拟 2 秒后 20 × 20 布料的最大拉伸随每个子步迭代次数的变化。$\alpha=10^{-2}$ 的 XPBD 从 4 次迭代起稳定在 1.167（1 次时为 1.210），而 $k=0.25$ 的 PBD 每多迭代一次就更刚一些。" %}
 
 实践要点：
 
@@ -364,6 +396,10 @@ if __name__ == "__main__":
 ## 7. 碰撞
 
 在基于位置的求解器中，碰撞只是另一个不等式约束。对于球心为 $\mathbf{c}$、半径为 $r$ 的球，$C(\mathbf{x}) = \lVert\mathbf{x}-\mathbf{c}\rVert - r \ge 0$；若被违反，就把粒子投影到球面上：$\mathbf{x} \leftarrow \mathbf{c} + r\,(\mathbf{x}-\mathbf{c})/\lVert\mathbf{x}-\mathbf{c}\rVert$。地面 $y \ge y_0$ 更简单。加一个厚度余量可以避免布料在视觉上贴住表面。
+
+下图展示了这一投影以及它产生的速度。
+
+{% include blog_figure.liquid path="assets/img/blog/graphics/07-sphere-collision.svg" caption="以位置投影实现的球体碰撞（过球心的截面）。每个粒子从上一位置（空心圆）移动到预测位置；若落入球内（$C<0$，红色），就沿径向移到球面上（绿色）。由于随后用子步内的位置变化重新计算速度，新的速度（紫色）大致沿着球面而不是指向球内，无需任何显式冲量。" %}
 
 生产级求解器还会在此基础上加入：
 
@@ -383,6 +419,10 @@ if __name__ == "__main__":
 - **Ball**（球）和地面通过位置投影处理碰撞，接触时额外施加速度阻尼作为廉价的摩擦。**Wind**（风）沿表面法线施加阵风力。**Grab**（抓取）会固定你拖动的粒子（按住期间 $w = 0$）并把它拉向光标。
 
 可以尝试：把 Stiffness 调到最低，观察布料变得有弹性（但永远不会不稳定）；用力拉扯把它撕开；关掉风，观察到得益于小步长，运动只受到很轻的阻尼。
+
+下面这个小型二维布料在页面中直接运行同样的 XPBD 步骤：14 × 12 的网格（宽 1 米，0.2 千克），带有拉伸、剪切和弯曲距离约束，从两个固定角悬挂。
+
+{% include widget.liquid name="graphics-xpbd-cloth" height="420" caption="用鼠标或手指拖动布料。滑块设置拉伸柔度 $\alpha$（单位 m/N；剪切软 4 倍，弯曲固定为 0.1）；边被拉长时会变红，读数显示最大和平均拉伸。在相同的 n 下比较 n 个子步 × 1 次迭代与 1 步 × n 次迭代：同样的开销下，子步让布料更接近静止长度，这正是第 5 节的小步长效应。" %}
 
 ## 9. 一页讲完刚体
 
@@ -404,6 +444,10 @@ A(\mathbf{x}_i) \approx \sum_j \frac{m_j}{\rho_j} A_j\, W(\mathbf{x}_i - \mathbf
 $$
 
 Müller 等人（2003）让 SPH 在图形学中实现了交互式运行：由状态方程 $p_i = k(\rho_i - \rho_0)$ 得到压强，对称的压力 $\mathbf{f}_i^{p} = -\sum_j m_j \frac{p_i + p_j}{2\rho_j}\nabla W_{ij}$，再加上粘性和表面张力；密度使用 Poly6 核，压力使用 Spiky 核的梯度，粘性使用另一个专门的核。它的弱点是与布料相同的刚度问题：接近不可压缩需要很大的 $k$，因而需要极小的时间步。
+
+下图比较了这三个核。
+
+{% include blog_figure.liquid path="assets/img/blog/graphics/07-sph-kernels.svg" caption="Müller 等人（2003）的三个三维核函数，支撑半径 $h=1$（每个在球内积分为 1，已数值验证）。左：Poly6 光滑且在中心平坦，粘性核在 $r=0$ 处发散。中：Poly6 的梯度在 $r=0$ 处为零，靠得很近的粒子几乎不会互相排斥；Spiky 的梯度恰在那里最大，因此用于压力。右：粘性核的拉普拉斯 $45(h-r)/(\pi h^6)$ 处处为正，因此粘性只会耗散能量。" %}
 
 **Position Based Fluids（PBF）**（Macklin 和 Müller，2013）应用了 PBD 的思想：为每个粒子建立密度约束
 
