@@ -66,6 +66,10 @@ The set of skew-symmetric matrices is the **Lie algebra** $\mathfrak{so}(3)$, th
 at the identity. Angular velocity lives there: if $R(t)$ is a trajectory, then $\dot R R^\top = [\omega_s]$
 gives the angular velocity in the fixed (space) frame and $R^\top \dot R = [\omega_b]$ in the body frame.
 
+The figure shows Rodrigues' formula at work: the component of $v$ along the axis stays fixed, and the rest of $v$ sweeps a circle around the axis by the angle $\theta$.
+
+{% include blog_figure.liquid path="assets/img/blog/embodied-ai/01-rotation-axis-angle.svg" caption="Axis-angle rotation in a right-handed, z-up frame. The purple unit axis $\hat\omega$ and angle $\theta = 110°$ map $v$ (orange) to $e^{[\hat\omega]\theta}v$ (cyan). The dashed lines meet at $(\hat\omega^\top v)\hat\omega$, the part of $v$ that does not move; the dotted circle is the full orbit of $v$." %}
+
 ### Rigid motions: SE(3)
 
 A full pose (position $p$ and orientation $R$) is a homogeneous transform
@@ -85,6 +89,10 @@ $$
 The robot's whole "scene graph" (world, base, links, camera, gripper, object) is a tree of such transforms.
 Hand-eye calibration, for example, is the problem of estimating the fixed $T_{\text{gripper},\text{camera}}$.
 
+Drawn in 3D, the scene graph of a robot is just a chain of frames, each one placed relative to its parent:
+
+{% include blog_figure.liquid path="assets/img/blog/embodied-ai/01-frame-chain.svg" caption="The frame chain of a spatial 3-joint arm (standard DH, $a=(0, 0.55, 0.45)$, $\alpha=(\pi/2,0,0)$, $d=(0.45,0,0)$) in a right-handed, z-up world frame $\lbrace w\rbrace $. Red, green and blue arrows are each frame's $x, y, z$ axes. Multiplying the dashed transforms left to right gives the end-effector pose $T_{w3}$, and one more fixed transform gives a wrist camera $\lbrace c\rbrace $." %}
+
 ### Twists and screws
 
 The velocity of a rigid body is a **twist** $\mathcal{V} = (\omega, v) \in \mathbb{R}^6$, with
@@ -99,6 +107,10 @@ Why care as a learning person? Because action spaces are poses. Predicting a rot
 means choosing a representation: Euler angles have discontinuities, quaternions have the $q \equiv -q$
 ambiguity, and Zhou et al. (CVPR 2019) showed that a continuous 6-D representation (two columns of $R$,
 re-orthonormalized) is easier to regress. Many policies (e.g. Diffusion Policy in post 4) use it.
+
+Chasles' theorem is easy to see in a picture: applying $e^{[\mathcal{S}]\theta}$ for growing $\theta$ moves a frame along a helix around the screw axis.
+
+{% include blog_figure.liquid path="assets/img/blog/embodied-ai/01-screw-motion.svg" caption="A screw motion computed with the matrix exponential. The screw axis (dash-dot) is the z direction through $(0.6, 0, 0)$, with pitch $h = 0.12$ per radian, i.e. $\mathcal{S} = (\omega, -\omega\times p + h\omega)$. Each triad is the frame $e^{[\mathcal{S}]\theta}$ at a different $\theta$: it rotates about the axis and translates along it at the same time." %}
 
 ## 2. Forward kinematics
 
@@ -138,6 +150,10 @@ In practice robots are described with URDF or MJCF files (post 3) that store a f
 and libraries such as Pinocchio, Drake, MuJoCo or PyBullet compute FK for you. DH is still worth knowing
 because it makes the structure explicit and is how most textbooks and datasheets present kinematics.
 
+The figure places the four parameters on two consecutive joint axes. Read the transform from left to right: rotate by $\theta_i$ about $z_{i-1}$, slide $d_i$ along it, move $a_i$ along the new $x_i$, then tilt by $\alpha_i$ about $x_i$.
+
+{% include blog_figure.liquid path="assets/img/blog/embodied-ai/01-dh-parameters.svg" caption="Standard DH parameters, computed from the post's `dh()` with $\theta_i=55°$, $d_i=0.6$, $a_i=0.9$, $\alpha_i=50°$. Dash-dot lines are joint axes $i$ and $i+1$. $d_i$ (orange) runs along $z_{i-1}$ to the foot of the common normal; $a_i$ (purple) is the common normal itself, along $x_i$; $\theta_i$ is measured from $x_{i-1}$ (dashed copy) to $x_i$ about $z_{i-1}$; $\alpha_i$ from $z_{i-1}$ (dashed copy) to $z_i$ about $x_i$." %}
+
 ### A planar 3-link arm in NumPy
 
 For a planar arm, every $\alpha_i = d_i = 0$, so each DH transform is a rotation by $q_i$ followed by a
@@ -176,6 +192,10 @@ def task(q):
 ```
 
 `pts` gives every joint position, which is all you need to draw the arm with matplotlib.
+
+Running `task(q)` on many random configurations shows which positions the arm can reach, and with which orientations:
+
+{% include blog_figure.liquid path="assets/img/blog/embodied-ai/01-workspace.svg" caption="Workspaces from forward kinematics with random joint angles. Left: a 2-link arm ($a_1=1.0$, $a_2=0.8$) reaches an annulus $0.2 \le r \le 1.8$; the two drawn arms are elbow-up and elbow-down shapes. Right: the post's 3-link arm reaches the whole disk $r \le 2.3$, coloured by the end-effector angle $\phi$. Only inside the orange ring $0.7 \le r \le 1.3$ can every $\phi$ be achieved (the dexterous workspace)." %}
 
 ## 3. Jacobians and differential kinematics
 
@@ -231,6 +251,10 @@ J_num = np.stack([(task(q + eps * np.eye(3)[i]) - task(q - eps * np.eye(3)[i])) 
                   for i in range(3)], axis=1)
 print("Jacobian error:", np.abs(J_num - jacobian(q)).max())   # ~1e-10
 ```
+
+The velocity ellipse makes manipulability visible. As the arm stretches out, the ellipse flattens until, at the singularity, the end effector can no longer move radially at all:
+
+{% include blog_figure.liquid path="assets/img/blog/embodied-ai/01-manipulability.svg" caption="Left: four configurations of the 3-link arm and the position part of their velocity ellipses $\lbrace J_p\dot q : \lVert\dot q\rVert\le 1\rbrace $ (axes from the SVD of the top two rows of `jacobian(q)`, drawn at 0.22 scale). The nearly straight red arm has a thin ellipse pointing sideways. Right: Yoshikawa's $w=\sqrt{\det JJ^\top}$ for the full $3\times3$ Jacobian, evaluated numerically for several random $q_3$ (grey bands). They all coincide with $a_1a_2\lvert\sin q_2\rvert$, so $w$ vanishes exactly when the first two links are aligned ($q_2 = 0, \pm\pi$)." %}
 
 ## 4. Inverse kinematics
 
@@ -307,6 +331,12 @@ DLS with adaptive damping, step-size limits, joint limits and secondary objectiv
 the modern formulation is a small **quadratic program** (QP) per control tick, e.g. "minimize task error
 subject to joint position and velocity limits", solved by libraries such as Pink, mink or Drake.
 
+The figure replays `ik_dls` exactly as written above, and the widget below lets you drag the target yourself.
+
+{% include blog_figure.liquid path="assets/img/blog/embodied-ai/01-ik-dls.svg" caption="Top: the iterates of `ik_dls` for $x^\ast=(1.2, 0.9, \pi/4)$ from $q_0=0$ (a singular, fully stretched arm), coloured from dark ($k=0$) to yellow ($k=8$); the dotted line is the end-effector path. The first steps overshoot wildly, then the iteration locks on. Bottom left: residual per iteration for three damping values; larger $\lambda$ is steadier but slower. Bottom right: the unreachable target $(3, 0, 0)$. With $\lambda=0.5$ the residual settles at 0.7 (the best possible), with $\lambda=0.05$ it keeps jumping between about 0.7 and 4." %}
+
+{% include widget.liquid name="embodied-ai-ik-arm" height="440" caption="Interactive: drag the orange target (or tap anywhere). The 3-link arm ($a = 1.0, 0.8, 0.5$) runs a few damped least-squares steps per frame on the position task, and the purple ellipse is its velocity ellipse $\lbrace J_p\dot q\rbrace $. Stretch the arm or move the target out of reach to see the ellipse collapse, and change $\lambda$ to see how damping trades speed for stability near singularities." %}
+
 ## 5. A short look at dynamics
 
 Kinematics ignores forces. The equations of motion of an $n$-joint rigid-body system are
@@ -377,6 +407,10 @@ Plain PD sags by about 0.19 rad because the spring must hold up the weight; the 
 gravity model removes the error. Legged-robot RL policies (post 2) almost always output **joint position
 targets** to such a PD loop instead of raw torques; the PD gains then become part of the "action space".
 
+Plotting the same simulation over time shows where the numbers above come from:
+
+{% include blog_figure.liquid path="assets/img/blog/embodied-ai/01-pid-step.svg" caption="Step responses of the pendulum joint from the code above ($q_{\mathrm{ref}} = \pi/3$, 1 ms semi-implicit Euler). Left: plain PD settles 0.186 rad short of the target because the spring must hold the weight; the integral term or the gravity feed-forward removes the error. Right: PD with gravity compensation for different gains. Low $K_d$ (dotted) rings; higher $K_p$ is faster but needs more damping." %}
+
 ### Computed torque and operational-space control
 
 If the model is good, cancel the nonlinear dynamics and impose linear error dynamics
@@ -412,6 +446,10 @@ Low stiffness gives compliant, safe contact (wiping, insertion, human interactio
 gives accurate tracking. Many learned manipulation policies output a target pose $x_d$ at 10 to 20 Hz to a
 Cartesian impedance controller running at 1 kHz; some also predict the stiffness ("variable impedance").
 
+The figure shows the virtual spring-damper and what the stiffness choice means when something pushes on the end effector:
+
+{% include blog_figure.liquid path="assets/img/blog/embodied-ai/01-impedance.svg" caption="Left: impedance control attaches a virtual spring $K_d$ and damper $D_d$ between the end effector $x$ and the target $x_d$; the resulting wrench is mapped to joint torques by $J^\top$. Right: simulated 1-D response $\Lambda_d\ddot{\tilde x} + D_d\dot{\tilde x} + K_d\tilde x = \mathcal{F}_{\mathrm{ext}}$ to a 10 N push lasting 1 s (grey). The soft setting yields 10 cm and is gentle on whatever it touches; the stiff setting yields only 1 cm. Dotted lines are the static deflections $\mathcal{F}/K_d$." %}
+
 ## 7. Motion planning
 
 Planning finds a collision-free path in C-space from $q_{\text{start}}$ to $q_{\text{goal}}$. Obstacles in the
@@ -427,6 +465,10 @@ $f(n) = g(n) + h(n)$, cost-so-far plus a heuristic estimate of cost-to-go. If $h
 ($$h(n) \le c(n,n') + h(n')$$) no node needs to be re-expanded. Dijkstra is A\* with $h = 0$. Grids scale
 exponentially with dimension, so A\* is used for mobile robots in 2-D/3-D, footstep planning and
 discretized lattices, not for 7-DoF arms.
+
+The heuristic is what makes A\* fast. On the same grid, both searches return a path of the same optimal cost, but A\* expands far fewer cells:
+
+{% include blog_figure.liquid path="assets/img/blog/embodied-ai/01-astar.svg" caption="Dijkstra ($h=0$, left) versus A\* with the Euclidean heuristic (right) on a 40 x 30 grid, 8-connected with diagonal cost $\sqrt2$ (so the heuristic is admissible and consistent). Colour shows the order in which cells were expanded; black cells are obstacles. Dijkstra floods outward in all directions (902 expansions), A\* grows a narrow band toward the goal (374 expansions), and both paths cost 46.04." %}
 
 ### Sampling-based planning: PRM, RRT, RRT\*
 
@@ -473,6 +515,12 @@ path, n = rrt(np.array([0.1, 0.1]), np.array([0.9, 0.9]))
 print(f"tree size {n}, path waypoints {len(path)}, "
       f"length {np.sum(np.linalg.norm(np.diff(path, axis=0), axis=1)):.3f}")
 ```
+
+Running exactly this code (seed 0) gives the tree on the left of the figure; RRT\* with choose-parent and rewiring produces the much shorter path in the middle.
+
+{% include blog_figure.liquid path="assets/img/blog/embodied-ai/01-rrt.svg" caption="Left: the tree grown by the `rrt` function above with `default_rng(0)`, 109 nodes and a jagged path of length 1.614, exactly the printed result. Middle: RRT\* (radius $r_n = \min(0.5\sqrt{\log n / n},\ 0.1)$) after 2,500 samples; rewiring straightens the tree into near-shortest branches and the path shrinks to 1.24. Right: best path length versus samples for five RRT\* runs; it keeps decreasing (asymptotic optimality), while plain RRT stops at its first, longer solution (dashed, average of 20 runs)." %}
+
+{% include widget.liquid name="embodied-ai-planner" height="460" caption="Interactive: drag the start (white), the goal (star) or the grey obstacles, and switch between A\*, RRT and RRT\*. A\* searches an 8-connected grid and colours the cells it expanded; the RRT variants draw their trees. Press the button to re-sample the random trees." %}
 
 To plan for the 3-link arm instead of a point, replace the sample space by $[-\pi,\pi]^3$ and `free(q)` by
 "FK the links and test each segment against the obstacles". RRT paths are jagged, so real systems

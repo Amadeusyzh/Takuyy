@@ -69,6 +69,10 @@ extinct animal") because that knowledge came from the web.
 | Gemini Robotics | 2025 | Gemini 2.0 | low-latency action decoder | large ALOHA 2 bimanual dataset + web | plus Gemini Robotics-ER for embodied reasoning |
 | SmolVLA | 2025 | small VLM (about 0.45B total) | flow-matching action expert | community LeRobot datasets | runs on consumer hardware |
 
+Placed on a time line, the models of this post and the world-model work of section 5 show how quickly the field has moved since 2022:
+
+{% include blog_figure.liquid path="assets/img/blog/embodied-ai/05-timeline.svg" localized="true" caption="Robot policies and VLAs (top) and world or video models used for robots (bottom), placed at the month of the first arXiv version of the paper cited in this post (read from the arXiv identifier). Conference versions often appeared months later; the order, not the exact date, is the point." %}
+
 ### Octo
 
 Octo (Octo Model Team, RSS 2024) is a transformer-based policy pre-trained on 800k trajectories from Open X-Embodiment.
@@ -138,6 +142,10 @@ flowchart LR
   A --> C[Low-level controller: IK, impedance, PD]
 ```
 
+The two dominant ways to attach actions to a VLM, drawn side by side:
+
+{% include blog_figure.liquid path="assets/img/blog/embodied-ai/05-vla-architectures.svg" localized="true" caption="(a) RT-2 and OpenVLA write each action dimension as one of 256 tokens and decode them autoregressively with the VLM itself; the token values shown are arbitrary examples. (b) pi0 keeps the VLM for images and language and adds a separate action expert that sees proprioception and a noisy action chunk, attends to the VLM's tokens, and predicts a flow-matching velocity that is integrated in about 10 Euler steps into a chunk of 50 continuous actions." %}
+
 ### Action representation
 
 Two families dominate:
@@ -197,6 +205,12 @@ DCT scale   200:  57 non-zero of 350 coefficients, mean error 0.0005
 A one-second chunk at 50 Hz costs 350 tokens with per-step binning, but only a few dozen non-zero DCT coefficients,
 because smooth motions concentrate their energy in low frequencies. FAST then run-length/BPE-encodes the sparse
 integer matrix into a short token sequence; the scale is the knob between compression and precision.
+
+The figures below show what these numbers mean for the chunk built in the code: first the 256-bin grid on one dimension, then where the DCT puts the chunk's energy.
+
+{% include blog_figure.liquid path="assets/img/blog/embodied-ai/05-binning.svg" caption="Top: the 7-D chunk from the code (each dimension rescaled for display): smooth sinusoids for position and orientation and a step for the gripper. Bottom: a zoom on the $x$ dimension around its peak. With 256 bins over its range each bin is only 0.40 mm wide (grey lines), so the decoded bin centres (red) follow the continuous action closely: the maximum error over the whole chunk is 0.00096. The price is one token per dimension per step, 350 tokens for this one-second chunk." %}
+
+{% include blog_figure.liquid path="assets/img/blog/embodied-ai/05-dct-fast.svg" caption="Top left: magnitude of the DCT coefficients of the same chunk (log scale; rows are temporal frequencies). The smooth dimensions concentrate their energy in the first few rows; the gripper step spreads it over many frequencies. Top middle and right: the coefficients that survive rounding at scale 10 (35 of 350) and 50 (42). Bottom: reconstruction from the 35 integers at scale 10. The smooth dimensions are almost exact, and the gripper shows small ringing around the step, which is why a larger scale is used when precision matters." %}
 
 ### A flow-matching action expert
 
@@ -280,6 +294,10 @@ Ten Euler steps of a small network turn noise into the right chunk for each inst
 the backbone's tokens (attended to by a transformer action expert), the chunk has 50 steps and 7 to 30+ dimensions, and
 the instruction set is open-ended.
 
+Recording the ten Euler steps shows the flow at work: noise chunks are transported, in straight lines on average, to the chunk that matches each instruction.
+
+{% include blog_figure.liquid path="assets/img/blog/embodied-ai/05-flow-matching.svg" caption="Sampling from the toy action expert above, retrained with the same code and seed (final loss 0.0246, as printed). Each line is an 8-step chunk in the $x$-$y$ plane, coloured by the instruction it is conditioned on; with the post's convention, 'go left' bends to negative $y$. At $t = 0$ the chunks are Gaussian noise; after 3 and 6 of the 10 Euler steps they contract toward the data; at $t = 1$ all 40 chunks follow their instruction." %}
+
 ### Cross-embodiment training
 
 Datasets differ in robots, cameras, control frequencies and action spaces. Common choices:
@@ -290,6 +308,8 @@ Datasets differ in robots, cameras, control frequencies and action spaces. Commo
   web and cross-robot data improve generalization in new environments even for a single target robot.
 - **Human and synthetic data** without actions (GR00T's data pyramid): latent action models infer pseudo-actions from
   consecutive frames, so video can teach motion priors.
+
+{% include blog_figure.liquid path="assets/img/blog/embodied-ai/05-cross-embodiment.svg" localized="true" caption="Top: a unified action vector (example layout, not any specific model's): each embodiment fills its own slots, and the unused tail is padding that is masked out of the loss. Bottom: two synthetic action datasets with different units and spreads before and after per-dataset quantile normalization (1st and 99th percentiles mapped to $\pm 1$). After normalization both use the same numeric range, so neither dominates the loss." %}
 
 ### Hierarchy and reasoning
 

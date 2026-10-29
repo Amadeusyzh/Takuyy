@@ -60,6 +60,10 @@ Transformer 以约 3 Hz 输出**离散化动作**（手臂、底盘和模式的�
 | Gemini Robotics | 2025 | Gemini 2.0 | 低延迟动作解码器 | 大规模 ALOHA 2 双臂数据 + 网络数据 | 另有用于具身推理的 Gemini Robotics-ER |
 | SmolVLA | 2025 | 小型 VLM（总计约 0.45B） | 流匹配动作专家 | 社区 LeRobot 数据集 | 可在消费级硬件上运行 |
 
+把本文的模型和第 5 节的世界模型工作放到时间轴上，可以看出 2022 年以来这个领域发展得有多快：
+
+{% include blog_figure.liquid path="assets/img/blog/embodied-ai/05-timeline.svg" localized="true" caption="机器人策略与 VLA（上）以及用于机器人的世界模型或视频模型（下），按本文所引论文在 arXiv 上第一版的月份放置（由 arXiv 编号读出）。会议版本通常晚几个月才出现；这张图要说明的是先后顺序，而不是精确日期。" %}
+
 ### Octo
 
 Octo（Octo Model Team，RSS 2024）是一个在 Open X-Embodiment 的 80 万条轨迹上预训练的基于 Transformer 的策略。观测（多路相机、
@@ -115,6 +119,10 @@ flowchart LR
   E --> A[动作块 a_t ... a_t+H]
   A --> C[底层控制器: IK, 阻抗, PD]
 ```
+
+把动作接到 VLM 上的两种主流方式，并排画出来是这样的：
+
+{% include blog_figure.liquid path="assets/img/blog/embodied-ai/05-vla-architectures.svg" localized="true" caption="(a) RT-2 和 OpenVLA 把每个动作维度写成 256 个 token 之一，并用 VLM 自身自回归地解码；图中的 token 数值只是随意举例。(b) pi0 保留 VLM 处理图像和语言，另加一个独立的动作专家：它接收本体感知和含噪的动作块，关注 VLM 的 token，预测流匹配的速度场，再经约 10 步欧拉积分得到包含 50 个连续动作的块。" %}
 
 ### 动作表示
 
@@ -172,6 +180,12 @@ DCT scale   200:  57 non-zero of 350 coefficients, mean error 0.0005
 
 一个 50 Hz、1 秒的动作块，按步分箱需要 350 个 token，而 DCT 后只有几十个非零系数，因为平滑运动的能量集中在低频。FAST 随后对这个
 稀疏整数矩阵做游程/BPE 编码，得到一个短 token 序列；缩放系数就是在压缩率与精度之间调节的旋钮。
+
+下面两张图展示了这些数字对代码中构造的动作块意味着什么：先是某一维上的 256 个箱，然后是 DCT 把动作块的能量放在了哪里。
+
+{% include blog_figure.liquid path="assets/img/blog/embodied-ai/05-binning.svg" caption="上：代码中的 7 维动作块（为便于显示，每一维都单独缩放）：位置和姿态是平滑的正弦曲线，夹爪是一个阶跃。下：放大 $x$ 维的峰值附近。在它的取值范围内分 256 个箱，每个箱只有 0.40 mm 宽（灰线），所以解码出的箱中心（红色）紧贴连续动作：整个动作块的最大误差为 0.00096。代价是每一步每一维一个 token，这个 1 秒的动作块需要 350 个 token。" %}
+
+{% include blog_figure.liquid path="assets/img/blog/embodied-ai/05-dct-fast.svg" caption="左上：同一动作块 DCT 系数的幅值（对数刻度；行为时间频率）。平滑的维度把能量集中在最前面几行；夹爪的阶跃则把能量分散到许多频率上。中上和右上：在缩放系数 10（350 个中剩 35 个）和 50（42 个）下取整后仍非零的系数。下：用缩放 10 时的 35 个整数重建的结果。平滑维度几乎完全一致，夹爪在阶跃附近有轻微振铃，这就是需要精度时要用更大缩放系数的原因。" %}
 
 ### 流匹配动作专家
 
@@ -252,6 +266,10 @@ final loss 0.0246; follows the instruction in 100.0% of samples; chunk error 0.0
 一个小网络走 10 个欧拉步，就能为每条指令把噪声变成正确的动作块。在真实的 VLA 中，上下文是主干的 token（由 Transformer 动作专家
 关注），动作块有 50 步、7 到 30 多个维度，而指令集是开放的。
 
+记录下这十步欧拉积分，就能看到流在起作用：含噪的动作块被（平均意义上沿直线）运送到与各自指令相符的动作块。
+
+{% include blog_figure.liquid path="assets/img/blog/embodied-ai/05-flow-matching.svg" caption="从上面的玩具动作专家采样，模型用相同代码与种子重新训练（最终损失 0.0246，与打印结果一致）。每条线是 $x$-$y$ 平面上一个 8 步的动作块，按所条件化的指令着色；按本文的约定，“go left” 向 $y$ 负方向弯曲。$t = 0$ 时动作块是高斯噪声；10 步欧拉积分中走完 3 步和 6 步后，它们向数据收缩；到 $t = 1$ 时，全部 40 个动作块都遵循各自的指令。" %}
+
 ### 跨本体训练
 
 数据集在机器人、相机、控制频率和动作空间上各不相同。常见的选择：
@@ -261,6 +279,8 @@ final loss 0.0246; follows the instruction in 100.0% of samples; chunk error 0.0
 - **带权重的数据混合**：大量使用的数据集降权，多样化的数据集升权；pi0.5 表明，即使只针对一个目标机器人，网络数据和跨机器人数据
   也能提升在新环境中的泛化能力。
 - **没有动作的人类数据和合成数据**（GR00T 的数据金字塔）：潜在动作模型从相邻帧推断伪动作，使视频能传授运动先验。
+
+{% include blog_figure.liquid path="assets/img/blog/embodied-ai/05-cross-embodiment.svg" localized="true" caption="上：统一的动作向量（示例布局，并非某个具体模型的布局）：每种本体填自己的槽位，未用到的尾部是填充，在损失中被屏蔽。下：两个单位和分布宽度都不同的合成动作数据集，在按数据集做分位数归一化（把第 1 和第 99 百分位映射到 $\pm 1$）前后的对比。归一化之后两者使用相同的数值范围，谁也不会主导损失。" %}
 
 ### 层级与推理
 

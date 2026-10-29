@@ -54,6 +54,10 @@ $$
 | 奖励 | 跟踪指令速度，惩罚力矩、关节加速度、动作变化率、足部打滑、基座姿态 |
 | 回合 | 20 s，摔倒（基座触地）时终止，随机化初始状态与地形 |
 
+把这些放在一起，腿式机器人 RL 系统的一步就是下图中的回路：策略以较低频率运行，PD 回路以高频把它的目标转成力矩，来自大量并行环境的成批轨迹再送入 PPO 更新。
+
+{% include blog_figure.liquid path="assets/img/blog/embodied-ai/02-rl-loop.svg" localized="true" caption="机器人中常见的 RL 回路。策略以约 50 Hz 输出关节位置目标 $q^{\mathrm{des}}$；PD 控制器以 200 Hz 到 1 kHz 把它们转为力矩；机器人或仿真器返回下一时刻的观测和奖励；收集到的轨迹驱动 $\theta$ 的 PPO 更新。" %}
+
 ### 价值函数与贝尔曼方程
 
 策略的状态价值与动作价值为
@@ -73,6 +77,12 @@ $$
 迭代的是后者，但在连续高维动作空间上取 $\max$ 很别扭，所以机器人领域主要使用**策略梯度**（policy gradient）和
 **演员-评论家**（actor-critic）方法。
 
+对于已知的小型 MDP，可以用**价值迭代**（value iteration）直接求解贝尔曼最优方程：$V_{k+1}(s) = \max_a \sum_{s'} P(s'\mid s,a)\,[r + \gamma V_k(s')]$。下图和下面的交互组件展示了价值如何从奖励处一轮一轮地向后传播。
+
+{% include blog_figure.liquid path="assets/img/blog/embodied-ai/02-value-iteration.svg" caption="$\gamma = 0.9$ 的 6 x 5 网格世界上的价值迭代：进入蓝格得 $+1$，进入红格得 $-1$，黑格是墙；每次移动以 0.8 的概率成功，以各 0.1 的概率向两侧滑动。数字为 $V_k(s)$，箭头为贪心策略。一轮之后只有紧挨目标的格子“知道”目标；收敛后每个格子都有价值，而紧邻 $-1$ 格的策略会背离它（右下角），因为存在滑动风险。" %}
+
+{% include widget.liquid name="embodied-ai-gridworld" height="420" caption="交互：按“单步”对每个格子做一次贝尔曼备份，按“运行”迭代到 $\max\lvert\Delta V\rvert < 10^{-4}$。点击格子可以添加或移除墙；改变 $\gamma$ 或滑动概率，观察价值传播多远、贪心策略变得多谨慎。" %}
+
 ## 2. 策略梯度
 
 ### 策略梯度定理
@@ -90,6 +100,10 @@ $$
 对连续控制，策略通常是对角高斯 $\pi_\theta(a\mid s) = \mathcal{N}(\mu_\theta(s), \mathrm{diag}(\sigma^2))$，其中 $\log\sigma$ 与状态无关、
 由学习得到。
 
+一个单步问题（老虎机）能把这个更新直观地画出来。优势为正的样本把高斯的均值拉向自己，优势为负的样本把它推开；反复迭代后，一旦策略找到最优点，$\sigma$ 也会缩小：
+
+{% include blog_figure.liquid path="assets/img/blog/embodied-ai/02-policy-gradient.svg" caption="在一维老虎机上用均值基线的 REINFORCE：奖励 $r(a) = -(a-1.5)^2$，策略 $\mathcal{N}(\mu, \sigma^2)$，从 $\mathcal{N}(0, 1)$ 开始。上：第一次迭代的 64 个样本；绿色竖线表示 $\hat A > 0$，红色表示 $\hat A < 0$，箭头是由此得到的 $\mu$ 的更新步。下：经过 0 到 59 次更新（每次 64 个样本，学习率 0.1）后，策略移到 $a^\ast = 1.5$ 并逐渐变窄。" %}
+
 ### 广义优势估计
 
 有了学习的评论家 $V_\phi$，定义 TD 残差 $\delta_t = r_t + \gamma V_\phi(s_{t+1}) - V_\phi(s_t)$。**GAE**（Schulman 等 2016）用指数衰减
@@ -101,6 +115,10 @@ $$
 
 $\lambda = 0$ 得到低方差但有偏的一步 TD 优势；$\lambda = 1$ 得到无偏但高方差的蒙特卡洛优势。$\lambda \approx 0.95$ 是常用的折中。
 评论家回归到目标 $\hat R_t = \hat A_t + V_\phi(s_t)$。
+
+上图展示了 $\lambda$ 如何决定 TD 残差的平均范围。下图在一个评论家（critic）被故意设错的玩具链上测量了由此带来的权衡：
+
+{% include blog_figure.liquid path="assets/img/blog/embodied-ai/02-gae.svg" caption="上：GAE 赋予 $l$ 步之后 TD 残差的权重 $(\gamma\lambda)^l$（$\gamma = 0.99$）。下：在一条 300 步、奖励带噪声、评论家偏差为 $2 + 4\sin(0.15t)$ 的链上，用 4,000 条回合蒙特卡洛估计 $\hat A_0$ 的误差。偏差相对于 $\lambda = 1$ 的目标 $G_0 - V_\phi(s_0)$ 计算。$\lambda$ 小时过于相信错误的评论家（偏差大）；$\lambda$ 大时累加许多带噪声的奖励（方差增大两个数量级）。点线标出常用的 $\lambda = 0.95$。" %}
 
 ### 信赖域与 PPO
 
@@ -121,6 +139,10 @@ $$
 
 PPO 是同策略（on-policy）的，样本效率低，但它简单、稳定、极易并行。当一块 GPU 上有成千上万个仿真机器人时，样本效率远不如
 墙钟时间重要，这就是 PPO 成为 Isaac Lab、legged_gym 以及大多数运动控制论文默认算法的原因。
+
+把单个样本的 $L^{\text{CLIP}}$ 画出来，就能看到 $\min$ 的“悲观”：恰恰在继续移动看起来有利的地方，目标变平，梯度为零。
+
+{% include blog_figure.liquid path="assets/img/blog/embodied-ai/02-ppo-clip.svg" caption="单个样本的 PPO 目标随概率比的变化，$\epsilon = 0.2$。左，$\hat A > 0$：提高概率在 $\rho = 1.2$ 之前都有好处，之后被裁剪项封顶（阴影区，梯度为零）。右，$\hat A < 0$：降低概率在 $\rho = 0.8$ 之前有好处。在相反方向上，未裁剪项更小，因此把情况变坏的更新仍会被完整地惩罚。" %}
 
 ### 紧凑的 PyTorch PPO
 
@@ -233,6 +255,10 @@ for it in range(150):
   各物理量的单位可能相差几个数量级。
 - **动作缩放。** 这里网络输出被截断到 $[-1, 1]$；在机器人上通常会缩放后加到名义关节构型上，$q^{\text{des}} = q_0 + k_a a_t$。
 
+原封不动地运行上面的脚本，就得到下图的学习曲线，以及训练后策略的行为：
+
+{% include blog_figure.liquid path="assets/img/blog/embodied-ai/02-ppo-training.svg" caption="上：训练期间每步平均奖励，来自在单个 CPU 核上真实运行上面的代码。紫色曲线是文中的那次运行（种子 0）：第 0 次迭代为 $-0.889$，50 次迭代后约为 $-0.16$，最后为 $-0.108$，与打印结果一致。另外还画出了把 `gae` 中的 $\lambda$ 改为 0 和 1 的运行，以及在 `RandomizedPointReach` 上的训练。下：训练好的策略（取均值动作）从半径 0.9 圆周上的 12 个起点出发，所有质点约 20 步内都到达原点。" %}
+
 ## 3. Soft Actor-Critic
 
 PPO 每次更新后就丢弃数据。**异策略**（off-policy）方法保留一个经验回放缓冲区，样本效率高得多，这在样本来自真实机器人时
@@ -266,6 +292,10 @@ tanh 改变了概率密度，因此 $\log\pi(\tilde a\mid s) = \log\mathcal{N}(u
 | 并行仿真 | 扩展性极好 | 需要注意（更新与数据之比） |
 | 典型用途 | 仿真到现实的运动控制，大规模并行仿真 | 真实世界 RL、操作、微调 |
 | 探索 | 高斯噪声 + 可选的熵奖励 | 最大熵，自动温度 |
+
+理解 SAC 有两张图很有帮助。熵奖励把贪心的 $\arg\max_a Q$ 变成玻尔兹曼分布 $\pi \propto \exp(Q/\alpha)$（单步问题中最大熵目标的最优策略），而 tanh 压缩需要上面给出的密度修正：
+
+{% include blog_figure.liquid path="assets/img/blog/embodied-ai/02-max-entropy.svg" caption="上：对于双峰的 $Q(s, a)$（虚线），三种温度下的最大熵策略 $\pi \propto e^{Q/\alpha}$ 及其微分熵 $\mathcal{H}$。$\alpha$ 小时策略只押最好的那个峰；$\alpha$ 较大时在次优解上也保留概率，探索更多。下：20 万个高斯样本经 $\tanh(u)$ 后的直方图与解析密度 $\mathcal{N}(u;\mu,\sigma)/(1-\tanh^2u)$ 吻合，这正是 SAC 在 $\log\pi$ 上加的修正。宽的高斯会把概率堆到动作边界 $\pm 1$ 附近。" %}
 
 ## 4. 奖励设计
 
@@ -308,6 +338,10 @@ class RandomizedPointReach(PointReach):
 把 `PointReach(n=64)` 换成 `RandomizedPointReach(n=64)`，同样的 PPO 循环就能学到一个对所有这些"机器人"都有效的单一策略。
 （为简洁起见，参数在每次 `reset()` 时采样一次；完整实现会在每个环境自动重置时重新采样。）代价是保守性：范围越宽，策略越
 稳健，但也越不最优。
+
+在这里它有帮助吗？下图用上面的 PPO 代码分别训练两个版本，并在一整张物理参数网格上评估它们：
+
+{% include blog_figure.liquid path="assets/img/blog/embodied-ai/02-domain-randomization.svg" localized="true" caption="在玩具任务上用真实训练运行演示域随机化。上：每个并行环境从方框中取自己的阻尼和执行器增益；真实机器人的参数未知，但应落在方框内。下：确定性策略在一组物理参数网格上的每步平均奖励（每个点 256 个随机起点，50 步）。方框内两张图几乎一样：标称点处为 $-0.132$ 对 $-0.135$，星号处为 $-0.180$ 对 $-0.185$，方框内最差情况为 $-0.233$ 对 $-0.235$。这个玩具任务的最优控制几乎不依赖参数，所以标称策略本身就已经很鲁棒；奖励只在方框外的低增益区域崩溃，在那里被截断的动作太弱，任何策略都无能为力。这张图值得养成的习惯是：在整个参数范围上评估策略，而不只是在标称点上。" %}
 
 ### 系统辨识与执行器模型
 

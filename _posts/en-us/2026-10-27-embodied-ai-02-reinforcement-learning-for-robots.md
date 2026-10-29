@@ -58,6 +58,10 @@ For a robot the modelling choices are as important as the algorithm:
 | Reward | track commanded velocity, penalize torque, joint acceleration, action rate, foot slip, base orientation |
 | Episode | 20 s, terminate on falls (base contact), randomized start state and terrain |
 
+Put together, one step of a legged-robot RL system looks like the loop in the figure: the policy runs slowly, a PD loop turns its targets into torques quickly, and batches of trajectories from many parallel environments feed the PPO update.
+
+{% include blog_figure.liquid path="assets/img/blog/embodied-ai/02-rl-loop.svg" localized="true" caption="The RL loop as it is usually built for robots. The policy outputs joint position targets $q^{\mathrm{des}}$ at about 50 Hz; a PD controller converts them to torques at 200 Hz to 1 kHz; the robot or simulator returns the next observation and reward; collected trajectories drive the PPO update of $\theta$." %}
+
 ### Value functions and the Bellman equations
 
 The state value and action value of a policy are
@@ -79,6 +83,12 @@ $$Q^{\ast}(s,a) = r + \gamma\,\mathbb{E}_{s'}[\max_{a'} Q^{\ast}(s',a')]$$. Q-le
 latter, but the $\max$ over a continuous, high-dimensional action space is awkward, which is why robotics mostly uses
 **policy-gradient** and **actor-critic** methods.
 
+For a small, known MDP the Bellman optimality equation can be solved directly by **value iteration**, $V_{k+1}(s) = \max_a \sum_{s'} P(s'\mid s,a)\,[r + \gamma V_k(s')]$. The figure and the widget below show how value spreads backwards from the reward, one sweep at a time.
+
+{% include blog_figure.liquid path="assets/img/blog/embodied-ai/02-value-iteration.svg" caption="Value iteration on a 6 x 5 gridworld with $\gamma = 0.9$: entering the blue cell gives $+1$, the red cell $-1$, black cells are walls, and each move succeeds with probability 0.8 and slips sideways with probability 0.1 each way. Numbers are $V_k(s)$, arrows the greedy policy. After one sweep only the cell next to the goal knows about it; at convergence every cell has a value, and the policy next to the $-1$ cell points away from it (bottom-right corner) because of the slip risk." %}
+
+{% include widget.liquid name="embodied-ai-gridworld" height="420" caption="Interactive: press Step to apply one Bellman backup to every cell, or Run to iterate until $\max\lvert\Delta V\rvert < 10^{-4}$. Click cells to add or remove walls, and change $\gamma$ or the slip probability to see how far value propagates and how cautious the greedy policy becomes." %}
+
 ## 2. Policy gradients
 
 ### The policy gradient theorem
@@ -97,6 +107,10 @@ the gradient raises the log-probability of actions that turned out better than e
 For continuous control the policy is usually a diagonal Gaussian $\pi_\theta(a\mid s) = \mathcal{N}(\mu_\theta(s), \mathrm{diag}(\sigma^2))$
 with a state-independent, learned $\log\sigma$.
 
+A one-step problem (a bandit) makes the update visible. Samples with positive advantage pull the mean of the Gaussian toward them, samples with negative advantage push it away, and repeated steps also shrink $\sigma$ once the policy has found the optimum:
+
+{% include blog_figure.liquid path="assets/img/blog/embodied-ai/02-policy-gradient.svg" caption="REINFORCE with a mean baseline on a 1-D bandit with reward $r(a) = -(a-1.5)^2$ and policy $\mathcal{N}(\mu, \sigma^2)$, starting from $\mathcal{N}(0, 1)$. Top: the 64 samples of the first iteration; green stems have $\hat A > 0$, red stems $\hat A < 0$, and the arrow is the resulting step of $\mu$. Bottom: the policy after 0 to 59 updates (64 samples each, learning rate 0.1) moves to $a^\ast = 1.5$ and narrows." %}
+
 ### Generalized advantage estimation
 
 With a learned critic $V_\phi$ define the TD residual $\delta_t = r_t + \gamma V_\phi(s_{t+1}) - V_\phi(s_t)$.
@@ -109,6 +123,10 @@ $$
 $\lambda = 0$ gives the low-variance, biased one-step TD advantage; $\lambda = 1$ gives the unbiased, high-variance
 Monte-Carlo advantage. $\lambda \approx 0.95$ is the usual compromise. The critic is regressed to the
 targets $\hat R_t = \hat A_t + V_\phi(s_t)$.
+
+The top panel shows how $\lambda$ sets the horizon over which TD residuals are averaged. The bottom panel measures the resulting trade-off on a toy chain whose critic is deliberately wrong:
+
+{% include blog_figure.liquid path="assets/img/blog/embodied-ai/02-gae.svg" caption="Top: the weight $(\gamma\lambda)^l$ that GAE gives to the TD residual $l$ steps ahead ($\gamma = 0.99$). Bottom: Monte-Carlo estimate (4,000 episodes) of the error of $\hat A_0$ on a 300-step chain with noisy rewards and a critic that is off by $2 + 4\sin(0.15t)$. Bias is measured against the $\lambda = 1$ target $G_0 - V_\phi(s_0)$. Small $\lambda$ trusts the wrong critic (bias); large $\lambda$ sums many noisy rewards (variance grows by two orders of magnitude). The dotted line marks the usual $\lambda = 0.95$." %}
 
 ### Trust regions and PPO
 
@@ -133,6 +151,10 @@ $$
 PPO is on-policy and sample-inefficient, but it is simple, stable and embarrassingly parallel. With thousands of
 simulated robots on one GPU, sample efficiency matters much less than wall-clock time, which is why PPO is the
 default in Isaac Lab, legged_gym and most locomotion papers.
+
+Plotting $L^{\text{CLIP}}$ for a single sample shows the pessimism of the $\min$: the objective is flat, and its gradient zero, exactly where moving further would look good.
+
+{% include blog_figure.liquid path="assets/img/blog/embodied-ai/02-ppo-clip.svg" caption="The PPO objective for one sample as a function of the probability ratio, $\epsilon = 0.2$. Left, $\hat A > 0$: raising the probability helps until $\rho = 1.2$, after which the clipped term caps the objective (shaded, zero gradient). Right, $\hat A < 0$: lowering the probability helps until $\rho = 0.8$. In the opposite directions the unclipped term is the smaller one, so a step that made things worse is still fully penalized." %}
 
 ### A compact PPO in PyTorch
 
@@ -248,6 +270,10 @@ origin and stay there). Details that matter in practice and are easy to get wron
 - **Action scaling.** The network output is clamped to $[-1, 1]$ here; on a robot it is usually scaled and added to a
   nominal joint configuration, $q^{\text{des}} = q_0 + k_a a_t$.
 
+Running the script above unchanged produces the learning curve in the figure, together with the behaviour of the trained policy:
+
+{% include blog_figure.liquid path="assets/img/blog/embodied-ai/02-ppo-training.svg" caption="Top: mean reward per step during training, from real runs of the code above on one CPU core. The purple curve is the post's run (seed 0): $-0.889$ at iteration 0, about $-0.16$ after 50 iterations and $-0.108$ at the end, matching the printed output. Also shown: the same run with $\lambda = 0$ and $\lambda = 1$ in `gae`, and training on `RandomizedPointReach`. Bottom: the trained policy (mean action) from 12 start points on a circle of radius 0.9; all point masses reach the origin within about 20 steps." %}
+
 ## 3. Soft Actor-Critic
 
 PPO throws away data after each update. **Off-policy** methods keep a replay buffer and are far more sample-efficient,
@@ -283,6 +309,10 @@ demonstrated learning to walk directly on a real Minitaur quadruped in about two
 | Parallel simulation | scales very well | needs care (update-to-data ratio) |
 | Typical use | sim-to-real locomotion, massively parallel sim | real-world RL, manipulation, fine-tuning |
 | Exploration | Gaussian noise + optional entropy bonus | maximum entropy, automatic temperature |
+
+Two pictures help with SAC. The entropy bonus turns the greedy $\arg\max_a Q$ into a Boltzmann distribution $\pi \propto \exp(Q/\alpha)$ (the optimal policy of the maximum-entropy objective in a one-step problem), and the tanh squashing needs the density correction given above:
+
+{% include blog_figure.liquid path="assets/img/blog/embodied-ai/02-max-entropy.svg" caption="Top: for a bimodal $Q(s, a)$ (dashed), the maximum-entropy policy $\pi \propto e^{Q/\alpha}$ for three temperatures, with its differential entropy $\mathcal{H}$. A small $\alpha$ commits to the best mode; a larger $\alpha$ keeps probability on the second-best solution and explores more. Bottom: histograms of $\tanh(u)$ for 200,000 Gaussian samples agree with the analytic density $\mathcal{N}(u;\mu,\sigma)/(1-\tanh^2u)$, the correction SAC adds to $\log\pi$. Wide Gaussians pile up mass near the action limits $\pm 1$." %}
 
 ## 4. Reward design
 
@@ -331,6 +361,10 @@ Replace `PointReach(n=64)` by `RandomizedPointReach(n=64)` and the same PPO loop
 across all of these "robots". (For brevity the parameters are sampled once per `reset()`; a full implementation
 resamples them for each environment when it auto-resets.) The trade-off is conservatism: the wider the ranges, the
 more robust and the less optimal the policy.
+
+Does it help here? The figure trains both versions with the PPO code above and evaluates them over a whole grid of physics parameters:
+
+{% include blog_figure.liquid path="assets/img/blog/embodied-ai/02-domain-randomization.svg" localized="true" caption="Domain randomization on the toy task, with real training runs. Top: every parallel environment gets its own damping and actuator gain from the box; the real robot is unknown, but should lie inside it. Bottom: mean reward per step of the deterministic policy evaluated over a grid of physics parameters (256 random starts each, 50 steps). Inside the box the two maps are almost identical: at the nominal point $-0.132$ versus $-0.135$, at the star $-0.180$ versus $-0.185$, and the worst case in the box $-0.233$ versus $-0.235$. This toy controller barely depends on the parameters, so the nominal policy is already robust; reward collapses only at low gain, outside the box, where the clamped action is too weak for any policy. The useful habit the figure shows is to evaluate a policy over the whole parameter range, not only at the nominal point." %}
 
 ### System identification and actuator models
 

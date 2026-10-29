@@ -68,6 +68,10 @@ The $G_k$ are exactly the forward-kinematics chain of post 1: a human body model
 **AMASS** (Mahmood et al. ICCV 2019) unified many mocap datasets into SMPL parameters; it is the standard source of human
 motion for training humanoid controllers.
 
+Linear blend skinning is easy to see on a 2-D strip with two bones:
+
+{% include blog_figure.liquid path="assets/img/blog/embodied-ai/06-lbs.svg" caption="Linear blend skinning computed for a strip of vertices with two bones. Left: rest pose, coloured by the weight $w_{i2}$ of the second bone (blue 0, red 1), which ramps smoothly across the joint. Middle: bending the joint by 100° with each vertex attached rigidly to its nearest bone tears the surface open on the outside and makes it overlap on the inside. Right: blending the two rigid transforms with the weights gives a continuous surface, but the inside of the elbow collapses, the 2-D cousin of the candy-wrapper artefact that SMPL's pose-corrective blend shapes compensate." %}
+
 ### Retargeting human motion to robots
 
 Human and robot bodies differ in link lengths, joint limits and degrees of freedom, so motion has to be **retargeted**.
@@ -85,6 +89,12 @@ Whole-body retargeting for humanoids adds balance: H2O and OmniH2O (He et al. 20
 filter infeasible ones, and train an RL tracking policy in simulation; **HumanPlus** (Fu et al. CoRL 2024) trained such a
 "shadowing" policy on about 40 hours of human motion data and then let a humanoid copy a person's body and hand motion
 in real time from a single RGB camera, using the shadowing data for imitation learning.
+
+Two small experiments show both halves of this paragraph: keypoint retargeting of an arm, and why relative fingertip vectors matter for a pinch.
+
+{% include blog_figure.liquid path="assets/img/blog/embodied-ai/06-retargeting.svg" caption="Retargeting a synthetic human arm motion (upper arm 0.30 m, forearm 0.25 m, hand 0.15 m, 2 mm tracking noise) to the planar 3-link arm of post 1 with the objective above ($s = 2.3/0.70$, $\lambda_1 = 0.3$, Gauss-Newton per frame). Dashed lines and rings: the scaled human at four frames; solid: the robot. Matching only the hand (left) reproduces the hand path but lets the robot's elbow wander up to 0.2 units from the human's around frame 60; matching elbow, wrist and hand (right) keeps the whole pose similar at the price of a slightly larger hand error (bottom)." %}
+
+{% include blog_figure.liquid path="assets/img/blog/embodied-ai/06-hand-retargeting.svg" caption="Fingertip retargeting for a pinch, solved with bounded least squares (joint limits 0 to 1.6 rad). Left: a planar human index finger (purple) and thumb (orange) whose tips touch. Middle: a robot gripper with a wider palm and different finger lengths, fitted to the scaled human keypoints (fingertips plus middle joints); the crosses are the scaled human fingertips. The compromise leaves the tips 32 mm apart, so the grasp fails. Right: weighting the tip-to-tip vector instead closes the pinch to 1 mm, although the finger shapes differ more from the human's." %}
 
 ## 2. Egocentric data: learning from how people see and act
 
@@ -115,6 +125,10 @@ How robots use it:
 The **embodiment gap** remains the central challenge: human hands are not grippers, and human videos show the human,
 not the robot. Masking or inpainting the hand, retargeting to robot kinematics, and matching camera viewpoints (head
 camera ≈ robot head camera, wrist camera ≈ UMI) are the main tricks.
+
+The viewpoint argument is geometric. Projecting the same tabletop into a head-mounted and a wrist-mounted pinhole camera shows how different the two observations are:
+
+{% include blog_figure.liquid path="assets/img/blog/embodied-ai/06-egocentric.svg" localized="true" caption="Top: a table with three objects, a head camera at 1.55 m looking down at the workspace, and a wrist camera 20 cm above the objects (frusta drawn to scale, z up). Bottom: the images each camera sees, computed with the same pinhole model (focal length 300 px, 640 x 480). The head view shows the whole scene small and in context, like Ego4D or Aria footage; the wrist view shows a few objects large and close, like UMI or a robot wrist camera. A policy trained on one view does not see the other, which is why matching camera placement between human and robot data matters." %}
 
 ## 3. VR and AR teleoperation for data collection
 
@@ -246,6 +260,12 @@ The deviation while moving (about 7 mm, including the noise the raw signal still
 trades for smoothness; `beta` sets that trade-off, and tuning it with real users is an HCI experiment in itself.
 The resulting target poses go to the IK or impedance controller of post 1.
 
+Both effects, the frame change and the filtering, are easier to judge in pictures of the same run:
+
+{% include blog_figure.liquid path="assets/img/blog/embodied-ai/06-teleop-frames.svg" caption="The calibration used in the code, drawn in the robot frame (right-handed, z up). The headset tracking frame $\lbrace h\rbrace$ sits at $(0.5, 0, -0.8)$ and is rotated 90° about $z$, so its $x$ axis (red) points along the robot's $y$ axis (green). A 20 cm hand motion along $x_h$ (orange) therefore becomes, after 2:1 scaling, a 10 cm motion of the end-effector target along $y_r$ (purple)." %}
+
+{% include blog_figure.liquid path="assets/img/blog/embodied-ai/06-one-euro.svg" caption="The same run plotted over time. Top: the end-effector target along $y_r$ from the raw (grey) and 1€-filtered (purple) hand positions; the inset zooms into the first second, where the filter cuts the jitter from 1.61 mm to 0.42 mm. During the motion (shaded) the filtered target trails the raw one by up to 6.9 mm. Bottom: the filter's cutoff frequency, which rises from about 1 Hz at rest to about 5 Hz while the hand moves; this speed-dependent cutoff is the whole idea of the 1€ filter." %}
+
 ### Human factors
 
 XR teleoperation is a human-factors problem as much as a robotics one:
@@ -327,6 +347,10 @@ This intersection is young and wide open. Directions that combine embodied AI, w
    comfort when people share space with learned robots.
 8. **Characters and robots.** Physics-based character animation (DeepMimic, adversarial motion priors) and humanoid
    control now share methods and data; avatars in VR and humanoids in the real world can be driven by the same motion models.
+
+As a map, the eight directions above all start from embodied AI and differ in which other fields they pull in:
+
+{% include blog_figure.liquid path="assets/img/blog/embodied-ai/06-research-map.svg" localized="true" caption="The research opportunities of this section and the fields each one combines, as described in the list above (filled circles). Most of them need at least three communities, which is what makes the intersection both hard and promising." %}
 
 ## Try it
 
