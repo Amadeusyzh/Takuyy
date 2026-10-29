@@ -70,12 +70,22 @@ $$
 
 If we *know* $P$ and $R$, we can solve this by dynamic programming (value iteration). Real agents usually do not know them. When the agent only receives observations $o_t$ that do not reveal the full state (a camera image, say), we have a **partially observable MDP** (POMDP); the agent then needs a *belief* or a learned latent state that summarizes the history $o_{\le t}, a_{\lt t}$. This is exactly the role of the recurrent latent state in PlaNet and Dreamer below.
 
+The figure below puts the two halves of this setting side by side: the interaction loop that produces experience, and a tiny MDP drawn as a graph.
+
+{% include blog_figure.liquid path="assets/img/blog/world-models/01-mdp-loop.svg" localized="true" caption="Left: the agent-environment loop; the agent sends an action $a_t$, the environment returns the next state and a reward. Right: a three-state MDP. Orange dots are actions, grey arrows are transitions labelled with $P(s'\mid s,a)$ and the reward. A model-based agent tries to learn exactly these arrows and numbers." %}
+
 ### 2.2 Model-free vs. model-based
 
 - **Model-free RL** (Q-learning, PPO, SAC) learns a value function or policy directly from real transitions.
 - **Model-based RL** additionally learns $\hat P_\theta, \hat R_\theta$ and uses them to plan (search over action sequences) or to generate extra training data.
 
 The promise of model-based RL is **sample efficiency**: a transition observed once can be "replayed" through the model many times, and the model can generalize to states never visited. The classic danger is **compounding model error**: a one-step error $\epsilon$ grows over a rollout of length $H$, and a policy optimized against the model will actively seek out states where the model is wrong and optimistic (model exploitation). Nearly every design decision in the methods below is a defense against these two problems.
+
+To see compounding error with real numbers, we trained a small MLP $\hat P_\theta$ on only 300 random transitions of a damped pendulum (state $(\theta, \omega)$, torque $u$, time step 0.05 s) and rolled it out open-loop next to the true dynamics, as shown in the figure.
+
+{% include blog_figure.liquid path="assets/img/blog/world-models/01-model-error.svg" caption="Left: true (solid) and model (dashed) trajectories from three start states with zero torque. The one-step predictions are almost perfect, yet the rollouts slowly drift out of phase. Right: median state error over 500 random starts and random actions (log-log axes). The error grows roughly linearly with the horizon $k$ (dotted: $k$ times the one-step error), reaching about 100 times the one-step error after 100 steps." %}
+
+{% include widget.liquid name="world-models-latent-rollout" height="420" caption="Try it: drag the orange start state on the phase plane, change the horizon $H$ and the constant torque $u$. Solid black is the true pendulum, dashed purple the learned model; the right panel plots their distance at every step $k$. Start states with large $\omega$ (the pendulum spins over the top) are where the 300 training samples are sparse." %}
 
 ### 2.3 Dyna: learning, planning and reacting
 
@@ -84,6 +94,10 @@ Sutton's **Dyna** architecture (Sutton, "Dyna, an integrated architecture for le
 1. **Acting** in the real environment and doing a normal Q-learning update.
 2. **Model learning**: store the observed transition $(s, a) \to (r, s^\prime)$.
 3. **Planning**: $n$ times, sample a previously seen $(s, a)$, ask the model for $(r, s^\prime)$, and do the same Q-learning update on this *simulated* transition.
+
+The figure shows how the three steps share one value function: real experience updates $Q$ directly and also trains the model, and the model produces extra, simulated updates.
+
+{% include blog_figure.liquid path="assets/img/blog/world-models/01-dyna.svg" localized="true" width="85%" caption="Dyna: the blue arrow is ordinary model-free RL; the orange path (model learning, then planning) is what the world model adds. With $n$ planning updates per real step, every real transition is reused many times." %}
 
 Here is tabular Dyna-Q on a small gridworld with a wall. It runs in a second with NumPy:
 
@@ -144,6 +158,10 @@ for n in [0, 5, 50]:
 
 With `n_planning=0` (plain Q-learning) the agent needs many episodes to propagate the reward back to the start; with 50 planning steps per real step it finds a short path after only a few episodes. That is the whole promise of world models in miniature: **real data is expensive, imagined data is cheap**. Everything that follows replaces the lookup table `model` with a neural network that can generalize, and the tabular Q with neural actors and critics.
 
+We ran the script above with 20 random seeds; the figure shows the outcome.
+
+{% include blog_figure.liquid path="assets/img/blog/world-models/01-dyna-q.svg" caption="Output of the Dyna-Q script, averaged over 20 seeds. Right: steps per episode (log scale) for n_planning = 0, 5 and 50. With planning, the agent reaches its final level (the 10-step shortest path plus a few steps of ε-greedy exploration) within a few episodes instead of about 25. Left: learned values $\max_a Q(s,a)$ (darker = higher) and the greedy path after 50 episodes with n_planning = 50." %}
+
 ## 3. "World Models" (Ha & Schmidhuber, 2018)
 
 Ha and Schmidhuber's paper ([arXiv:1803.10122](https://arxiv.org/abs/1803.10122); the NeurIPS 2018 version is titled "Recurrent World Models Facilitate Policy Evolution") made the term popular and came with a memorable interactive article. The agent has three parts:
@@ -151,6 +169,10 @@ Ha and Schmidhuber's paper ([arXiv:1803.10122](https://arxiv.org/abs/1803.10122)
 - **V (vision)**: a VAE that compresses each 64x64 frame $o_t$ into a small latent $z_t$ (we derive the VAE in [post 2]({{ '/blog/2026/world-models-02-generative-modeling-foundations/' | relative_url }})).
 - **M (memory)**: an **MDN-RNN** that models $p(z_{t+1} \mid a_t, z_t, h_t)$ as a mixture of Gaussians, where $h_t$ is the LSTM hidden state.
 - **C (controller)**: a tiny linear policy $a_t = W_c [z_t; h_t] + b_c$, trained with the evolution strategy CMA-ES.
+
+The figure shows how information flows between the three parts at every time step.
+
+{% include blog_figure.liquid path="assets/img/blog/world-models/01-vmc.svg" localized="true" caption="Ha & Schmidhuber's agent: V compresses the frame into $z_t$, M (an MDN-RNN) carries the memory $h_t$ and predicts a distribution over the next latent given the action, and the tiny controller C maps $[z_t; h_t]$ to the action. V and M are trained without rewards; only C is optimized for return." %}
 
 Because almost all parameters live in V and M, which are trained without rewards, the controller is small enough for black-box optimization. On CarRacing the paper reports an average score of 906 $\pm$ 21 over 100 trials, and on VizDoom "Take Cover" it trains the controller **entirely inside the dream** generated by M and transfers it back to the real game. Two lessons from that paper recur in all later work:
 
@@ -188,6 +210,10 @@ flowchart LR
     z1 --> dec
 ```
 
+Unrolled over time, the same model looks like the figure below: the left half is what happens while filtering real data, the right half during imagination.
+
+{% include blog_figure.liquid path="assets/img/blog/world-models/01-rssm.svg" localized="true" caption="The RSSM unrolled over four steps. Grey squares are the deterministic GRU state $h_t$, circles the stochastic state. While filtering (left), the posterior combines $h_t$ with the observation $o_t$ (purple); in imagination (right) there are no observations and $\hat z_t$ is sampled from the prior (dashed orange). The thick horizontal arrows are the deterministic path that carries memory over many steps." %}
+
 ### 4.2 The training objective
 
 The RSSM is a sequential VAE. Applying Jensen's inequality to the log-likelihood of the observed sequence, with the posterior as the variational distribution, gives the evidence lower bound (ELBO)
@@ -208,6 +234,10 @@ The KL term is the important one: it trains the transition prior to predict, fro
 
 PlaNet has no policy network. At every real step it runs the **cross-entropy method** (CEM) in latent space: sample $J$ action sequences of length $H$ from a diagonal Gaussian, roll each out with the prior, score them by the sum of predicted rewards, refit the Gaussian to the top $K$, repeat a few times, and execute the first action of the mean. This is *model-predictive control* (MPC). It works, but searching at every step is expensive, and the planning horizon limits how far ahead rewards can be seen.
 
+The figure runs CEM on a toy problem in which the action sequence has only two numbers, so that the whole search space can be drawn.
+
+{% include blog_figure.liquid path="assets/img/blog/world-models/01-cem.svg" caption="CEM on a toy predicted-return landscape (purple shading) over a length-2 action sequence $(a_1, a_2)$ with $J = 64$ samples and $K = 8$ elites. Grey: samples; orange: elites; ellipse: the sampling Gaussian (2 standard deviations); cross: its mean. In four iterations the Gaussian shrinks onto the higher peak and ignores the smaller one at the upper left." %}
+
 ## 5. Dreamer: learning behaviors by latent imagination
 
 ### 5.1 DreamerV1
@@ -218,12 +248,20 @@ PlaNet has no policy network. At every real step it runs the **cross-entropy met
 2. **World-model learning**: sample sequences and train the RSSM with the ELBO above.
 3. **Behavior learning in imagination**: take posterior states from the batch as starting points, roll out the *prior* for $H = 15$ steps using the actor's actions, predict rewards, and update the actor and the critic.
 
+The figure illustrates phase 3, using the pendulum model from Section 2.2 as the world model.
+
+{% include blog_figure.liquid path="assets/img/blog/world-models/01-imagination.svg" width="85%" caption="Imagination rollouts in (time, $\theta$, $\omega$). Black: one real trajectory. From four states along it (dots; in Dreamer these are posterior states), the learned model is rolled out for $H = 15$ steps with five different action sequences each. Actor and critic learn only from such short imagined branches, which always start from real situations." %}
+
 The critic $v_\psi(s_t)$ is trained toward **$\lambda$-returns**, which blend $n$-step returns of all lengths and so trade off bias (from the critic) against variance (from long model rollouts):
 
 $$
 V^\lambda_t = \hat r_t + \gamma \Big( (1-\lambda)\, v_\psi(s_{t+1}) + \lambda\, V^\lambda_{t+1} \Big),
 \qquad V^\lambda_H = v_\psi(s_H).
 $$
+
+Unrolling this recursion shows which $n$-step returns $V^\lambda$ actually averages:
+
+{% include blog_figure.liquid path="assets/img/blog/world-models/01-lambda-return.svg" caption="Weight of each $n$-step return $G^{(n)}$ (critic bootstrap after $n$ imagined steps) inside $V^\lambda_0$ for $H = 15$, computed from the recursion above. $\lambda = 0$ trusts the critic after one step, $\lambda = 1$ trusts the full 15-step model rollout. With Dreamer's $\lambda = 0.95$ every short return gets a few percent and the longest one gets $\lambda^{14} \approx 0.49$." %}
 
 The key trick is how the actor is trained. Because the world model, reward head and critic are all differentiable, Dreamer maximizes $\sum_t V^\lambda_t$ by **backpropagating analytic gradients through the learned dynamics** into the actor's reparameterized actions:
 
@@ -257,6 +295,10 @@ so that the prior learns quickly while the representation is not pulled toward a
 - **Return normalization** for the actor: advantages are divided by $\max(1, S)$, where $S$ is the range between the 5th and 95th percentile of returns, so the entropy bonus has a consistent meaning across reward scales.
 - **Unimix categoricals**: mixing 1% uniform probability into categorical distributions to avoid zero-probability spikes and infinite KL.
 
+The figure shows the first two tricks on concrete numbers.
+
+{% include blog_figure.liquid path="assets/img/blog/world-models/01-symlog.svg" caption="Left: symlog squashes targets of very different magnitude (0.01, 1, 1000) into a small range while staying close to the identity near zero. Right: two-hot encoding of the target 3.7 on DreamerV3's 255-bin grid (uniform in symlog space on $[-20, 20]$). The two neighbouring bins get weights 0.17 and 0.83, and their weighted position is exactly symlog(3.7)." %}
+
 Official code: [github.com/danijar/dreamerv3](https://github.com/danijar/dreamerv3).
 
 ## 6. MuZero: a model that only predicts what matters
@@ -270,6 +312,10 @@ s^0 = h_\theta(o_1, \dots, o_t), \qquad
 $$
 
 a representation, a dynamics function and a prediction (policy and value) function. The hidden state $s^k$ has no semantics imposed on it; it is trained only so that, after unrolling $K$ steps along the actions actually taken, the predicted rewards, values and policies match their targets:
+
+Unrolled along the actions actually taken, the three functions form the chain in the figure.
+
+{% include blog_figure.liquid path="assets/img/blog/world-models/01-muzero.svg" caption="MuZero's learned model: the representation $h_\theta$ maps past observations to $s^0$, the dynamics $g_\theta$ steps the hidden state with each action and predicts a reward $r^k$, and the prediction $f_\theta$ outputs a policy and a value at every hidden state. Nothing is decoded back into observations; the losses act only on rewards, values and policies." %}
 
 $$
 \mathcal{L}_t(\theta) = \sum_{k=0}^{K} \Big[\ell^r(u_{t+k}, r^k) + \ell^v(z_{t+k}, v^k) + \ell^p(\boldsymbol{\pi}_{t+k}, \mathbf{p}^k)\Big] + c\,\lVert\theta\rVert^2,
