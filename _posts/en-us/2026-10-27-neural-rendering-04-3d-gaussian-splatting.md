@@ -92,6 +92,10 @@ def covariance_3d(q, log_scale):
 
 The eigenvalues of `covariance_3d(q, np.log([0.3, 0.1, 0.02]))` are exactly $0.3^2, 0.1^2, 0.02^2$ for any $\mathbf q$, a quick unit test.
 
+The figure below builds such an ellipsoid step by step: the unit sphere is stretched by $S$ and then rotated by $R(\mathbf q)$. The coloured arrows are the columns of $RS$, i.e. the principal axes scaled by their standard deviations.
+
+{% include blog_figure.liquid path="assets/img/blog/neural-rendering/04-ellipsoid.svg" caption="The 1σ surface of a 3D Gaussian is the image of the unit sphere under $RS$. Left: the unit sphere and the basis vectors. Middle: $S$ stretches the axes to the standard deviations (0.9, 0.5, 0.25). Right: $R(\mathbf q)$ rotates them. The eigenvalues printed below are exactly the squared scales, whatever the quaternion." %}
+
 ### 1.2 View-dependent colour with spherical harmonics
 
 Colour is a function on the sphere of directions, expanded in real **spherical harmonics** up to degree 3:
@@ -103,6 +107,10 @@ $$
 $$
 
 i.e. $(3+1)^2 = 16$ coefficients per colour channel. Degree 0 is a constant ($Y_{00} = \tfrac{1}{2\sqrt\pi} \approx 0.2821$), the "diffuse" colour; degrees 1–3 add increasingly sharp view-dependent variation such as highlights. Note that the direction is per Gaussian (from the camera centre to the Gaussian's mean), not per pixel. The constants below are those of the reference implementation (inherited from Plenoxels and PlenOctrees):
+
+The figure shows the 16 basis functions in exactly the order and sign convention of `sh_basis` below.
+
+{% include blog_figure.liquid path="assets/img/blog/neural-rendering/04-sh-basis.svg" caption="The 16 real SH basis functions of `sh_basis`, painted on the sphere of directions (red positive, blue negative, each scaled to its own maximum; $z$ up, same viewpoint in every panel). $k$ is the index in the coefficient array: row $\ell$ holds $2\ell+1$ functions, and higher degrees oscillate faster, so they can represent sharper view-dependent effects." %}
 
 ```python
 C0 = 0.28209479177387814
@@ -136,6 +144,10 @@ def sh_to_rgb(sh, d, degree=3):
 
 A good self-check: draw many random unit vectors and verify that $\frac{4\pi}{M}\sum_m B(\mathbf d_m)^\top B(\mathbf d_m) \approx I_{16}$ (orthonormality). The `ply` files written by 3DGS store the degree-0 coefficients as `f_dc_0..2` and the remaining 45 as `f_rest_0..44`, channel-major. To convert an RGB colour to a DC coefficient, use $k_{00} = (c - 0.5)/C_0$.
 
+To see what each degree buys, the next figure fits SH of increasing degree (by least squares) to a colour with a sharp highlight, and evaluates `sh_to_rgb` for cameras placed around the Gaussian.
+
+{% include blog_figure.liquid path="assets/img/blog/neural-rendering/04-sh-view.svg" caption="View-dependent colour of one Gaussian. Left: cameras on a circle around it, seen from above (the $y$ axis points into the page); each dot is the colour that camera sees with degree-3 SH, and grey arrows are view directions $\mathbf d$. Right: the target colour (top row) and least-squares SH fits of degree 0, 1 and 3, as a function of the camera azimuth φ. Degree 0 is one diffuse colour, degree 1 can only tilt it, and degree 3 starts to localize the highlight near φ ≈ 60°, though it is still blurrier than the target." %}
+
 ## 2. Projection: EWA splatting
 
 To rasterize, each 3D Gaussian must become a 2D Gaussian on the image. If the camera map were affine, this would be exact: an affine image of a Gaussian is a Gaussian. Perspective projection is not affine, so 3DGS follows **EWA splatting** (Zwicker, Pfister, van Baar & Gross, IEEE TVCG 2002) and linearizes the projection around the Gaussian's mean.
@@ -158,6 +170,10 @@ $$
 
 with the 2D mean $\boldsymbol\mu' = \phi(\mathbf t)$. (The paper writes this with a $3\times3$ Jacobian and then drops the third row and column; the $2\times3$ form is equivalent.) The approximation is excellent for small Gaussians and degrades for Gaussians that are large relative to their distance, which causes some of the artefacts that later work addresses with ray-tracing or exact projections.
 
+The figure below checks this linearization on a concrete Gaussian with `project_gaussian` from section 2.2 (with `dilation=0`).
+
+{% include blog_figure.liquid path="assets/img/blog/neural-rendering/04-ewa.svg" caption="EWA projection, computed. Left: an OpenCV camera at the origin ($x$ right, $y$ down, $z$ forward), its image plane drawn at depth 1, and a Gaussian at depth 3 (1σ wireframe and samples). The cone of rays through the projected 1σ ellipse (orange) wraps around the ellipsoid. Right: 20,000 samples of the Gaussian projected exactly with the pinhole model (dots), and the 1σ, 2σ and 3σ ellipses of $\Sigma^{\prime} = JW\Sigma W^\top J^\top$ (orange). The dashed ellipse is the 3σ contour of the empirical covariance of the projected samples; the two agree within a few percent, and the remaining gap is the linearization error for a Gaussian this large relative to its depth." %}
+
 ### 2.1 The 0.3 low-pass filter
 
 Before use, 3DGS adds a small isotropic term:
@@ -167,6 +183,10 @@ $$
 $$
 
 In EWA splatting, the screen-space footprint is convolved with a pixel reconstruction/low-pass filter so that a splat is never smaller than about a pixel, which avoids aliasing and holes when a Gaussian projects to a sub-pixel size. Adding $0.3 I$ is exactly that convolution with a Gaussian of variance 0.3 pixels². It is also a source of trouble: the dilation is in pixels, so a Gaussian that is optimized at one resolution looks too thin or too fat when rendered at another, the main observation behind Mip-Splatting (post 5).
+
+The figure below shows both sides of the dilation numerically, using `screen_extent` and `gaussian_alpha` from the next section.
+
+{% include blog_figure.liquid path="assets/img/blog/neural-rendering/04-lowpass.svg" localized="true" caption="Left: a Gaussian with σ = 0.25 px is sampled at pixel centres while its mean slides by sub-pixel amounts. Without the dilation the total alpha it deposits on the pixel grid flickers between under 0.1 and about 0.7, so a moving splat blinks (aliasing); with $\Sigma^{\prime} + 0.3I$ it stays constant. Right: the price. A Gaussian optimized at one resolution is drawn with footprint $\sqrt{s^2\sigma^2 + 0.3}$ at $s$ times that resolution, whereas the correct footprint is $s\sqrt{\sigma^2 + 0.3}$: small Gaussians become too thin when you zoom in and too fat when you zoom out." %}
 
 ### 2.2 Code: projection and per-pixel alpha
 
@@ -206,6 +226,10 @@ def gaussian_alpha(pix, mean2d, conic, opacity):
 
 You can validate `project_gaussian` numerically: sample many points from $\mathcal N(\boldsymbol\mu, \Sigma)$, project them exactly with the pinhole model, and compare the empirical covariance of the 2D points to `cov2d` (with `dilation=0`). For a small Gaussian at depth 5 they agree to about three digits. The clamping of $t_x/t_z$ to $1.3\times$ the half field of view mirrors the reference CUDA code and prevents the Jacobian from exploding for Gaussians far outside the image.
 
+The widget below runs exactly this projection (the same Jacobian with the 1.3× clamp and the same $0.3I$) for a Gaussian that you can rotate and scale, seen by a camera that you can orbit.
+
+{% include widget.liquid name="neural-rendering-splat" height="480" caption="Drag the image to orbit the camera around the Gaussian, and drag the 3D view to turn it. The sliders set the three scales and the rotation (yaw, pitch and roll are combined into a quaternion and turned into $R$ with the formula of section 1.1). The readout shows the resulting $\Sigma^{\prime}$, the Jacobian $J$ and the 3σ radius; the orange ellipse is the 3σ contour and the dashed square is the box that decides which 16 × 16 tiles the splat touches (section 3.2). Make one scale tiny, look at the Gaussian edge-on, and switch off the low-pass: the splat collapses to a line thinner than a pixel." %}
+
 ## 3. Rasterization
 
 ### 3.1 Alpha blending
@@ -226,6 +250,10 @@ The formula is identical; what changed is where the samples come from. NeRF samp
 
 The reference rasterizer adds three numerical rules: $\alpha$ is clamped to at most 0.99; contributions with $\alpha < 1/255$ are skipped; and a pixel stops once $T$ would drop below $10^{-4}$ (**early termination**).
 
+The figure computes this for three overlapping splats.
+
+{% include blog_figure.liquid path="assets/img/blog/neural-rendering/04-blending.svg" caption="Front-to-back blending of three splats, computed with `gaussian_alpha` and the clamps above on a white background. Top: the composited image; the labels give each splat's depth, so $i$ is also its blending order. Bottom: along the dashed row, the weights $\alpha T$ of the three splats stacked on top of each other, plus the transmittance left over at the end, which lets the background through. At every pixel they sum to exactly 1, and where the green splat is in front it takes its share first and shrinks what the red and blue ones can contribute." %}
+
 ### 3.2 Tile-based sorting
 
 A naive implementation would sort Gaussians per pixel, which is prohibitively expensive. 3DGS uses a tile-based software rasterizer written in CUDA:
@@ -237,6 +265,10 @@ A naive implementation would sort Gaussians per pixel, which is prohibitively ex
 5. **Blend** (one thread block per tile, one thread per pixel): threads cooperatively load batches of Gaussians into shared memory, and each pixel walks the list front to back accumulating colour and $T$ until it saturates.
 
 Sorting per tile rather than per pixel is an approximation: within a tile, all pixels use the same depth order of Gaussian centres, which can cause "popping" when the order changes as the camera moves. Later work (e.g. StopThePop, Radl et al., SIGGRAPH 2024) sorts more accurately per pixel.
+
+The figure shows this bookkeeping for five projected Gaussians.
+
+{% include blog_figure.liquid path="assets/img/blog/neural-rendering/04-tiles.svg" caption="Tile assignment for five Gaussians projected with `project_gaussian` into a 128 × 80 image with 16 × 16 tiles. Solid ellipses are 3σ contours; each dashed square has half-width equal to the 3σ radius from `screen_extent` and decides which tiles (shaded) get an entry. The numbers in a tile are its list after the global sort, front to back (the depths are given at the top). The square is conservative: the elongated Gaussian 1 is listed in corner tiles it never reaches, and every pixel of a tile walks the same order, e.g. 1, 5, 2, 4." %}
 
 ### 3.3 Backward pass and gradients
 
@@ -369,6 +401,10 @@ On a single CPU thread this runs in about a minute and the training-view PSNR cl
 
 Random initialization inside a bounding box also works for synthetic scenes but is noticeably worse on real, unbounded captures; good SfM points matter, especially in the background.
 
+The figure shows the resulting initial scales for a toy point cloud.
+
+{% include blog_figure.liquid path="assets/img/blog/neural-rendering/04-init.svg" caption="Initialization from SfM points, in a 2D slice for clarity: every point becomes an isotropic Gaussian whose radius is the mean distance to its three nearest neighbours (colour, log scale). Densely matched structures (the elliptical object, the wall at the top) start with small Gaussians, while isolated background points start with huge ones that the optimizer has to shrink, split or prune." %}
+
 ## 6. Adaptive density control
 
 The initial points are too few and badly distributed. Every 100 iterations (after a 500-iteration warm-up and until iteration 15,000), 3DGS adapts the set of Gaussians using a simple signal: the magnitude of the gradient of the loss with respect to each Gaussian's **2D projected mean**, averaged over the views in which it was visible. A large view-space positional gradient means the optimizer is trying hard to move the Gaussian, which happens in regions that are not yet well reconstructed. For Gaussians whose average exceeds $\tau_{\text{pos}} = 0.0002$:
@@ -379,6 +415,10 @@ The initial points are too few and badly distributed. Every 100 iterations (afte
 At the same steps, **prune** Gaussians with opacity below $\epsilon_\alpha = 0.005$, and (after the first opacity reset) those that are very large in world space or in screen space.
 
 Every 3000 iterations, the **opacity reset** sets all opacities to at most 0.01. Floaters close to the cameras tend to be kept alive by densification; after the reset, Gaussians that are genuinely needed quickly regain opacity, while the others stay transparent and are pruned. The scene "extent" used in these thresholds is computed from the radius of the camera centres.
+
+The next three figures come from a real, if tiny, run of these rules (in `bin/figures/neural-rendering/neural-rendering_04.py`): 2D Gaussians fitted with NumPy to a 64 × 64 image with an L1 loss, Adam and analytic gradients that use the blending derivatives of section 3.3, densified every 100 iterations from iteration 200 to 900, with one opacity reset at iteration 700. The thresholds are scaled to the toy: clone when the largest scale is at most 2 px, and a gradient threshold of $6\times10^{-5}$ for this loss normalization.
+
+{% include blog_figure.liquid path="assets/img/blog/neural-rendering/04-adc-events.svg" localized="true" caption="Single densification steps of the toy run. Left: Gaussians with a large average positional gradient that are still small are cloned (orange, drawn at 2σ). Middle: large ones with a large gradient are split (dashed: the removed parent; solid: the two children, sampled from the parent and shrunk by 1.6). Right: after the opacity reset, Gaussians whose opacity stayed below 0.005 are pruned (red crosses). Thin grey ellipses are Gaussians left untouched." %}
 
 A compact implementation operating on the parameter dictionary of section 3.4:
 
@@ -420,6 +460,12 @@ def reset_opacity(params, value=0.01):
 ```
 
 Two practical details: the view-space gradient is read from the 2D means after `loss.backward()` (in the official code by calling `retain_grad()` on a dummy tensor that holds the screen-space means), and after every densification the optimizer state (Adam moments) must be extended for new Gaussians and filtered for removed ones; the reference code does this by editing the optimizer's state tensors in place. The threshold-based densification is a heuristic, and several later works replace it, e.g. by treating Gaussians as MCMC samples (3DGS-MCMC, NeurIPS 2024) with a fixed budget.
+
+Over the whole toy run, Gaussians multiply where the image has detail, and quality follows:
+
+{% include blog_figure.liquid path="assets/img/blog/neural-rendering/04-adc-progress.svg" caption="The toy run from random initialization (40 isotropic Gaussians with opacity 0.1) to the end. Top: the rendered image and its PSNR. Bottom: the Gaussians themselves, each drawn as its 1σ ellipse filled with its colour and opacity. Densification concentrates many small Gaussians along the thin line and the ring, while flat regions keep a few large ones." %}
+
+{% include blog_figure.liquid path="assets/img/blog/neural-rendering/04-adc-curve.svg" localized="true" caption="PSNR (purple) and number of Gaussians (orange steps) during the toy run. Each dotted line is a densification step, after which the PSNR briefly dips while the new Gaussians settle. The opacity reset at iteration 700 makes the image almost transparent for a moment; Gaussians that are needed regain their opacity within a few dozen iterations, and the ones that do not are pruned at the next step." %}
 
 ## 7. The training recipe
 
