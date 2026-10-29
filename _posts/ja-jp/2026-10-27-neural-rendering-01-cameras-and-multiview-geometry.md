@@ -43,6 +43,12 @@ $$
 - $f_x, f_y$ はピクセル単位の焦点距離です。物理的な焦点距離 $F$ に対して $f_x = F / \text{pixel width}$ となります。水平画角（field of view）を $\theta_x$、画像幅を $W$ とすると、$f_x = \frac{W}{2\tan(\theta_x/2)}$ です。
 - $(c_x, c_y)$ は**主点（principal point）**で、光軸が画像を貫く位置です。通常は画像中心に近い値になります。
 
+下の図は 1 つの点についてこの写像をそのまま描いたものです。その次のウィジェットでは、$f$ や点を自分で動かせます。
+
+{% include blog_figure.liquid path="assets/img/blog/neural-rendering/01-pinhole.svg" caption="OpenCV カメラ座標系（右手系：$x$ が右、$y$ が下、$z$ が前）でのピンホールモデル。左：カメラ中心 $\mathbf C$ から $\mathbf X_c=(0.6,-0.3,2.5)$ へ向かう光線は、平面 $Z_c=1$ と $(x,y,1)=(0.24,-0.12,1)$ で交わります。この平面上では、画像は主点を中心とする幅 $W/f$、高さ $H/f$ の長方形です。右：1.4 節の $K$（$640\times480$、画角 60°、$f=554.3$）で同じ点をピクセルに変換すると $u=f_x X_c/Z_c+c_x=453.0$、$v=173.5$ になります。$v$ は下向きに増えることに注意してください。" %}
+
+{% include widget.liquid name="neural-rendering-camera" height="560" caption="インタラクティブなピンホールカメラ（OpenCV 座標系）。スライダーを動かすか画像内の点をドラッグして、$(u,v)$ が $u=f\,X_c/Z_c+c_x$、$v=f\,Y_c/Z_c+c_y$ に従って動く様子を確かめてください。焦点距離を長くすると $Z_c=1$ 上の画像の長方形が小さくなり（画角が狭くなり）、すべての投影点が主点から遠ざかります。一方、点を自分の光線に沿って動かしても（$X_c/Z_c$ を保ったまま $Z_c$ だけを変えても）ピクセル位置はまったく変わりません。" %}
+
 ### 1.2 外部パラメータ、カメラ中心、座標系の規約
 
 $[R \mid \mathbf t]$ は**ワールドからカメラへ**の写像です：$\mathbf X_c = R\mathbf X_w + \mathbf t$。カメラ中心は原点に写される点であり、$\mathbf C = -R^\top \mathbf t$ です。多くのニューラルレンダリングのコードベースでは、代わりにその逆行列、すなわち**カメラからワールドへ（camera-to-world）**の行列
@@ -60,6 +66,8 @@ $$
 
 両者の変換は、$T_{c2w}$ の右から $\mathrm{diag}(1, -1, -1, 1)$ を掛けるだけです（カメラの $y$ 軸と $z$ 軸を反転）。COLMAP 自体は、画像ごとにワールドからカメラへのクォータニオン `QW QX QY QZ` と並進 `TX TY TZ` を保存しています。
 
+{% include blog_figure.liquid path="assets/img/blog/neural-rendering/01-extrinsics.svg" caption="左：1.4 節のコードが作る 2 台のカメラ（$\mathbf C_1=(0,-0.5,-4)$、$\mathbf C_2=(2,-0.8,-3.5)$、どちらも原点を向く）と 200 個のランダムな点を、ワールド座標系で描いたもの（ワールドの「上」は $-Y$）。各カメラの赤・緑・青の矢印は $R$ の 3 つの行、つまりカメラの $x$（右）、$y$（下）、$z$（前）軸をワールド座標で表したものです。右：同じ物理的カメラを OpenCV/COLMAP と OpenGL/Blender の規約で表したもの。$x$ は一致し、$y$ と $z$ が反転します。これがちょうど $\mathrm{diag}(1,-1,-1)$ による変換です。" %}
+
 ### 1.3 レンズ歪み
 
 実際のレンズは直線を曲げてしまいます。標準的な Brown–Conrady モデル（OpenCV や COLMAP の `OPENCV` カメラで使われています）は、内部パラメータを適用する前の正規化画像座標 $x = X_c/Z_c$、$y = Y_c/Z_c$ に作用します。$r^2 = x^2 + y^2$ として、
@@ -72,6 +80,8 @@ y_d &= y\,(1 + k_1 r^2 + k_2 r^4 + k_3 r^6) + p_1 (r^2 + 2y^2) + 2p_2 xy,
 $$
 
 その後 $u = f_x x_d + c_x$、$v = f_y y_d + c_y$ とします。$k_i$ の項は**放射方向（radial）**の歪み（$k_1<0$ で樽型、$k_1>0$ で糸巻き型）で、$p_1, p_2$ はレンズがセンサーと完全に平行でないことによる**接線方向（tangential）**の歪みです。魚眼レンズには別のモデルが必要です（COLMAP の `OPENCV_FISHEYE`。多項式補正付きの等距離射影です）。
+
+{% include blog_figure.liquid path="assets/img/blog/neural-rendering/01-distortion.svg" caption="1.4 節の `project` 関数で、Brown–Conrady モデルを $640\times480$ 画像の規則的なピクセル格子（灰色）に適用したもの。左：$k_1=-0.2$（樽型）は外側の格子線を中心へ引き寄せます。中：$k_1=+0.2$（糸巻き型）は外へ押し出します。右：接線方向の項 $p_1=p_2=0.02$ は格子を非対称に歪めます。主点（赤い十字）は動かず、ずれは主点からの距離 $r$ とともに大きくなります。" %}
 
 オリジナルの 3DGS ラスタライザは歪みのないピンホールカメラしかサポートしていません。そのため前処理スクリプトでは COLMAP の `image_undistorter` を実行し、`PINHOLE` 画像で学習します。この点はチュートリアル（第 6 回）で再び登場します。
 
@@ -87,7 +97,7 @@ import numpy as np
 def look_at(C, target, up=np.array([0.0, -1.0, 0.0])):
     """World-to-camera (R, t) in the OpenCV convention: x right, y down, z forward."""
     z = target - C; z /= np.linalg.norm(z)
-    x = np.cross(up, z); x /= np.linalg.norm(x)
+    x = np.cross(z, up); x /= np.linalg.norm(x)
     y = np.cross(z, x)
     R = np.stack([x, y, z])          # rows are the camera axes in world coordinates
     t = -R @ C
@@ -128,6 +138,8 @@ print("all in front:", (d1 > 0).all() and (d2 > 0).all())
 
 2 台のカメラが同じ 3D 点 $\mathbf X$ を観測し、それぞれピクセル $\mathbf x_1$ と $\mathbf x_2$ に写っているとします。2 つのカメラ中心と $\mathbf X$ は 1 つの平面、すなわち**エピポーラ平面（epipolar plane）**を張ります。この平面は各画像と直線で交わり、これが**エピポーラ線（epipolar line）**です。したがって $\mathbf x_1$ が与えられれば、対応点 $\mathbf x_2$ は画像 2 上の既知の直線上にあるはずです。2 つのカメラ中心を結ぶ直線（**ベースライン（baseline）**）が画像を貫く点を**エピポール（epipole）**と呼びます。
 
+{% include blog_figure.liquid path="assets/img/blog/neural-rendering/01-epipolar-3d.svg" caption="1.4 節の 2 台のカメラのエピポーラ幾何を実寸どおりに描いたもの。カメラ中心 $\mathbf C_1$、$\mathbf C_2$ と点 $\mathbf X$ がエピポーラ平面（黄色）を張り、2 つの中心を結ぶ黒い線分がベースラインです。この平面は各画像面と破線のエピポーラ線で交わり、その線はそれぞれ投影点 $\mathbf x_1$、$\mathbf x_2$ を通ります。このカメラ対はおもに横方向に動いているため、エピポールはどちらの画像からも遠く外れています（次の図）。" %}
+
 代数的には、相対姿勢を $\mathbf X_2 = R\,\mathbf X_1 + \mathbf t$（カメラ 1 の座標からカメラ 2 の座標へ）とし、$\hat{\mathbf x}_i = K_i^{-1}\tilde{\mathbf x}_i$ を正規化（キャリブレーション済み）同次座標とします。ベクトル $\hat{\mathbf x}_2$、$\mathbf t$、$R\hat{\mathbf x}_1$ は同一平面上にあるので、そのスカラー三重積は 0 になります。
 
 $$
@@ -148,6 +160,10 @@ $$
 
 ここで $F$ は**基礎行列（fundamental matrix）**です。$F\tilde{\mathbf x}_1$ は画像 2 におけるエピポーラ線、$F^\top \tilde{\mathbf x}_2$ は画像 1 における直線であり、エピポールは零空間ベクトル $F\mathbf e_1 = 0$、$F^\top \mathbf e_2 = 0$ です。
 
+次の図は、1.4 節のカメラについてこれらの直線を示したものです。
+
+{% include blog_figure.liquid path="assets/img/blog/neural-rendering/01-epipolar-images.svg" caption="ピクセル座標でのエピポーラ線。2 台のカメラの真の $F=K^{-\top}E\,K^{-1}$ から計算しています。強調した 3 点について、画像 2 の各色の直線は $F\tilde{\mathbf x}_1$ で、対応点を通ります。画像 1 の各直線は $F^\top\tilde{\mathbf x}_2$ です。1 枚の画像のエピポーラ線はすべてエピポール（黒い四角）で交わります。エピポールは $F$ または $F^\top$ の零ベクトルであり、もう一方のカメラ中心の投影です。ここでは $\mathbf e_1\approx(2735,-194)$、$\mathbf e_2\approx(-1495,410)$ で、$640\times480$ の画像枠（紫）から遠く離れています。" %}
+
 役に立つ事実：
 
 - $F$ はランク 2 で、自由度は 7 です（9 個の要素から、スケールと $\det F = 0$ の分を引いたもの）。
@@ -164,6 +180,8 @@ $$
 なので、$N \ge 8$ 組の対応点を積み重ねると $A\,\operatorname{vec}(F) = \mathbf 0$（$A \in \mathbb R^{N\times 9}$）が得られます。$\lVert \operatorname{vec}(F)\rVert = 1$ のもとでの最小二乗解は、$A$ の最小特異値に対応する右特異ベクトルです。その後、$F$ の最小特異値を 0 にしてランク 2 を強制します。
 
 これをピクセル座標にそのまま適用すると条件が非常に悪くなります。$A$ の要素は 1 から $10^5$ までの範囲にわたるからです。Hartley（1997）は、各画像の点を平行移動・スケーリングして重心を原点に、原点からの平均距離を $\sqrt 2$ にするだけで、線形アルゴリズムが反復法に匹敵する精度になることを示しました。正規化座標で $\hat F$ を解き、その後 $F = T_2^\top \hat F T_1$ として正規化を元に戻します。
+
+{% include blog_figure.liquid path="assets/img/blog/neural-rendering/01-normalization.svg" caption="`eight_point` が画像 1 の 200 個のノイズ付き点に施す Hartley 正規化。左：元の同次ピクセル座標。値は数百の大きさで、3 番目の成分は常に 1 です。右：$T_1$ を適用すると重心（赤い十字）が原点に来て、そこからの平均距離が $\sqrt 2$（破線の円）になるので、$A$ の要素がすべて同程度の大きさになります。" %}
 
 ```python
 def normalize(pts):
@@ -209,6 +227,8 @@ $$
 
 ここで $\mathbf u_3$ は $U$ の最後の列です（$U$、$V$ の符号はどちらも行列式が $+1$ になるように固定します）。三角測量した点が両方のカメラの前方に来る候補は 1 つだけなので（**チェイラリティ（cheirality）**チェック）、各候補で三角測量して数を数えます。これが `cv2.recoverPose` の処理内容です。
 
+{% include blog_figure.liquid path="assets/img/blog/neural-rendering/01-four-poses.svg" caption="この記事の例での $E$ の 4 通りの分解を、カメラ 1 座標系で真上から見たもの（$x$ が右、視線方向 $z$ が紙面の上、$\lVert\mathbf t\rVert=1$）。紫がカメラ 1、オレンジが候補のカメラ 2、点はその候補で三角測量した 200 点すべてです。点を両方のカメラの前方に置く候補は 1 つ（緑、$200/200$）だけで、ほかの候補では点がカメラ 1、カメラ 2、または両方の後ろに来ます。`pose_from_essential` の cheirality チェックが数えているのはこの個数です。" %}
+
 ## 3. 三角測量
 
 2 つ（以上）の射影行列 $P_i$ と観測 $\mathbf x_i = (u_i, v_i)$ が与えられたとき、**直接線形変換（direct linear transform, DLT）**は $\tilde{\mathbf x}_i \times P_i \tilde{\mathbf X} = \mathbf 0$ という事実を利用します。$P_i$ の第 $k$ 行を $\mathbf p_i^{k\top}$ と書くと、各ビューは独立な方程式を 2 本ずつ与えます。
@@ -223,6 +243,8 @@ v_2 \mathbf p_2^{3\top} - \mathbf p_2^{2\top}
 $$
 
 ここでも最小特異値に対応する右特異ベクトルを取り、非同次化します。DLT が最小化するのは代数的誤差です。統計的に最適な解は再投影誤差（reprojection error）を最小化するものであり、それはいずれにせよバンドル調整が行うことです。2 本の光線の間の**三角測量角（triangulation angle）**が小さいと、三角測量は悪条件になります。わずかなピクセル誤差で点が光線に沿って大きく動いてしまうのです。そのため COLMAP は、最小角度（デフォルトで 1.5 度）を満たす点だけを受け入れ、再投影誤差の大きい点を棄却します。
+
+{% include blog_figure.liquid path="assets/img/blog/neural-rendering/01-triangulation.svg" caption="三角測量の角度が重要な理由。左・中：4 単位離れた 2 台のカメラから、2 px のガウスノイズの下で同じ点（星印）を DLT（`triangulate`）で 400 回三角測量し、真上から見たもの。ベースラインが広い場合（$\alpha=26.4°$）推定値は小さくまとまりますが、狭い場合（$\alpha=3.5°$）は視線方向に長く伸びます。右：1 px のノイズでの 3D 誤差の中央値と $\alpha$ の関係（両対数、各角度 1000 回の試行）。COLMAP のデフォルトしきい値 1.5°（破線）を下回ると、誤差の中央値はすでに 0.3 単位（観測距離の約 8%）を超え、$\alpha$ が小さくなるにつれてさらに大きくなります。" %}
 
 ```python
 def triangulate(P1, P2, x1, x2):
@@ -257,7 +279,7 @@ R, t, Xt = pose_from_essential(E, K, x1, x2)
 R_true = R2 @ R1.T                       # ground-truth relative pose camera 1 -> camera 2
 t_true = t2 - R_true @ t1
 cos = np.clip((np.trace(R.T @ R_true) - 1) / 2, -1, 1)
-print("rotation error (deg):", np.rad2deg(np.arccos(cos)))                 # ~0.16
+print("rotation error (deg):", np.rad2deg(np.arccos(cos)))                 # ~0.15
 print("translation direction cos:", t @ t_true / np.linalg.norm(t_true))   # ~0.9999
 # Xt is in camera-1 coordinates with |t| = 1: compare after fixing the unknown scale
 print("3D error:", np.abs(Xt * np.linalg.norm(t_true) - (X @ R1.T + t1)).mean())
@@ -289,6 +311,8 @@ $$
 $$
 
 を持ちます。ここで $P$ は $3\times 3$ ブロック（点ごとに 1 つ）からなるブロック対角行列です。**シューア補行列（Schur complement）**で点を消去すると、はるかに小さな「縮約カメラ系（reduced camera system）」$(B - C P^{-1} C^\top)\,\delta_c = \mathbf g_c - C P^{-1}\mathbf g_p$ が残り、その後は各点を独立に更新できます。Ceres Solver（COLMAP が使用）などのライブラリは、これをロバスト損失や自動微分（automatic differentiation）とともに実装しています。全体像については Triggs らの "Bundle Adjustment — A Modern Synthesis"（1999）を参照してください。
+
+{% include blog_figure.liquid path="assets/img/blog/neural-rendering/01-ba-sparsity.svg" caption="BA をスケールさせる構造。カメラ 4 台・点 12 個の小さな問題での例です（パターンは下の `ba_sparsity` によるもの）。左：$J$ では、各観測（2 行）は自分のカメラの 6 パラメータ（青）と自分の点の 3 座標（オレンジ）にしか関係しません。右：$J^\top J$ ではカメラブロック $B$ と点ブロック $P$ がブロック対角になります。$P$ の逆行列は独立した $3\times3$ ブロックの逆行列にすぎないので、Schur 補行列 $B-CP^{-1}C^\top$ を安く計算できます。" %}
 
 SciPy による小さな BA で、先ほどの 2 視点再構成を精密化してみます（カメラは軸角 + 並進で表します）。
 
@@ -342,6 +366,8 @@ print("RMS after: ", np.sqrt(np.mean(sol.fun ** 2)))                   # ~0.16 p
 
 残差は約 0.47 px（DLT/8 点アルゴリズムによる解）から約 0.16 px まで下がります。実際のシステムでは、問題を良設定にするためにゲージを固定します（たとえば最初のカメラとスケールを固定します）。ここでは信頼領域（trust-region）ソルバーが平坦な方向に沿って動くだけで、害はありません。
 
+{% include blog_figure.liquid path="assets/img/blog/neural-rendering/01-ba-residuals.svg" localized="true" caption="上のバンドル調整をこの記事のデータで実行した結果。赤い矢印は画像 1 の再投影残差 $\mathbf r_{ij}$ を 60 倍に拡大したものです。BA 前（8 点アルゴリズム + DLT の解、RMS 0.47 px）は長く、BA 後（RMS 0.16 px）は短くランダムな残差だけが残ります。右：両画像での残差の長さのヒストグラム。" %}
+
 ## 5. Structure-from-Motion と COLMAP
 
 **Structure-from-Motion** は、順序のない画像集合からカメラ姿勢（運動）と疎な点群（構造）を復元します。Photo Tourism（Snavely et al., SIGGRAPH 2006）のような初期の大規模システムは、インターネット上の写真からランドマークを再構成しました。**COLMAP**（Schönberger & Frahm, "Structure-from-Motion Revisited", CVPR 2016）は、ニューラルレンダリングのデータセットにおける事実上の標準となったオープンソースのインクリメンタル（incremental）SfM システムです。
@@ -355,6 +381,10 @@ print("RMS after: ", np.sqrt(np.mean(sol.fun ** 2)))                   # ~0.16 p
 5. **画像登録（image registration）。** **次善ビュー（next best view）**（すでに三角測量された点を多く見ており、かつそれらの点が画像内で良好に空間分布している未登録画像）を繰り返し選び、RANSAC の中で **PnP**（Perspective-n-Point）を用いて 2D–3D 対応からその姿勢を推定します。
 6. **三角測量。** COLMAP のロバストな多視点三角測量で、新たに登録された画像が見ている新しい点を三角測量します。
 7. **バンドル調整。** 登録のたびに局所 BA を、モデルが大きく成長するたびに大域 BA を実行し、その後再投影誤差の大きい観測を除去して再三角測量します。
+
+下の図は、これらのステップを合成シーンで実行したものです。
+
+{% include blog_figure.liquid path="assets/img/blog/neural-rendering/01-sfm-toy.svg" localized="true" caption="NumPy で実装したおもちゃのインクリメンタル SfM。凹凸のある球を写した 12 枚の合成画像（ノイズ 0.5 px）を使います。最初の 2 枚から 8 点アルゴリズムで初期化し（紫）、その後は新しい画像ごとに線形 PnP による登録（オレンジ）、1.5° ルール付きの三角測量、外れ値除去付きの BA を行います。灰色の視錐台はまだ登録されていないカメラです。各スナップショットは相似変換で真値に合わせています（3 節のゲージ自由度）。最終的な 366 点は物体半径の 0.5% 以内で真値と一致し、最終的な再投影誤差の RMS は 0.45 px です。" %}
 
 CVPR 2016 の論文の貢献は、まさにステップ 3 と 5–7 をロバストかつ完全にすることにあります。ペアの幾何を分類する幾何検証戦略（たとえば純粋な回転や透かしのようなマッチの検出）、次善ビューのスコア、ロバストな三角測量、そして BA / 再三角測量 / フィルタリングの反復ループです。
 
@@ -377,6 +407,8 @@ SfM の点は疎で、特徴的な模様がある場所にしか存在しませ�
 - **平面掃引（plane sweeping）**は、カメラに正対する（fronto-parallel）一連の深度平面を試します。ホモグラフィ $H = K_s (R - \mathbf t \mathbf n^\top / d) K_r^{-1}$ によってソース画像を各平面にワープし、パッチを比較します（NCC）。
 - **PatchMatch ステレオ（PatchMatch stereo）**は、良い深度/法線の仮説を隣接ピクセル間で伝播させ、ランダムな精密化を組み合わせます。総当たり探索よりはるかに低コストです。COLMAP の MVS（Schönberger et al., "Pixelwise View Selection for Unstructured Multi-View Stereo", ECCV 2016）は、ピクセルごとのソースビュー選択と幾何的一貫性を加えることで、非構造化の写真集合でも機能するようにしています。
 - **学習ベースの MVS（learned MVS）**、たとえば MVSNet（Yao et al., ECCV 2018）は、CNN 特徴を微分可能なホモグラフィでワープしてコストボリューム（cost volume）を構築し、3D 畳み込みで正則化します。
+
+{% include blog_figure.liquid path="assets/img/blog/neural-rendering/01-plane-sweep.svg" caption="シーンの 2 次元断面での平面掃引。ランダムなテクスチャをもつ表面、参照カメラ、ソースカメラがあります。参照画像の 1 ピクセル（紫の光線）について、奥行き $d$ の正面平行な平面（シアン）がその 15 ピクセルのパッチをソース画像へ写し（オレンジの破線の光線）、NCC で比較します。右の NCC 曲線は $d=3.26$ でピークになり、真の奥行き $d^*=3.255$ と一致します。誤った奥行きでは無関係なテクスチャを比べることになるので、スコアは低くなります。" %}
 
 なぜニューラルレンダリングのシリーズでこれを気にするのでしょうか。それは、NeRF と 3DGS が**微分可能レンダラーを備えた MVS** とみなせるからです。パッチをマッチングする代わりに、レンダリング結果がすべての画像を再現するようにボリューム表現を最適化するのです。MVS の深度は、両者の幾何的な事前情報や初期値としても広く使われています。
 
