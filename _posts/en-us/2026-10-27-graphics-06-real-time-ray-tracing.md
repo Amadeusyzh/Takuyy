@@ -44,6 +44,10 @@ Microsoft announced **DirectX Raytracing (DXR)** in 2018, and Khronos finalized 
 3. A **shader binding table (SBT)** that maps (instance, geometry, ray type) to the hit group to run, so that different materials can run different shaders.
 4. **Inline ray tracing** (DXR 1.1 `RayQuery`, Vulkan `VK_KHR_ray_query`): trace from *any* shader stage (compute, fragment) without the pipeline and SBT. It is often preferred for shadow and AO rays because the scheduling is simpler.
 
+The figure below shows the two levels on a toy 2D scene: one BLAS per mesh, built once in object space, and a TLAS over the world-space bounds of the instances that reference them.
+
+{% include blog_figure.liquid path="assets/img/blog/graphics/06-tlas-blas.svg" localized="true" caption="Two-level acceleration structure. (a) Each mesh has its own BLAS, a BVH over its triangles in object space. (b) An instance places a BLAS in the world with a transform M; the TLAS is a BVH over the instances' world-space boxes (dashed). (c) Two trees share BLAS A, so its triangles are stored only once; moving an instance only changes M and the TLAS." %}
+
 A minimal DXR (HLSL) ray-generation, miss and closest-hit trio for hard shadows from a G-buffer:
 
 ```hlsl
@@ -132,6 +136,10 @@ $$
 
 where $\pi$ is the perspective divide plus viewport transform and $M$ are the object's model matrices. The history is fetched at $$\mathbf{u}_{\text{prev}}$$ (bilinearly, at a sub-pixel position). It is **rejected** when the surfaces do not match, i.e. on **disocclusion**: the depth differs by more than a tolerance, the normals disagree ($$\mathbf{n}\cdot\mathbf{n}_{\text{prev}} < \cos\theta_{\max}$$), or the mesh/object ids differ.
 
+The figure shows both cases on a toy example.
+
+{% include blog_figure.liquid path="assets/img/blog/graphics/06-reprojection.svg" caption="Reprojection on a toy frame pair with a static camera: a dark disc moves 10 pixels to the right. Middle: each pixel on the disc follows its motion vector back to where the same surface was in frame t−1 (orange arrows; dashed circle = old position). Right: the depth test accepts the history on the disc (green) and rejects the crescent of floor that was hidden behind the disc in the last frame (red). That is a disocclusion: these pixels must start a new history." %}
+
 Accepted history is blended with an **exponential moving average**:
 
 $$
@@ -145,6 +153,10 @@ $$
 $$
 
 so $\alpha=0.2$ behaves like averaging about 9 frames. The price is **lag** (ghosting) when lighting changes. A common refinement keeps a per-pixel **history length** $n$ and uses $\alpha = \max(1/n,\ \alpha_{\min})$. A freshly disoccluded pixel ($n=1$) takes the new sample fully, a pixel with $n$ frames of history is a true running mean, and long histories fall back to the EMA.
+
+Both effects are visible in the figure below.
+
+{% include blog_figure.liquid path="assets/img/blog/graphics/06-ema.svg" localized="true" caption="Left: the variance reduction of the EMA expressed as (2−α)/α equivalent frames; α = 0.2 gives 9. Right: a simulated pixel (noise σ = 0.25) that sees a different surface from frame 60 on. A fixed α = 0.1 without history rejection lags behind for dozens of frames (ghosting). Rejecting the history and using α = max(1/n, 0.1) jumps to the new value at once and then settles into the same noise band (shaded, ±σ√(α/(2−α)))." %}
 
 ## 4. Spatial denoising
 
@@ -220,6 +232,12 @@ if __name__ == "__main__":
 
 On this toy image it prints `RMSE noisy 0.523 -> filtered 0.101` and `error at the edge: guided 0.034, unguided 0.152`: the G-buffer terms are what keep the crease sharp.
 
+The first figure below shows how the 5×5 taps spread out level by level; the second runs exactly the script above.
+
+{% include blog_figure.liquid path="assets/img/blog/graphics/06-atrous-taps.svg" caption="À-trous taps of one pixel (red outline) at levels i = 0 to 3: always the same 5×5 B3-spline weights (colour), spaced 2^i pixels apart, so the holes grow while the cost stays at 25 taps. Bottom: applying levels 0 to i one after another (without edge stopping) gives a smooth kernel 5, 13, 29 and 61 pixels wide; the fifth level reaches 125." %}
+
+{% include blog_figure.liquid path="assets/img/blog/graphics/06-atrous-demo.svg" localized="true" caption="The script above on its own toy image (all numbers come from the code). Top: one exponential noise sample per pixel, then five guided and five unguided à-trous levels. Bottom left: the red channel averaged over rows. Without the normal and depth terms the crease is smeared over about 10 pixels. Bottom right: the G-buffer weight of each 5×5 tap at step 2 for a pixel p two pixels left of the crease. The taps on the other wall get weight zero (crossed), because the normals there are perpendicular." %}
+
 ### 4.2 SVGF: spatiotemporal variance-guided filtering (Schied et al. 2017)
 
 The weakness of plain à-trous is the fixed color tolerance $\sigma_{\text{rt}}$. Too small and noise survives; too large and real lighting detail (shadow edges) is smeared. **SVGF** makes the tolerance *adaptive to the local noise level*:
@@ -263,6 +281,10 @@ $$
 
 whose expectation over the candidates is the standard importance-sampling estimator average, i.e. $I$. This requires $\hat p(x)>0$ wherever $f(x)\ne0$, and $p>0$ wherever $\hat p>0$. As $M\to\infty$ the distribution of $y$ approaches $\hat p/\int\hat p$, so $W$ acts like a $1/\text{pdf}$ for the selected sample. ReSTIR calls it the **unbiased contribution weight**. Only **one** shadow ray is traced, for $y$. The $M$ candidates cost only $\hat p$ evaluations.
 
+The figure shows the procedure in one dimension.
+
+{% include blog_figure.liquid path="assets/img/blog/graphics/06-ris.svg" localized="true" caption="RIS in 1D. Left: eight candidates drawn from the uniform source p = 1; each stem's height is its resampling weight, here simply the target $\hat p$. The orange one is selected with probability w/Σw = 0.32. The shaded integrand f also contains a visibility gap that $\hat p$ does not know about. Right: histograms of the selected sample over 200,000 runs. With M = 1 it is just the source; with M = 32 it already follows the normalized target." %}
+
 ### 5.2 Weighted reservoir sampling (WRS)
 
 Storing all candidates is impossible on a GPU. **Weighted reservoir sampling** selects from a stream in $O(1)$ memory. It keeps the current pick $y$, the running sum $w_{\text{sum}}$ and the count $M$. When item $x_i$ with weight $w_i$ arrives, it replaces $y$ with probability $w_i/w_{\text{sum}}$ (after adding $w_i$). By induction, each item ends up selected with probability $w_i/\sum_j w_j$, exactly what RIS needs.
@@ -278,6 +300,10 @@ Per pixel and frame, ReSTIR DI:
 3. **Temporal reuse**: merge the reservoir from the reprojected pixel of the previous frame. Its $M$ is clamped to a small multiple of the current one (e.g. 20×) to bound staleness.
 4. **Spatial reuse**: merge reservoirs of $k$ random neighbours (e.g. 5 within a 30-pixel radius), rejecting those whose depth or normal differ too much. This can be iterated.
 5. **Shade**: one shadow ray for the final $y$, contribution $f(y)\,W$.
+
+The figure sketches steps 3 and 4.
+
+{% include blog_figure.liquid path="assets/img/blog/graphics/06-restir-reuse.svg" caption="ReSTIR reuse for pixel p. Temporal: the reservoir of the reprojected pixel in frame t−1 (blue) is merged first, with its M clamped to 20 times the current one. Spatial: k = 5 random neighbours within radius R are merged (green); the red one lies on a different surface, where depth and normal differ, and is rejected." %}
 
 When neighbours' samples are re-weighted with *this* pixel's $\hat p$, they were drawn from a different distribution. The naive weight $1/M$ then becomes **biased**, typically darkening edges where a neighbour's sample is invisible here. The unbiased version replaces $1/M$ by a normalization $1/Z$ that counts only those neighbours whose own $\hat p_q(y)>0$. It can also use MIS-style weights over the neighbours. The GRIS theory of Lin et al. (2022) generalizes these weights and also covers correlated samples and samples reused across different domains.
 
@@ -365,6 +391,10 @@ RIS, M=32        : mean 95.9497 +- 0.6209   rel. std per sample 0.92
 
 All means agree with the exact value within about two standard errors. A vectorized run with 200,000 RIS estimates at $M=128$ gives $95.00 \pm 0.15$. The per-sample relative standard deviation drops from 3.4 to 0.9 with 32 candidates and to 0.74 after merging. This is the "free" quality ReSTIR gets from spatial reuse. Note that RIS cannot fix the hidden lights, because $\hat p$ ignores visibility; this is why the visibility-reuse step matters.
 
+The figure repeats the experiment for many candidate counts.
+
+{% include blog_figure.liquid path="assets/img/blog/graphics/06-ris-variance.svg" localized="true" caption="The many-lights experiment above, vectorized (100,000 estimates per point). Left: the 4096 lights seen from above, coloured by the target $\hat p$; the red strip is hidden by the wall. Right: the relative standard deviation per estimate drops quickly with M and flattens near 0.65, the noise that remains even when sampling exactly proportional to $\hat p$, because $\hat p$ ignores visibility. M = 1 is uniform light selection. The markers are the values printed by the script; its uniform value (3.38, from 20,000 trials) differs from ours (3.66) only by the sampling noise of this heavy-tailed estimator." %}
+
 On the GPU the reservoir is a tiny struct stored per pixel in a buffer that persists between frames:
 
 ```glsl
@@ -405,6 +435,8 @@ $$
 
 where $\phi_q,\phi_r$ are the angles between $\mathbf n_s$ and the directions from $x_s$ toward $x_q$ and $x_r$. The reused target function is divided by $\lvert J\rvert$, and samples with extreme Jacobians are rejected. One sample per pixel per frame of path-traced indirect lighting then becomes far less noisy before denoising. ReSTIR GI still relies on a denoiser for the final image. Later work (ReSTIR PT, area ReSTIR, ReSTIR for volumes) generalizes the reconnection idea.
 
+{% include blog_figure.liquid path="assets/img/blog/graphics/06-restir-gi.svg" caption="Reconnection in ReSTIR GI. Pixel q traced the sample point on the ceiling (purple) from its visible point (blue). Pixel r reuses it by connecting its own visible point (orange) to the same sample point. The Jacobian converts the solid-angle pdf from q's view to r's; for the drawn geometry the cosines at the sample point and the squared distances give |J| = 3.61." %}
+
 ## 6. TAA and learned upscaling
 
 ### 6.1 Temporal anti-aliasing
@@ -431,6 +463,10 @@ vec3 taaResolve(sampler2D cur, vec3 history, vec2 uv, vec2 texel) {
 
 Clamping trades ghosting for some blur and flicker on thin features. This trade-off motivated learned approaches.
 
+Why a low-discrepancy sequence rather than random jitter? The figure measures it.
+
+{% include blog_figure.liquid path="assets/img/blog/graphics/06-halton.svg" localized="true" caption="Left: the first 16 Halton(2,3) jitter offsets inside one pixel. Every prefix of the sequence (1–8 purple, then 9–16 cyan) covers the pixel evenly. Right: estimating how much of a pixel a random edge covers from the first N jittered samples, averaged over 3000 random edges. Random jitter converges like 1/√N; Halton is close to 1/N, so temporal supersampling converges much faster." %}
+
 ### 6.2 Learned upscaling (DLSS and friends)
 
 Rendering at a lower internal resolution and **upscaling** saves ray and shading cost roughly in proportion to the pixel count. NVIDIA's **DLSS** (since version 2 in 2020) is, at a high level, TAA whose heuristic history-rejection and blending rules are replaced by a convolutional network. The inputs are the jittered low-resolution color, depth, motion vectors and exposure, plus the previous high-resolution output warped by the motion vectors; the output is the high-resolution frame. Later versions add **frame generation** (interpolating extra frames with optical flow) and **ray reconstruction**, which replaces the hand-tuned denoisers of Section 4 with a network trained on ray-traced data. AMD FSR (versions 1–3 hand-designed; FSR 4 ML-based) and Intel XeSS play the same role. For our purposes, the lesson is structural: modern real-time images are **reconstructed** from sparse, jittered, temporally reused samples, much like neural rendering reconstructs a scene from sparse views.
@@ -444,6 +480,8 @@ Path tracing spends most of its cost and noise on long, multi-bounce tails. A **
 - **Rendering**: each path is traced for a short prefix. It is terminated, and the cache is queried, once the path's spread becomes large enough that the cache's blur is invisible. The path throughput multiplies the cached $\hat L_\theta$.
 - **Training, online**: a small fraction of paths is extended a few bounces further. The radiance they collect, which itself ends in a cache query, gives the training targets. This "self-training" lets the network learn multi-bounce light while each path stays short. A few gradient steps are taken every frame, so the cache adapts to dynamic scenes without pre-training.
 - **Speed**: the network is tiny and evaluated by a "fully fused" GPU MLP (the tiny-cuda-nn approach), which keeps weights and activations in on-chip memory.
+
+{% include blog_figure.liquid path="assets/img/blog/graphics/06-nrc.svg" localized="true" caption="Neural radiance caching, sketched in 2D. A rendering path (blue) stops after a short prefix and multiplies its throughput β by the cache. A few training paths (orange) continue from the same vertex for more bounces, with NEE shadow rays to the light (dotted) and a final cache query of their own; the radiance they gather becomes the training target for the cache at the vertex where rendering stopped." %}
 
 This is a direct ancestor of the neural rendering track. The same fused-MLP and input-encoding machinery appears in Instant-NGP, and an online-trained radiance network is conceptually a NeRF of the *current* scene's illumination.
 
