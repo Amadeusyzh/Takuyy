@@ -26,6 +26,10 @@ A useful way to organize the field is by which part of the 3DGS pipeline a paper
 | Where parameters come from | per-scene optimization vs networks | SLAM, feed-forward reconstruction, generation |
 | What happens after | simulation, editing, display | physics, AR/VR |
 
+The figure below draws the same table as a map, with the representative papers this post discusses under each stage.
+
+{% include blog_figure.liquid path="assets/img/blog/neural-rendering/05-taxonomy.svg" localized="true" caption="The five stages of the 3DGS pipeline (left, top to bottom) and the follow-ups that change each of them; the section numbers on the right tell you where each one is discussed below." %}
+
 ## Prerequisites
 
 - The full 3DGS method: covariance, EWA projection, blending, density control (post 4).
@@ -48,6 +52,10 @@ $$
 
   The filter becomes part of the Gaussian, so it is applied consistently from every viewpoint, and it prevents Gaussians from becoming thinner than the data can justify.
 - A **2D Mip filter** replaces the dilation with a normalized Gaussian approximating a one-pixel box filter, $\Sigma'_{2D} = \Sigma' + sI$ with $o$ scaled by $\sqrt{\lvert\Sigma'\rvert / \lvert \Sigma' + sI\rvert}$, which simulates the integration over a pixel area when zooming out.
+
+The figure computes both filters for one small Gaussian whose footprint is 0.2 pixels at the training resolution, using $s = 0.2$ (3D) and $s = 0.1$ (2D) as in the code below.
+
+{% include blog_figure.liquid path="assets/img/blog/neural-rendering/05-mip-footprint.svg" localized="true" caption="(a) Screen-space size of a Gaussian that was 0.2 px wide during training, as the render is zoomed out (m < 1) or in (m > 1). With the +0.3 I dilation (red) it never gets smaller than about 0.55 px when zooming out and becomes as thin as the raw Gaussian when zooming in; Mip-Splatting (blue) approaches the 1-pixel box when zooming out and is never thinner than the training sampling rate allows when zooming in. (b) The dilation also adds energy (8.5x at m = 1, much more when zooming out), which is why zoomed-out 3DGS renders look thick and bright; the normalized 2D Mip filter keeps it at 1." %}
 
 ```python
 import numpy as np
@@ -89,11 +97,19 @@ Mip-Splatting is the 3DGS counterpart of Mip-NeRF's integrated positional encodi
 - **2D Gaussian Splatting** (Huang, Yu, Chen, Geiger & Gao, SIGGRAPH 2024) collapses each primitive to an oriented planar disk (a **surfel**) with two tangent vectors $\mathbf t_u, \mathbf t_v$ and two scales $s_u, s_v$. A point on the disk is $P(u,v) = \mathbf p_k + s_u \mathbf t_u u + s_v \mathbf t_v v$, the normal is $\mathbf t_u \times \mathbf t_v$, and instead of EWA linearization each pixel's ray is **intersected** exactly with the disk's plane, giving perspective-correct, view-consistent depth. Two regularizers make it geometry-aware: a depth-distortion loss (from Mip-NeRF 360) that concentrates weights along each ray, and a normal-consistency loss that aligns the splat normals with normals computed from the rendered depth map. Meshes are extracted by TSDF fusion of rendered depth.
 - **Gaussian Opacity Fields (GOF)** (Yu, Sattler & Geiger, ACM TOG / SIGGRAPH Asia 2024) define a continuous opacity field directly from 3D Gaussians via ray–Gaussian intersection, and extract the surface as a level set with marching tetrahedra on a grid induced by the Gaussians, which handles unbounded scenes and adapts resolution to detail.
 
+The figure makes the difference concrete: two cameras look at the same points of one primitive.
+
+{% include blog_figure.liquid path="assets/img/blog/neural-rendering/05-surfel-vs-ellipsoid.svg" caption="Left: for a thin 3D Gaussian, the depth along a ray is taken where the Gaussian peaks along that ray (closed form $t^* = \mathbf d^\top\Sigma^{-1}(\boldsymbol\mu-\mathbf o) / \mathbf d^\top\Sigma^{-1}\mathbf d$). Rays from the orange and the cyan camera aimed at the same point peak at different 3D points (black segments), so depth is view-dependent. Right: a 2DGS surfel with tangents $s_u\mathbf t_u$, $s_v\mathbf t_v$ and normal $\mathbf n$; each ray is intersected exactly with its plane, so both cameras get the same point." %}
+
 The general lesson: if you need geometry, choose a primitive whose depth and normal are well defined (flat Gaussians or disks) and add geometric regularization. 2DGS-style surfels have become a common choice in mapping and robotics pipelines.
 
 ## 3. Dynamic scenes
 
 **Problem.** 3DGS assumes a static scene. For moving people, objects or deformable scenes we need the Gaussians to change over time while staying consistent, from multi-view video or even a single monocular video.
+
+The figure shows what this means for the primitives themselves: each Gaussian keeps its identity and follows a trajectory through time.
+
+{% include blog_figure.liquid path="assets/img/blog/neural-rendering/05-dynamic-trajectories.svg" caption="A toy deformation field applied to canonical Gaussians (a bending column): the curves are the centre trajectories, coloured from t = 0 (purple) to t = 0.5 (yellow), and the ellipsoids show the same Gaussians at t = 0, 0.25 and 0.5, rotated by the local deformation. Per-frame tracking optimizes these positions and rotations directly; deformation networks predict them from (x, t)." %}
 
 Four designs dominate:
 
@@ -121,11 +137,19 @@ def slice_4d(mu4, Sigma4, t):
     return mu3, Sigma3, p_t
 ```
 
+The figure runs `slice_4d` on a 4D Gaussian whose $x$ and $t$ are correlated.
+
+{% include blog_figure.liquid path="assets/img/blog/neural-rendering/05-4d-slice.svg" caption="Top: the $(x,t)$ marginal of a 4D Gaussian with correlation 0.9 between x and t; the coloured lines are the times at which it is sliced. Bottom: the resulting 1D slices from `slice_4d`. The mean moves linearly along the dashed line (velocity $\Sigma_{x,t}/\Sigma_{t,t}$), the conditional width stays constant (0.26 instead of the marginal 0.6), and the peak $p(t)$ fades away from $\mu_t = 0.5$, so the primitive appears, moves and disappears." %}
+
 Related designs include **Spacetime Gaussians** (Li et al., CVPR 2024), with polynomial motion and rotation, temporal radial-basis opacity, and neural features instead of SH, and articulated or rigged models such as **GaussianAvatars** (Qian et al., CVPR 2024), which attach Gaussians to the triangles of a parametric face model so that expressions and head pose drive them directly. Monocular dynamic reconstruction remains hard: a single moving camera does not constrain fast non-rigid motion, so the best systems add priors such as depth, optical flow, or point tracks from foundation models.
 
 ## 4. Compression and efficiency
 
 **Problem.** A 3DGS scene often takes hundreds of megabytes to more than a gigabyte, mostly in the 48 SH coefficients, and contains many redundant Gaussians. That is too much for streaming, mobile and VR.
+
+The figure counts where those bytes go for uncompressed float32 attributes.
+
+{% include blog_figure.liquid path="assets/img/blog/neural-rendering/05-memory.svg" localized="true" caption="Top: bytes per Gaussian with float32 attributes (mean 3, scale 3, quaternion 4, opacity 1, plus 3(L+1)^2 SH coefficients for degree L). At degree 3 the 48 SH coefficients are 192 of the 236 bytes, which is why SH distillation to a lower degree pays off. Bottom: the resulting file size grows linearly with the number of Gaussians and passes 1 GB at about 4.2 million Gaussians." %}
 
 The toolbox, roughly in order of how aggressive it is:
 
@@ -150,6 +174,10 @@ A few papers fix limitations of the renderer itself:
 
 **Key idea.** Alternate **tracking**, optimizing the current camera pose by minimizing photometric (and depth) error between the incoming frame and the rendering of the map with the map frozen, and **mapping**, optimizing the Gaussians on keyframes with the poses frozen, while adding new Gaussians where the map is incomplete. Differentiable rasterization makes both steps gradient-based.
 
+The figure is a top view of a toy run of this loop.
+
+{% include blog_figure.liquid path="assets/img/blog/neural-rendering/05-slam.svg" localized="true" caption="Top view (x right, z forward) of a toy SLAM run: a camera (orange squares, frusta coloured by time) sweeps across a room. Each wall point is coloured by the time it first entered the map; grey points have not been seen yet. Tracking estimates each new pose against the frozen map, and mapping adds Gaussians where the rendered silhouette is low, so the map grows along the sweep." %}
+
 - **SplaTAM** (Keetha et al., CVPR 2024) targets RGB-D input. It renders a **silhouette** (accumulated opacity) to know which pixels the current map explains, uses only those for tracking, and densifies where the silhouette is low or new geometry appears in front of the map. It uses simplified isotropic, view-independent Gaussians.
 - **Gaussian Splatting SLAM / MonoGS** (Matsuki, Murai, Kelly & Davison, CVPR 2024) is the first to work with a **monocular** camera (and extends to RGB-D). It derives analytic Jacobians of the rendering with respect to the camera pose on the Lie group $SE(3)$, regularizes Gaussians to stay isotropic for stable incremental mapping, and manages a keyframe window.
 
@@ -160,6 +188,10 @@ For embodied AI this is a key bridge: a Gaussian map is simultaneously a localiz
 **Problem.** Per-scene optimization takes minutes and needs many posed views. Can a network predict Gaussians from a few images in a single forward pass?
 
 **Key idea.** Predict **pixel-aligned Gaussians**: for each pixel of each input view, the network outputs a depth along the pixel's ray (hence a 3D mean), a covariance, an opacity and a colour. Training uses large multi-view datasets with the same rendering loss as 3DGS, on held-out target views.
+
+The figure shows the geometry of pixel-aligned Gaussians for one input view.
+
+{% include blog_figure.liquid path="assets/img/blog/neural-rendering/05-pixel-aligned.svg" caption="Left: each pixel (u, v) of a 12 x 9 input view shoots a ray, and the predicted depth $z_{uv}$ places a Gaussian at $z_{uv}K^{-1}(u,v,1)^\top$: orange on a sphere, blue on the wall behind it. Right: an example of a pixelSplat-style per-pixel distribution over depth buckets for one sphere pixel, with a smaller second mode on the wall; the mean is sampled from it rather than regressed." %}
 
 - **pixelSplat** (Charatan, Li, Tagliasacchi & Sitzmann, CVPR 2024) reconstructs a scene from an **image pair**. An epipolar transformer resolves scale, and instead of regressing depth directly, the network predicts a probability distribution over depth buckets and samples the Gaussian mean from it, using a reparameterization trick so gradients flow to the probabilities.
 - **MVSplat** (Chen et al., ECCV 2024) builds a **plane-sweep cost volume** (the multi-view stereo of post 1, learned) to localize Gaussian centres, which is more geometric and reported to use 10× fewer parameters than pixelSplat while running more than 2× faster.
@@ -201,6 +233,10 @@ $$
 $$
 
 and the SH coefficients are rotated by the rotational part of $\mathbf F_t$, so that "what you see is what you simulate" without converting to meshes. **VR-GS** (Jiang et al., SIGGRAPH 2024) builds an interactive VR system that embeds Gaussians in tetrahedral cages simulated with **XPBD** (extended position-based dynamics) for real-time manipulation, with segmentation, inpainting and shadows. The XPBD cloth demo in the [interactive lab]({{ '/' | relative_url }}#lab) uses the same solver family.
+
+The figure applies this rule to a row of Gaussians under a bending and shearing deformation.
+
+{% include blog_figure.liquid path="assets/img/blog/neural-rendering/05-physgaussian.svg" caption="Left: Gaussians (2-sigma ellipses) on an undeformed grid. Right: the same Gaussians after a bending and shearing deformation $\phi$; every centre moves with $\phi$ and every covariance becomes $\mathbf F\Sigma_0\mathbf F^\top$ with $\mathbf F = \partial\phi/\partial\mathbf x$ computed at that centre, so the ellipses stretch and rotate with the grid lines." %}
 
 **Semantics.** Attaching features to Gaussians makes scenes queryable. **LangSplat** (Qin et al., CVPR 2024) distills CLIP language features, organized by SAM's hierarchy of masks, into per-Gaussian latent features through a scene-specific autoencoder, enabling open-vocabulary 3D queries ("where is the mug?") much faster than NeRF-based language fields. This is the representation that robots can use to ground instructions in a 3D map.
 

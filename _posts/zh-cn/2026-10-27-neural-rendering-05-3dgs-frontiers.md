@@ -26,6 +26,10 @@ related_posts: false
 | 参数从何而来 | 逐场景优化 vs 网络 | SLAM、前馈重建、生成 |
 | 之后会发生什么 | 仿真、编辑、显示 | 物理、AR/VR |
 
+下图把同一张表画成一张地图，并在每个阶段下列出本文讨论的代表性论文。
+
+{% include blog_figure.liquid path="assets/img/blog/neural-rendering/05-taxonomy.svg" localized="true" caption="3DGS 流水线的五个阶段（左侧，自上而下）以及改动各阶段的后续工作；右下角的小节编号指出它们在本文中的位置。" %}
+
 ## 前置知识
 
 - 完整的 3DGS 方法：协方差、EWA 投影、混合、密度控制（第 4 篇）。
@@ -48,6 +52,10 @@ $$
 
   该滤波器成为高斯本身的一部分，因此从任何视点都会被一致地应用，并且能防止高斯变得比数据所能支撑的更细。
 - **2D Mip 滤波器**（2D Mip filter）用一个近似单像素盒式滤波器（box filter）的归一化高斯替代膨胀，即 $\Sigma'_{2D} = \Sigma' + sI$，并把 $o$ 乘以 $\sqrt{\lvert\Sigma'\rvert / \lvert \Sigma' + sI\rvert}$，从而在缩小时模拟对像素面积的积分。
+
+下图对一个在训练分辨率下足迹（footprint）只有 0.2 像素的小高斯计算了两种滤波器，参数与下面代码一致：3D 用 $s = 0.2$，2D 用 $s = 0.1$。
+
+{% include blog_figure.liquid path="assets/img/blog/neural-rendering/05-mip-footprint.svg" localized="true" caption="(a) 一个训练时宽 0.2 像素的高斯在缩小（m < 1）或放大（m > 1）渲染时的屏幕空间尺寸。使用 +0.3 I 膨胀（红色）时，缩小时它始终不小于约 0.55 像素，放大时又和原始高斯一样细；Mip-Splatting（蓝色）在缩小时趋近 1 像素盒式滤波，放大时也不会比训练采样率所允许的更细。(b) 膨胀还会增加能量（m = 1 时为 8.5 倍，缩小时更多），这正是 3DGS 缩小渲染时显得过粗过亮的原因；归一化的 2D Mip 滤波器把它保持为 1。" %}
 
 ```python
 import numpy as np
@@ -89,11 +97,19 @@ Mip-Splatting 相当于 3DGS 版的 Mip-NeRF 积分位置编码（integrated pos
 - **2D 高斯泼溅**（2D Gaussian Splatting）（Huang, Yu, Chen, Geiger & Gao, SIGGRAPH 2024）把每个基元压缩成一个有朝向的平面圆盘（即**面元**，surfel），它有两个切向量 $\mathbf t_u, \mathbf t_v$ 和两个尺度 $s_u, s_v$。圆盘上的点为 $P(u,v) = \mathbf p_k + s_u \mathbf t_u u + s_v \mathbf t_v v$，法线为 $\mathbf t_u \times \mathbf t_v$；它不再使用 EWA 线性化，而是让每个像素的光线与圆盘所在平面精确**求交**，从而得到透视正确、视角一致的深度。两个正则项使其具备几何感知能力：一个是深度畸变损失（depth-distortion loss，来自 Mip-NeRF 360），使权重沿每条光线集中；另一个是法线一致性损失（normal-consistency loss），使泼溅的法线与由渲染深度图计算出的法线对齐。网格通过对渲染深度做 TSDF 融合来提取。
 - **高斯不透明度场**（Gaussian Opacity Fields，GOF）（Yu, Sattler & Geiger, ACM TOG / SIGGRAPH Asia 2024）通过光线与高斯的求交，直接从 3D 高斯定义出一个连续的不透明度场，并在由高斯导出的网格上用 Marching Tetrahedra 把表面提取为水平集，这样既能处理无界场景，又能根据细节自适应调整分辨率。
 
+下图把这一差别具体化：两台相机观察同一个基元上的同一些点。
+
+{% include blog_figure.liquid path="assets/img/blog/neural-rendering/05-surfel-vs-ellipsoid.svg" caption="左：对于一个薄的 3D 高斯，光线上的深度取在高斯沿该光线的峰值处（闭式解 $t^* = \mathbf d^\top\Sigma^{-1}(\boldsymbol\mu-\mathbf o) / \mathbf d^\top\Sigma^{-1}\mathbf d$）。橙色和青色相机瞄准同一点的光线在不同的 3D 位置达到峰值（黑色线段），因此深度依赖于视角。右：2DGS 面元，切向量为 $s_u\mathbf t_u$、$s_v\mathbf t_v$，法线为 $\mathbf n$；每条光线都与其平面精确求交，两台相机得到同一个点。" %}
+
 一般性的经验是：如果需要几何，就选择深度和法线有良好定义的基元（扁平高斯或圆盘），并加入几何正则化。2DGS 风格的面元已成为建图和机器人流水线中的常见选择。
 
 ## 3. 动态场景
 
 **问题。** 3DGS 假设场景是静态的。对于运动的人、物体或可变形场景，我们需要让高斯随时间变化，同时保持一致性，数据来源可以是多视角视频，甚至是单目视频。
+
+下图展示了这对基元本身意味着什么：每个高斯保持其身份，并随时间沿一条轨迹运动。
+
+{% include blog_figure.liquid path="assets/img/blog/neural-rendering/05-dynamic-trajectories.svg" caption="作用在规范空间（canonical space）高斯上的一个玩具形变场（一根弯曲的柱子）：曲线是各高斯中心的轨迹，颜色从 t = 0（紫）到 t = 0.5（黄）；椭球是同一批高斯在 t = 0、0.25、0.5 时的样子，并随局部形变旋转。逐帧跟踪直接优化这些位置和旋转，形变网络则由 (x, t) 预测它们。" %}
 
 主流设计有四种：
 
@@ -121,11 +137,19 @@ def slice_4d(mu4, Sigma4, t):
     return mu3, Sigma3, p_t
 ```
 
+下图对一个 $x$ 与 $t$ 相关的 4D 高斯运行 `slice_4d`。
+
+{% include blog_figure.liquid path="assets/img/blog/neural-rendering/05-4d-slice.svg" caption="上：x 与 t 相关系数为 0.9 的 4D 高斯在 $(x,t)$ 上的边缘分布，彩色横线是切片所取的时刻。下：`slice_4d` 得到的一维切片。均值沿虚线线性移动（速度为 $\Sigma_{x,t}/\Sigma_{t,t}$），条件宽度保持不变（0.26，而边缘分布为 0.6），峰值 $p(t)$ 在远离 $\mu_t = 0.5$ 时衰减，因此该基元会出现、移动、再消失。" %}
+
 相关设计还包括 **Spacetime Gaussians**（Li et al., CVPR 2024），它使用多项式运动与旋转、时间径向基（radial-basis）不透明度，并用神经特征代替 SH；以及带关节或绑定骨骼的模型，例如 **GaussianAvatars**（Qian et al., CVPR 2024），它把高斯附着在参数化人脸模型的三角形上，使表情和头部姿态能直接驱动它们。单目动态重建仍然很困难：单个运动相机无法约束快速的非刚性运动，因此最好的系统会加入来自基础模型（foundation model）的先验，例如深度、光流或点轨迹。
 
 ## 4. 压缩与效率
 
 **问题。** 一个 3DGS 场景往往占用数百 MB 乃至超过 1 GB，其中大部分是 48 个 SH 系数，并且包含大量冗余的高斯。这对于流式传输、移动端和 VR 来说都太大了。
+
+下图统计了未压缩的 float32 属性中这些字节都花在了哪里。
+
+{% include blog_figure.liquid path="assets/img/blog/neural-rendering/05-memory.svg" localized="true" caption="上：使用 float32 时每个高斯的字节数（均值 3、尺度 3、四元数 4、不透明度 1，再加上 L 阶 SH 的 3(L+1)^2 个系数）。在 3 阶时，48 个 SH 系数占 236 字节中的 192 字节，这正是把 SH 蒸馏到更低阶数很划算的原因。下：文件大小随高斯数量线性增长，大约 420 万个高斯时超过 1 GB。" %}
 
 可用的工具，大致按激进程度排列：
 
@@ -150,6 +174,10 @@ def slice_4d(mu4, Sigma4, t):
 
 **核心思想。** 交替进行**跟踪**（tracking）和**建图**（mapping）：跟踪时冻结地图，通过最小化输入帧与地图渲染结果之间的光度（以及深度）误差来优化当前相机位姿；建图时冻结位姿，在关键帧上优化高斯，同时在地图不完整的地方加入新的高斯。可微光栅化使这两个步骤都可以基于梯度进行。
 
+下图是这一循环在一个玩具例子中的俯视图。
+
+{% include blog_figure.liquid path="assets/img/blog/neural-rendering/05-slam.svg" localized="true" caption="玩具 SLAM 运行的俯视图（x 向右，z 向前）：相机（橙色方块，视锥按时间着色）扫过一个房间。每个墙面点按其首次加入地图的时间着色，灰色点尚未被看到。跟踪在冻结的地图上估计每个新位姿，建图则在渲染轮廓较低处加入高斯，因此地图沿着扫描方向逐渐增长。" %}
+
 - **SplaTAM**（Keetha et al., CVPR 2024）面向 RGB-D 输入。它渲染一张**轮廓图**（silhouette，即累积不透明度），以确定当前地图能够解释哪些像素，只用这些像素进行跟踪，并在轮廓值较低或在地图前方出现新几何的地方进行致密化。它使用简化的各向同性、与视角无关的高斯。
 - **Gaussian Splatting SLAM / MonoGS**（Matsuki, Murai, Kelly & Davison, CVPR 2024）是第一个可以使用**单目**（monocular）相机工作的方法（并可扩展到 RGB-D）。它在李群（Lie group）$SE(3)$ 上推导出渲染相对于相机位姿的解析雅可比矩阵，通过正则化使高斯保持各向同性以实现稳定的增量建图，并管理一个关键帧窗口。
 
@@ -160,6 +188,10 @@ def slice_4d(mu4, Sigma4, t):
 **问题。** 逐场景优化需要几分钟，而且需要许多带位姿的视图。网络能否只用一次前向传播，从少量图像中预测出高斯？
 
 **核心思想。** 预测**像素对齐的高斯**（pixel-aligned Gaussians）：对于每个输入视图的每个像素，网络输出沿该像素光线的深度（从而得到 3D 均值）、协方差、不透明度和颜色。训练使用大规模多视角数据集，在留出的目标视图上采用与 3DGS 相同的渲染损失。
+
+下图展示了一个输入视图中像素对齐高斯的几何关系。
+
+{% include blog_figure.liquid path="assets/img/blog/neural-rendering/05-pixel-aligned.svg" caption="左：12 x 9 输入视图的每个像素 (u, v) 发出一条光线，预测深度 $z_{uv}$ 把一个高斯放在 $z_{uv}K^{-1}(u,v,1)^\top$ 处：橙色落在球面上，蓝色落在其后的墙上。右：pixelSplat 风格的单像素深度桶（depth bucket）分布示例，取自一个球面像素，墙面处有一个较小的第二峰；高斯均值从该分布中采样，而不是直接回归。" %}
 
 - **pixelSplat**（Charatan, Li, Tagliasacchi & Sitzmann, CVPR 2024）从一个**图像对**重建场景。一个极线 Transformer（epipolar transformer）用于解决尺度问题；网络并不直接回归深度，而是预测深度区间上的概率分布并从中采样高斯均值，借助重参数化技巧（reparameterization trick）让梯度流向这些概率。
 - **MVSplat**（Chen et al., ECCV 2024）构建一个**平面扫描代价体**（plane-sweep cost volume，即第 1 篇中多视图立体的可学习版本）来定位高斯中心，这种方法更具几何性；据报告，它的参数量比 pixelSplat 少 10 倍，运行速度快 2 倍以上。
@@ -201,6 +233,10 @@ $$
 $$
 
 并且 SH 系数会按 $\mathbf F_t$ 的旋转部分进行旋转，从而无需转换为网格即可做到“所见即所仿真”。**VR-GS**（Jiang et al., SIGGRAPH 2024）构建了一个交互式 VR 系统，把高斯嵌入用 **XPBD**（extended position-based dynamics，扩展的基于位置的动力学）仿真的四面体笼（tetrahedral cage）中以实现实时操作，并支持分割、修补（inpainting）和阴影。[交互实验室]({{ '/' | relative_url }}#lab)中的 XPBD 布料演示使用的是同一类求解器。
+
+下图把这一规则作用于一排在弯曲加剪切形变下的高斯。
+
+{% include blog_figure.liquid path="assets/img/blog/neural-rendering/05-physgaussian.svg" caption="左：未形变网格上的高斯（2-sigma 椭圆）。右：同一批高斯在弯曲加剪切的形变 $\phi$ 之后；每个中心随 $\phi$ 移动，每个协方差变为 $\mathbf F\Sigma_0\mathbf F^\top$，其中 $\mathbf F = \partial\phi/\partial\mathbf x$ 在该中心处计算，因此椭圆随网格线一起拉伸和旋转。" %}
 
 **语义。** 给高斯附加特征可以让场景变得可查询。**LangSplat**（Qin et al., CVPR 2024）通过一个场景专用的自编码器（autoencoder），把按 SAM 的层级掩码组织的 CLIP 语言特征蒸馏到逐高斯的隐特征中，从而实现开放词汇（open-vocabulary）的 3D 查询（“马克杯在哪里？”），速度比基于 NeRF 的语言场快得多。这正是机器人可以用来把指令落地到 3D 地图中的表示。
 

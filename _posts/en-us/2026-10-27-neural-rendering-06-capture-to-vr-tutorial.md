@@ -16,6 +16,10 @@ related_posts: false
 
 Five posts of theory are worth little until you have captured and explored a scene of your own. This tutorial walks through the whole pipeline on a single consumer GPU: **capture → poses (COLMAP) → training (3DGS) → cleanup and export → viewing in the browser and in VR.** Each step connects back to the theory: the camera models and SfM of [post 1]({{ '/blog/2026/neural-rendering-01-cameras-and-multiview-geometry/' | relative_url }}), the optimization of [post 4]({{ '/blog/2026/neural-rendering-04-3d-gaussian-splatting/' | relative_url }}), and the anti-aliasing and VR concerns of [post 5]({{ '/blog/2026/neural-rendering-05-3dgs-frontiers/' | relative_url }}). When something goes wrong, and something always does, the failure-mode table at the end tells you which of those ideas to revisit.
 
+The figure below is the map of this tutorial: six stages, the tool used in each, and the file each stage hands to the next.
+
+{% include blog_figure.liquid path="assets/img/blog/neural-rendering/06-pipeline.svg" localized="true" caption="The whole workflow at a glance. Each box is one section of this post (§1 to §6); the coloured monospace line is the file it produces, which is exactly what the next stage reads." %}
+
 Tools change quickly. The commands below were checked against the current sources of COLMAP, the official 3DGS repository, gsplat and nerfstudio; if a flag has been renamed in your version, `--help` is the source of truth.
 
 ## Prerequisites
@@ -36,6 +40,12 @@ Capture quality decides the outcome more than any hyperparameter. 3DGS needs **m
 - For an object: two or three **orbits** at different heights (e.g. eye level, from above, from low), keeping the object filling a good part of the frame. For a room: walk a loop along the walls facing inwards, and then a second loop facing outwards.
 - **Light evenly.** Overcast daylight or diffuse indoor lighting is ideal; hard shadows and highlights will be baked in.
 - Typical sizes: **100–300 photos** for an object or a small room; several hundred for larger scenes.
+
+The two figures below make the first rules concrete with a toy capture of a ball on a table. In the first, a surface point counts as covered when two photos see it from directions at least 5° apart, so that it can be triangulated (post 1). Three orbits cover the whole visible surface; rotating in place covers nothing, because every ray starts at the same point; a single straight pass covers only the side it faces. The second figure ray-casts the same toy scene (ball inside a room, assumed 60° horizontal field of view) to measure how much of each photo reappears in the next one. At an orbit radius of r = 2, the 60–80% rule corresponds to a step of about 11°–22°, i.e. roughly 16–33 photos per orbit; two or three such orbits plus the inevitable rejects land in the 100–300 range above.
+
+{% include blog_figure.liquid path="assets/img/blog/neural-rendering/06-capture-paths.svg" localized="true" caption="Toy capture of a ball (z up). Left: 3 orbits of 40 photos at low, eye and high positions; middle: 40 photos panning from one spot; right: 40 photos on one straight line. Purple points are triangulable (seen by two photos whose rays differ by at least 5°), grey points are not; the percentage is the covered fraction." %}
+
+{% include blog_figure.liquid path="assets/img/blog/neural-rendering/06-overlap.svg" localized="true" caption="Overlap between consecutive photos on an orbit, computed by ray casting a toy room with a 60° field of view, for three orbit radii (r = 2 is about three object radii). The shaded band is the recommended 60–80%; the bars at the bottom show which step angles fall inside it, and the top axis converts the step into photos per orbit." %}
 
 **Avoid:** motion blur (use good light and a fast shutter, or take photos instead of video), moving people and objects, mirrors, glass and very shiny surfaces, large textureless walls, and digital zoom. Ultra-wide and fisheye lenses work but require the right camera model in COLMAP and undistortion.
 
@@ -62,6 +72,10 @@ print("blurriest 10% (consider deleting):")
 for s, p in scores[: max(1, len(scores) // 10)]:
     print(f"{s:8.1f}  {p}")
 ```
+
+The figure shows what this script sees on a synthetic clip: 60 frames (30 s at 2 frames per second) of a textured scene with random camera shake. The score uses the same 3×3 Laplacian kernel as `cv2.Laplacian` with its default aperture.
+
+{% include blog_figure.liquid path="assets/img/blog/neural-rendering/06-blur-score.svg" caption="Sharpness score Var(∇²I) of 60 synthetic video frames. Red bars are the blurriest 10% that the script prints; they are exactly the six frames with the strongest simulated motion blur. Top: the sharpest, a median and the blurriest frame (crops) with their scores." %}
 
 ## 2. Camera poses with COLMAP
 
@@ -133,6 +147,12 @@ colmap gui --import_path sparse/0 --database_path distorted/database.db --image_
 ```
 
 Look for: **almost all images registered** (if COLMAP split the scene into several models, `distorted/sparse/1`, `2`, ... exist and the capture lacks overlap somewhere), a **mean reprojection error below about 1 px**, and a point cloud and camera trajectory that look like your scene. If cameras are missing, add photos bridging the gap rather than tuning parameters.
+
+The next two figures show what a healthy result and the most common failure look like on toy data. The first is a small synthetic reconstruction: 42 cameras in two orbits, feature positions perturbed by 0.5 px of noise, every point seen in at least 3 images triangulated linearly (post 1). Its mean reprojection error is 0.61 px, below the 1 px rule of thumb. The second shows why COLMAP splits a capture into several models: when no photo bridges a gap, the images on either side share no content, the co-visibility graph falls apart into two connected components, and incremental SfM can only produce `sparse/0` and `sparse/1`.
+
+{% include blog_figure.liquid path="assets/img/blog/neural-rendering/06-colmap-sparse.svg" localized="true" caption="A toy sparse model: camera frusta (red) of two orbits around a ball on a pedestal, and the triangulated points coloured by how many images observe them. Right: histogram of the reprojection errors of all observations, with the mean (black) and the 1 px threshold (dashed red)." %}
+
+{% include blog_figure.liquid path="assets/img/blog/neural-rendering/06-registration-gap.svg" caption="Walking along a wall (top view, wall at y = 0) with one photo every 0.25 m at 2 m distance and a 60° field of view. Top: no photos for about 3 m, wider than the 2.3 m footprint of one photo, so the images split into two groups (sparse/0 and sparse/1). Bottom: with the bridging photos, one model. Right: the fraction of shared wall points between images i and j; two separate blocks mean two models." %}
 
 ## 3. Training
 
@@ -208,6 +228,10 @@ Watch the training PSNR and the number of Gaussians. The count grows quickly unt
 
 A 3DGS `.ply` is a point cloud with extra per-vertex properties: `x y z`, `nx ny nz` (unused), `f_dc_0..2` (degree-0 SH), `f_rest_0..44` (higher SH), `opacity` (logit), `scale_0..2` (log), `rot_0..3` (quaternion $w, x, y, z$, unnormalized). The following script prints statistics and removes the most common junk: nearly transparent Gaussians, a few huge blobs and far-away outliers.
 
+Stored this way, every Gaussian costs a fixed number of 32-bit floats, as the figure below counts; this is why compression matters so much for the web and VR.
+
+{% include blog_figure.liquid path="assets/img/blog/neural-rendering/06-ply-layout.svg" localized="true" caption="Per-Gaussian layout of a 3DGS .ply: 62 float32 values = 248 bytes, so one million Gaussians take about 248 MB before compression. The right column is the activation the loader applies to each stored field (sigmoid for the opacity logit, exp for log-scales, normalization for the quaternion, 0.5 + C0·f_dc for the base colour)." %}
+
 ```python
 import sys
 import numpy as np
@@ -246,6 +270,10 @@ if __name__ == "__main__":
 pip install plyfile
 python clean_ply.py output/scene/point_cloud/iteration_30000/point_cloud.ply scene_clean.ply
 ```
+
+The figure runs exactly this `clean()` with its default thresholds on a synthetic cloud: an object, a ring of faint floaters near the cameras, a few huge blobs and scattered far-away Gaussians. Note that the two percentile tests always remove 0.5% and 1% of the Gaussians, even from a perfect model; this is one reason the cleaning is called blunt below.
+
+{% include blog_figure.liquid path="assets/img/blog/neural-rendering/06-clean.svg" localized="true" caption="The clean() function on a toy cloud of 19,280 Gaussians (top view). Red: removed because opacity ≤ 0.02 (the floater ring); orange: in the largest 0.5% of scales; blue: in the farthest 1% from the median centre (most lie outside the plotted window). Right: the three quantities with their thresholds, on log-scaled counts. 18,375 Gaussians are kept." %}
 
 Automatic cleaning is a blunt tool; the percentiles are starting points. For precise edits (cropping to a box, deleting floaters by hand, rotating the scene upright) use **SuperSplat**, PlayCanvas's open-source browser editor at [superspl.at](https://superspl.at/): drag the `.ply` onto the page, select and delete Gaussians, then export a `.ply` or a compressed format. Compressed formats are typically several times smaller than the raw `.ply`, which matters for the web and VR.
 
@@ -317,6 +345,10 @@ python -m http.server 8000      # then open http://localhost:8000
 
 The rotation line matters: COLMAP and 3DGS use the OpenCV convention with $y$ pointing down (post 1), while three.js uses $y$ up. The quaternion $(x, y, z, w) = (1, 0, 0, 0)$ in three.js's order is a 180° rotation about the $x$ axis. If your scene is still tilted, it is because COLMAP's world frame is arbitrary (post 1, gauge freedom): straighten it once in SuperSplat, or estimate the up direction as the average of the cameras' up vectors.
 
+The figure applies this rotation to a toy scene expressed in a COLMAP-like frame, where gravity points along $+y$.
+
+{% include blog_figure.liquid path="assets/img/blog/neural-rendering/06-y-down-to-y-up.svg" localized="true" caption="Left: a small house reconstructed in a y-down frame and displayed with three.js axes (y up, z towards the viewer) is upside down, and the capture camera's image-down axis y_cam points up. Right: after the 180° rotation about x, i.e. the matrix diag(1, −1, −1), the floor (orange) is at the bottom and y_cam points down, as it did in the real world." %}
+
 Other viewers worth knowing: the PlayCanvas engine and SuperSplat's own publishing (which creates a shareable viewer page), [GaussianSplats3D](https://github.com/mkkellogg/GaussianSplats3D) for three.js, the original WebGL viewer [antimatter15/splat](https://github.com/antimatter15/splat), and the official SIBR viewer on the desktop.
 
 ## 6. View it in VR
@@ -327,6 +359,10 @@ The page above is already VR-ready: `renderer.xr.enabled` plus the **Enter VR** 
 2. **Mind the scale and origin.** SfM units are arbitrary (post 1). If the room looks like a doll house or a cathedral, scale the `SplatMesh` uniformly (`splat.scale.setScalar(k)`) using a known distance, and position it so the floor is at $y = 0$ for a `local-floor` reference space.
 3. **Respect the budget.** A standalone headset renders two views at 72–90 Hz on a mobile GPU. Spark's documentation suggests budgets of roughly half a million to three quarters of a million splats for WebXR, compared with millions on desktop. Reduce the count by training with a budget (gsplat `mcmc`, e.g. via its `--strategy.cap_max` option), raising the densification threshold, or decimating in SuperSplat, and prefer compressed files.
 4. **Reduce popping and aliasing.** Head motion exposes sorting pops and aliasing. Train with `--antialiasing` (official code) or `--antialiased` (gsplat) if you will view the scene at different distances from the capture.
+
+Why a wrong scale is so noticeable is shown in the figure below. The two eye cameras are separated by the interpupillary distance (IPD), about 63 mm for an average adult, and the brain reads depth from the angle between the two lines of sight. Scaling the scene by $k$ is equivalent to scaling your IPD by $1/k$: a scene that is four times too small has four times the disparity of the real one and feels like a miniature (point 2 above).
+
+{% include blog_figure.liquid path="assets/img/blog/neural-rendering/06-vr-stereo.svg" localized="true" caption="Left: top view of the two eyes (L, R) 63 mm apart looking at a point at depth z; the angle between the rays is the disparity δ = 2 arctan(IPD / 2z). Right: δ against the true depth for a correctly scaled splat, for one scaled by 0.25 (doll house: everything looks near and small) and by 4 (cathedral)." %}
 
 Spark also includes its own WebXR helper (`SparkXr`) with controller and hand-tracking locomotion, and SuperSplat's published viewer supports WebXR in AR and VR. For native engines, community plugins bring Gaussian splats to Unity and Unreal; check that they support single-pass stereo before you rely on them for VR.
 

@@ -16,6 +16,10 @@ related_posts: false
 
 在你亲手采集并探索过一个属于自己的场景之前，前面五篇的理论价值有限。本教程在一块消费级 GPU 上走完整条流水线（pipeline）：**采集 → 位姿（COLMAP）→ 训练（3DGS）→ 清理与导出 → 在浏览器和 VR 中查看。** 每一步都与理论相对应：[第 1 篇]({{ '/blog/2026/neural-rendering-01-cameras-and-multiview-geometry/' | relative_url }})中的相机模型和 SfM，[第 4 篇]({{ '/blog/2026/neural-rendering-04-3d-gaussian-splatting/' | relative_url }})中的优化，以及[第 5 篇]({{ '/blog/2026/neural-rendering-05-3dgs-frontiers/' | relative_url }})中的抗锯齿和 VR 相关问题。当出现问题时（而问题总会出现），文末的失败模式表会告诉你应该回头复习哪些思想。
 
+下图就是本教程的地图：六个阶段、每个阶段使用的工具，以及每个阶段交给下一阶段的文件。
+
+{% include blog_figure.liquid path="assets/img/blog/neural-rendering/06-pipeline.svg" localized="true" caption="整个工作流程一览。每个方框对应本文的一节（§1 到 §6）；彩色等宽字体那一行是该阶段产出的文件，也正是下一阶段读取的输入。" %}
+
 工具变化得很快。下面的命令已对照 COLMAP、官方 3DGS 仓库、gsplat 和 nerfstudio 的当前源码检查过；如果你所用版本中某个参数已被重命名，请以 `--help` 为准。
 
 ## 前置条件
@@ -36,6 +40,12 @@ related_posts: false
 - 对于物体：在不同高度上做两到三次**环绕拍摄**（orbit）（例如平视、从上方、从低处），并让物体占据画面的相当一部分。对于房间：沿着墙面朝内走一圈，然后再朝外走第二圈。
 - **光照要均匀。** 阴天的日光或漫射的室内照明最为理想；硬阴影和高光会被“烘焙”进模型。
 - 典型规模：一个物体或一个小房间需要 **100–300 张照片**；更大的场景需要几百张。
+
+下面两张图用一个“桌上的球”的玩具采集，把前几条规则具体化。在第一张图中，如果一个表面点被两张拍摄方向相差至少 5° 的照片看到，就可以被三角化（第 1 篇），我们称它被覆盖。三圈环绕覆盖了全部可见表面；原地旋转什么也覆盖不了，因为所有光线都从同一点出发；单条直线只覆盖它正对的那一面。第二张图对同一个玩具场景（房间里的一个球，假设水平视场角为 60°）做光线投射，测量每张照片有多少内容会在下一张中再次出现。当环绕半径 r = 2 时，60–80% 的规则对应约 11°–22° 的步长，即每圈约 16–33 张照片；两三圈再加上难免要删掉的废片，就落在上面所说的 100–300 张范围内。
+
+{% include blog_figure.liquid path="assets/img/blog/neural-rendering/06-capture-paths.svg" localized="true" caption="球的玩具采集（z 轴朝上）：左，在低、平视、高三个位置各环绕一圈、每圈 40 张；中，在一个点上原地摇摄 40 张；右，沿一条直线拍 40 张。紫色点可以三角化（被两张光线方向相差至少 5° 的照片看到），灰色点不行；百分比是被覆盖的比例。" %}
+
+{% include blog_figure.liquid path="assets/img/blog/neural-rendering/06-overlap.svg" localized="true" caption="环绕拍摄时相邻照片之间的重叠比例，通过对一个玩具房间做光线投射计算得到（视场角 60°），共三种环绕半径（r = 2 约为物体半径的三倍）。阴影带是推荐的 60–80%；底部的横条标出落在该区间内的步长角，顶部坐标轴把步长换算成每圈的照片数。" %}
 
 **避免：** 运动模糊（使用充足的光线和较快的快门，或者用拍照代替录像）、移动的人和物体、镜子、玻璃和非常光亮的表面、大面积无纹理的墙壁，以及数码变焦。超广角和鱼眼镜头也可以用，但需要在 COLMAP 中选择正确的相机模型并进行去畸变（undistortion）。
 
@@ -62,6 +72,10 @@ print("blurriest 10% (consider deleting):")
 for s, p in scores[: max(1, len(scores) // 10)]:
     print(f"{s:8.1f}  {p}")
 ```
+
+下图展示了这个脚本在一段合成视频上的结果：一个带纹理的场景，60 帧（以每秒 2 帧抽取的 30 秒），相机随机抖动。评分使用与 `cv2.Laplacian` 默认孔径相同的 3×3 拉普拉斯核。
+
+{% include blog_figure.liquid path="assets/img/blog/neural-rendering/06-blur-score.svg" caption="60 帧合成视频的清晰度评分 Var(∇²I)。红色柱是脚本打印出的最模糊的 10%，它们恰好就是模拟运动模糊最强的那 6 帧。上方：最清晰、中位数和最模糊的帧（局部裁剪）及其评分。" %}
 
 ## 2. 用 COLMAP 估计相机位姿
 
@@ -133,6 +147,12 @@ colmap gui --import_path sparse/0 --database_path distorted/database.db --image_
 ```
 
 需要检查的是：**几乎所有图像都已注册**（如果 COLMAP 把场景拆成了多个模型，就会出现 `distorted/sparse/1`、`2`……，说明采集在某处缺乏重叠）、**平均重投影误差（reprojection error）低于约 1 px**，以及点云和相机轨迹看起来与你的场景相符。如果有相机缺失，应补拍能衔接空缺的照片，而不是去调参数。
+
+接下来的两张图用玩具数据展示健康的结果和最常见的失败是什么样子。第一张是一个小型合成重建：两圈共 42 台相机，特征点位置加上 0.5 px 的噪声，所有被至少 3 张图像看到的点都用线性方法三角化（第 1 篇）。它的平均重投影误差是 0.61 px，低于 1 px 的经验标准。第二张说明 COLMAP 为什么会把一次采集拆成多个模型：如果没有照片衔接空缺，空缺两侧的图像就没有共同内容，共视图（co-visibility graph）分裂成两个连通分量，增量式 SfM 只能得到 `sparse/0` 和 `sparse/1`。
+
+{% include blog_figure.liquid path="assets/img/blog/neural-rendering/06-colmap-sparse.svg" localized="true" caption="一个玩具稀疏模型：围绕底座上的球的两圈相机视锥（红色），以及按观测图像数着色的三角化点。右：所有观测的重投影误差直方图，黑线为均值，红色虚线为 1 px 阈值。" %}
+
+{% include blog_figure.liquid path="assets/img/blog/neural-rendering/06-registration-gap.svg" caption="沿着一面墙行走（俯视图，墙位于 y = 0），在距墙 2 m 处每 0.25 m 拍一张，视场角 60°。上：约 3 m 没有拍照，比单张照片 2.3 m 的覆盖宽度还宽，于是图像分成两组（sparse/0 和 sparse/1）。下：补上衔接照片后只有一个模型。右：图像 i 和 j 之间共享墙面点的比例；两个分离的方块意味着两个模型。" %}
 
 ## 3. 训练
 
@@ -208,6 +228,10 @@ Splatfacto 基于 gsplat 构建。注意，`ns-export gaussian-splat` 只适用�
 
 3DGS 的 `.ply` 是一个带有额外逐顶点属性的点云：`x y z`、`nx ny nz`（未使用）、`f_dc_0..2`（0 阶 SH）、`f_rest_0..44`（高阶 SH）、`opacity`（logit）、`scale_0..2`（对数）、`rot_0..3`（四元数 $w, x, y, z$，未归一化）。下面的脚本会打印统计信息，并移除最常见的垃圾：几乎透明的高斯、少数巨大的团块以及远处的离群点。
 
+以这种方式存储时，每个高斯都占用固定数量的 32 位浮点数，如下图所示；这就是压缩对网页和 VR 如此重要的原因。
+
+{% include blog_figure.liquid path="assets/img/blog/neural-rendering/06-ply-layout.svg" localized="true" caption="3DGS .ply 中每个高斯的存储布局：62 个 float32 = 248 字节，所以一百万个高斯在压缩前约占 248 MB。右列是加载器对每个存储字段施加的激活（不透明度 logit 用 sigmoid，对数尺度用 exp，四元数做归一化，基础颜色为 0.5 + C0·f_dc）。" %}
+
 ```python
 import sys
 import numpy as np
@@ -246,6 +270,10 @@ if __name__ == "__main__":
 pip install plyfile
 python clean_ply.py output/scene/point_cloud/iteration_30000/point_cloud.ply scene_clean.ply
 ```
+
+下图在一个合成点云上原样运行这个 `clean()`（使用默认阈值）：一个物体、相机附近一圈很淡的漂浮物、少数巨大的团块，以及散落在远处的高斯。注意，两个百分位数测试总会移除 0.5% 和 1% 的高斯，即使模型完美无缺；这也是下文说自动清理“粗糙”的原因之一。
+
+{% include blog_figure.liquid path="assets/img/blog/neural-rendering/06-clean.svg" localized="true" caption="在 19,280 个高斯的玩具点云上运行 clean()（俯视图）。红色：因不透明度 ≤ 0.02 被移除（漂浮物环）；橙色：尺度位于最大的 0.5%；蓝色：到中位数中心的距离位于最远的 1%（大多在绘图窗口之外）。右：三个量及其阈值，计数为对数坐标。最终保留 18,375 个高斯。" %}
 
 自动清理是一种粗糙的工具；这些百分位数只是起点。对于精确的编辑（裁剪到一个包围盒、手动删除漂浮物（floaters）、把场景旋转摆正），请使用 **SuperSplat**，它是 PlayCanvas 开源的浏览器编辑器，地址是 [superspl.at](https://superspl.at/)：把 `.ply` 拖到页面上，选中并删除高斯，然后导出 `.ply` 或某种压缩格式。压缩格式通常比原始 `.ply` 小好几倍，这对网页和 VR 很重要。
 
@@ -317,6 +345,10 @@ python -m http.server 8000      # then open http://localhost:8000
 
 旋转那一行很重要：COLMAP 和 3DGS 使用 $y$ 轴朝下的 OpenCV 约定（第 1 篇），而 three.js 使用 $y$ 轴朝上。按 three.js 的分量顺序，四元数 $(x, y, z, w) = (1, 0, 0, 0)$ 表示绕 $x$ 轴旋转 180°。如果场景仍然是倾斜的，那是因为 COLMAP 的世界坐标系是任意的（第 1 篇，规范自由度（gauge freedom））：在 SuperSplat 中把它摆正一次即可，或者用各相机“上”向量的平均值来估计向上方向。
 
+下图把这个旋转应用到一个以类似 COLMAP 的坐标系表示的玩具场景上，其中重力沿 $+y$ 方向。
+
+{% include blog_figure.liquid path="assets/img/blog/neural-rendering/06-y-down-to-y-up.svg" localized="true" caption="左：在 y 朝下坐标系中重建的小房子，用 three.js 的坐标轴（y 朝上，z 指向观察者）显示时是倒过来的，采集相机的图像向下轴 y_cam 指向上方。右：绕 x 轴旋转 180°（即矩阵 diag(1, −1, −1)）之后，地面（橙色）回到下方，y_cam 指向下方，与真实世界一致。" %}
+
 其他值得了解的查看器：PlayCanvas 引擎和 SuperSplat 自带的发布功能（可以生成一个可分享的查看器页面）、用于 three.js 的 [GaussianSplats3D](https://github.com/mkkellogg/GaussianSplats3D)、最初的 WebGL 查看器 [antimatter15/splat](https://github.com/antimatter15/splat)，以及桌面端的官方 SIBR 查看器。
 
 ## 6. 在 VR 中查看
@@ -327,6 +359,10 @@ python -m http.server 8000      # then open http://localhost:8000
 2. **注意尺度和原点。** SfM 的单位是任意的（第 1 篇）。如果房间看起来像个玩具屋或一座大教堂，就利用一段已知距离对 `SplatMesh` 做均匀缩放（`splat.scale.setScalar(k)`），并调整其位置，使得在 `local-floor` 参考空间下地面位于 $y = 0$。
 3. **遵守预算。** 一体机头显要在移动 GPU 上以 72–90 Hz 渲染两个视图。Spark 的文档建议 WebXR 的预算大约为五十万到七十五万个泼溅点，而桌面端则是数百万个。可以通过带预算的训练（gsplat 的 `mcmc`，例如通过其 `--strategy.cap_max` 选项）、提高致密化阈值，或在 SuperSplat 中抽稀来减少数量，并优先使用压缩文件。
 4. **减少跳变和走样。** 头部运动会暴露排序造成的跳变（popping）和走样（aliasing）。如果你会在与采集时不同的距离上观看场景，请使用 `--antialiasing`（官方代码）或 `--antialiased`（gsplat）进行训练。
+
+尺度错误为什么如此明显，见下图。两只眼睛对应的相机相隔一个瞳距（interpupillary distance, IPD），成年人平均约 63 mm，大脑根据两条视线之间的夹角来判断深度。把场景缩放 $k$ 倍，等价于把你的瞳距缩放 $1/k$ 倍：一个小了四倍的场景，其视差是真实场景的四倍，看起来就像一个微缩模型（上面第 2 点）。
+
+{% include blog_figure.liquid path="assets/img/blog/neural-rendering/06-vr-stereo.svg" localized="true" caption="左：俯视图，两只眼睛（L、R）相距 63 mm，注视深度为 z 的一点；两条视线的夹角就是视差 δ = 2 arctan(IPD / 2z)。右：δ 随真实深度的变化，分别对应尺度正确的泼溅模型、缩小为 0.25 倍的模型（玩偶屋：一切看起来又近又小）和放大 4 倍的模型（大教堂）。" %}
 
 Spark 还自带 WebXR 辅助工具（`SparkXr`），支持手柄和手部追踪移动；SuperSplat 发布的查看器也支持 AR 和 VR 模式下的 WebXR。对于原生引擎，社区插件已经把高斯泼溅带进了 Unity 和 Unreal；在依赖它们做 VR 之前，请确认它们支持单通道立体渲染（single-pass stereo）。
 

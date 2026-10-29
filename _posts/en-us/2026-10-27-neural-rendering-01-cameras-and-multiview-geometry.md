@@ -43,6 +43,12 @@ Here $\lambda$ is the depth of the point in the camera frame, so $u = f_x\, X_c/
 - $f_x, f_y$ are the focal length in pixels: $f_x = F / \text{pixel width}$ for a physical focal length $F$. With a horizontal field of view $\theta_x$ and image width $W$, $f_x = \frac{W}{2\tan(\theta_x/2)}$.
 - $(c_x, c_y)$ is the **principal point**, where the optical axis pierces the image, usually close to the image centre.
 
+The figure below draws exactly this mapping for one point; the widget after it lets you change $f$ and the point yourself.
+
+{% include blog_figure.liquid path="assets/img/blog/neural-rendering/01-pinhole.svg" caption="The pinhole model in the OpenCV camera frame (right-handed: $x$ right, $y$ down, $z$ forward). Left: the ray from the centre $\mathbf C$ to $\mathbf X_c=(0.6,-0.3,2.5)$ crosses the plane $Z_c=1$ at $(x,y,1)=(0.24,-0.12,1)$; on that plane the image is a $W/f$ by $H/f$ rectangle centred on the principal point. Right: the same point in pixels with the $K$ of section 1.4 ($640\times480$, 60° field of view, $f=554.3$): $u=f_x X_c/Z_c+c_x=453.0$ and $v=173.5$. Note that $v$ grows downwards." %}
+
+{% include widget.liquid name="neural-rendering-camera" height="560" caption="Interactive pinhole camera (OpenCV frame). Move the sliders or drag the dot in the image and watch $(u,v)$ follow $u=f\,X_c/Z_c+c_x$, $v=f\,Y_c/Z_c+c_y$. A longer focal length shrinks the image rectangle on $Z_c=1$ (a narrower field of view) and pushes every projection away from the principal point; moving the point along its ray (changing only $Z_c$ with $X_c/Z_c$ fixed) does not move the pixel at all." %}
+
 ### 1.2 Extrinsics, camera centres and conventions
 
 $[R \mid \mathbf t]$ maps **world to camera**: $\mathbf X_c = R\mathbf X_w + \mathbf t$. The camera centre is the point that maps to the origin, $\mathbf C = -R^\top \mathbf t$. Many neural rendering codebases instead store the inverse, the **camera-to-world** matrix
@@ -60,6 +66,8 @@ whose columns are the camera's right/down/forward axes and its position expresse
 
 Converting between them is a right-multiplication of $T_{c2w}$ by $\mathrm{diag}(1, -1, -1, 1)$ (flip the camera's $y$ and $z$ axes). COLMAP itself stores, per image, a world-to-camera quaternion `QW QX QY QZ` and translation `TX TY TZ`.
 
+{% include blog_figure.liquid path="assets/img/blog/neural-rendering/01-extrinsics.svg" caption="Left: the two cameras created by the code of section 1.4 ($\mathbf C_1=(0,-0.5,-4)$, $\mathbf C_2=(2,-0.8,-3.5)$, both looking at the origin) among the 200 random points, in the world frame (world 'up' is $-Y$). The red, green and blue arrows at each camera are the three rows of its $R$: the camera's $x$ (right), $y$ (down) and $z$ (forward) axes in world coordinates. Right: one physical camera described in the OpenCV/COLMAP and the OpenGL/Blender conventions; $x$ agrees while $y$ and $z$ flip, which is the $\mathrm{diag}(1,-1,-1)$ conversion." %}
+
 ### 1.3 Lens distortion
 
 Real lenses bend straight lines. The standard Brown–Conrady model (used by OpenCV and by COLMAP's `OPENCV` camera) acts on the normalized image coordinates $x = X_c/Z_c$, $y = Y_c/Z_c$ before the intrinsics are applied. With $r^2 = x^2 + y^2$:
@@ -72,6 +80,8 @@ y_d &= y\,(1 + k_1 r^2 + k_2 r^4 + k_3 r^6) + p_1 (r^2 + 2y^2) + 2p_2 xy,
 $$
 
 then $u = f_x x_d + c_x$, $v = f_y y_d + c_y$. The $k_i$ terms are **radial** distortion (barrel for $k_1<0$, pincushion for $k_1>0$) and $p_1, p_2$ are **tangential** distortion from a lens that is not perfectly parallel to the sensor. Fisheye lenses need a different model (COLMAP's `OPENCV_FISHEYE`, an equidistant projection with polynomial correction).
+
+{% include blog_figure.liquid path="assets/img/blog/neural-rendering/01-distortion.svg" caption="The Brown–Conrady model applied to a regular pixel grid (gray) of the $640\times480$ image with the `project` function of section 1.4. Left: $k_1=-0.2$ (barrel) pulls the outer grid lines towards the centre. Middle: $k_1=+0.2$ (pincushion) pushes them out. Right: tangential terms $p_1=p_2=0.02$ distort the grid asymmetrically. The principal point (red cross) does not move, and the displacement grows with the distance $r$ from it." %}
 
 The original 3DGS rasterizer only supports undistorted pinhole cameras, which is why its preprocessing script runs COLMAP's `image_undistorter` and then trains on `PINHOLE` images. We will meet this again in the tutorial (post 6).
 
@@ -87,7 +97,7 @@ import numpy as np
 def look_at(C, target, up=np.array([0.0, -1.0, 0.0])):
     """World-to-camera (R, t) in the OpenCV convention: x right, y down, z forward."""
     z = target - C; z /= np.linalg.norm(z)
-    x = np.cross(up, z); x /= np.linalg.norm(x)
+    x = np.cross(z, up); x /= np.linalg.norm(x)
     y = np.cross(z, x)
     R = np.stack([x, y, z])          # rows are the camera axes in world coordinates
     t = -R @ C
@@ -128,6 +138,8 @@ Note that `look_at` uses "up" $=(0,-1,0)$ because in the OpenCV convention the i
 
 Take two cameras observing the same 3D point $\mathbf X$, at pixels $\mathbf x_1$ and $\mathbf x_2$. The two camera centres and $\mathbf X$ span a plane, the **epipolar plane**. It intersects each image in a line, the **epipolar line**, so given $\mathbf x_1$ the match $\mathbf x_2$ must lie on a known line in image 2. The line joining the two centres (the **baseline**) pierces the images at the **epipoles**.
 
+{% include blog_figure.liquid path="assets/img/blog/neural-rendering/01-epipolar-3d.svg" caption="Epipolar geometry for the two cameras of section 1.4, drawn to scale. The centres $\mathbf C_1$, $\mathbf C_2$ and a point $\mathbf X$ span the epipolar plane (yellow); the black segment joining the centres is the baseline. The plane cuts each image plane along the dashed epipolar line, which passes through the projection $\mathbf x_1$ or $\mathbf x_2$. Because this camera pair moves mostly sideways, the epipoles lie far outside both images (next figure)." %}
+
 Algebraically, let the relative pose be $\mathbf X_2 = R\,\mathbf X_1 + \mathbf t$ (camera-1 coordinates to camera-2 coordinates), and let $\hat{\mathbf x}_i = K_i^{-1}\tilde{\mathbf x}_i$ be normalized (calibrated) homogeneous coordinates. The vectors $\hat{\mathbf x}_2$, $\mathbf t$ and $R\hat{\mathbf x}_1$ are coplanar, so their triple product vanishes:
 
 $$
@@ -148,6 +160,10 @@ $$
 
 with $F$ the **fundamental matrix**. $F\tilde{\mathbf x}_1$ is the epipolar line in image 2, $F^\top \tilde{\mathbf x}_2$ the line in image 1, and the epipoles are the null vectors $F\mathbf e_1 = 0$, $F^\top \mathbf e_2 = 0$.
 
+The next figure shows these lines for the cameras of section 1.4.
+
+{% include blog_figure.liquid path="assets/img/blog/neural-rendering/01-epipolar-images.svg" caption="Epipolar lines in pixels, computed from the ground-truth $F=K^{-\top}E\,K^{-1}$ of the two cameras. For three highlighted points, each coloured line in image 2 is $F\tilde{\mathbf x}_1$ and passes through the matching point; each line in image 1 is $F^\top\tilde{\mathbf x}_2$. All epipolar lines of an image meet at its epipole (black square), the null vector of $F$ or $F^\top$ and the projection of the other camera's centre: here $\mathbf e_1\approx(2735,-194)$ and $\mathbf e_2\approx(-1495,410)$, far outside the $640\times480$ frames (purple)." %}
+
 Useful facts:
 
 - $F$ has rank 2 and 7 degrees of freedom (9 entries, minus scale, minus $\det F = 0$).
@@ -164,6 +180,8 @@ $$
 so stacking $N \ge 8$ correspondences gives $A\,\operatorname{vec}(F) = \mathbf 0$ with $A \in \mathbb R^{N\times 9}$. The least-squares solution with $\lVert \operatorname{vec}(F)\rVert = 1$ is the right singular vector of $A$ with the smallest singular value. Then we enforce rank 2 by zeroing the smallest singular value of $F$.
 
 Applied naively to pixel coordinates this is badly conditioned: entries of $A$ range from 1 to $10^5$. Hartley (1997) showed that simply translating and scaling each image's points so their centroid is at the origin and their mean distance is $\sqrt 2$ makes the linear algorithm competitive with iterative methods. Solve for $\hat F$ in normalized coordinates, then undo: $F = T_2^\top \hat F T_1$.
+
+{% include blog_figure.liquid path="assets/img/blog/neural-rendering/01-normalization.svg" caption="Hartley normalization of the 200 noisy points of image 1 used by `eight_point`. Left: raw homogeneous pixels, with coordinates in the hundreds next to the constant 1. Right: after $T_1$ the centroid (red cross) is at the origin and the mean distance to it is $\sqrt 2$ (dashed circle), so all entries of $A$ have a similar magnitude." %}
 
 ```python
 def normalize(pts):
@@ -209,6 +227,8 @@ $$
 
 where $\mathbf u_3$ is the last column of $U$ (signs of $U$, $V$ are fixed so that both have determinant $+1$). Only one candidate places the triangulated points in front of both cameras (the **cheirality** check), so we triangulate with each and count. This is what `cv2.recoverPose` does.
 
+{% include blog_figure.liquid path="assets/img/blog/neural-rendering/01-four-poses.svg" caption="The four decompositions of $E$ in the post's example, seen from above in camera-1 coordinates ($x$ to the right, the viewing direction $z$ up the page, $\lVert\mathbf t\rVert=1$). Camera 1 is purple, the candidate camera 2 orange, and the dots are all 200 points triangulated with that candidate. Only one candidate (green, $200/200$) places the points in front of both cameras; the others put them behind camera 1, camera 2 or both. This count is the cheirality test in `pose_from_essential`." %}
+
 ## 3. Triangulation
 
 Given two (or more) projection matrices $P_i$ and observations $\mathbf x_i = (u_i, v_i)$, the **direct linear transform (DLT)** uses the fact that $\tilde{\mathbf x}_i \times P_i \tilde{\mathbf X} = \mathbf 0$. Writing $\mathbf p_i^{k\top}$ for the $k$-th row of $P_i$, each view contributes two independent equations:
@@ -223,6 +243,8 @@ v_2 \mathbf p_2^{3\top} - \mathbf p_2^{2\top}
 $$
 
 Again, take the smallest right singular vector and dehomogenize. The DLT minimizes an algebraic error; the statistically optimal answer minimizes reprojection error, which is what bundle adjustment will do anyway. Triangulation is ill-conditioned when the **triangulation angle** between the two rays is small: a tiny pixel error then moves the point far along the ray. COLMAP therefore only accepts points with a minimum angle (1.5 degrees by default) and rejects those with large reprojection error.
+
+{% include blog_figure.liquid path="assets/img/blog/neural-rendering/01-triangulation.svg" caption="Why the triangulation angle matters. Left and middle: 400 DLT triangulations (`triangulate`) of the same point (star) from two cameras 4 units away, with 2 px of Gaussian pixel noise, seen from above. With a wide baseline ($\alpha=26.4°$) the estimates form a small blob; with a narrow one ($\alpha=3.5°$) they smear out along the viewing direction. Right: median 3D error against $\alpha$ for 1 px noise (log–log, 1000 trials per angle). Below COLMAP's default 1.5° threshold (dashed) the median error already exceeds 0.3 units, about 8% of the viewing distance, and it keeps growing as $\alpha$ shrinks." %}
 
 ```python
 def triangulate(P1, P2, x1, x2):
@@ -257,7 +279,7 @@ R, t, Xt = pose_from_essential(E, K, x1, x2)
 R_true = R2 @ R1.T                       # ground-truth relative pose camera 1 -> camera 2
 t_true = t2 - R_true @ t1
 cos = np.clip((np.trace(R.T @ R_true) - 1) / 2, -1, 1)
-print("rotation error (deg):", np.rad2deg(np.arccos(cos)))                 # ~0.16
+print("rotation error (deg):", np.rad2deg(np.arccos(cos)))                 # ~0.15
 print("translation direction cos:", t @ t_true / np.linalg.norm(t_true))   # ~0.9999
 # Xt is in camera-1 coordinates with |t| = 1: compare after fixing the unknown scale
 print("3D error:", np.abs(Xt * np.linalg.norm(t_true) - (X @ R1.T + t1)).mean())
@@ -289,6 +311,8 @@ $$
 $$
 
 where $P$ is block-diagonal with $3\times 3$ blocks (one per point). Eliminating the points with the **Schur complement** leaves a much smaller "reduced camera system" $(B - C P^{-1} C^\top)\,\delta_c = \mathbf g_c - C P^{-1}\mathbf g_p$, after which each point is updated independently. Libraries such as Ceres Solver (used by COLMAP) implement this together with robust losses and automatic differentiation; see Triggs et al., "Bundle Adjustment — A Modern Synthesis" (1999) for the full story.
+
+{% include blog_figure.liquid path="assets/img/blog/neural-rendering/01-ba-sparsity.svg" caption="The structure that makes BA scale, for a toy problem with 4 cameras and 12 points (pattern from `ba_sparsity` below). Left: in $J$ every observation (a pair of rows) touches only the 6 parameters of its camera (blue) and the 3 coordinates of its point (orange). Right: in $J^\top J$ the camera block $B$ and the point block $P$ are block-diagonal; inverting $P$ means inverting independent $3\times3$ blocks, which is why the Schur complement $B-CP^{-1}C^\top$ is cheap." %}
 
 A tiny BA with SciPy, refining our two-view reconstruction (cameras as axis-angle + translation):
 
@@ -342,6 +366,8 @@ print("RMS after: ", np.sqrt(np.mean(sol.fun ** 2)))                   # ~0.16 p
 
 The residual drops from about 0.47 px (the DLT/eight-point solution) to about 0.16 px. Real systems fix the gauge (e.g. hold the first camera and the scale fixed) to make the problem well-posed; here the trust-region solver simply moves along the flat directions harmlessly.
 
+{% include blog_figure.liquid path="assets/img/blog/neural-rendering/01-ba-residuals.svg" localized="true" caption="The bundle adjustment above, run on the post's data. Red arrows are the reprojection residuals $\mathbf r_{ij}$ in image 1, magnified 60 times: before BA (the eight-point + DLT solution, RMS 0.47 px) they are long; after BA (RMS 0.16 px) only short, random residuals remain. Right: histogram of residual lengths over both images." %}
+
 ## 5. Structure-from-Motion and COLMAP
 
 **Structure-from-Motion** recovers camera poses (motion) and a sparse point cloud (structure) from an unordered image collection. Early large-scale systems such as Photo Tourism (Snavely et al., SIGGRAPH 2006) reconstructed landmarks from internet photos; **COLMAP** (Schönberger & Frahm, "Structure-from-Motion Revisited", CVPR 2016) is the open-source incremental SfM system that became the default for neural rendering datasets.
@@ -355,6 +381,10 @@ The residual drops from about 0.47 px (the DLT/eight-point solution) to about 0.
 5. **Image registration.** Repeatedly pick the **next best view** (an unregistered image that sees many already-triangulated points, with a good spatial distribution of those points in the image) and estimate its pose from 2D–3D correspondences with **PnP** (Perspective-n-Point) inside RANSAC.
 6. **Triangulation.** Triangulate new points seen by the newly registered image, with COLMAP's robust multi-view triangulation.
 7. **Bundle adjustment.** Run local BA after each registration and global BA whenever the model has grown substantially, then filter observations with large reprojection error and re-triangulate.
+
+The figure below runs these steps on a synthetic scene.
+
+{% include blog_figure.liquid path="assets/img/blog/neural-rendering/01-sfm-toy.svg" localized="true" caption="A toy incremental SfM in NumPy on 12 synthetic views of a bumpy sphere with 0.5 px noise: eight-point initialization from the first two views (purple), then for each new view linear PnP registration (orange), triangulation with the 1.5° rule, and BA with outlier filtering. Gray frusta are cameras not registered yet. Each snapshot is aligned to the ground truth with a similarity transform (the gauge freedom of section 3); the final 366 points are within 0.5% of the object radius of the truth, with a final RMS reprojection error of 0.45 px." %}
 
 The CVPR 2016 paper's contributions are exactly about making steps 3 and 5–7 robust and complete: a geometric verification strategy that classifies pair geometry (e.g. detecting pure rotation or watermark-like matches), the next-best-view score, robust triangulation, and an iterative BA / re-triangulation / filtering loop.
 
@@ -377,6 +407,8 @@ SfM points are sparse, only where distinctive features exist. **Multi-view stere
 - **Plane sweeping** tests a set of fronto-parallel depth planes: warp the source images onto each plane via the homography $H = K_s (R - \mathbf t \mathbf n^\top / d) K_r^{-1}$ and compare patches (NCC).
 - **PatchMatch stereo** propagates good depth/normal hypotheses between neighbouring pixels with random refinement, which is far cheaper than exhaustive search. COLMAP's MVS (Schönberger et al., "Pixelwise View Selection for Unstructured Multi-View Stereo", ECCV 2016) adds per-pixel source-view selection and geometric consistency so it works on unstructured photo collections.
 - **Learned MVS** such as MVSNet (Yao et al., ECCV 2018) builds a cost volume by differentiable homography warping of CNN features and regularizes it with 3D convolutions.
+
+{% include blog_figure.liquid path="assets/img/blog/neural-rendering/01-plane-sweep.svg" caption="Plane sweeping in a 2D slice of a scene: a randomly textured surface, a reference camera and a source camera. For one reference pixel (purple ray), fronto-parallel planes at depth $d$ (cyan) map its 15-pixel patch into the source image (dashed orange ray), where it is compared by NCC. The NCC curve on the right peaks at $d=3.26$, at the true depth $d^*=3.255$; wrong depths compare unrelated texture and score low." %}
 
 Why does a neural rendering series care? Because NeRF and 3DGS can be seen as **MVS with a differentiable renderer**: instead of matching patches, they optimize a volumetric representation so that rendering reproduces every image. MVS depth is also widely used as a geometric prior or initialization for both.
 

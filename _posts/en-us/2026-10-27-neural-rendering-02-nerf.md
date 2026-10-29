@@ -55,6 +55,10 @@ $$
 
 $T(t)$ is the **transmittance**: the probability that the ray travels from $t_n$ to $t$ without being absorbed. The product $T(t)\sigma(t)$ is the probability density that the ray terminates exactly at $t$, so $C$ is the expected colour at the termination point. It also gives a depth estimate, $\int T\sigma\, t\, dt$, and an opacity, $1 - T(t_f)$.
 
+The figure below evaluates these integrals numerically along two rays of the toy scene from section 7.4 (a soft sphere of radius 0.6 seen from a camera at distance 4): one through the centre of the sphere and one that only grazes its soft boundary.
+
+{% include blog_figure.liquid path="assets/img/blog/neural-rendering/02-ray-integral.svg" caption="Continuous volume rendering along two rays of the toy scene of section 7.4 (camera at (0, 0, 4), near 2, far 6). Top: the density σ along each ray. Middle: the transmittance T(t). The central ray (blue) becomes fully opaque; the grazing ray (orange) only reaches opacity 0.66, so a third of the background shows through. Bottom: Tσ, the probability density of where the ray stops. Its mean t̄ is the expected depth: 3.37 for the central ray, right at the sphere surface 4 − 0.6 = 3.4." %}
+
 ### 2.2 Quadrature: from integral to alpha compositing
 
 We evaluate the field at $N$ samples $t_1 < \dots < t_N$ and let $\delta_i = t_{i+1} - t_i$. Assume $\sigma$ and $\mathbf c$ are constant, $\sigma_i$ and $\mathbf c_i$, on the segment $[t_i, t_{i+1}]$. On that segment, the transmittance from $t_i$ decays as $e^{-\sigma_i (t - t_i)}$, so the segment's contribution is
@@ -77,12 +81,24 @@ $$
 
 This is exactly front-to-back **alpha compositing** with the "over" operator from the graphics series: each sample covers a fraction $\alpha_i$ of what is still visible, and $T_i$ is the visibility remaining in front of it. Keep this formula in mind: in post 4, 3D Gaussian Splatting composites sorted Gaussians with the *same* expression, only with $\alpha_i$ coming from a projected 2D Gaussian rather than from $\sigma_i\delta_i$.
 
+The figure below makes the quadrature concrete on a 1D toy field along one ray: a faint orange "fog" around $t=3$ in front of a dense blue "surface" around $t=4.4$, sampled at $N=32$ stratified positions.
+
+{% include blog_figure.liquid path="assets/img/blog/neural-rendering/02-quadrature.svg" caption="Quadrature on a toy ray with a faint orange fog and a dense blue surface (32 stratified samples in [2, 6]). Top: the continuous density (grey) and the piecewise-constant σᵢ that the estimator assumes on each interval. Middle: the exact transmittance T(t) and the discrete Tᵢ, which follow it closely. Bottom: each bar has area wᵢ and the colour cᵢ of its sample; together the bars approximate the curve Tσ. Right: the exact colour C(r) and the 32-sample estimate Ĉ(r) composited over white agree to three decimals." %}
+
+Read sample by sample, the same estimator is the familiar front-to-back "over" loop:
+
+{% include blog_figure.liquid path="assets/img/blog/neural-rendering/02-compositing.svg" caption="Front-to-back alpha compositing of 16 midpoint samples on the same ray. Row 1: each sample's colour cᵢ drawn with opacity αᵢ over a checkerboard (the number is αᵢ). Row 2: the remaining visibility Tᵢ, which drops a little at the fog and almost to zero at the surface. Row 3: the weights wᵢ = Tᵢαᵢ (scaled to the largest). Row 4: the running colour after i samples, composited over white; after sample 10 it no longer changes, because nothing behind the surface is visible." %}
+
 A few practical details:
 
 - The weights satisfy $\sum_i w_i = 1 - T_{N+1} \le 1$. The remainder is the probability that the ray escapes; adding $(1-\sum_i w_i)\,\mathbf c_{\text{bg}}$ composites a background colour (the Blender synthetic scenes use white).
 - Multiply $\delta_i$ by $\lVert \mathbf d \rVert$ if ray directions are not normalized, so densities are in world units.
 - The last interval is set to a huge value ($10^{10}$) so that the final sample absorbs whatever is left.
 - Samples are **stratified**: $t_i \sim \mathcal U\!\left[t_n + \tfrac{i-1}{N}(t_f - t_n),\, t_n + \tfrac{i}{N}(t_f - t_n)\right]$. Jittering positions each iteration makes the MLP see a continuous set of locations instead of a fixed grid, which avoids aliasing to the sample positions.
+
+Try it yourself: the widget below runs exactly this estimator with midpoint samples. Drag a bump in front of the blue surface or lower the surface's density and watch $T_i$, $w_i$ and the final colour respond; with very few samples the thin surface is missed or smeared.
+
+{% include widget.liquid name="neural-rendering-volume-ray" height="420" caption="Volume rendering along one ray. The top plot is the density σ(t) with three draggable bumps (orange fog, blue surface, and a green surface hidden behind it); the dots are the samples σᵢ. The bottom plot shows the transmittance Tᵢ (purple) and the weights wᵢ as bars in the sample colour. The swatch is Ĉ = Σ wᵢcᵢ + (1 − Σ wᵢ)·white. Lower the blue peak to reveal the green surface. By default the last interval ends at the far bound; the checkbox switches to the code convention δ_N = 10¹⁰, where the last sample absorbs whatever light is left." %}
 
 ## 3. Positional encoding
 
@@ -94,6 +110,14 @@ $$
 
 with $L = 10$ for positions (inputs normalized to roughly $[-1,1]$) and $L = 4$ for directions. The original code also concatenates the raw input $p$ and omits the factor $\pi$; both variants work. Tancik et al. (NeurIPS 2020) explained why this works: through the lens of the neural tangent kernel, a Fourier feature mapping turns the network's effective kernel into a stationary one whose bandwidth is set by the frequencies, so high-frequency detail becomes learnable. Too many frequencies cause noisy, overfitted results; the encoding is a bandwidth knob.
 
+The figure shows what the encoding looks like: each level $k$ doubles the frequency, and two inputs that are close together share their low-frequency entries but differ in the high-frequency ones, which is exactly what lets a network separate them.
+
+{% include blog_figure.liquid path="assets/img/blog/neural-rendering/02-posenc.svg" caption="Left: the encoding functions sin(2ᵏπp) (solid red) and cos(2ᵏπp) (dashed blue) for k = 0..3; each level doubles the frequency. Right: all 20 entries of γ(p) with L = 10 for two nearby inputs p = 0.30 and p = 0.32. The first levels are almost identical; from k ≈ 3 on the two codes diverge, so nearby points become easy to tell apart." %}
+
+To see the bandwidth knob in action, we fitted the same small MLP (3 hidden ReLU layers of width 128, sigmoid output, 1500 full-batch Adam steps, implemented in NumPy) to a $64\times64$ image, once on raw $(x, y)$ and once on $\gamma(x, y)$ with $L = 4$ and $L = 8$, and then evaluated it on a $128\times128$ grid, i.e. also between the training pixels:
+
+{% include blog_figure.liquid path="assets/img/blog/neural-rendering/02-pe-fit.svg" caption="Fitting an image with a coordinate MLP. Top: the target and the network's output on a 128×128 grid (twice the training resolution), with the PSNR on that grid. Bottom: PSNR on the 64×64 training pixels during training. Without encoding (grey) the network stays blurry at 17 dB: the spectral bias. With L = 4 (orange) the stripes and the checkerboard appear. With L = 8 (purple) the training pixels are fitted best (43 dB), but between them the output is noise (9 dB): too many frequencies overfit." %}
+
 ## 4. Network architecture
 
 The MLP in the paper:
@@ -104,6 +128,8 @@ The MLP in the paper:
 
 The structure enforces the first modelling choice: $\sigma$ is computed before the direction is seen.
 
+{% include blog_figure.liquid path="assets/img/blog/neural-rendering/02-mlp.svg" caption="The NeRF MLP with the sizes of the NeRF class in section 7.2. γ(x) (63 numbers) passes through eight 256-wide ReLU layers and is concatenated again before layer 5 (orange skip). σ is read out before the view direction enters; only the 128-wide colour branch sees γ(d) (27 numbers)." %}
+
 ## 5. Hierarchical sampling
 
 Uniform samples waste most evaluations on empty space and occluded regions. NeRF trains **two** networks:
@@ -113,6 +139,10 @@ Uniform samples waste most evaluations on empty space and occluded regions. NeRF
 3. A **fine** network is evaluated at all $N_c + N_f$ sorted samples and produces the final colour.
 
 Both networks are supervised, so the coarse one keeps producing a useful PDF. Later work (Mip-NeRF 360) replaced the coarse NeRF by a tiny "proposal" network trained only to bound the fine weights.
+
+The figure runs `sample_pdf` from section 7.3 on the toy ray of section 2.2: the coarse weights become a PDF, uniform numbers $u$ are pushed through the inverse CDF, and the fine samples pile up where the coarse pass found mass.
+
+{% include blog_figure.liquid path="assets/img/blog/neural-rendering/02-hierarchical.svg" caption="Hierarchical sampling computed with the post's sample_pdf on the toy ray (orange fog, blue surface at t ≈ 4.4). Top: weights of 64 stratified coarse samples. Middle: the piecewise-constant PDF on the bins between sample midpoints (grey) and its CDF (purple); each orange line takes a uniform u to the t where the CDF reaches it. Bottom: the 128 fine samples crowd into the fog and the surface, while the empty space after t ≈ 4.6 gets none." %}
 
 ## 6. Training
 
@@ -149,6 +179,10 @@ def get_rays(H, W, focal, c2w):
 ```
 
 The minus signs come from the OpenGL camera convention used by NeRF's `transforms.json` (see the table in post 1): image rows grow downwards while camera $y$ points up, and the camera looks along $-z$. For COLMAP (OpenCV) poses you would drop both minus signs.
+
+The figure draws `get_rays` for the $32\times32$ camera of the toy experiment in section 7.4: every pixel centre on the image plane at $z_c=-1$ defines one ray from the camera centre $\mathbf o$.
+
+{% include blog_figure.liquid path="assets/img/blog/neural-rendering/02-rays-3d.svg" caption="Rays from get_rays for the toy camera (H = W = 32, focal = 40, placed by pose_spherical(35, −25, 4)). The grid is the image plane at distance 1 (every 4th pixel line); camera axes follow the OpenGL convention: x_c right (red), y_c up (green), z_c pointing backwards (blue), so the rays leave along −z_c. Seven rays are drawn from the near bound t = 2 (solid; dotted before it); the dots are 24 stratified samples on the central ray, coloured by the toy field where it is dense, grey where it is empty. World axes sit at the sphere centre, y up." %}
 
 ### 7.2 Encoding and network
 
@@ -307,6 +341,10 @@ for step in range(1001):
 
 On a 4-core CPU this takes about a minute and a half. The printed PSNR on the training batch rises from about 7 dB to 19.9 dB at step 250, 30.6 dB at step 750 and 35.5 dB at step 1000: the sphere's geometry appears first, then its colour gradient. Like real NeRFs, the toy model has a slow start while the density is still nearly uniform; with the full $8\times256$ network the same plateau lasts much longer on a CPU, which is why the toy run uses `depth=4` and `width=64`.
 
+The training data of this experiment look as follows; note that `pose_spherical` places the cameras on a rising spiral, so the 20 views see the sphere from below and from above:
+
+{% include blog_figure.liquid path="assets/img/blog/neural-rendering/02-toy-setup.svg" caption="The toy training set. Left: the 20 cameras of pose_spherical(18k, −30 + 3k, 4), k = 0..19, on a spiral around the soft sphere (purple), world y up; the orange frusta are the four views on the right. Right: those views rendered with the ground-truth field and the same quadrature (32×32 pixels, 256 samples per ray); the colour gradient 0.5 + 0.5 tanh(2x) makes each side of the sphere a different colour." %}
+
 To go from here to a real NeRF: use the full-size network and $L_x = 10$, $N_c = 64$, $N_f = 128$, batches of 4096 rays, a learning-rate schedule, a GPU, and render held-out views in chunks under `torch.no_grad()`.
 
 ## 8. Follow-ups
@@ -325,6 +363,8 @@ $$
 
 so frequencies whose period is smaller than the frustum's footprint are smoothly attenuated, which is prefiltering, like mipmapping. A single MLP then represents the scene at all scales. The same "replace a point by a Gaussian footprint and low-pass it" idea returns in Mip-Splatting (post 5).
 
+{% include blog_figure.liquid path="assets/img/blog/neural-rendering/02-mipnerf.svg" caption="Top: NeRF samples points on an infinitely thin ray, Mip-NeRF splits a cone (radius exaggerated) into conical frustums and replaces each by a Gaussian; the ellipses are the 1σ and 2σ contours computed with Mip-NeRF's closed-form frustum mean and variances. Far frustums are larger. Bottom: the factor exp(−½(2ᵏπ)²σ²) by which IPE scales the level-k sin/cos for three footprint sizes σ: a wider footprint switches off the high frequencies earlier, like choosing a coarser mipmap level." %}
+
 ### 8.2 Mip-NeRF 360: unbounded scenes
 
 Real captures of a whole environment have content at all distances. **Mip-NeRF 360** (Barron et al., CVPR 2022) introduces a **scene contraction** that maps all of space into a ball of radius 2,
@@ -338,6 +378,8 @@ $$
 $$
 
 a small **proposal MLP** trained by "online distillation" to bound the NeRF's weights (replacing the coarse network), and a **distortion loss** that encourages the weights along each ray to be compact, removing floaters. Its dataset of nine unbounded scenes (bicycle, garden, stump, room, counter, kitchen, bonsai, ...) is the standard benchmark that 3DGS also reports on.
+
+{% include blog_figure.liquid path="assets/img/blog/neural-rendering/02-contraction.svg" caption="The Mip-NeRF 360 contraction applied to a 2D grid. Left: grid lines at x, y = ±0.5, ±1, ±2, ±4, ..., ±32 (colour = distance). Right: their images. Everything inside the unit circle (dashed) is unchanged; the rest of the plane, out to infinity, is squeezed into the ring between radius 1 and 2, with distant lines piling up near the outer circle." %}
 
 ### 8.3 NeRF in the Wild
 

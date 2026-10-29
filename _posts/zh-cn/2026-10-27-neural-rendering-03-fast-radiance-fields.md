@@ -34,6 +34,10 @@ related_posts: false
 
 解决方案与这些问题一一对应：把特征**局部地**存储（网格、平面、哈希表），使一个采样点只触及少量参数；用占据结构（occupancy structure）**跳过空白空间**，并在透射率（transmittance）可以忽略时提前终止光线；再把剩下的网络做得**极小**。
 
+下图把这些数字放在一起比较（上），并在一条玩具光线上演示第二个问题（下）：256 个采样中只有一小部分得到不可忽略的权重。
+
+{% include blog_figure.liquid path="assets/img/blog/neural-rendering/03-nerf-cost.svg" localized="true" caption="上：NeRF 前向计算的 FLOPs（对数坐标），由本节的数字算出（一次 $8\times256$ MLP 求值、4096 条光线且每条 256 个采样的一个批次、一帧 $800\times800$ 图像、20 万次训练迭代）。下：一条玩具光线，上面有一个不透明表面和一团很淡的介质，用 256 个均匀采样点采样。透射率 $T(t)$ 在表面处降为零，只有红色刻度（256 个中的 43 个）的权重 $w_i>10^{-3}$：每个灰色刻度都要付出一次完整网络求值的代价，却几乎没有贡献。" %}
+
 一个有用的思维模型是，混合辐射场（hybrid radiance field）可以写成
 
 $$
@@ -60,12 +64,20 @@ $$
 
 （相邻体素之间的差分）来抑制未观测区域中的噪声，同时采用由粗到细（coarse-to-fine）的上采样并剪除空体素。论文报告的优化速度比 NeRF 快约两个数量级，而质量相当。它传达的信息是：关键要素是**可微体渲染器（differentiable volumetric renderer）**，而不是神经网络——这恰恰是 3DGS 后来用另一种基元所下的赌注。Plenoxels 建立在 PlenOctrees（Yu 等，ICCV 2021）之上，后者把一个以 SH 为输出训练好的 NeRF 烘焙（bake）进八叉树（octree），以实现实时渲染。
 
+下图展示了这一做法的两半：一个采样点的三线性权重，以及剪除空白空间后保留下来的体素。
+
+{% include blog_figure.liquid path="assets/img/blog/neural-rendering/03-trilinear-sparse.svg" caption="左：单个体素内的三线性插值。采样点 $\mathbf x$ 在体素内的相对位置为 (0.3, 0.65, 0.4)，每个角点的值以权重 $\prod_k (x_k \text{ 或 } 1-x_k)$ 参与插值；角点处圆点的大小和数字就是这个权重，八个权重之和为 1。右：围绕一个球面的 $16^3$ 网格，只保留表面穿过的体素（4096 个中的 680 个，17%；切掉一块楔形，可以看到内部同样是空的）。这就是 Plenoxels 剪除空体素的思路；真实方法在高得多的分辨率上维护稀疏网格。" %}
+
 ### 2.2 DVGO
 
 **DVGO**（Direct Voxel Grid Optimization，直接体素网格优化；Sun 等，CVPR 2022）同样直接优化网格，但保留了一个小网络：一个稠密的**密度网格（density grid）**和一个**特征网格（feature grid）**，后者插值得到的特征（加上视角方向）由一个浅层 MLP 解码。它的两个发现具有广泛的参考价值：
 
 - **后激活（post-activation）。** 先对原始网格值进行插值，再施加密度激活（softplus，然后 $\alpha = 1 - e^{-\sigma\delta}$）。三线性插值后的激活前值能够在单个体素内表示一个锐利的表面，而对已激活的密度进行插值则做不到。
 - **对抗不良几何的先验。** 直接优化的密度网格很容易过拟合而产生漂浮物（floaters），因此 DVGO 将密度初始化为较低的值，并在粗阶段使用基于可见视角数的学习率。
+
+下图在一维中重现了后激活的论证（练习 4 要求你亲手实现它）。
+
+{% include blog_figure.liquid path="assets/img/blog/neural-rendering/03-post-activation.svg" caption="一维中的 DVGO 后激活。一个 8 单元的网格（竖线为顶点）需要表示位于 $x=0.56$ 的不透明表面，它落在阴影单元内部（点线为目标）。每种方案的 9 个顶点值都用最小二乘拟合。插值不透明度（橙色）或插值已激活的密度（蓝色）只能在整个单元内逐渐爬升，而先插值原始值、再做激活（红色）能恰好在 0.56 处给出一个锐利的阶跃。激活为 softplus，然后 $\alpha = 1-e^{-\sigma\delta}$，其中 $\delta=1/64$。" %}
 
 DVGO 报告称，在单块 GPU 上从零开始约 15 分钟即可达到与 NeRF 相当的质量。
 
@@ -86,6 +98,10 @@ $$
 $$
 
 外观（appearance）使用同样的因式分解得到特征向量，再由小型 MLP 或 SH 解码。内存从 $O(N^3)$ 降到 $O(N^2)$（VM）或 $O(N)$（CP）；论文报告 CP 模型小于 4 MB，训练时间不到 30 分钟。
+
+下图把两种分解拟合到一个小体积上，可以直观地看到其中的取舍。
+
+{% include blog_figure.liquid path="assets/img/blog/neural-rendering/03-tensorf.svg" caption="在真实体积上比较 CP 与 VM：一个倾斜的圆环加上顶部的小球，在 $32^3$ 网格上采样，分别用 CP（交替最小二乘）和 VM（三项中的每一项都是某个展开（unfolding）下的秩 $R$ 矩阵，用截断 SVD 拟合）分解。左上：一个 VM 项，即沿 $x$ 的向量乘以 $yz$ 平面上的矩阵。右上：重建 PSNR 与参数量的关系，虚线为稠密网格。下：目标以及两个质量相当的重建的 $z$ 切片：CP 需要 16 个分量（1536 个参数），VM 只需 2 个（6336 个参数）。按分量计 VM 的表达力强得多；按参数计，在这个平滑的玩具体积上 CP 非常紧凑。" %}
 
 **K-Planes**（Fridovich-Keil 等，CVPR 2023）把平面的思路推广到 $d$ 维：一个 $d$ 维的场由 $\binom{d}{2}$ 个平面表示，各平面插值得到的特征相**乘**。对于动态场景 $(x, y, z, t)$，这意味着六个平面：三个空间平面（$xy, xz, yz$）和三个时空平面（$xt, yt, zt$）。许多动态 3DGS 方法都基于同样的因式分解平面思想（例如 4D Gaussian Splatting 中的 HexPlane 形变场，见第 5 篇）。
 
@@ -117,6 +133,10 @@ $$
 
 论文的典型配置为 $L = 16$、$F = 2$、$T = 2^{14}$ 到 $2^{24}$（例如 NeRF 使用 $2^{19}$）、$N_{\min} = 16$。表项从 $\mathcal U(-10^{-4}, 10^{-4})$ 初始化。
 
+下图展示了这些层级在 4.4 节二维测试中的样子。
+
+{% include blog_figure.liquid path="assets/img/blog/neural-rendering/03-hash-levels.svg" caption="4.4 节二维测试配置（$L=16$，$N$ 从 16 到 512，$T=2^{15}$）的各个层级，由上面的公式算出。上：每个层级的顶点数（对数坐标）；绿色层级能放进表中，使用稠密索引，橙色层级（从 $N=203$ 起）使用哈希。左下：第 0、5、10 层的网格叠加在测试图像的左下角。右下：在最精细的层级，263169 个顶点共享 32768 个槽位（平均每个槽位 8 个，且所有槽位都被用到）；红点是空间哈希映射到与圈出顶点同一槽位的 9 个顶点，它们伪随机地散布在整幅图像上。" %}
+
 ### 4.2 为什么哈希冲突无妨
 
 在精细层级上，网格顶点远多于表项，因此不同顶点会冲突到同一个槽位。Instant-NGP 干脆放任冲突，依赖以下三个事实：
@@ -127,12 +147,18 @@ $$
 
 $T$ 是一个显式的内存–质量调节旋钮：论文表明质量随 $\log T$ 上升，直至饱和。
 
+在 4.4 节的二维测试中可以清楚地看到这个旋钮：那里画出了 $T$ 从 $2^{10}$ 到 $2^{19}$ 的 NumPy 复现结果。
+
 ### 4.3 系统的其余部分
 
 - **极小的 MLP。** 对于 NeRF，密度 MLP 只有一个含 64 个神经元的隐藏层，输出 16 个值，其中第一个被解释为对数密度（log-density）；颜色 MLP 有两个含 64 个神经元的隐藏层，输入为这 16 个值加上用最高 4 阶球谐函数编码的视角方向（16 个系数）。
 - **占据网格（occupancy grid）。** 一个多尺度二值网格标记出密度不可忽略的单元。光线步进（ray marching）跳过空单元，并在透射率低于阈值时停止，因此大多数光线只需求值少数几个采样点。该网格会根据当前密度定期更新。
 - **优化器。** Adam，$\beta_1 = 0.9$，$\beta_2 = 0.99$，$\epsilon = 10^{-15}$（极小的 $\epsilon$ 很重要，因为许多哈希表项只会偶尔收到很小的梯度），并只对 MLP 权重施加较弱的 L2 正则化。
 - **完全融合的 CUDA。** MLP 由 `tiny-cuda-nn` 库求值，所有层融合在一个内核中，激活值保存在片上内存（on-chip memory）中。
+
+下图展示了在一条玩具光线上，占据网格与提前终止能节省多少计算。
+
+{% include blog_figure.liquid path="assets/img/blog/neural-rendering/03-occupancy.svg" caption="二维玩具场景中的空域跳过（empty-space skipping），场景中有两团介质。$32\times32$ 的占据网格标记出密度超过 0.01 的 216 个单元（紫色）。一条光线在场景内有 487 个均匀采样，但只对占据单元中的采样求值，并在透射率低于 $10^{-4}$ 时停止：实际只求值了 37 个采样（红色），全部位于它遇到的第一个表面附近。" %}
 
 同样的编码还能用于拟合十亿像素（gigapixel）图像、符号距离函数（signed distance function）和神经辐射缓存（neural radiance cache），这正是论文称之为“图形基元（graphics primitives）”的原因。
 
@@ -212,6 +238,10 @@ for step in range(1001):
 - 像 $511 \times 2\,654\,435\,761$ 这样的整数乘积完全可以放进 `int64`；CUDA 实现使用带回绕（wrap-around）的 `uint32` 运算，得到的哈希值不同，但同样好用。
 - 对层级的循环会启动许多小内核。真正的实现（[tiny-cuda-nn](https://github.com/NVlabs/tiny-cuda-nn)，或 nerfstudio 和 nerfacc 中对纯 PyTorch 友好的变体）会在一个融合内核中处理所有层级和角点，并手写反向传播。
 
+下图是这个测试在 NumPy 中的复现，并比较了不同的表大小。
+
+{% include blog_figure.liquid path="assets/img/blog/neural-rendering/03-hash-fit.svg" caption="上面二维测试的 NumPy 复现（相同的编码、MLP、Adam 设置和批大小；300 步；PSNR 在隔行隔列的像素上计算）。左上：$512\times512$ 的目标图像。右上：$T=2^{15}$ 训练 300 步后的重建（46.0 dB；正文中的 PyTorch 版本在第 250 步输出 45.8 dB）。下：四种表大小下 PSNR 随步数的变化。$T=2^{19}$ 时所有层级都放得下、没有任何冲突，因此它与 $T=2^{15}$ 之间的差距就是哈希的代价；$T=2^{10}$ 与 $2^{12}$ 展示了 4.2 节所说的内存–质量旋钮。" %}
+
 要把它用在第 2 篇的 NeRF 中，需要把采样位置归一化到 $[0,1]^3$（对于无界场景使用场景收缩（scene contraction）），用 `HashEncoding(D=3)(x)` 替换 `positional_encoding(x, L_x)`，并把 MLP 缩小为一到两个宽度为 64 的隐藏层。
 
 ## 5. Zip-NeRF：抗锯齿与网格的结合
@@ -221,6 +251,10 @@ for step in range(1001):
 - **多重采样（multisampling）。** 每个圆锥截头体（conical frustum）由其内部沿螺旋线排列的一小组点表示，对这些点的哈希特征取平均，以近似特征在截头体上的积分。
 - **尺度感知的降权（scale-aware downweighting）。** 来自单元尺寸小于截头体覆盖范围（footprint）的网格层级的特征会被衰减：分辨率为 $n$ 的层级上的特征乘以 $\operatorname{erf}\!\big(1/\sqrt{8\sigma^2 n^2}\big)$，其中 $\sigma$ 是截头体所对应高斯的标准差。这是 IPE 中 $e^{-\sigma^2/2}$ 因子的软化版本。
 - **抗锯齿的层间损失（interlevel loss）**，作用于提议网络（proposal network）与 NeRF 之间，消除了 Mip-NeRF 360 提议监督中的 z 向混叠（“条带”，banding）。
+
+下图展示了前两个想法。
+
+{% include blog_figure.liquid path="assets/img/blog/neural-rendering/03-zipnerf.svg" caption="上：Zip-NeRF 多重采样的示意图：一段光线区间对应的圆锥截头体（紫色）用其内部沿螺旋线排列的 6 个点表示，并对这些点的哈希特征取平均。下：降权因子 $\mathrm{erf}(1/\sqrt{8\sigma^2 n^2})$ 随 $\sigma n$（以网格单元为单位的截头体标准差）的变化。橙色点：二维测试的 16 个层级（$n$ 从 16 到 512），截头体覆盖范围为 $\sigma=1/64$。粗层级几乎不受影响，单元远小于覆盖范围的层级被衰减到接近 0。" %}
 
 论文报告其错误率比 Mip-NeRF 360 或基于网格的基线低 8%–77%，训练速度比 Mip-NeRF 360 快 24 倍。即使进入高斯泼溅时代很久之后，Zip-NeRF 仍是 Mip-NeRF 360 基准上最强的质量参照之一。
 

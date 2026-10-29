@@ -43,6 +43,12 @@ $$
 - $f_x, f_y$ 是以像素为单位的焦距：对于物理焦距 $F$，$f_x = F / \text{pixel width}$。若水平视场角（field of view）为 $\theta_x$、图像宽度为 $W$，则 $f_x = \frac{W}{2\tan(\theta_x/2)}$。
 - $(c_x, c_y)$ 是**主点（principal point）**，即光轴穿过图像的位置，通常接近图像中心。
 
+下图针对一个点画出了这个映射；其后的交互组件让你自己改变 $f$ 和这个点。
+
+{% include blog_figure.liquid path="assets/img/blog/neural-rendering/01-pinhole.svg" caption="OpenCV 相机坐标系（右手系：$x$ 向右、$y$ 向下、$z$ 向前）中的针孔模型。左：从相机中心 $\mathbf C$ 指向 $\mathbf X_c=(0.6,-0.3,2.5)$ 的射线与平面 $Z_c=1$ 相交于 $(x,y,1)=(0.24,-0.12,1)$；在这个平面上，图像是一个以主点为中心、宽 $W/f$、高 $H/f$ 的矩形。右：用 1.4 节的 $K$（$640\times480$，60° 视场角，$f=554.3$）得到同一点的像素坐标：$u=f_x X_c/Z_c+c_x=453.0$，$v=173.5$。注意 $v$ 轴向下增长。" %}
+
+{% include widget.liquid name="neural-rendering-camera" height="560" caption="交互式针孔相机（OpenCV 坐标系）。拖动滑块或拖动图像中的点，观察 $(u,v)$ 如何随 $u=f\,X_c/Z_c+c_x$、$v=f\,Y_c/Z_c+c_y$ 变化。焦距越长，$Z_c=1$ 平面上的图像矩形越小（视场角越窄），所有投影点也离主点越远；而让点沿着自己的射线移动（只改变 $Z_c$、保持 $X_c/Z_c$ 不变）则完全不会改变像素位置。" %}
+
 ### 1.2 外参、相机中心与坐标约定
 
 $[R \mid \mathbf t]$ 把**世界坐标映射到相机坐标**：$\mathbf X_c = R\mathbf X_w + \mathbf t$。相机中心是被映射到原点的那个点，$\mathbf C = -R^\top \mathbf t$。许多神经渲染代码库存储的是它的逆，即**相机到世界（camera-to-world）**矩阵
@@ -60,6 +66,8 @@ $$
 
 两者之间的转换就是把 $T_{c2w}$ 右乘 $\mathrm{diag}(1, -1, -1, 1)$（翻转相机的 $y$ 轴和 $z$ 轴）。COLMAP 本身为每张图像存储的是世界到相机的四元数 `QW QX QY QZ` 和平移 `TX TY TZ`。
 
+{% include blog_figure.liquid path="assets/img/blog/neural-rendering/01-extrinsics.svg" caption="左：1.4 节代码创建的两台相机（$\mathbf C_1=(0,-0.5,-4)$、$\mathbf C_2=(2,-0.8,-3.5)$，都看向原点）与 200 个随机点，画在世界坐标系中（世界的「上」是 $-Y$）。每台相机处的红、绿、蓝箭头是其 $R$ 的三行，即相机的 $x$（右）、$y$（下）、$z$（前）轴在世界坐标中的方向。右：同一台物理相机分别用 OpenCV/COLMAP 和 OpenGL/Blender 约定描述；$x$ 相同，$y$ 和 $z$ 反向，这正是 $\mathrm{diag}(1,-1,-1)$ 的转换。" %}
+
 ### 1.3 镜头畸变
 
 真实镜头会使直线弯曲。标准的 Brown–Conrady 模型（OpenCV 以及 COLMAP 的 `OPENCV` 相机模型所采用）作用于施加内参之前的归一化图像坐标 $x = X_c/Z_c$、$y = Y_c/Z_c$。记 $r^2 = x^2 + y^2$：
@@ -72,6 +80,8 @@ y_d &= y\,(1 + k_1 r^2 + k_2 r^4 + k_3 r^6) + p_1 (r^2 + 2y^2) + 2p_2 xy,
 $$
 
 然后 $u = f_x x_d + c_x$，$v = f_y y_d + c_y$。$k_i$ 项是**径向（radial）**畸变（$k_1<0$ 时为桶形，$k_1>0$ 时为枕形），$p_1, p_2$ 是**切向（tangential）**畸变，源于镜头与传感器不完全平行。鱼眼镜头需要另一种模型（COLMAP 的 `OPENCV_FISHEYE`，即带多项式校正的等距投影）。
+
+{% include blog_figure.liquid path="assets/img/blog/neural-rendering/01-distortion.svg" caption="用 1.4 节的 `project` 函数把 Brown–Conrady 模型作用在 $640\times480$ 图像的规则像素网格（灰色）上。左：$k_1=-0.2$（桶形）把外侧网格线拉向中心。中：$k_1=+0.2$（枕形）把它们向外推。右：切向项 $p_1=p_2=0.02$ 使网格发生非对称变形。主点（红色十字）保持不动，位移随离主点的距离 $r$ 增大。" %}
 
 原版 3DGS 光栅化器只支持无畸变的针孔相机，这就是为什么它的预处理脚本会先运行 COLMAP 的 `image_undistorter`，再在 `PINHOLE` 图像上训练。我们会在教程（第 6 篇）中再次遇到这一点。
 
@@ -87,7 +97,7 @@ import numpy as np
 def look_at(C, target, up=np.array([0.0, -1.0, 0.0])):
     """World-to-camera (R, t) in the OpenCV convention: x right, y down, z forward."""
     z = target - C; z /= np.linalg.norm(z)
-    x = np.cross(up, z); x /= np.linalg.norm(x)
+    x = np.cross(z, up); x /= np.linalg.norm(x)
     y = np.cross(z, x)
     R = np.stack([x, y, z])          # rows are the camera axes in world coordinates
     t = -R @ C
@@ -128,6 +138,8 @@ print("all in front:", (d1 > 0).all() and (d2 > 0).all())
 
 设两台相机观测同一个 3D 点 $\mathbf X$，对应像素分别为 $\mathbf x_1$ 和 $\mathbf x_2$。两个相机中心与 $\mathbf X$ 张成一个平面，即**对极平面（epipolar plane）**。它与每幅图像相交于一条直线，即**对极线（epipolar line）**，因此给定 $\mathbf x_1$，其匹配点 $\mathbf x_2$ 必定落在图像 2 中一条已知的直线上。连接两个相机中心的直线（**基线（baseline）**）与两幅图像的交点称为**对极点（epipole）**。
 
+{% include blog_figure.liquid path="assets/img/blog/neural-rendering/01-epipolar-3d.svg" caption="按真实比例画出的 1.4 节两台相机的对极几何。相机中心 $\mathbf C_1$、$\mathbf C_2$ 与点 $\mathbf X$ 张成对极平面（黄色）；连接两个中心的黑色线段就是基线。该平面与每个像平面相交于虚线所示的对极线，它分别经过投影点 $\mathbf x_1$ 或 $\mathbf x_2$。由于这对相机主要是横向移动，两个对极点都远在图像之外（见下一张图）。" %}
+
 从代数上看，设相对位姿为 $\mathbf X_2 = R\,\mathbf X_1 + \mathbf t$（从相机 1 坐标到相机 2 坐标），并令 $\hat{\mathbf x}_i = K_i^{-1}\tilde{\mathbf x}_i$ 为归一化（已标定）齐次坐标。向量 $\hat{\mathbf x}_2$、$\mathbf t$ 和 $R\hat{\mathbf x}_1$ 共面，因此它们的混合积为零：
 
 $$
@@ -148,6 +160,10 @@ $$
 
 其中 $F$ 为**基础矩阵（fundamental matrix）**。$F\tilde{\mathbf x}_1$ 是图像 2 中的对极线，$F^\top \tilde{\mathbf x}_2$ 是图像 1 中的对极线，对极点则是零空间向量：$F\mathbf e_1 = 0$，$F^\top \mathbf e_2 = 0$。
 
+下一张图给出了 1.4 节两台相机的这些对极线。
+
+{% include blog_figure.liquid path="assets/img/blog/neural-rendering/01-epipolar-images.svg" caption="像素坐标中的对极线，由两台相机的真实 $F=K^{-\top}E\,K^{-1}$ 计算得到。对于三个高亮点，图像 2 中每条彩色直线是 $F\tilde{\mathbf x}_1$，并经过对应的匹配点；图像 1 中每条直线是 $F^\top\tilde{\mathbf x}_2$。同一图像中的所有对极线都交于该图像的对极点（黑色方块），它是 $F$ 或 $F^\top$ 的零向量，也是另一台相机中心的投影：这里 $\mathbf e_1\approx(2735,-194)$，$\mathbf e_2\approx(-1495,410)$，远在 $640\times480$ 的画面（紫色）之外。" %}
+
 一些有用的事实：
 
 - $F$ 的秩为 2，有 7 个自由度（9 个元素，减去尺度，再减去 $\det F = 0$）。
@@ -164,6 +180,8 @@ $$
 于是把 $N \ge 8$ 对对应点堆叠起来就得到 $A\,\operatorname{vec}(F) = \mathbf 0$，其中 $A \in \mathbb R^{N\times 9}$。在 $\lVert \operatorname{vec}(F)\rVert = 1$ 约束下的最小二乘解是 $A$ 的最小奇异值对应的右奇异向量。随后把 $F$ 的最小奇异值置零，以强制其秩为 2。
 
 如果直接在像素坐标上使用这一方法，问题的条件数会很差：$A$ 的元素范围从 1 到 $10^5$。Hartley（1997）指出，只需对每幅图像的点做平移和缩放，使其质心位于原点、到原点的平均距离为 $\sqrt 2$，线性算法的精度就能与迭代方法相媲美。先在归一化坐标下求解 $\hat F$，再撤销归一化：$F = T_2^\top \hat F T_1$。
+
+{% include blog_figure.liquid path="assets/img/blog/neural-rendering/01-normalization.svg" caption="`eight_point` 中对图像 1 的 200 个带噪声点所做的 Hartley 归一化。左：原始齐次像素坐标，数值在几百的量级，而第三个分量恒为 1。右：经过 $T_1$ 之后，质心（红色十字）位于原点，到它的平均距离为 $\sqrt 2$（虚线圆），于是 $A$ 的所有元素量级相近。" %}
 
 ```python
 def normalize(pts):
@@ -209,6 +227,8 @@ $$
 
 其中 $\mathbf u_3$ 是 $U$ 的最后一列（$U$、$V$ 的符号取定为使两者行列式均为 $+1$）。只有一个候选能让三角化出的点同时位于两台相机前方（即**手性（cheirality）**检验），所以我们用每个候选分别三角化并计数。这正是 `cv2.recoverPose` 所做的事情。
 
+{% include blog_figure.liquid path="assets/img/blog/neural-rendering/01-four-poses.svg" caption="本文例子中 $E$ 的四种分解，从上方俯视，坐标为相机 1 坐标系（$x$ 向右，视线方向 $z$ 朝向页面上方，$\lVert\mathbf t\rVert=1$）。紫色是相机 1，橙色是候选的相机 2，散点是用该候选三角化得到的全部 200 个点。只有一个候选（绿色，$200/200$）让这些点同时位于两台相机前方；其余候选把点放到了相机 1、相机 2 或两者的后面。`pose_from_essential` 中的手性检验数的正是这个数目。" %}
+
 ## 3. 三角化
 
 给定两个（或更多）投影矩阵 $P_i$ 和观测 $\mathbf x_i = (u_i, v_i)$，**直接线性变换（direct linear transform，DLT）**利用了 $\tilde{\mathbf x}_i \times P_i \tilde{\mathbf X} = \mathbf 0$ 这一事实。记 $\mathbf p_i^{k\top}$ 为 $P_i$ 的第 $k$ 行，每个视图贡献两个独立的方程：
@@ -223,6 +243,8 @@ v_2 \mathbf p_2^{3\top} - \mathbf p_2^{2\top}
 $$
 
 同样取最小奇异值对应的右奇异向量并去齐次化即可。DLT 最小化的是代数误差；统计意义上最优的解应最小化重投影误差（reprojection error），而这正是光束法平差无论如何都会做的。当两条射线之间的**三角化角（triangulation angle）**很小时，三角化是病态的：微小的像素误差就会让点沿射线移动很远。因此 COLMAP 只接受满足最小角度（默认 1.5 度）的点，并剔除重投影误差较大的点。
+
+{% include blog_figure.liquid path="assets/img/blog/neural-rendering/01-triangulation.svg" caption="三角化角为什么重要。左、中：从距离 4 个单位的两台相机，在 2 px 高斯像素噪声下对同一个点（星号）做 400 次 DLT 三角化（`triangulate`），俯视图。宽基线（$\alpha=26.4°$）时估计值聚成一小团；窄基线（$\alpha=3.5°$）时它们沿视线方向被拉长。右：1 px 噪声下 3D 误差的中位数随 $\alpha$ 的变化（双对数坐标，每个角度 1000 次试验）。低于 COLMAP 默认的 1.5° 阈值（虚线）时，中位误差已超过 0.3 个单位，约为观察距离的 8%，并且随着 $\alpha$ 减小继续增大。" %}
 
 ```python
 def triangulate(P1, P2, x1, x2):
@@ -257,7 +279,7 @@ R, t, Xt = pose_from_essential(E, K, x1, x2)
 R_true = R2 @ R1.T                       # ground-truth relative pose camera 1 -> camera 2
 t_true = t2 - R_true @ t1
 cos = np.clip((np.trace(R.T @ R_true) - 1) / 2, -1, 1)
-print("rotation error (deg):", np.rad2deg(np.arccos(cos)))                 # ~0.16
+print("rotation error (deg):", np.rad2deg(np.arccos(cos)))                 # ~0.15
 print("translation direction cos:", t @ t_true / np.linalg.norm(t_true))   # ~0.9999
 # Xt is in camera-1 coordinates with |t| = 1: compare after fixing the unknown scale
 print("3D error:", np.abs(Xt * np.linalg.norm(t_true) - (X @ R1.T + t1)).mean())
@@ -289,6 +311,8 @@ $$
 $$
 
 其中 $P$ 是由 $3\times 3$ 块（每个点一块）构成的块对角矩阵。用 **Schur 补（Schur complement）**消去点之后，剩下一个小得多的"约化相机系统（reduced camera system）"$(B - C P^{-1} C^\top)\,\delta_c = \mathbf g_c - C P^{-1}\mathbf g_p$，之后每个点都可以独立更新。Ceres Solver（COLMAP 所使用）等库实现了这一方法，并配合鲁棒损失和自动微分（automatic differentiation）；完整内容参见 Triggs 等人的 "Bundle Adjustment — A Modern Synthesis"（1999）。
+
+{% include blog_figure.liquid path="assets/img/blog/neural-rendering/01-ba-sparsity.svg" caption="让 BA 能够扩展的结构：一个 4 台相机、12 个点的小问题（稀疏模式来自下面的 `ba_sparsity`）。左：在 $J$ 中，每个观测（两行）只涉及其相机的 6 个参数（蓝色）和其点的 3 个坐标（橙色）。右：在 $J^\top J$ 中，相机块 $B$ 与点块 $P$ 都是块对角的；求 $P$ 的逆只需分别求独立的 $3\times3$ 小块的逆，这就是 Schur 补 $B-CP^{-1}C^\top$ 计算代价低的原因。" %}
 
 下面是一个用 SciPy 实现的小型 BA，用来优化我们的两视图重建（相机参数化为轴角 + 平移）：
 
@@ -342,6 +366,8 @@ print("RMS after: ", np.sqrt(np.mean(sol.fun ** 2)))                   # ~0.16 p
 
 残差从大约 0.47 px（DLT/八点算法的解）下降到大约 0.16 px。实际系统会固定规范（例如固定第一台相机和尺度），使问题成为适定的；这里信赖域（trust-region）求解器只是沿着平坦方向移动，并无害处。
 
+{% include blog_figure.liquid path="assets/img/blog/neural-rendering/01-ba-residuals.svg" localized="true" caption="在本文数据上运行上面的光束法平差。红色箭头是图像 1 中的重投影残差 $\mathbf r_{ij}$，放大 60 倍：BA 之前（八点法 + DLT 的解，RMS 0.47 px）残差较长；BA 之后（RMS 0.16 px）只剩下短而随机的残差。右：两幅图像中残差长度的直方图。" %}
+
 ## 5. 运动恢复结构与 COLMAP
 
 **运动恢复结构**从无序图像集合中恢复相机位姿（运动）和稀疏点云（结构）。早期的大规模系统，如 Photo Tourism（Snavely et al., SIGGRAPH 2006），利用互联网照片重建地标建筑；**COLMAP**（Schönberger & Frahm, "Structure-from-Motion Revisited", CVPR 2016）则是一个开源的增量式（incremental）SfM 系统，已成为神经渲染数据集的默认选择。
@@ -355,6 +381,10 @@ print("RMS after: ", np.sqrt(np.mean(sol.fun ** 2)))                   # ~0.16 p
 5. **图像注册（image registration）。** 反复选择**下一最佳视图（next best view）**（一张尚未注册、能看到大量已三角化点且这些点在图像中空间分布良好的图像），并在 RANSAC 中用 **PnP**（Perspective-n-Point）从 2D–3D 对应关系估计其位姿。
 6. **三角化。** 用 COLMAP 的鲁棒多视图三角化，对新注册图像看到的新点进行三角化。
 7. **光束法平差。** 每次注册后运行局部 BA，每当模型显著增长时运行全局 BA，然后过滤重投影误差大的观测并重新三角化。
+
+下图在一个合成场景上运行了这些步骤。
+
+{% include blog_figure.liquid path="assets/img/blog/neural-rendering/01-sfm-toy.svg" localized="true" caption="用 NumPy 实现的一个玩具级增量式 SfM：一个凹凸球体的 12 个合成视图，像素噪声 0.5 px。先用前两个视图做八点法初始化（紫色），之后对每个新视图依次进行线性 PnP 注册（橙色）、按 1.5° 规则三角化、带外点过滤的 BA。灰色视锥是尚未注册的相机。每个快照都用一个相似变换与真值对齐（即第 3 节所说的规范自由度）；最终 366 个点与真值的偏差在物体半径的 0.5% 以内，最终重投影误差 RMS 为 0.45 px。" %}
 
 CVPR 2016 论文的贡献恰恰在于让第 3 步以及第 5–7 步变得鲁棒且完整：一种对图像对几何进行分类的几何验证策略（例如检测纯旋转或类似水印的匹配）、下一最佳视图评分、鲁棒三角化，以及迭代的 BA / 重新三角化 / 过滤循环。
 
@@ -377,6 +407,8 @@ SfM 点是稀疏的，只出现在有显著特征的地方。**多视图立体�
 - **平面扫描（plane sweeping）**测试一组正对相机的（fronto-parallel）深度平面：通过单应矩阵 $H = K_s (R - \mathbf t \mathbf n^\top / d) K_r^{-1}$ 把源图像变换到每个平面上，然后比较图像块（NCC）。
 - **PatchMatch 立体（PatchMatch stereo）**在相邻像素之间传播好的深度/法向假设，并配合随机细化，代价远低于穷举搜索。COLMAP 的 MVS（Schönberger et al., "Pixelwise View Selection for Unstructured Multi-View Stereo", ECCV 2016）增加了逐像素的源视图选择和几何一致性，使其能处理非结构化的照片集合。
 - **学习型 MVS（learned MVS）**，如 MVSNet（Yao et al., ECCV 2018），通过对 CNN 特征进行可微单应变换构建代价体（cost volume），并用 3D 卷积对其进行正则化。
+
+{% include blog_figure.liquid path="assets/img/blog/neural-rendering/01-plane-sweep.svg" caption="场景二维切片中的平面扫描：一个带随机纹理的表面、一台参考相机和一台源相机。对参考图像中的一个像素（紫色射线），深度为 $d$ 的正平行平面（青色）把它的 15 像素图像块映射到源图像中（橙色虚线射线），并用 NCC 进行比较。右侧 NCC 曲线在 $d=3.26$ 处取得峰值，正好对应真实深度 $d^*=3.255$；错误的深度比较的是不相关的纹理，得分很低。" %}
 
 为什么神经渲染系列要关心这些？因为 NeRF 和 3DGS 可以被看作**带可微渲染器的 MVS**：它们不是去匹配图像块，而是优化一个体表示，使渲染结果能复现每一幅图像。MVS 深度也被广泛用作两者的几何先验或初始化。
 
