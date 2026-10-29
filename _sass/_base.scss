@@ -1608,3 +1608,18 @@ mjx-container[jax="CHTML"][display="true"] {
   color: var(--global-text-color-light);
   margin-bottom: 1.6rem;
 }
+// wide tables (paper lists, comparisons) scroll inside their own box on phones
+.post-content table {
+  display: block;
+  max-width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+.post-content pre {
+  max-width: 100%;
+  overflow-x: auto;
+}
+.post-content p,
+.post-content li {
+  overflow-wrap: break-word;
+}
