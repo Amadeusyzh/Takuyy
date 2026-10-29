@@ -42,6 +42,10 @@ $$
 
 です。この恒等式を使うと、方向についての積分と表面についての積分を行き来できます。レンダリング方程式の面積形式を書くときと、次回の光源サンプリングで再び使います。
 
+下の図は、この 2 つの式を同時に示しています。
+
+{% include blog_figure.liquid path="assets/img/blog/graphics/04-solid-angle.svg" caption="左：立体角 $d\omega=\sin\theta\,d\theta\,d\phi$ は単位球面上の小さなパッチの面積です。$\sin\theta$ の因子により、極に近いパッチほど小さくなります。右（2 次元の断面）：距離 $r$ にあり $\theta'$ だけ傾いた面素 $dA$ が張る立体角は $dA\cos\theta'/r^2$ です。" %}
+
 シェーディングのいたるところに現れる便利な積分があります。
 
 $$
@@ -69,6 +73,10 @@ E(x) = \int_{\Omega} L_i(x,\omega_i) \cos\theta_i \, d\omega_i
 $$
 
 です。$\cos\theta_i$ は Lambert の余弦則です。かすめる角度で届く光束は、より広い面積に広がります。
+
+図のように、幅 $w$ の同じ光束が長さ $w/\cos\theta$ の範囲を覆うので、単位面積あたりのパワーは $\cos\theta$ 倍に下がります。
+
+{% include blog_figure.liquid path="assets/img/blog/graphics/04-cosine-law.svg" caption="Lambert の余弦則。幅 $w$（パワー）が一定の光束が $\theta=0^\circ$、$45^\circ$、$70^\circ$ で入射すると、長さ $w/\cos\theta$ の範囲に広がるため、放射照度 $E$ は $\cos\theta$ に比例して小さくなります。" %}
 
 強度 $I$ の**点光源**から距離 $r$ の点では、放射照度は $E = I\cos\theta / r^2$ になります（逆二乗則）。この記事の最後のシェーダーにある `E = I * NoL / dist2` がこの行です。なお、リアルタイムエンジンの「ライト色 × 強度」は通常まさにこの $I$ であり、ワットの代わりに測光単位（カンデラ）を使うこともあります。
 
@@ -104,6 +112,10 @@ $$
 
 難しいのは、$L_i$ が与えられていない点です。真空中では、$\omega_i$ から $x$ に届く放射輝度は、そのレイが最初に当たる表面点から出ていく放射輝度、すなわち $L_i(x,\omega_i) = L_o(\mathrm{trace}(x,\omega_i), -\omega_i)$ です。未知の $L$ が両辺に現れるので、これは第 2 種の Fredholm 積分方程式です。
 
+下の図は、太陽のあるおもちゃの空のもとで、1 点 $x$ における被積分関数を描いたものです。
+
+{% include blog_figure.liquid path="assets/img/blog/graphics/04-rendering-eq.svg" caption="点 $x$ におけるレンダリング方程式の被積分関数（おもちゃの空と太陽＝星印）を、半球上の入射方向 $\omega_i$ として描いたもの。矢印の長さと色は値に比例します。左：$L_i\cos\theta_i$。その積分が放射照度 $E$ です。右：さらに光沢のある GGX BRDF（$\alpha=0.3$、視線方向 $\omega_o$）を掛けると、$\omega_o$ の鏡面方向（ここでは太陽）付近の方向だけが寄与します。" %}
+
 Kajiya は**3 点（面積）形式**で書きました。$d\omega = dA\cos\theta'/r^2$ を使うと、方向の代わりにシーンのすべての表面 $M$ で積分できます。
 
 $$
@@ -132,6 +144,10 @@ $$
 - $F(\omega, m)$：滑らかな各マイクロファセットの **Fresnel** 反射率。
 - $G_2(\omega_i,\omega_o,m)$：**マスキング・シャドウイング関数（masking-shadowing function）**。光源と観察者の両方から見えるマイクロファセットの割合です。
 
+下の図は、実際の 2 次元の高さプロファイル上でこの 3 つを示しています。
+
+{% include blog_figure.liquid path="assets/img/blog/graphics/04-microfacet.svg" localized="true" caption="ランダムなマイクロファセット表面（2 次元プロファイル。光は左から $70^\circ$、視点は右の $50^\circ$）。法線 $m$ がハーフベクトル $h$（紫の矢印）に近いファセットだけが、$\omega_i$ からの光を $\omega_o$ へ鏡面反射できます。$D$ はその量を表します。そのうちいくつかはシャドウイング（光源への光線が表面に当たる、赤）やマスキング（視点への光線が表面に当たる、青）を受けており、これを $G_2$ が扱います。可視性はプロファイルに対して実際に光線を追跡して計算しています。" %}
+
 ### Cook-Torrance スペキュラー BRDF
 
 $\omega_i$ からの光を $\omega_o$ へ鏡面反射できるのは、法線がハーフベクトル $h = (\omega_i+\omega_o)/\lVert\omega_i+\omega_o\rVert$ に一致するマイクロファセットだけです。Walter ら（EGSR 2007）に従うと、マクロな BRDF は、各ファセットの寄与を投影面積と可視性で重み付けして積分したものです。
@@ -154,6 +170,10 @@ $$
 
 これが **Cook-Torrance** の形です（Cook と Torrance は TOG 1982 で Beckmann NDF と V 字溝の $G$ を使いました）。分母の $4$ はヤコビアンから来るもので、恣意的な正規化定数ではありません。分母の 2 つのコサインは、微細表面とマクロ表面の投影面積の換算から来ています。リアルタイムのコードでは、$G_2$ と分母をまとめて**可視性項（visibility term）** $V = G_2 / (4\lvert n\cdot\omega_i\rvert\lvert n\cdot\omega_o\rvert)$ とすることがよくあります。
 
+下の図は、後で定義する GGX の $D$ と Smith の可視性項を使って、得られるローブを 3 次元で描いたものです。
+
+{% include blog_figure.liquid path="assets/img/blog/graphics/04-brdf-lobes.svg" localized="true" caption="光が $\theta_i=45^\circ$ で入射するときの、全出射方向 $\omega_o$ にわたる $f_r(\omega_i,\omega_o)\cos\theta_o$ の 3 次元ローブ（各ローブは同じ大きさに正規化。$F=1$、高さ相関 Smith $G_2$）。Lambert は表面に接する球です。$\alpha$ が小さくなるにつれて GGX ローブは鏡面方向（破線）に集中し、完全な鏡面はデルタ関数の極限です。$\alpha=1$ ではマイクロファセット法線が一様になり、ローブは広くほぼ拡散的になります。" %}
+
 ### NDF は正規化されていなければならない
 
 $D$ は*面積*の密度です。すべてのマイクロファセットをマクロ表面へ投影した面積はマクロ面積に等しくなければならないので、次の正規化条件が得られます。
@@ -171,6 +191,10 @@ D_{\text{GGX}}(h) = \frac{\alpha^2}{\pi\left((n\cdot h)^2(\alpha^2-1)+1\right)^2
 $$
 
 $\alpha$ はラフネスです。$\alpha\to 0$ で $D$ はデルタ（鏡面）に近づきます。$\alpha=1$ では $D = 1/\pi$ となり、マイクロファセット法線は一様に分布します。ガウス分布に似た Beckmann 分布と比べると、GGX はピークが鋭く**裾が長い**ため、実測マテリアルに見られる「明るいハイライトと柔らかいハロー」が生まれます。
+
+下の図は、同じ $\alpha$ で 2 つの分布を比べたものです。
+
+{% include blog_figure.liquid path="assets/img/blog/graphics/04-ndf.svg" caption="$\alpha=0.2$ と $0.5$ における GGX と Beckmann の NDF を、$h$ と $n$ のなす角 $\theta_h$ の関数として描いたもの。ピーク付近では似ています（左）が、対数スケール（右）では Beckmann がガウス関数のように急に減衰するのに対し、GGX は長い裾を持ち、これがハイライトの柔らかいハロになります。どちらも $\int D\,(n\cdot m)\,d\omega_m=1$ を満たします（図のスクリプトで数値的に確認）。" %}
 
 ヘアライン加工の金属のような異方性表面では、接空間成分 $h_x,h_y,h_z$ とラフネス $\alpha_x,\alpha_y$ を使って次のように書きます。
 
@@ -207,6 +231,10 @@ $$
 
 導出は、$\tan^2\theta = (1-\cos^2\theta)/\cos^2\theta$ と書くと $1+\Lambda = \frac{1}{2}\left(1+\sqrt{\cos^2\theta(1-\alpha^2)+\alpha^2}/\cos\theta\right)$ となるので、これを整理するだけです。
 
+下の図は、この 2 つの形を描いたものです。
+
+{% include blog_figure.liquid path="assets/img/blog/graphics/04-smith-g.svg" localized="true" caption="左：GGX の Smith マスキング関数 $G_1$。滑らかな表面はかすめ角になるまでほとんど遮蔽しませんが、粗い表面はずっと早くから遮蔽します。右：分離形の積 $G_1(\omega_i)G_1(\omega_o)$（破線）は常に高さ相関の $G_2$（実線）より下にあり、遮蔽を過大に見積もっています。" %}
+
 ### Fresnel と Schlick 近似
 
 滑らかな界面が反射する光の割合は、かすめる角度に近づくほど大きくなります。つや消しの床でさえ、床に沿って見ると鏡のようになります。厳密な Fresnel 方程式は複素屈折率と偏光に依存します。Schlick（Computer Graphics Forum 1994）は次の近似を提案しました。
@@ -222,6 +250,14 @@ F_0 = \left(\frac{\eta-1}{\eta+1}\right)^2
 $$
 
 なので、ガラスやほとんどのプラスチック（$\eta\approx 1.5$）では $F_0 = 0.04$、水（$\eta\approx 1.33$）では約 $0.02$ になります。金属の $F_0$ は高く、波長によって変化します。金や銅の反射に色がついているのはこのためです。
+
+下の図は、Schlick の式と厳密な Fresnel 方程式を比べたものです。
+
+{% include blog_figure.liquid path="assets/img/blog/graphics/04-fresnel.svg" localized="true" caption="厳密な非偏光 Fresnel 反射率（実線）と Schlick 近似（破線）。左：ガラス（$\eta=1.5$）と水（$\eta=1.33$）は正面からは 2-4% しか反射しませんが、かすめ角ではほぼすべてを反射します。右：金。R、G、B に近似的な複素屈折率（Johnson と Christy 1972 に基づく）を使っています。$F_0$ は高く、色が付いています。Schlick は厳密な赤の曲線の $80^\circ$ 付近のわずかなくぼみを再現しませんが、それ以外はよく一致します。" %}
+
+$D$、$V$、$F$ がどう組み合わさるかを見るには、下のデモを使ってください。中をドラッグすると光源が動き、スライダーで roughness と metallic を変えられます。
+
+{% include widget.liquid name="graphics-brdf-lobe" height="440" caption="BRDF ローブ・エクスプローラー：第 6 節のメタリック・ラフネスモデル（GGX、高さ相関 Smith、Schlick）の $f_r(\omega_i,\omega_o)\cos\theta_o$ を入射面で切った断面。ドラッグで光源が動きます。破線は鏡面反射方向です。" %}
 
 ## 5. 数値で数式を確かめる
 
@@ -310,6 +346,10 @@ print("   separable G at alpha=1.0, theta_v=1.4:", f"{spec_albedo(1.4, 1.0, corr
 - NDF と Smith の $G_1$ は厳密に整合しているので、このモデルがエネルギーを*生み出す*ことは決してありません。
 - しかし高いラフネスではエネルギーを**失います**。$\alpha=1$ では最大 70% です。失われるのはマイクロファセット間で 2 回以上バウンスする光で、単一散乱モデルはこれを無視しています。そのため粗い金属は暗くレンダリングされすぎます。エネルギー補償の手法（Kulla と Conty、"Revisiting Physically Based Shading at Imageworks"、SIGGRAPH 2017 コース；Turquin 2019）は、`spec_albedo` のような表から事前計算した多重散乱ローブを足し戻します。分離型の $G_2$ はさらに多くのエネルギーを失います（最後の行で 0.525 対 0.672）。
 
+下の図は、`spec_albedo` をすべての視線角度について描いたものです。点は上で出力された値です。
+
+{% include blog_figure.liquid path="assets/img/blog/graphics/04-furnace.svg" localized="true" caption="GGX スペキュラーローブのホワイトファーネステスト（$F=1$）：方向アルベドと視線角度の関係を、上の数値積分コードで計算したもの（点は出力された値）。エネルギーを失わないモデルなら 1 の線に沿うはずです。差は無視された多重散乱によって失われたエネルギーで、分離形の $G_2$（破線）はさらに多く失います。" %}
+
 ## 6. メタリック・ラフネスのワークフロー
 
 アーティストに屈折率を入力させるべきではありません。Burley による Disney の "principled" BRDF（SIGGRAPH 2012 コース）と、Karis による Unreal Engine 4 への適用（SIGGRAPH 2013 コース）は、小さく直感的なパラメータセットを普及させ、それは現在 glTF 2.0 で標準化されています。
@@ -336,6 +376,10 @@ f_r = \underbrace{(1-F)\,\frac{c_{\text{diff}}}{\pi}}_{\text{diffuse}} + \underb
 $$
 
 係数 $(1-F)$ は、すでにスペキュラーとして反射されたエネルギーをディフューズローブから除くための安価な方法です。これは近似であり、より丁寧なレイヤーモデルではスペキュラーアルベドを使います。ラフネスを二乗する（$\alpha=r^2$）とスライダーが知覚的に線形になります。Burley は、これをしないと見た目の変化の大半がスライダーの低い側に詰め込まれてしまうことを観察しました。
+
+下の図は、第 8 節のシェーダーを球のグリッドに適用したものです。
+
+{% include blog_figure.liquid path="assets/img/blog/graphics/04-sphere-grid.svg" caption="メタリック・ラフネスモデルを球のグリッドで示したもの。第 8 節のシェーダーを NumPy で実行して描画しています（左上からの光源 1 つと、split-sum LUT を通した一様な環境光。baseColor $=(0.95, 0.45, 0.12)$、$\alpha=r^2$）。上段：誘電体。色の付いたディフューズと白いハイライト。下段：金属。ディフューズはなく、反射に色が付きます。$r$ が大きくなるとハイライトは広く暗くなり、粗い金属は単一散乱のエネルギー損失のために暗くなります。" %}
 
 実践上のルールが 2 つあります。`baseColor` のテクスチャは sRGB で保存されているので、ライティングの前にリニアへデコードしなければなりません。また、すべてのライティング計算はリニアな HDR 値で行い、トーンマッピングは最後に適用します。
 
@@ -428,6 +472,10 @@ roughness=1.00 n.v=1.0  A=0.307 B=0.000  A+B=0.307
 ```
 
 $A+B$ は $F_0=1$ のときのファーネスアルベドで、第 5 節の数値積分と一致します。ラフネス 1、$n\cdot v = 1$ ではどちらも 0.307 です。滑らかな表面では、Fresnel による増分 $B$ がかすめる角度で大きくなることに注目してください。これが現実の物体の輪郭に見える明るい縁です。Karis のオリジナルのコードは、IBL に $k=\alpha/2$ の Schlick-GGX 近似の $G$ を使っているので、その LUT はこの高さ相関版とは少し異なります。$G$ を 1 つ選び、解析的なライトと LUT の両方で同じものを使いましょう。
+
+下の図は、`integrate_brdf` で計算した LUT 全体です。
+
+{% include blog_figure.liquid path="assets/img/blog/graphics/04-split-sum-lut.svg" caption="上の `integrate_brdf` で計算した split-sum 環境 BRDF の LUT（$32\times32$ 要素、各 1024 サンプル）。$A$ は $F_0$ のスケールで、滑らかな表面を正面から見ると 1 に近く、粗いと下がります。$B$ は Fresnel のバイアスで、滑らかな表面のかすめ角（$n\cdot\omega_o\to 0$）でだけ大きくなります。これが明るいリムです。" %}
 
 ## 8. 完全な GLSL 実装
 
