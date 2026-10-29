@@ -182,6 +182,7 @@ exclude:
   - package-lock.json
   - purgecss.config.js
   - README.md
+  - CLAUDE.md
   - UPGRADING.md
   - vendor
 keep_files:
