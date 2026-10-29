@@ -184,7 +184,7 @@ def fig_forward():
     for ax, t in zip(axs.ravel(), ts):
         ab = AB[t]
         xt = np.sqrt(ab) * x0 + np.sqrt(1 - ab) * eps if t > 0 else x0
-        ax.scatter(xt[:, 0], xt[:, 1], s=3, c=k, cmap="tab10", vmin=0, vmax=9, alpha=0.7)
+        ax.scatter(xt[:, 0], xt[:, 1], s=3, c=k, cmap="tab10", vmin=0, vmax=9, alpha=0.7, rasterized=True)
         ax.set_title("data $x_0$" if t == 0 else f"$t={t}$,  $\\bar\\alpha_t={ab:.2f}$", fontsize=15)
         toy_ax(ax)
     save(fig, out("02-forward.svg"))
@@ -287,7 +287,7 @@ def fig_reverse(model):
     fig, axs = plt.subplots(2, 3, figsize=(9, 6.6), sharex=True, sharey=True)
     for ax, t in zip(axs.ravel(), keep):
         x = snaps[t]
-        ax.scatter(x[:, 0], x[:, 1], s=3, color=C["a"], alpha=0.6)
+        ax.scatter(x[:, 0], x[:, 1], s=3, color=C["a"], alpha=0.6, rasterized=True)
         modes(ax)
         ax.set_title(f"$x_{{{t}}}$" if t > 0 else "$x_0$ (samples)")
         toy_ax(ax)
@@ -310,10 +310,10 @@ def fig_score(model):
         exact = np.sqrt(1 - ab) * mix_score(P, ab)        # = -E[eps | x_t]
         for i, (V, name) in enumerate([(learned, "learned"), (exact, "exact")]):
             ax = axs[i, j]
-            ax.scatter(xt[:, 0], xt[:, 1], s=2, color=C["gray"], alpha=0.35)
+            ax.scatter(xt[:, 0], xt[:, 1], s=2, color=C["gray"], alpha=0.35, rasterized=True)
             U = V / (np.linalg.norm(V, axis=1, keepdims=True) + 1e-9)   # direction only
             ax.quiver(P[:, 0], P[:, 1], U[:, 0], U[:, 1], color=C["a"] if i == 0 else C["b"],
-                      angles="xy", scale_units="xy", scale=3.2, width=0.008)
+                      angles="xy", scale_units="xy", scale=3.2, width=0.008, rasterized=True)
             toy_ax(ax, lim=3.2)
             if i == 0:
                 ax.set_title(f"$t = {t}$")
@@ -401,9 +401,9 @@ def fig_cfg():
             col = C["a"] if c == 0 else C["b"]
             if w == 0:
                 col = C["gray"]
-            ax.scatter(x[:, 0], x[:, 1], s=3, color=col, alpha=0.5)
+            ax.scatter(x[:, 0], x[:, 1], s=3, color=col, alpha=0.5, rasterized=True)
             if c == 0:
-                az.scatter(x[:, 0], x[:, 1], s=4, color=col, alpha=0.5)
+                az.scatter(x[:, 0], x[:, 1], s=4, color=col, alpha=0.5, rasterized=True)
             if w >= 1:
                 d = x - CENTERS8[c]
                 print(f"CFG w={w} class {c}: mean |x - mu_c| {np.linalg.norm(d, axis=1).mean():.3f}, "
@@ -475,7 +475,7 @@ def fig_few_step():
         xf = fm_path(z.copy(), steps=n)[-1]
         for i, (x, col) in enumerate([(xd, C["b"]), (xf, C["a"])]):
             ax = axs[i, j]
-            ax.scatter(x[:, 0], x[:, 1], s=3, color=col, alpha=0.5)
+            ax.scatter(x[:, 0], x[:, 1], s=3, color=col, alpha=0.5, rasterized=True)
             modes(ax); toy_ax(ax, lim=3.0)
             frac, _ = coverage(x)
             ax.text(-2.85, -2.75, f"{100 * frac:.0f}% near a mode", fontsize=13, bbox=dict(fc="white", ec="none", alpha=0.8))

@@ -98,7 +98,7 @@ def fig_sds_toy():
     panels = [(init, "init $\\theta$", C["gray"]), (snaps[300], "SDS, step 300", C["b"]), (snaps[1000], "SDS, step 1000", C["b"]),
               (th_a, "SDS, annealed $t$", C["b"]), (th_u, "SDS, uniform $t$", C["x"]), (real, "real samples", C["a"])]
     for ax, (x, ttl, col) in zip(axs.ravel(), panels):
-        ax.scatter(x[:, 0], x[:, 1], s=4, color=col, alpha=0.6)
+        ax.scatter(x[:, 0], x[:, 1], s=4, color=col, alpha=0.6, rasterized=True)
         ax.scatter(CENTERS[:, 0], CENTERS[:, 1], marker="+", s=90, color=C["dark"], lw=1.6, zorder=5)
         s_, m_ = spread(x)
         ax.set_title(ttl, fontsize=14)
@@ -302,7 +302,7 @@ def fig_terrain():
         col = colour(hh)
         if k == 1:
             col[changed] = matplotlib.colors.to_rgba(C["x"])
-        ax.scatter(x, y, hh, c=col, s=7, depthshade=False, edgecolor="none")
+        ax.scatter(x, y, hh, c=col, s=7, depthshade=False, edgecolor="none", rasterized=True)
         ax.set_zlim(-1.2, 2.0); ax.set_xticklabels([]); ax.set_yticklabels([]); ax.set_zticklabels([])
         ax.view_init(elev=32, azim=-55)
         ax.set_title(ttl, fontsize=13)

@@ -83,7 +83,7 @@ def fig_energy():
     for k, (Z, ttl) in enumerate([(E, "$E(x,y)=\\min_z\\,\\Vert y-\\mathrm{Pred}(s_x,z)\\Vert^2$"),
                                   (np.zeros_like(E), "collapsed encoder: $E \\equiv 0$")]):
         ax = fig.add_subplot(1, 2, k + 1, projection="3d")
-        ax.plot_surface(Y1, Y2, Z, cmap="viridis", vmin=0, vmax=4, rstride=3, cstride=3, linewidth=0, alpha=0.9)
+        ax.plot_surface(Y1, Y2, Z, cmap="viridis", vmin=0, vmax=4, rstride=3, cstride=3, linewidth=0, alpha=0.9, rasterized=True)
         if k == 0:
             ax.plot(arc[:, 0], arc[:, 1], 0.02 + 0 * zs, color=C["b"], lw=3.5, zorder=10)
             for zv in (-1, 0, 1):
@@ -269,7 +269,7 @@ def fig_collapse():
         sc = s - s.mean(0)
         U, S_, Vt = np.linalg.svd(sc[:1500], full_matrices=False)
         pc = sc[:1500] @ Vt[:2].T
-        ax.scatter(pc[:, 0], pc[:, 1], c=om[:1500], cmap="viridis", s=4, vmin=0.5, vmax=3.0)
+        ax.scatter(pc[:, 0], pc[:, 1], c=om[:1500], cmap="viridis", s=4, vmin=0.5, vmax=3.0, rasterized=True)
         ax.set_title(v, fontsize=13, color=c)
         ax.set_xticks([]); ax.set_yticks([])
         ax.set_xlabel(f"PC1/PC2, std {std:.3f}", fontsize=12)

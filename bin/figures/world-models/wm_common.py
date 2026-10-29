@@ -10,6 +10,9 @@ sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1]))
 from style import *  # noqa: E402,F401,F403
 
 import numpy as np  # noqa: E402
+
+# dense point clouds / surfaces are drawn with rasterized=True; render those layers at 200 dpi
+plt.rcParams["savefig.dpi"] = 200
 from matplotlib.patches import FancyArrowPatch, FancyBboxPatch, Circle, Ellipse  # noqa: E402,F401
 
 ROOT = pathlib.Path(__file__).resolve().parents[3]
