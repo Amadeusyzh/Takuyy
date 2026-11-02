@@ -290,7 +290,7 @@ $$
 L_\pi(\theta) = \mathbb{E}_{s\sim\mathcal{D},\,\xi}\left[\alpha\log\pi_\theta(\tilde a\mid s) - \min_j Q_{\phi_j}(s, \tilde a)\right]
 $$
 
-を最小化します。tanh は密度を変えるので $\log\pi(\tilde a\mid s) = \log\mathcal{N}(u;\mu,\sigma) - \sum_i\log(1-\tanh^2 u_i)$ となります。
+を最小化します。tanh は密度を変えるので $\log\pi(\tilde a\mid s) = \log\mathcal{N}(u;\mu,\sigma)$ $-\, \sum_i\log(1-\tanh^2 u_i)$ となります。
 続く論文（Haarnoja ら 2018b）は $\alpha$ を目標エントロピー（よく $-\dim\mathcal{A}$ を使います）に向けて自動調整し、実機の Minitaur
 四脚ロボットで約 2 時間分の経験だけで直接歩行を学習できることを示しました。
 
@@ -424,9 +424,7 @@ $$
 
 ここで $w_k$ は各誤差項の重み、$\sigma_k$ はその許容幅です。各項は追従が完璧なとき 1 で、誤差とともに滑らかに減衰します。ドメインランダム化と教師・生徒の分割を加えれば、方策は実機に転移します。2025〜2026 年の論文は、*何を*追従するか、一つの方策が*どれだけ多くの*動きを扱うか、そして Sim-to-Real のギャップを*どう*埋めるかで異なります。
 
-{% comment %} bin/figures/embodied-ai/embodied_ai_updates.py を実行して SVG を生成してから有効にする：
 {% include blog_figure.liquid path="assets/img/blog/embodied-ai/02-update-tracking-reward.svg" caption="左：三つの許容幅 $\sigma$ での追従報酬項 $r = \exp(-e^2/\sigma^2)$。右：関節が 40 ms の遅れと小さなノイズで $\hat q(t) = 0.6\sin(1.5\pi t)$ に追従するおもちゃの例。灰色の曲線が誤差、色付きの曲線が各ステップの報酬です。小さな $\sigma$（赤）は同じ遅れをずっと強く罰し、疎で尖った信号になります。大きな $\sigma$（青）は寛容ですが、良い追従とそこそこの追従をほとんど区別できません。KungfuBot が学習中に $\sigma$ を適応させるのはこのためです。" %}
-{% endcomment %}
 
 - **HOVER**（He ら、ICRA 2025）は複数の指令モード（関節角、ルート速度、手のキーポイント）を一つの全身コントローラに蒸留します。上位のプランナや遠隔操作者は、方策を替えずにモードを切り替えられます。
 - **ASAP**（He ら、RSS 2025）は動力学のギャップに直接取り組みます。まずシミュレーションで追従方策を学習し、実機で動かして軌道を記録します。次に、シミュレータがその実機の軌道を再現するように**デルタ行動モデル**（delta action model）$\Delta_\phi$ を当てはめます。$s_{t+1} = f_{\text{sim}}(s_t, a_t + \Delta_\phi(s_t,a_t))$ です。最後に、この補正したシミュレータで方策を微調整します。第 5 節のシステム同定と比べると、少数の物理パラメータを当てはめる代わりに、行動に対する残差を学習しています。

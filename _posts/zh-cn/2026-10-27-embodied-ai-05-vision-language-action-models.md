@@ -355,11 +355,9 @@ flowchart TB
 
 下面的浏览器把本文和本节的模型放在同一条时间线上：每条泳道是一个机构或模型家族，灰色曲线表示“基于”。用筛选器可以看出三个趋势：流匹配（flow matching）逐渐成为主流动作头；开放权重从学术界扩展到 NVIDIA 和 Physical Intelligence；2026 年人形机器人成为主要目标。
 
-{% include widget.liquid name="embodied-ai-vla-explorer" height="560" caption="交互：按动作头、是否开放权重或本体类型筛选。点击模型可查看摘要、状态和链接（摘要为英文）。颜色 = 动作头，实心 = 开放权重，灰色曲线 = 基于。手机上时间轴向下延伸。日期为 arXiv 首个版本或官方公告的月份。" %}
+{% include widget.liquid name="embodied-ai-vla-explorer" height="560" caption="交互：按动作头、是否开放权重或本体类型筛选。点击模型可查看摘要、状态和链接（摘要为英文）。颜色 = 动作头，实心 = 开放权重，灰色曲线 = 基于。手机上时间轴向下延伸，较长的名称会被缩短，点击条目即可看到全名。日期为 arXiv 首个版本或官方公告的月份。" %}
 
-{% comment %} 运行 bin/figures/embodied-ai/embodied_ai_updates.py 生成 SVG 后再启用：
 {% include blog_figure.liquid path="assets/img/blog/embodied-ai/05-update-vla-timeline.svg" localized="true" caption="上：与浏览器相同的模型，画成静态时间线（实心 = 开放权重，空心 = 未开放）。下：本列表中每年的模型数，按动作头分类。2022–2023 年以离散 token 为主，2024 年出现扩散头；从 2025 年起流匹配成为最常见的动作头，“其他”的比例上升是因为若干工业界模型没有公开动作头。该列表是精选，而非完整统计。" %}
-{% endcomment %}
 
 ### Physical Intelligence：从 pi0.5 到 pi0.7
 

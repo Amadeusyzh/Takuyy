@@ -320,9 +320,7 @@ MSE BC:    mean y 0.022 (collapses to the average, i.e. into the obstacle)
 | Being-H0.5 / UniHand-2.0 | arXiv 预印本（2026 年 1 月） | 3.5 万小时以上，主要是人手交互 | 人 + 30 种机器人本体 | 以人为中心的预训练 |
 | 双臂家务数据（Xu 等） | arXiv 预印本（2026 年 9 月） | 1,500 小时（已开源） | 双臂 | 专家数据加同策略纠正数据 |
 
-{% comment %} 运行 bin/figures/embodied-ai/embodied_ai_updates.py 生成 SVG 后再启用：
-{% include blog_figure.liquid path="assets/img/blog/embodied-ai/04-update-dataset-scale.svg" localized="true" caption="左：各数据来源的小时数（对数坐标；论文写“以上”的取下限）。蓝色 = 机器人遥操作，橙色 = 手持 UMI 数据，绿色 = 人类第一人称视频。人类语料要大一到两个数量级。右：同时报告两项数字的数据集的轨迹数与机器人本体数。只有 Open X-Embodiment 在两个方向上都很大。" %}
-{% endcomment %}
+{% include blog_figure.liquid path="assets/img/blog/embodied-ai/04-update-dataset-scale.svg" localized="true" caption="左：各数据来源的小时数（对数坐标；论文写“以上”的取下限）。蓝色 = 机器人遥操作，橙色 = 手持 UMI 数据，绿色 = 人类第一人称视频。最大的人类语料要大一到两个数量级。右：同时报告两项数字的数据集的轨迹数与机器人本体数。只有 Open X-Embodiment 在两个方向上都很大。" %}
 
 有两个明显趋势。第一，**场景多样性胜过重复**：DROID 的 564 个场景以及 Galaxea 的真实家庭和商店，正是为[第 5 篇]({{ '/blog/2026/embodied-ai-05-vision-language-action-models/' | relative_url }})中的泛化维度而设计的。第二，最大的数字现在来自**人类数据**：UniHand-2.0 和 EgoScale（见[第 6 篇]({{ '/blog/2026/embodied-ai-06-embodied-ai-meets-xr-and-hci/' | relative_url }})）以数万小时计，比任何机器人遥操作语料都多一个数量级。Xu 等人 2026 年的论文还有一个有益的转折：它在专家示范之外同时扩展 **DAgger 式的同策略纠正数据**（第 1 节），并研究两者如何随规模变化。即使有 1,500 小时，协变量偏移仍然是敌人。
 

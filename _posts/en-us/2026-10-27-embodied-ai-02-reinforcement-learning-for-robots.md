@@ -298,7 +298,7 @@ $$
 L_\pi(\theta) = \mathbb{E}_{s\sim\mathcal{D},\,\xi}\left[\alpha\log\pi_\theta(\tilde a\mid s) - \min_j Q_{\phi_j}(s, \tilde a)\right].
 $$
 
-The tanh changes the density, so $\log\pi(\tilde a\mid s) = \log\mathcal{N}(u;\mu,\sigma) - \sum_i\log(1-\tanh^2 u_i)$. The follow-up
+The tanh changes the density, so $\log\pi(\tilde a\mid s) = \log\mathcal{N}(u;\mu,\sigma)$ $-\, \sum_i\log(1-\tanh^2 u_i)$. The follow-up
 paper (Haarnoja et al. 2018b) also tunes $\alpha$ automatically toward a target entropy (often $-\dim\mathcal{A}$) and
 demonstrated learning to walk directly on a real Minitaur quadruped in about two hours of experience.
 
@@ -449,9 +449,7 @@ smoothly with the error. Add domain randomization and a teacher-student split, a
 robot. The 2025-2026 papers differ in *what* they track, *how many* motions one policy covers, and *how* they close the
 sim-to-real gap:
 
-{% comment %} Enable after running bin/figures/embodied-ai/embodied_ai_updates.py (the SVG is not generated yet):
 {% include blog_figure.liquid path="assets/img/blog/embodied-ai/02-update-tracking-reward.svg" caption="Left: the tracking reward term $r = \exp(-e^2/\sigma^2)$ for three tolerances $\sigma$. Right: a toy run where a joint follows $\hat q(t) = 0.6\sin(1.5\pi t)$ with a 40 ms lag and small noise. The grey curve is the error; the coloured curves are the per-step rewards. A small $\sigma$ (red) punishes the same lag much harder and gives a sparse, peaky signal; a large $\sigma$ (blue) is forgiving but hardly distinguishes good from mediocre tracking. KungfuBot adapts $\sigma$ during training for exactly this reason." %}
-{% endcomment %}
 
 - **HOVER** (He et al., ICRA 2025) distils several command modes (joint angles, root velocity, hand keypoints) into one
   whole-body controller, so a higher-level planner or a teleoperator can switch modes without switching policies.

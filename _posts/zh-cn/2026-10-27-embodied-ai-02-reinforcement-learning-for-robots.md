@@ -282,7 +282,7 @@ $$
 L_\pi(\theta) = \mathbb{E}_{s\sim\mathcal{D},\,\xi}\left[\alpha\log\pi_\theta(\tilde a\mid s) - \min_j Q_{\phi_j}(s, \tilde a)\right].
 $$
 
-tanh 改变了概率密度，因此 $\log\pi(\tilde a\mid s) = \log\mathcal{N}(u;\mu,\sigma) - \sum_i\log(1-\tanh^2 u_i)$。后续论文（Haarnoja 等 2018b）
+tanh 改变了概率密度，因此 $\log\pi(\tilde a\mid s) = \log\mathcal{N}(u;\mu,\sigma)$ $-\, \sum_i\log(1-\tanh^2 u_i)$。后续论文（Haarnoja 等 2018b）
 还会把 $\alpha$ 自动调向目标熵（常取 $-\dim\mathcal{A}$），并展示了在真实的 Minitaur 四足机器人上直接学会行走，只用了约两小时的经验。
 
 | | PPO | SAC |
@@ -407,9 +407,7 @@ $$
 
 其中 $w_k$ 是各误差项的权重，$\sigma_k$ 是其容差。完美跟踪时每一项为 1，误差增大时平滑衰减。再加上域随机化和教师-学生划分，策略就能迁移到真实机器人上。2025–2026 年的论文区别在于跟踪*什么*、一个策略覆盖*多少*动作，以及*如何*缩小仿真与现实的差距：
 
-{% comment %} 运行 bin/figures/embodied-ai/embodied_ai_updates.py 生成 SVG 后再启用：
 {% include blog_figure.liquid path="assets/img/blog/embodied-ai/02-update-tracking-reward.svg" caption="左：三种容差 $\sigma$ 下的跟踪奖励项 $r = \exp(-e^2/\sigma^2)$。右：一个玩具示例，关节以 40 ms 的滞后和少量噪声跟随 $\hat q(t) = 0.6\sin(1.5\pi t)$。灰色曲线是误差，彩色曲线是每一步的奖励。小的 $\sigma$（红色）对同样的滞后惩罚重得多，信号稀疏而尖锐；大的 $\sigma$（蓝色）很宽容，却几乎区分不出好的和一般的跟踪。KungfuBot 正因如此在训练中自适应调整 $\sigma$。" %}
-{% endcomment %}
 
 - **HOVER**（He 等，ICRA 2025）把多种指令模式（关节角、根部速度、手部关键点）蒸馏进一个全身控制器，上层规划器或遥操作者切换模式时无需切换策略。
 - **ASAP**（He 等，RSS 2025）直接处理动力学差距：先在仿真中训练跟踪策略并在真实机器人上运行以记录轨迹，再拟合一个**增量动作模型**（delta action model）$\Delta_\phi$，使仿真器复现这些真实轨迹，$s_{t+1} = f_{\text{sim}}(s_t, a_t + \Delta_\phi(s_t,a_t))$，最后在修正后的仿真器中微调策略。可与第 5 节的系统辨识对比：它不是拟合少数物理参数，而是学习动作上的残差。

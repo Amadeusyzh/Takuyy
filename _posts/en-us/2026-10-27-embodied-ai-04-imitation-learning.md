@@ -364,9 +364,7 @@ The table collects figures stated in each paper or on its official page. Differe
 | Being-H0.5 / UniHand-2.0 | arXiv preprint (Jan 2026) | 35,000+ h, mostly human hand interaction | human + 30 robot embodiments | human-centric pre-training |
 | Bimanual household data (Xu et al.) | arXiv preprint (Sep 2026) | 1,500 h (open-sourced) | bimanual | expert data plus on-policy corrections |
 
-{% comment %} Enable after running bin/figures/embodied-ai/embodied_ai_updates.py (the SVGs are not generated yet):
-{% include blog_figure.liquid path="assets/img/blog/embodied-ai/04-update-dataset-scale.svg" localized="true" caption="Left: hours of data per source on a log axis (lower bounds where the paper says 'more than'). Blue = robot teleoperation, orange = handheld UMI data, green = human egocentric video. The human corpora are one to two orders of magnitude larger. Right: trajectories against number of robot embodiments for the datasets that report both. Open X-Embodiment is the only one that is large in both directions." %}
-{% endcomment %}
+{% include blog_figure.liquid path="assets/img/blog/embodied-ai/04-update-dataset-scale.svg" localized="true" caption="Left: hours of data per source on a log axis (lower bounds where the paper says 'more than'). Blue = robot teleoperation, orange = handheld UMI data, green = human egocentric video. The largest human corpora are one to two orders of magnitude larger. Right: trajectories against number of robot embodiments for the datasets that report both. Open X-Embodiment is the only one that is large in both directions." %}
 
 Two trends stand out. First, **diversity of scenes beats repetition**. DROID's 564 scenes and Galaxea's real homes and
 shops are designed for the generalization axes of

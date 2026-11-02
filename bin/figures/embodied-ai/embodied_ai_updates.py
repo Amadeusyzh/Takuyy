@@ -30,7 +30,7 @@ OUT = pathlib.Path(__file__).resolve().parents[3] / "assets" / "img" / "blog" / 
 def fig_tracking_reward():
     sigmas = [0.1, 0.25, 0.5]
     cols = [C["x"], C["a"], C["z"]]
-    fig, (a1, a2) = plt.subplots(1, 2, figsize=(11, 4.4))
+    fig, (a1, a2) = plt.subplots(1, 2, figsize=(11, 5.2))
 
     e = np.linspace(-1.0, 1.0, 801)
     for s, c in zip(sigmas, cols):
@@ -52,7 +52,7 @@ def fig_tracking_reward():
         a2.plot(t, r, color=c, label=r"$r(t),\ \sigma=%.2g$ (mean %.2f)" % (s, r.mean()))
     a2.set_xlabel(r"$t$  [s]")
     a2.set_ylim(-0.25, 1.1)
-    a2.legend(loc="lower right", fontsize=11, ncol=1)
+    a2.legend(loc="upper center", bbox_to_anchor=(0.5, -0.2), fontsize=11, ncol=2, frameon=False)
     fig.tight_layout()
     save(fig, OUT / "02-update-tracking-reward.svg")
 
@@ -157,18 +157,31 @@ def fig_vla_timeline(lang):
              "diff": label(lang, en="diffusion", zh="扩散", ja="拡散"),
              "flow": label(lang, en="flow matching", zh="流匹配", ja="フローマッチング"),
              "other": label(lang, en="other / undisclosed", zh="其他 / 未公开", ja="その他 / 非公開")}
-    fig, (a1, a2) = plt.subplots(2, 1, figsize=(11, 9.5), gridspec_kw=dict(height_ratios=[2.2, 1]))
+    fig, (a1, a2) = plt.subplots(2, 1, figsize=(11, 11.5), gridspec_kw=dict(height_ratios=[2.7, 1]))
 
-    # top: timeline; labels alternate above/below inside each lane to limit overlap
+    # top: timeline. Labels are placed greedily in four slots per lane (near/far, below/above the marker);
+    # if every slot is taken, the label is pushed right and joined to its marker by a thin leader line.
+    char_w = 0.050                      # approximate label width per character, in years
+    slots = [0.25, -0.25, 0.42, -0.42]   # y offsets (axis is inverted, so positive = below)
     for lane in range(len(lanes)):
         if lane % 2:
             a1.axhspan(lane - 0.5, lane + 0.5, color="#f1f1f4", zorder=0)
         items = sorted([v for v in VLA if v[1] == lane], key=lambda v: v[2])
-        for i, (name, _, date, head, op) in enumerate(items):
+        right_edge = {s: -1e9 for s in slots}           # right end of the last label in each slot
+        for name, _, date, head, op in items:
             x = _t(date)
             a1.scatter(x, lane, s=110, zorder=3, color=HEAD_COL[head] if op else "white",
                        edgecolor=C["dark"] if op else HEAD_COL[head], linewidth=1.2 if op else 2.5)
-            a1.text(x, lane + (0.24 if i % 2 == 0 else -0.36), name, ha="center", fontsize=10.5)
+            w = char_w * len(name)
+            free = [s for s in slots if right_edge[s] < x - w / 2 - 0.02]
+            if free:
+                s, xl = free[0], x
+            else:
+                s = min(slots, key=lambda k: right_edge[k])
+                xl = right_edge[s] + w / 2 + 0.03
+                a1.plot([x, xl], [lane, lane + s * 0.8], color=C["gray"], lw=0.8, zorder=2)
+            right_edge[s] = xl + w / 2
+            a1.text(xl, lane + s, name, ha="center", va="center", fontsize=10.5, zorder=4)
     a1.set_yticks(range(len(lanes)))
     a1.set_yticklabels(lanes, fontsize=12)
     a1.set_ylim(len(lanes) - 0.5, -0.5)
@@ -179,7 +192,9 @@ def fig_vla_timeline(lang):
     hs.append(Line2D([], [], marker="o", ls="", ms=10, markerfacecolor="white", markeredgecolor=C["dark"],
                      markeredgewidth=2, label=label(lang, en="hollow = closed weights", zh="空心 = 未开放权重",
                                                     ja="白抜き = 非公開ウェイト")))
-    a1.legend(handles=hs, loc="upper left", fontsize=10.5, ncol=1, framealpha=0.95)
+    # the empty corner left of 2024.3 in lanes 1-2 holds the legend, so it covers no marker
+    a1.legend(handles=hs, loc="center left", bbox_to_anchor=(0.005, 0.64), fontsize=10.5, ncol=1,
+              framealpha=0.95)
 
     # bottom: number of entries per year by action head (stacked)
     years = [2023, 2024, 2025, 2026]

@@ -404,11 +404,9 @@ The explorer below places the models of this post and of this update on one time
 and each grey curve means "builds on". Use the filters to see three trends: flow matching taking over action heads,
 open weights spreading from academia to NVIDIA and Physical Intelligence, and humanoids becoming a main target in 2026.
 
-{% include widget.liquid name="embodied-ai-vla-explorer" height="560" caption="Interactive: filter by action head, open weights or embodiment. Tap or click a model to see its summary, status and link (summaries are in English). Colour = action head; a filled marker = open weights; grey curves = builds on. On a phone the time axis runs downwards. Dates are the first arXiv version or the official announcement." %}
+{% include widget.liquid name="embodied-ai-vla-explorer" height="560" caption="Interactive: filter by action head, open weights or embodiment. Tap or click a model to see its summary, status and link (summaries are in English). Colour = action head; a filled marker = open weights; grey curves = builds on. On a phone the time axis runs downwards and long names are shortened; tap an entry for the full name. Dates are the first arXiv version or the official announcement." %}
 
-{% comment %} Enable after running bin/figures/embodied-ai/embodied_ai_updates.py (the SVGs are not generated yet):
 {% include blog_figure.liquid path="assets/img/blog/embodied-ai/05-update-vla-timeline.svg" localized="true" caption="Top: the same models as the explorer as a static time line (filled = open weights, hollow = closed). Bottom: number of models in this list per year, by action head. Discrete tokens dominate 2022-2023 and diffusion heads appear in 2024; from 2025 flow matching is the most common head, and the 'other' share grows because several industrial models do not disclose their action head. The list is a curated selection, not a census." %}
-{% endcomment %}
 
 ### Physical Intelligence: from pi0.5 to pi0.7
 

@@ -176,7 +176,7 @@
       vertical = W < 640;
       var lanes = T.lanes.length;
       if (vertical) {
-        PADL = 40; PADT = 34;
+        PADL = 32; PADT = 34;
         laneSize = (W - PADL - 6) / lanes;
         scale = 13;                                   // px per month
         H = Math.round(PADT + (T1 - T0 + 1) * scale + 10);
@@ -195,7 +195,8 @@
         items.forEach(function (d, i) {
           var t = (d.m - T0 + 0.5) * scale;
           t = Math.max(t, last + minGap); last = t;
-          var c = (L + 0.5) * laneSize;
+          // on a phone the marker sits near the left edge of its lane so the label can use the rest of the lane
+          var c = vertical ? L * laneSize + 8 : (L + 0.5) * laneSize;
           pos[d.id] = vertical ? { x: PADL + c, y: PADT + t, tier: i % 2 } : { x: PADL + t, y: PADT + c, tier: i % 2 };
         });
       }
@@ -223,8 +224,12 @@
         g.fillStyle = "#333";
         if (vertical) {
           g.save(); g.textAlign = "center";
-          var words = T.lanes[L].split(" ");
-          for (var k = 0; k < words.length; k++) g.fillText(words[k], PADL + (L + 0.5) * laneSize, 13 + 12 * k);
+          var words = T.lanes[L].replace("+", "+ ").split(" ").filter(function (w) { return w; });
+          var wmax = 0;
+          for (var k = 0; k < words.length; k++) wmax = Math.max(wmax, g.measureText(words[k]).width);
+          var fs = Math.min(11, 11 * (laneSize - 4) / Math.max(wmax, 1));
+          g.font = fs.toFixed(1) + "px sans-serif";
+          for (k = 0; k < words.length; k++) g.fillText(words[k], PADL + (L + 0.5) * laneSize, 13 + 12 * k);
           g.restore();
         } else {
           g.fillText(T.lanes[L], 6, PADT + (L + 0.5) * laneSize + 4);
@@ -267,8 +272,17 @@
         g.fillStyle = d.open ? c : "#fff"; g.fill();
         g.lineWidth = d.open ? 1.2 : 2.5; g.strokeStyle = d.open ? "#222" : c; g.stroke();
         if (state.sel === d.id) { g.beginPath(); g.arc(p.x, p.y, r + 4, 0, 2 * Math.PI); g.lineWidth = 2; g.strokeStyle = "#d62728"; g.stroke(); }
-        g.fillStyle = "#111"; g.font = (vertical ? "10.5px" : "11px") + " sans-serif";
-        if (vertical) { g.textAlign = "left"; g.fillText(d.s, p.x + 9, p.y + 4); }
+        g.fillStyle = "#111"; g.font = (vertical ? "9.5px" : "11px") + " sans-serif";
+        if (vertical) {
+          // shorten labels that would run into the next lane; the full name appears when the entry is tapped
+          g.textAlign = "left";
+          var room = laneSize - 15, lab = d.s;
+          if (g.measureText(lab).width > room) {
+            while (lab.length > 2 && g.measureText(lab + "\u2026").width > room) lab = lab.slice(0, -1);
+            lab += "\u2026";
+          }
+          g.fillText(lab, p.x + 9, p.y + 4);
+        }
         else { g.textAlign = "center"; g.fillText(d.s, p.x, p.tier ? p.y + 19 : p.y - 10); }
         g.textAlign = "left";
       });

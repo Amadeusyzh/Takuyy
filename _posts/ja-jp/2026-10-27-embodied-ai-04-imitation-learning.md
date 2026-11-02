@@ -344,9 +344,7 @@ LeRobot の実装がよい参考になります。
 | Being-H0.5 / UniHand-2.0 | arXiv プレプリント（2026 年 1 月） | 3.5 万時間以上、主に人の手のインタラクション | 人 + 30 種類のロボットの身体 | 人間中心の事前学習 |
 | 双腕の家事データ（Xu ら） | arXiv プレプリント（2026 年 9 月） | 1,500 時間（オープンソース化） | 双腕 | 専門家データと方策オン型の修正データ |
 
-{% comment %} bin/figures/embodied-ai/embodied_ai_updates.py を実行して SVG を生成してから有効にする：
-{% include blog_figure.liquid path="assets/img/blog/embodied-ai/04-update-dataset-scale.svg" localized="true" caption="左：データソースごとの時間数（対数軸。論文が「以上」と書くものは下限値）。青 = ロボット遠隔操作、橙 = ハンドヘルド UMI データ、緑 = 人間の一人称視点動画。人間のコーパスは 1〜2 桁大きいです。右：両方の数字を報告しているデータセットの軌道数とロボットの身体の数。両方向に大きいのは Open X-Embodiment だけです。" %}
-{% endcomment %}
+{% include blog_figure.liquid path="assets/img/blog/embodied-ai/04-update-dataset-scale.svg" localized="true" caption="左：データソースごとの時間数（対数軸。論文が「以上」と書くものは下限値）。青 = ロボット遠隔操作、橙 = ハンドヘルド UMI データ、緑 = 人間の一人称視点動画。最大の人間のコーパスは 1〜2 桁大きいです。右：両方の数字を報告しているデータセットの軌道数とロボットの身体の数。両方向に大きいのは Open X-Embodiment だけです。" %}
 
 二つの傾向がはっきりしています。第一に、**シーンの多様性は繰り返しに勝ります**。DROID の 564 シーンや Galaxea の実際の家庭・店舗は、[第 5 回]({{ '/blog/2026/embodied-ai-05-vision-language-action-models/' | relative_url }})の汎化の軸を狙って設計されています。第二に、最大の数字は今や**人間のデータ**から来ています。UniHand-2.0 と EgoScale（[第 6 回]({{ '/blog/2026/embodied-ai-06-embodied-ai-meets-xr-and-hci/' | relative_url }})）は数万時間の規模で、どのロボット遠隔操作コーパスよりも一桁多いです。Xu らの 2026 年の論文には有益なひねりがあります。専門家のデモと並べて **DAgger 型の方策オン修正データ**（第 1 節）も拡大し、両者がどうスケールするかを調べています。1,500 時間あっても、共変量シフトは依然として敵です。
 
