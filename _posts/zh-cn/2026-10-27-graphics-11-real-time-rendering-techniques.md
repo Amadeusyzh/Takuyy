@@ -14,7 +14,7 @@ related_posts: false
 
 ## 为什么重要
 
-60 fps 的游戏每帧只有 **16.7 ms**，120 fps 时只有 8.3 ms。这点预算要覆盖几何、阴影、光照、反射、间接光、透明物体、后处理和 UI。[第 03 篇]({{ '/blog/2026/graphics-03-shading-and-textures/' | relative_url }})搭建了带基础阴影贴图和 PCF 的前向渲染器；[第 06 篇]({{ '/blog/2026/graphics-06-real-time-ray-tracing/' | relative_url }})加入了硬件光线追踪、降噪、ReSTIR、TAA 和学习式超分。本章填补两者之间的空白：介绍*光栅化时代*的经典技术。每个现代引擎至今仍在运行它们，而且常常与光线追踪并用。我们关注的是**算法及其数学**。引擎如何把它们组织进渲染图（render graph）和 GPU 驱动管线，是 [graphics-engine 02]({{ '/blog/2026/graphics-engine-02-gpu-apis-and-render-graphs/' | relative_url }}) 的主题；Unreal Engine 5 的 Nanite、Lumen 和虚拟阴影贴图如何封装这些技术，见 [graphics-engine 04]({{ '/blog/2026/graphics-engine-04-inside-production-engines/' | relative_url }})。
+60 fps 的游戏每帧只有 **16.7 ms**，120 fps 时只有 8.3 ms。这点预算要覆盖几何、阴影、光照、反射、间接光、透明物体、后处理和 UI。[第 03 篇]({{ '/blog/2026/graphics-03-shading-and-textures/' | relative_url }})搭建了带基础阴影贴图和 PCF（百分比渐近过滤）的前向渲染器；[第 06 篇]({{ '/blog/2026/graphics-06-real-time-ray-tracing/' | relative_url }})加入了硬件光线追踪、降噪、ReSTIR、TAA（时间性抗锯齿）和学习式超分。本章填补两者之间的空白：介绍*光栅化时代*的经典技术。每个现代引擎至今仍在使用它们，而且常常与光线追踪并用。我们关注的是**算法及其数学**。引擎如何把它们组织进渲染图（render graph）和 GPU 驱动管线，是 [graphics-engine 02]({{ '/blog/2026/graphics-engine-02-gpu-apis-and-render-graphs/' | relative_url }}) 的主题；Unreal Engine 5 的 Nanite、Lumen 和虚拟阴影贴图如何封装这些技术，见 [graphics-engine 04]({{ '/blog/2026/graphics-engine-04-inside-production-engines/' | relative_url }})。
 
 ## 前置知识
 
@@ -27,9 +27,9 @@ related_posts: false
 
 ### 1.1 前向与延迟
 
-**前向**（forward）渲染器在光栅化时就为每个三角形的片元着色：对每个片元遍历所有光源。开销大致是（被着色的片元数，含过度绘制）×（光源数）。**延迟**（deferred）渲染器（源自 Saito 和 Takahashi 1990 年的 “G-buffer” 思想）把一帧分成两步：
+**前向**（forward）渲染器在光栅化时就为每个三角形的片元着色：对每个片元遍历所有光源。开销大致是（被着色的片元数，含过度绘制 overdraw）×（光源数）。**延迟**（deferred）渲染器（源自 Saito 和 Takahashi 1990 年的 “G-buffer” 思想）把一帧分成两步：
 
-1. **几何 pass**：把所有不透明几何体光栅化一次，把着色所需的*输入*写入多个渲染目标，即 **G-buffer**：反照率、法线、粗糙度、金属度、深度等。此时还不做光照。
+1. **几何 pass**：把所有不透明几何体光栅化一次，把着色所需的*输入*写入多个渲染目标，即 **G 缓冲**（G-buffer）：反照率、法线、粗糙度、金属度、深度等。此时还不做光照。
 2. **光照 pass**：对每个像素读取 G-buffer，用第 04 篇的 BRDF 累加每个光源的贡献。
 
 此时着色开销变为（像素数）×（每像素光源数），与过度绘制无关，材质与光源也解耦了。代价是显存带宽和一部分灵活性：
@@ -43,7 +43,9 @@ related_posts: false
 | 材质多样性 | 任意着色器 | 受限于 G-buffer 存储的内容 |
 | 带宽 | 低 | 高：要写入并读回多个全屏目标 |
 
-{% include blog_figure.liquid path="assets/img/blog/graphics/11-gbuffer.svg" caption="图脚本生成的真实 G-buffer：棋盘格平面上的三个球，用 NumPy 光线投射得到。(a) 反照率，(b) 世界空间法线（以颜色表示），(c) 线性视空间深度，(d) 用八面体编码打包进两个通道的法线，(e) 红色为粗糙度、绿色为金属度（金色球是金属），(f) 延迟光照 pass：只读取 (a)-(e)，用第 04 篇的 GGX BRDF 逐像素计算三个点光源。" %}
+下图用一个小场景把这两个 pass 摊开来看：(a)-(e) 是几何 pass 写入的 G-buffer，(f) 是光照 pass 的结果。
+
+{% include blog_figure.liquid path="assets/img/blog/graphics/11-gbuffer.svg" caption="图脚本生成的真实 G-buffer：棋盘格平面上的三个球，用 NumPy 光线投射得到。(a) 反照率，(b) 世界空间法线（以颜色表示），(c) 视空间深度（对数灰度：近处暗、远处亮），(d) 用八面体编码打包进两个通道的法线，(e) 红色为粗糙度、绿色为金属度（金色球是金属），(f) 延迟光照 pass：只读取 (a)-(e)，用第 04 篇的 GGX BRDF 逐像素计算三个点光源。" %}
 
 **典型布局。** 引擎会把 G-buffer 打包得很紧。一种常见安排是四个 32 位目标加深度：RGBA8 存反照率和 AO，RGB10A2 或 RG16 存法线，RGBA8 存粗糙度、金属度和材质 ID，RG16F 存运动矢量。**数值例子**：在 1920 × 1080 下，这是 $2.07\text{M px} \times 16\ \text{B} = 33\ \text{MB}$，几何 pass 写入一次，光照 pass 再读回一次。在 60 fps 下，还没做任何光照就已经约 4 GB/s。这就是 G-buffer 的大小要一比特一比特地争的原因。
 
@@ -85,6 +87,8 @@ err = np.degrees(np.arccos(np.clip(oct_decode(q) @ n, -1, 1)))
 print(e, err)                                 # error well below 0.01 degrees
 ```
 
+下图 (a) 画出了这个映射，(b) 比较了几种法线编码在量化后的角度误差。
+
 {% include blog_figure.liquid path="assets/img/blog/graphics/11-octahedral.svg" caption="(a) 八面体映射：正方形中的每一点都解码为一个单位法线（以颜色显示）。内部菱形对应上半球 z > 0，四个角是翻折过来的下半球。(b) 对 200,000 个随机法线量化后的最大角度误差随总比特数的变化：相同比特数下，八面体 (u, v) 与球面角精度相当（球面角甚至略好），但编码和解码都不需要三角函数；三个量化的 xyz 通道要多用约 50% 的比特才能达到相近的误差。" %}
 
 ### 1.3 分块与分簇光源剔除
@@ -99,6 +103,8 @@ $$
 
 **数值例子**：$z_n = 0.1$，$z_f = 1000$，$S = 24$ 个切片。深度 $z = 10$ 的像素落在切片 $\lfloor 24 \cdot \ln 100/\ln 10^4\rfloor = \lfloor 24 \cdot 0.5\rfloor = 12$。像素查找所属簇只需两次除法和一次对数。光源列表每帧在 GPU 上构建一次：用每个光源的球测试每个簇的包围盒。
 
+下图在一个随机光源场景里实际执行了这种分配。
+
 {% include blog_figure.liquid path="assets/img/blog/graphics/11-clusters.svg" caption="计算得到的分簇光源分配。(a) 视锥被切成 16 × 9 个图块和 16 个按指数间隔的深度切片（灰色轮廓，只显示近处部分），场景中有 30 个点光源（黄色球）；每个点代表至少被一个光源触及的簇，颜色表示光源数量。(b) 俯视图：每个格子按其所在列（所有 y 方向图块）的最大光源数着色，红色圆是光源范围。大多数簇只看到少数几个光源，这正是逐像素循环便宜的原因。" %}
 
 簇网格如何在渲染图中构建和使用，以及 forward+ 和可见性缓冲（visibility buffer）渲染器如何使用同样的列表，见 [graphics-engine 02]({{ '/blog/2026/graphics-engine-02-gpu-apis-and-render-graphs/' | relative_url }})。
@@ -111,7 +117,7 @@ $$
 
 方向光（太阳）若只用一张阴影贴图覆盖 200 m 视距，相机附近（一个像素只覆盖几毫米）和远处（一个像素覆盖几米）的纹素大小相同。结果就是**透视走样**（perspective aliasing）：近处阴影呈块状。**级联阴影贴图**（cascaded shadow maps，CSM；平行分割阴影贴图，Zhang 等 2006）把视锥切成 $N$ 段深度区间 $[z_i, z_{i+1}]$，每段用一张紧贴该切片的阴影贴图。
 
-切分点放在哪里？考察阴影纹素足迹与屏幕像素足迹之比。覆盖 $[z_i, z_{i+1}]$ 的级联宽度等于视锥在 $z_{i+1}$ 处的宽度，所以纹素大小正比于 $z_{i+1}$；深度 $z$ 处像素的足迹正比于 $z$。分辨率相同时，二者之比约为 $z_{i+1}/z$，在每个级联的近端最差。让所有级联的最差情况相等，就得到**对数**切分，处处的比值都是 $(z_f/z_n)^{1/N}$。**均匀**切分在远处浪费分辨率，近处级联却不够用。**实用切分方案**（practical split scheme）用参数 $\lambda$ 混合两者：
+切分点放在哪里？考察阴影纹素足迹与屏幕像素足迹之比。覆盖 $[z_i, z_{i+1}]$ 的级联宽度等于视锥在 $z_{i+1}$ 处的宽度，所以纹素大小正比于 $z_{i+1}$；深度 $z$ 处像素的足迹正比于 $z$。分辨率相同时，二者之比约为 $z_{i+1}/z$，在每个级联的近端最差。让所有级联的最差情况相等，就得到**对数**切分，每个级联的最差比值都是 $(z_f/z_n)^{1/N}$。**均匀**切分在远处浪费分辨率，近处级联却不够用。**实用切分方案**（practical split scheme）用参数 $\lambda$ 混合两者：
 
 $$
 z_i^{\log} = z_n\Big(\frac{z_f}{z_n}\Big)^{i/N},\qquad
@@ -133,13 +139,15 @@ for lam in [0.0, 0.5, 0.9, 1.0]:
 # 0.9 -> [  0.1    5.61   14.03   41.92  200.  ]
 ```
 
-{% include blog_figure.liquid path="assets/img/blog/graphics/11-csm-splits.svg" caption="n = 0.1、f = 200、四个级联时的切分。(a) λ 从 0（均匀）到 1（对数）时四段深度区间在对数轴上的分布，标出了切分深度。(b) 纹素与像素足迹之比 z_{i+1}/z 随视深度的变化：均匀切分让最近的几米分辨率不足数百倍，对数切分处处保持 (f/n)^{1/4} ≈ 6.7，λ = 0.9 是折中。" %}
+下图 (a) 画出四种 λ 下的切分点，(b) 画出各深度处的纹素/像素足迹比。
 
-产品级细节包括三点。**稳定化**（stabilization）：把每个级联的投影对齐到整数纹素并保持尺寸不变，使相机移动时阴影不闪烁。级联边界处的**混合**。**样本分布阴影贴图**（sample distribution shadow maps，Lauritzen、Salvi 与 Lefohn 2011）：读取深度缓冲，让级联贴合实际可见的深度范围。
+{% include blog_figure.liquid path="assets/img/blog/graphics/11-csm-splits.svg" caption="n = 0.1、f = 200、四个级联时的切分。(a) λ 从 0（均匀）到 1（对数）时四段深度区间在对数轴上的分布，标出了切分深度。(b) 纹素与像素足迹之比 z_{i+1}/z 随视深度的变化（每个级联内从近端的最大值降到远端的 1）：均匀切分（λ = 0）在 z = 0.1 处高达约 500，在 1 m 处仍约 50；对数切分（λ = 1）的最大值处处等于 (f/n)^{1/4} ≈ 6.7；λ = 0.9 是折中。" %}
+
+产品级的实现还要处理三个细节。**稳定化**（stabilization）：把每个级联的投影对齐到整数纹素并保持尺寸不变，使相机移动时阴影不闪烁。**级联边界混合**：在相邻级联的交界处做渐变过渡，避免出现可见的接缝。**样本分布阴影贴图**（sample distribution shadow maps，Lauritzen、Salvi 与 Lefohn 2011）：读取深度缓冲，让级联贴合实际可见的深度范围。
 
 ### 2.2 PCF 与百分比渐近软阴影
 
-PCF（Reeves、Salesin 与 Cook 1987；第 03 篇）对多次深度比较的*结果*取平均，把硬边变成一段斜坡。斜坡宽度由滤波核决定，而不是由场景决定。真实的半影来自面光源，并随遮挡物与接收面之间的距离增大：一根杆子的影子在杆脚处锐利，在杆顶处模糊。
+PCF（percentage-closer filtering，百分比渐近过滤；Reeves、Salesin 与 Cook 1987；第 03 篇）对多次深度比较的*结果*取平均，把硬边变成一段斜坡。斜坡宽度由滤波核决定，而不是由场景决定。真实的半影来自面光源，并随遮挡物与接收面之间的距离增大：一根杆子的影子在杆脚处锐利，在杆顶处模糊。
 
 **PCSS**（percentage-closer soft shadows，Fernando 2005）分三步逐像素估计半影：
 
@@ -179,6 +187,8 @@ float pcss(vec2 uv, float dReceiver) {
 }
 ```
 
+下图 (a) 画出半影宽度公式随遮挡物距离的变化，(b) 在一个直边遮挡物上，把 PCSS 和固定核 PCF 与精确结果对比。
+
 {% include blog_figure.liquid path="assets/img/blog/graphics/11-pcss.svg" caption="(a) 三种光源尺寸下 PCSS 半影宽度随遮挡物-接收面距离的变化（接收面距光源 10 个单位）：一开始缓慢增长，遮挡物靠近光源时急剧变大。(b) 高度 h = 2（蓝）和 h = 6（红）的直边遮挡物投下的阴影边缘处的可见度：宽 1 个单位的光源可见部分的精确比例（粗淡线）；PCSS（点线）重现了两条斜坡；固定核 PCF（虚线）无论 h 如何都给出同样宽 0.4 的斜坡。" %}
 
 ### 2.3 方差与矩阴影贴图
@@ -217,7 +227,9 @@ for t in [0.7, 0.9]:
 - **指数方差阴影贴图**（EVSM，出自 Lauritzen 关于分层和扭曲 VSM 的工作）：对扭曲后的矩 $e^{cz}$ 和 $-e^{-cz}$ 分别应用切比雪夫不等式，取较小的上界。这种扭曲压缩了遮挡物相对接收点的深度，使上界紧得多。
 - **矩阴影贴图**（moment shadow maps，Peters 与 Klein 2015）：存储四阶矩，并重建与之相容的最紧分布（一个 Hamburger 矩问题），几乎消除了漏光。
 
-{% include blog_figure.liquid path="assets/img/blog/graphics/11-vsm-chebyshev.svg" caption="(a) 滤波区域内一半深度为 0.3、一半为 0.7 时，真实比例 P(z ≥ t)（黑色阶梯）、VSM 切比雪夫上界（橙色）和 c = 10 的 EVSM（绿色）：上界在 t = 0.7 处与真实值相切，但在其后仍然偏高。(b) 一条带上的漏光：遮挡物 A（z = 0.2，阴影区）部分覆盖遮挡物 B（z = 0.5），接收面在 t = 0.6。真实的 PCF 可见度（黑色）在遮挡物下方处处为 0，只有当滤波核到达 B 的边缘 x ≈ 0.75 时才开始上升，但 VSM 在滤波核跨越两个遮挡物的地方漏光；EVSM 抑制了大部分漏光。" %}
+下图 (a) 把上面数值例子中的真实比例、VSM 上界和 EVSM 画在一起，(b) 展示漏光现象。
+
+{% include blog_figure.liquid path="assets/img/blog/graphics/11-vsm-chebyshev.svg" caption="(a) 滤波区域内一半深度为 0.3、一半为 0.7 时，真实比例 P(z ≥ t)（黑色阶梯）、VSM 切比雪夫上界（橙色）和 c = 10 的 EVSM（绿色）：上界在 t = 0.7 处与真实值相切，但在其后仍然偏高。(b) 一条带上的漏光：深度图中遮挡物 A（z = 0.2，淡紫色区域）在左，遮挡物 B（z = 0.5）居中，右侧是接收面本身（z = t = 0.6）。真实的 PCF 可见度（黑色）在 A、B 下方处处为 0，只有当滤波核（半宽 0.08）触到 x = 0.75 处 B 的边缘时才开始上升；但 VSM 在滤波核同时跨越 A 和 B 的地方（约 x = 0.45）漏光；EVSM 抑制了大部分漏光。" %}
 
 ### 2.4 接触阴影与虚拟阴影贴图
 
@@ -237,13 +249,13 @@ $$
 
 ### 3.2 SSAO 与 HBAO
 
-**SSAO**（Mittring 2007，CryEngine 2）只用深度缓冲来估计遮蔽。在每个像素周围半径 $R$ 内取少量随机三维采样点，投影到屏幕上，数一数有多少点位于存储深度*之后*。后来的变体改为在法线方向的半球内采样，使用逐像素随机旋转（噪声）加双边模糊，并增加范围检查，避免远处的前景物体把背景压暗。
+**SSAO**（screen-space ambient occlusion，屏幕空间环境光遮蔽；Mittring 2007，CryEngine 2）只用深度缓冲来估计遮蔽。在每个像素周围半径 $R$ 内取少量随机三维采样点，投影到屏幕上，数一数有多少点位于存储深度*之后*。后来的变体改为在法线方向的半球内采样，使用逐像素随机旋转（噪声）加双边模糊，并增加范围检查，避免远处的前景物体把背景压暗。
 
-**HBAO**（Bavoil、Sainz 与 Dimitrov 2008）把深度缓冲重新解释为高度场。对屏幕空间中的一组方向，它向外步进，找出**地平线角**（horizon angle），即看到高度场的最大仰角。地平线以下全被遮挡，以上全部敞开，所以每个方向一次步进就取代了许多次独立的可见性测试。
+**HBAO**（horizon-based ambient occlusion，基于地平线的环境光遮蔽；Bavoil、Sainz 与 Dimitrov 2008）把深度缓冲重新解释为高度场。对屏幕空间中的一组方向，它向外步进，找出**地平线角**（horizon angle），即看到高度场的最大仰角。地平线以下全被遮挡，以上全部敞开，所以每个方向一次步进就取代了许多次独立的可见性测试。
 
 ### 3.3 GTAO：解出地平线积分
 
-**GTAO**（Jimenez、Wu、Pesce 与 Jarabo 2016）正是用这种切片形式写出 AO 积分，并解析地积掉余弦权重。用屏幕平面内的切片角 $\phi \in [0, \pi)$ 和切片内相对法线的角度 $\theta \in [-\pi/2, \pi/2]$ 来参数化半球。先看法线指向观察者的简单情形，此时 $d\boldsymbol{\omega} = \vert\sin\theta\vert\, d\theta\, d\phi$，
+**GTAO**（ground-truth ambient occlusion，真值环境光遮蔽；Jimenez、Wu、Pesce 与 Jarabo 2016）把 AO 积分写成这种切片形式，并解析地积掉余弦权重。用屏幕平面内的切片角 $\phi \in [0, \pi)$ 和切片内相对法线的角度 $\theta \in [-\pi/2, \pi/2]$ 来参数化半球。先看法线指向观察者的简单情形，此时 $d\boldsymbol{\omega} = \vert\sin\theta\vert\, d\theta\, d\phi$，
 
 $$
 A = \frac{1}{\pi}\int_0^{\pi}\!\int_{-\pi/2}^{\pi/2} V(\phi,\theta)\,\cos\theta\,\vert\sin\theta\vert\, d\theta\, d\phi .
@@ -292,7 +304,9 @@ ao = horizon_ao(hill)
 print(ao.min().round(3), ao.max().round(3))           # 0.753 1.0: dark ring at the hill's foot, 1.0 on flat ground
 ```
 
-{% include blog_figure.liquid path="assets/img/blog/graphics/11-ao-horizon.svg" caption="高度场（小丘、一个盒子和一个坑）上的环境光遮蔽。(a) 经过点 p 的一个切片：步进器在两侧采样高度场（圆点），保留最大仰角，即地平线 e₁ 和 e₂；该切片的可见比例为 ½(cos²e₁ + cos²e₂)。(b) 每像素 8 条余弦加权光线的蒙特卡洛估计噪声很大。(c) 64 条光线好一些，但仍有颗粒感。(d) 只用 4 个切片（8 次步进）、逐像素随机旋转的地平线形式，误差已经低于 (c)。RMSE 以 64 个切片的地平线方法为参考计算。" %}
+下图把切片积分放到一个真实的高度场上：(a) 是单个切片，(b)-(d) 比较蒙特卡洛估计与地平线形式的噪声。
+
+{% include blog_figure.liquid path="assets/img/blog/graphics/11-ao-horizon.svg" caption="高度场（小丘、一个盒子和一个坑）上的环境光遮蔽。(a) 经过点 p 的一个切片：步进器在两侧采样高度场（圆点），保留最大仰角，即地平线 e₁ 和 e₂；该切片的可见比例为 ½(cos²e₁ + cos²e₂)。(b) 每像素 8 条余弦加权光线的蒙特卡洛估计噪声很大。(c) 64 条光线好一些，但仍有颗粒感。(d) 只用 4 个切片（每个切片两侧各步进 12 步）、逐像素随机旋转的地平线形式，误差已经低于 (c)。RMSE 以 64 个切片的地平线方法为参考计算。" %}
 
 ## 4. 屏幕空间反射
 
@@ -305,7 +319,7 @@ print(ao.min().round(3), ao.max().round(3))           # 0.753 1.0: dark ring at 
 
 McGuire 和 Mara（2014）展示了如何用 DDA 在屏幕空间中步进：插值 $1/z$（在透视下它在屏幕空间中是线性的），每个像素恰好访问一次，而不是在三维中步进、在相机附近过度采样。
 
-**层次 Z 追踪。** 步长为 $\Delta x$ 的线性步进，要么步数很多，要么跳过薄物体。**Hi-Z 金字塔**在第 $L$ 层存储 $2^L \times 2^L$ 个像素上的*最小*深度（最近的表面）。追踪器在这棵四叉树中行进：若光线在离开一个粗糙格子之前一直位于该格子最近深度的前方，就跳过整个格子并上升一层；否则前进到光线到达该深度的位置，并下降一层细化。在第 0 层宣布命中。开销随行进距离呈对数增长。Uludag 的章节 *Hi-Z Screen-Space Cone-Traced Reflections*（GPU Pro 5，2014）让这一方法在 SSR 中流行开来。下面是能复现图中结果的一维版本：
+**层次 Z 追踪。** 步长为 $\Delta x$ 的线性步进，要么步数很多，要么跳过薄物体。**Hi-Z 金字塔**在第 $L$ 层存储 $2^L \times 2^L$ 个像素上的*最小*深度（最近的表面）。追踪器在这棵四叉树中行进：若光线在离开一个粗糙格子之前一直位于该格子最近深度的前方，就跳过整个格子并上升一层；否则前进到光线到达该深度的位置，并下降一层细化。在第 0 层宣布命中。开销随行进距离呈对数增长。Uludag 的章节 *Hi-Z Screen-Space Cone-Traced Reflections*（GPU Pro 5，2014）让这一方法在 SSR 中流行开来。下面是能复现图中结果的一维版本。深度缓冲有 64 个像素：地面深度 0.9，一根柱子（x = 20-23，深度 0.55）和一个盒子（x = 40-51，深度 0.62）；光线从 x = 4、深度 0.3 出发，每前进一个像素深度增加 0.009，所以它从前方掠过柱子，击中盒子的前表面。
 
 ```python
 import numpy as np
@@ -339,7 +353,7 @@ def hiz_trace(x0, z0, slope, pyr, thickness=0.05, max_iter=64):
 print(hiz_trace(4.0, 0.3, 0.009, pyr))   # (40, 12): hits the front of the box at x = 40 after 12 iterations
 ```
 
-{% include blog_figure.liquid path="assets/img/blog/graphics/11-ssr-march.svg" caption="在一维深度缓冲中做屏幕空间光线步进（灰色：存储深度之后的场景；相机在上方）。(a) 步长 7 像素的线性步进（圆点）跳过了柱子，越过了盒子的背后，需要二分细化才能找到命中点（星号）。(b) 层次 Z：彩色条表示每一层金字塔上访问过的最小深度格子；光线在粗糙层级跳过大片空格子，只在盒子附近细化。" %}
+{% include blog_figure.liquid path="assets/img/blog/graphics/11-ssr-march.svg" caption="在一维深度缓冲中做屏幕空间光线步进（灰色：存储深度之后的场景；相机在上方）。(a) 步长 7 像素的线性步进（圆点）：x = 39 处还在盒子前方，下一步 x = 46 已落到盒子前表面之后，只能在这两点之间二分细化才能找到命中点（星号）；步长更大或物体更薄时就会直接漏掉。(b) 层次 Z：彩色条表示每一层金字塔上访问过的最小深度格子；光线在粗糙层级跳过大片空格子，只在盒子附近细化。" %}
 
 **失败情形**源于深度缓冲只是相机所见的一层：
 
@@ -347,7 +361,7 @@ print(hiz_trace(4.0, 0.3, 0.009, pyr))   # (40, 12): hits the front of the box a
 - 背对相机或被其他物体挡住的表面根本不在缓冲里；
 - 薄物体要么被漏掉，要么被拖成一片，取决于厚度取值。
 
-因此，引擎会把 SSR 与后备方案混合：反射探针，或第 06 篇中的硬件光线追踪。粗糙表面使用更宽的锥，或者逐像素对 GGX 波瓣做重要性采样，再在空间和时间上滤波。
+因此，引擎会把 SSR 与后备方案混合：反射探针（reflection probe），或第 06 篇中的硬件光线追踪。粗糙表面使用更宽的锥，或者逐像素对 GGX 波瓣做重要性采样，再在空间和时间上滤波。
 
 ## 5. 实时全局光照
 
@@ -359,7 +373,7 @@ print(hiz_trace(4.0, 0.3, 0.009, pyr))   # (40, 12): hits the front of the box a
 
 ### 5.2 辐照度探针与球谐函数
 
-对动态物体，以及光照贴图不实用的场景，引擎会在空间中放置**探针**（probes）。每个探针紧凑地存储来自各个方向的辐照度 $E(\mathbf{n})$。漫反射辐照度随方向变化非常平滑，因为它是辐射亮度与截断余弦的卷积。**球谐函数**（spherical harmonics，SH）是它的天然基。
+对动态物体，以及光照贴图不实用的场景，引擎会在空间中放置**探针**（probes，即光照探针）。每个探针紧凑地存储来自各个方向的辐照度 $E(\mathbf{n})$。漫反射辐照度随方向变化非常平滑，因为它是辐射亮度与截断余弦的卷积。**球谐函数**（spherical harmonics，SH）是它的天然基。
 
 **实球谐函数** $Y_{lm}$ 是球面函数的一组正交归一基，按频带 $l = 0, 1, 2, \dots$ 组织，每个频带有 $2l+1$ 个函数，就像傅里叶级数，$l$ 是角频率。$l \le 2$ 的频带共 9 个函数。对单位向量 $(x, y, z)$，其笛卡尔形式为：
 
@@ -419,6 +433,8 @@ for nz in [1.0, 0.0, -1.0]:
 
 两个检验都有精确答案。常数环境 $L = 1$ 给出 $L_{00} = 4\pi \cdot 0.282095 = 3.5449$，任意法线都有 $E = \pi$。白色上半球给出 $E(\mathbf{n}) = \pi(1 + n_z)/2$。由于它对 $n_z$ 是线性的，$l \le 1$ 的频带就已经能精确重现它。
 
+下图用一个带天空渐变、暗色地面和一个小而亮太阳的环境，对比精确辐照度与各阶 SH 近似。
+
 {% include blog_figure.liquid path="assets/img/blog/graphics/11-sh-irradiance.svg" caption="带天空渐变、暗色地面和一个小而亮的太阳的环境的 SH 辐照度，以经纬度图显示（θ 向下，φ 横向）。(a) 辐射亮度（对数刻度）：太阳是一个小亮点。(b) 暴力积分得到的精确辐照度：宽而平滑的波瓣。(c)-(e) 频带 l ≤ 0、1、2 的 SH 近似（1、4、9 个系数）：l ≤ 2 与 (b) 肉眼无法区分。(f) 相对 RMS 误差：辐照度误差下降很快，l = 3 毫无改进，因为 Â₃ = 0；而在同样的阶数下，辐射亮度本身仍然近似得很差。" %}
 
 下面的小部件让你亲手操作。左边的球由天空、地面和一个圆盘状太阳的精确辐照度照亮，右边的球由其 SH 近似照亮。下方的环境图和同阶 SH 重建表明：*辐射亮度*早早就出现振铃和模糊，*辐照度*却还好好的。
@@ -476,7 +492,7 @@ print(variance_clip(np.array([0.9, 0.0, 0.0]), neigh))   # [0.5816 0. 0.]  (= 0.
 
 光照必须在**线性**的辐射度量单位下计算。数值从阴影中的 $10^{-3}$ 到太阳圆盘处的 $10^{5}$ 不等，存储在浮点（RGBA16F）渲染目标中。以 sRGB 创作的纹理在加载时解码为线性（第 03 篇）。最终画面必须塞进显示器的范围，这需要三步：
 
-1. **曝光**：乘以 $2^{EV}$，使场景的中灰落在 0.18 附近。**自动曝光**计算对数平均亮度 $\bar L = \exp\big(\tfrac{1}{N}\sum\ln(\delta + L_i)\big)$（Reinhard 等 2002），或者用忽略最暗和最亮百分之几的亮度直方图，再像人眼一样随时间平滑适应。
+1. **曝光**：乘以 $2^{EV}$，使场景的中灰落在 0.18 附近。**自动曝光**计算对数平均亮度 $\bar L = \exp\big(\tfrac{1}{N}\sum\ln(\delta + L_i)\big)$（Reinhard 等 2002；$L_i$ 是第 $i$ 个像素的亮度，$N$ 是像素数，$\delta$ 是避免 $\ln 0$ 的小常数），或者用忽略最暗和最亮百分之几的亮度直方图，再像人眼一样随时间平滑适应。
 2. **色调映射**：一条把 $[0, \infty)$ 压缩到 $[0, 1)$ 的曲线，高光处有柔和的肩部（shoulder），阴影处可选地带一个趾部（toe）。
 3. **输出编码**：SDR 显示器用 sRGB 传递函数，HDR10 用 PQ。
 
@@ -485,7 +501,7 @@ print(variance_clip(np.array([0.9, 0.0, 0.0]), neigh))   # [0.5816 0. 0.]  (= 0.
 - **Reinhard**：$y = x/(1+x)$，最简单的算子。其*扩展*形式 $y = x(1 + x/L_w^2)/(1+x)$ 把指定的白点 $L_w$ 映射到 1。**数值例子**：中灰 $0.18 \mapsto 0.153$。
 - **Filmic（Hable，《Uncharted 2》）**：一条带趾部和肩部的有理曲线，
   $f(x) = \frac{x(Ax + CB) + DE}{x(Ax+B) + DF} - \frac{E}{F}$，
-  再用 $f(W)$ 归一化。常数为 $A=0.15$、$B=0.50$、$C=0.10$、$D=0.20$、$E=0.02$、$F=0.30$，白点 $W = 11.2$。
+  再用 $f(W)$ 归一化（原演讲还会先把输入乘以曝光偏置 2.0，下面的代码和图中都包含它）。常数为 $A=0.15$、$B=0.50$、$C=0.10$、$D=0.20$、$E=0.02$、$F=0.30$，白点 $W = 11.2$。
 - **ACES**：学院色彩编码系统（Academy Color Encoding System）为电影定义了参考渲染变换和输出变换。游戏常用 Narkowicz（2016）的单行拟合 $y = \frac{x(2.51x + 0.03)}{x(2.43x + 0.59) + 0.14}$，逐通道应用。它的对比度很强，但明亮的饱和色会发生色相偏移并去饱和（饱和的橙色会偏向黄色），因为各通道各自饱和。**数值例子**：$0.18 \mapsto 0.267$。
 - **AgX**（在 Blender 4.0 中作为视图变换引入）在精心选择、略微去饱和的工作空间中应用曲线。于是极亮的饱和光源会平滑地过渡到白色，而不是截断成纯色。
 - **Khronos PBR Neutral**（2024 年发布）为产品可视化而设计。它在约 0.8 以下保持基础色不变，使材质在中性光照下看起来就是其反照率；然后只压缩高光，并让高光去饱和、趋向白色。
@@ -512,6 +528,8 @@ for f in (reinhard, hable, aces_fit):
 print(round(float(srgb_encode(0.18)) * 255))   # 118: middle grey in 8-bit sRGB
 ```
 
+下图把这些算子对灰色输入的响应画在一起：(a) 线性坐标，(b) 经 sRGB 编码后的对数坐标。
+
 {% include blog_figure.liquid path="assets/img/blog/graphics/11-tonemap-curves.svg" caption="灰色输入下的色调映射曲线。(a) 线性坐标：截断（点线）把 1 以上全部削掉；Reinhard 缓慢逼近 1；扩展 Reinhard 在 L_w = 4 处到达 1；Hable 和 ACES 拟合有趾部和更陡的中间调；PBR Neutral 在约 0.8 以下沿恒等映射走（减去一个 0.04 的小偏移），之后进入肩部。(b) 同样的曲线经 sRGB 编码后画在跨越五个数量级场景亮度的对数轴上；点线标出中灰 0.18。ACES 拟合在中灰附近对比度最强，Reinhard 保留的高光细节最多。" %}
 
 下面的小部件把这些算子应用到一张 HDR 测试图上：六种色相，每种跨越 12 档亮度。注意观察饱和色变亮时会发生什么。
@@ -526,7 +544,9 @@ $$
 V = \begin{cases} 12.92\,L & L \le 0.0031308\\ 1.055\,L^{1/2.4} - 0.055 & L > 0.0031308 \end{cases},
 $$
 
-即一段线性趾部接上一条幂曲线。这对曲线接近 $L^{1/2.2}$，但并不相同。它的目的是感知上的：人眼对*相对*变化敏感，所以暗部的码值应该排得更密。8 位线性编码会把大多数码值浪费在高光上，在阴影里出现明显的条带。**数值例子**：中灰 0.18 编码为 $V = 1.055 \cdot 0.18^{1/2.4} - 0.055 = 0.461$，即 255 中的 118；线性存储则是 46。
+即一段线性趾部接上一条幂曲线。这条分段曲线接近 $L^{1/2.2}$，但并不相同。它的目的是感知上的：人眼对*相对*变化敏感，所以暗部的码值应该排得更密。8 位线性编码会把大多数码值浪费在高光上，在阴影里出现明显的条带。**数值例子**：中灰 0.18 编码为 $V = 1.055 \cdot 0.18^{1/2.4} - 0.055 = 0.461$，即 255 中的 118；线性存储则是 46。
+
+下图 (a) 对比 sRGB 曲线与纯幂函数，(b) 对比 8 位线性编码与 8 位 sRGB 编码的相对步长。
 
 {% include blog_figure.liquid path="assets/img/blog/graphics/11-srgb.svg" caption="(a) sRGB 编码曲线与纯 2.2 次幂和恒等映射的对比；插图显示 0.0031308 以下的线性段，它避免了 0 处的无穷大斜率。(b) 相邻 8 位码值之间的相对步长 ΔL/L：线性编码在暗部的步长达 10-100%（可见条带），sRGB 在大部分范围内保持在百分之几以内（点线标出 1% 作参考）。" %}
 
@@ -560,7 +580,7 @@ $$
 
 | 论文 | 发表 | 年份 | 链接 | 意义 |
 | --- | --- | --- | --- | --- |
-| Reeves, Salesin & Cook, *Rendering Antialiased Shadows with Depth Maps* | SIGGRAPH | 1987 | [DOI](https://doi.org/10.1145/37401.37435) | 百分比渐近滤波（PCF） |
+| Reeves, Salesin & Cook, *Rendering Antialiased Shadows with Depth Maps* | SIGGRAPH | 1987 | [DOI](https://doi.org/10.1145/37401.37435) | 百分比渐近过滤（PCF） |
 | Saito & Takahashi, *Comprehensible Rendering of 3-D Shapes* | SIGGRAPH | 1990 | [DOI](https://doi.org/10.1145/97880.97901) | 延迟着色背后的 G-buffer 思想 |
 | Ramamoorthi & Hanrahan, *An Efficient Representation for Irradiance Environment Maps* | SIGGRAPH | 2001 | [DOI](https://doi.org/10.1145/383259.383317) | 9 个 SH 系数重现漫反射光照 |
 | Sloan, Kautz & Snyder, *Precomputed Radiance Transfer for Real-Time Rendering in Dynamic, Low-Frequency Lighting Environments* | SIGGRAPH | 2002 | [DOI](https://doi.org/10.1145/566570.566612) | 基于 SH、含阴影和相互反射的预计算传输 |
@@ -604,7 +624,7 @@ $$
 3. 证明：对覆盖滤波核比例 $f$、位于深度 $z_1$ 的单个平面遮挡物，以及位于深度 $t$ 的接收平面（核的其余部分），VSM 上界是精确的。再说明它在两个遮挡物时在哪里失效。
 
    <details markdown="1"><summary>提示</summary>
-   深度为 $z_1$（比例 $f$）和 $t$（比例 $1-f$）时，计算 $\mu$ 和 $\sigma^2$，代入 $\sigma^2/(\sigma^2 + (t-\mu)^2)$，结果为 $1-f$。两个遮挡物时分布有三个原子，两阶矩已经无法确定它。
+   深度为 $z_1$（比例 $f$）和 $t$（比例 $1-f$）时，计算 $\mu$ 和 $\sigma^2$，代入 $\sigma^2/(\sigma^2 + (t-\mu)^2)$，结果为 $1-f$。两个遮挡物时深度分布有三个离散取值（遮挡物 1、遮挡物 2 和接收面），只用两阶矩无法确定它，上界因此变松。
    </details>
 
 4. 把 SH 代码扩展到 $l \le 4$ 的频带（25 个系数，使用 $\hat A_4 = -\pi/24$），测量对于半径 1° 的太阳，辐照度误差下降了多少。每个通道多用 16 个系数值得吗？
