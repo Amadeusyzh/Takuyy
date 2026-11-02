@@ -130,3 +130,68 @@
 - [NVIDIA-RTX/NRD](https://github.com/NVIDIA-RTX/NRD)（实时降噪器）、[NVIDIA-RTX/RTXDI](https://github.com/NVIDIA-RTX/RTXDI)（生产级 ReSTIR）。
 - [InteractiveComputerGraphics/PositionBasedDynamics](https://github.com/InteractiveComputerGraphics/PositionBasedDynamics)、[NVIDIA/warp](https://github.com/NVIDIA/warp)、[taichi-dev/taichi](https://github.com/taichi-dev/taichi)、[google-deepmind/mujoco](https://github.com/google-deepmind/mujoco)。
 - 本站首页实验室（Lab）：GPU 路径追踪器（GGX、NEE+MIS、à-trous 降噪）与 XPBD 布料，源码见 `assets/js/lab-pathtracer.js`、`assets/js/lab.js`。
+
+## Chapter 12：可微渲染与逆向渲染（对应第 12 篇 graphics-12-differentiable-and-inverse-rendering）
+
+阅读顺序建议：先读 SIGGRAPH 2020 课程建立“内部项 + 边界项”的整体框架，再按 光栅化 → 物理可微渲染 → 实践 → 体积/高斯 → 2024–2026 前沿 的顺序展开。状态核对截至 2026 年 11 月。
+
+### 可微光栅化
+
+| 论文 | 出处 | 年份 | 链接 | 说明 |
+| --- | --- | --- | --- | --- |
+| Loper & Black, *OpenDR: An Approximate Differentiable Renderer* | ECCV | 2014 | [DOI](https://doi.org/10.1007/978-3-319-10584-0_11) | 第一个通用可微渲染器，图像空间近似导数 |
+| Kato, Ushiku & Harada, *Neural 3D Mesh Renderer* | CVPR | 2018 | [arXiv](https://arxiv.org/abs/1711.07566) | 人为设计的光栅化反向梯度 |
+| Liu et al., *Soft Rasterizer: A Differentiable Renderer for Image-based 3D Reasoning* | ICCV | 2019 | [arXiv](https://arxiv.org/abs/1904.01786) | 概率化的平滑光栅化，σ 控制模糊 |
+| Laine et al., *Modular Primitives for High-Performance Differentiable Rendering*（nvdiffrast） | SIGGRAPH Asia / ACM TOG | 2020 | [arXiv](https://arxiv.org/abs/2011.03277) | 四个 GPU 原语，抗锯齿给出边缘梯度 |
+| Ravi et al., *Accelerating 3D Deep Learning with PyTorch3D* | arXiv 技术报告 | 2020 | [arXiv](https://arxiv.org/abs/2007.08501) | PyTorch 中的可微网格/点云渲染 |
+
+### 基于物理的可微渲染
+
+| 论文 | 出处 | 年份 | 链接 | 说明 |
+| --- | --- | --- | --- | --- |
+| Li et al., *Differentiable Monte Carlo Ray Tracing through Edge Sampling* | SIGGRAPH Asia / ACM TOG | 2018 | [DOI](https://doi.org/10.1145/3272127.3275109) | 边缘采样，主可见性与次级可见性的无偏梯度 |
+| Loubet et al., *Reparameterizing Discontinuous Integrands for Differentiable Rendering* | SIGGRAPH Asia / ACM TOG | 2019 | [DOI](https://doi.org/10.1145/3355089.3356510) | 换元让不连续处随参数移动 |
+| Zhang et al., *A Differential Theory of Radiative Transfer* | SIGGRAPH Asia / ACM TOG | 2019 | [DOI](https://doi.org/10.1145/3355089.3356522) | 辐射传输方程的微分理论 |
+| Nimier-David et al., *Mitsuba 2: A Retargetable Forward and Inverse Renderer* | SIGGRAPH Asia / ACM TOG | 2019 | [DOI](https://doi.org/10.1145/3355089.3356498) | 可重定向的正向/逆向渲染器 |
+| Zhang et al., *Path-Space Differentiable Rendering* | SIGGRAPH / ACM TOG | 2020 | [DOI](https://doi.org/10.1145/3386569.3392383) | 路径空间中的边界路径 |
+| Nimier-David et al., *Radiative Backpropagation* | SIGGRAPH / ACM TOG | 2020 | [DOI](https://doi.org/10.1145/3386569.3392406) | 把梯度当作伴随光传输，无需记录计算图 |
+| Bangaru, Li & Durand, *Unbiased Warped-Area Sampling for Differentiable Rendering* | SIGGRAPH Asia / ACM TOG | 2020 | [DOI](https://doi.org/10.1145/3414685.3417833) | 散度定理把边界积分化为面积分 |
+| Vicini, Speierer & Jakob, *Path Replay Backpropagation* | SIGGRAPH / ACM TOG | 2021 | [DOI](https://doi.org/10.1145/3450626.3459804) | 线性时间、常数内存 |
+| Jakob et al., *Dr.Jit: A Just-In-Time Compiler for Differentiable Rendering* | SIGGRAPH / ACM TOG | 2022 | [DOI](https://doi.org/10.1145/3528223.3530099) | Mitsuba 3 的 JIT 与自动微分后端 |
+| Vicini, Speierer & Jakob, *Differentiable Signed Distance Function Rendering* | SIGGRAPH / ACM TOG | 2022 | [DOI](https://doi.org/10.1145/3528223.3530139) | SDF 的可微渲染 |
+
+### 逆向渲染实践
+
+| 论文 | 出处 | 年份 | 链接 | 说明 |
+| --- | --- | --- | --- | --- |
+| Deschaintre et al., *Single-Image SVBRDF Capture with a Rendering-Aware Deep Network* | SIGGRAPH / ACM TOG | 2018 | [arXiv](https://arxiv.org/abs/1810.09718) | 单张闪光照片恢复 SVBRDF，渲染感知损失 |
+| Azinović et al., *Inverse Path Tracing for Joint Material and Lighting Estimation* | CVPR | 2019 | [arXiv](https://arxiv.org/abs/1903.07145) | 可微路径追踪联合估计材质与光源 |
+| Nicolet, Jacobson & Jakob, *Large Steps in Inverse Rendering of Geometry* | SIGGRAPH Asia / ACM TOG | 2021 | [DOI](https://doi.org/10.1145/3478513.3480501) | 拉普拉斯重参数化，稳健的形状优化 |
+| Munkberg et al., *Extracting Triangular 3D Models, Materials, and Lighting From Images*（nvdiffrec） | CVPR | 2022 | [arXiv](https://arxiv.org/abs/2111.12503) | 联合恢复网格、PBR 材质和环境光 |
+
+### 体积、高斯与 2024–2026 前沿
+
+| 论文 | 出处 / 状态 | 年份 | 链接 | 说明 |
+| --- | --- | --- | --- | --- |
+| Radl et al., *StopThePop: Sorted Gaussian Splatting for View-Consistent Real-time Rendering* | SIGGRAPH / ACM TOG | 2024 | [arXiv](https://arxiv.org/abs/2402.00525) | 逐像素分层排序，减少 popping |
+| Moenne-Loccoz et al., *3D Gaussian Ray Tracing: Fast Tracing of Particle Scenes* | SIGGRAPH Asia | 2024 | [arXiv](https://arxiv.org/abs/2407.07090) | 可微的高斯粒子光线追踪 |
+| Mai et al., *EVER: Exact Volumetric Ellipsoid Rendering for Real-time View Synthesis* | arXiv 预印本 | 2024 | [arXiv](https://arxiv.org/abs/2410.01804) | 精确体积分，无 popping |
+| Wu et al., *3DGUT: Enabling Distorted Cameras and Secondary Rays in Gaussian Splatting* | CVPR | 2025 | [arXiv](https://arxiv.org/abs/2412.12507) | 无迹变换投影，支持畸变相机与次级光线 |
+| Gu et al., *IRGS: Inter-Reflective Gaussian Splatting with 2D Gaussian Ray Tracing* | CVPR | 2025 | [arXiv](https://arxiv.org/abs/2412.15867) | 考虑互反射的高斯逆向渲染 |
+| Gu et al., *IRGS++* | arXiv 预印本（2026 年 7 月） | 2026 | [arXiv](https://arxiv.org/abs/2607.22780) | 扩展到金属材质，重要性采样与降噪 |
+| Liu et al., *UTrice* | arXiv 预印本（2025 年 12 月） | 2025 | [arXiv](https://arxiv.org/abs/2512.04421) | 以三角形为基元的统一可微光追/光栅化 |
+| Li et al., *PAC-NeRF* | ICLR | 2023 | [arXiv](https://arxiv.org/abs/2303.05512) | 辐射场 + 可微 MPM，从视频辨识材料参数 |
+| Xie et al., *PhysGaussian* | CVPR | 2024 | [arXiv](https://arxiv.org/abs/2311.12198) | 同一组高斯用于 MPM 模拟与渲染 |
+| Jiang et al., *PhysTwin* | arXiv 预印本 | 2025 | [arXiv](https://arxiv.org/abs/2503.17973) | 弹簧-质点模型 + 高斯渲染，从稀疏视频重建可变形物体 |
+| Liu et al., *MOSIV: Multi-Object System Identification from Videos* | ICLR | 2026 | [arXiv](https://arxiv.org/abs/2603.06022) | 多物体场景的可微模拟系统辨识 |
+| Zeng et al., *RGB↔X* | SIGGRAPH | 2024 | [arXiv](https://arxiv.org/abs/2405.00666) | 材质与光照感知的扩散模型，分解与合成 |
+| Liang et al., *DiffusionRenderer* | CVPR | 2025 | [arXiv](https://arxiv.org/abs/2501.18590) | 视频扩散模型做逆向与正向渲染 |
+| He et al., *UniRelight* | arXiv 预印本 | 2025 | [arXiv](https://arxiv.org/abs/2506.15673) | 联合学习反照率估计与重光照 |
+| Xiao et al., *Relit-LiVE* | SIGGRAPH 2026（据 arXiv 备注） | 2026 | [arXiv](https://arxiv.org/abs/2605.06658) | 同时预测重光照帧与逐帧环境贴图 |
+
+### 课程与代码
+
+- Zhao, Jakob & Li, *Physics-Based Differentiable Rendering: A Comprehensive Introduction*（SIGGRAPH 2020 课程）：[课程主页](https://courses.shuangz.com/pbdr-course-sg20/)。
+- Kato et al., *Differentiable Rendering: A Survey*：[arXiv 2006.12057](https://arxiv.org/abs/2006.12057)。
+- [mitsuba-renderer/mitsuba3](https://github.com/mitsuba-renderer/mitsuba3)（最新版本 v3.9.0，2026 年 8 月）及其逆向渲染教程；[NVlabs/nvdiffrast](https://github.com/NVlabs/nvdiffrast)；[facebookresearch/pytorch3d](https://github.com/facebookresearch/pytorch3d)；[ShichenLiu/SoftRas](https://github.com/ShichenLiu/SoftRas)。
+- 本文配套脚本 `bin/figures/graphics/graphics_12.py`（软光栅化、边缘采样、球体 BRDF 拟合三个 PyTorch 实验）。
