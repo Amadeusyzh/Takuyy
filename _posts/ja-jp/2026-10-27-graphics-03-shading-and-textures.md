@@ -636,6 +636,11 @@ void main() {
 | Reeves, Salesin, Cook, *Rendering Antialiased Shadows with Depth Maps* | SIGGRAPH | 1987 | [Pixar Graphics](https://graphics.pixar.com/library/ShadowMaps) | Percentage-Closer Filtering |
 | Donnelly, Lauritzen, *Variance Shadow Maps* | I3D | 2006 | | 深度モーメントによるフィルタリング可能なシャドウマップ |
 | Mikkelsen, *Simulation of Wrinkled Surfaces Revisited*（修士論文、コペンハーゲン大学） | 学位論文 | 2008 | | MikkTSpace 接線規格の基礎 |
+| Belcour & Benyoub, *Hardware Accelerated Neural Block Texture Compression with Cooperative Vectors* | HPG | 2025 | [arXiv](https://arxiv.org/abs/2506.06040) | ブロック圧縮（BC）形式に格納するニューラルテクスチャ圧縮で、ハードウェアのフィルタリングがそのまま使えます |
+| Akenine-Möller, Ebelin, Pharr & Wronski, *Collaborative Texture Filtering* | HPG | 2025 | [arXiv](https://arxiv.org/abs/2506.17770) | GPU スレッド間でテクセルの処理を共有し、高品質なテクスチャフィルタリングを安価にします |
+| Hu, Lu & Xu, *Kernel Predicting Neural Shadow Maps* | SIGGRAPH Conference Papers | 2025 | [DOI](https://doi.org/10.1145/3721238.3730645) | ネットワークがフィルタカーネルを予測してソフトシャドウを再構成する、PCF/PCSS の学習による代替です |
+
+テクスチャ圧縮、影、知覚を考慮したディスプレイの研究が 2026 年にどこまで進んでいるかは、[第 13 回「2026 年のグラフィックス研究フロンティア」]({{ '/blog/2026/graphics-13-research-frontiers-2026/' | relative_url }})をご覧ください。
 
 ## 学習リソース
 

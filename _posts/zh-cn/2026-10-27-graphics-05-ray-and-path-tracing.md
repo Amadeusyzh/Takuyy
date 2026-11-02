@@ -601,6 +601,10 @@ if __name__ == "__main__":
 | Möller, Trumbore, "Fast, Minimum Storage Ray-Triangle Intersection" | Journal of Graphics Tools | 1997 | [DOI](https://doi.org/10.1080/10867651.1997.10487468) | 标准的光线-三角形求交测试 |
 | Veach, "Robust Monte Carlo Methods for Light Transport Simulation" | 博士论文，Stanford | 1997 | [项目页](https://graphics.stanford.edu/papers/veach_thesis/) | 路径空间表述、MIS、BDPT、MLT |
 | Heitz, "Sampling the GGX Distribution of Visible Normals" | JCGT 7(4) | 2018 | [论文](https://jcgt.org/published/0007/04/01/) | 精确、廉价的 GGX VNDF 采样 |
+| Hua, Grittmann, Slusallek, "Correct your balance heuristic: Optimizing balance-style multiple importance sampling weights" | ACM TOG 44(4) (SIGGRAPH) | 2025 | [DOI](https://doi.org/10.1145/3730819) | 在经典 balance heuristic 之上优化 MIS 权重 |
+| Fan et al., "Multiple Importance Reweighting for Path Guiding" | ACM TOG 44(4) (SIGGRAPH) | 2025 | [DOI](https://doi.org/10.1145/3731144) | 用 MIS 式的重加权结合引导与非引导样本，使路径引导更稳健 |
+
+路径引导、高斯光线追踪和路径追踪全息图在 2026 年的工作，请见[第 13 篇：2026 图形学研究前沿]({{ '/blog/2026/graphics-13-research-frontiers-2026/' | relative_url }})。
 
 ## 学习资源
 

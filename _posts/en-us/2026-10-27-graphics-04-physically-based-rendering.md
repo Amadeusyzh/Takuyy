@@ -589,6 +589,10 @@ The path tracer in the [lab on the home page]({{ '/' | relative_url }}#lab) uses
 | Heitz, *Understanding the Masking-Shadowing Function in Microfacet-Based BRDFs* | JCGT 3(2) | 2014 | [JCGT](https://jcgt.org/published/0003/02/03/) | Derives Smith $G_1$ and height-correlated $G_2$ rigorously |
 | Heitz, *Sampling the GGX Distribution of Visible Normals* | JCGT 7(4) | 2018 | [JCGT](https://jcgt.org/published/0007/04/01/) | Low-variance sampling of GGX, used in every modern path tracer |
 | Kulla & Conty, *Revisiting Physically Based Shading at Imageworks* | SIGGRAPH course | 2017 | — | Energy compensation for multiple scattering |
+| Portsmouth, Kutz & Hill, *EON: A practical energy-preserving rough diffuse BRDF* | JCGT 14(1) | 2025 | [arXiv](https://arxiv.org/abs/2410.18026) | Energy-preserving Oren-Nayar variant, used as the rough diffuse model of OpenPBR |
+| Raghavan et al., *Generative Neural Materials* | SIGGRAPH Conference Papers | 2025 | [DOI](https://doi.org/10.1145/3721238.3730746) | One shared network generates many neural materials for real-time rendering |
+
+For 2026 work on neural and hybrid materials built on the microfacet model of this post, see [chapter 13, graphics research frontiers 2026]({{ '/blog/2026/graphics-13-research-frontiers-2026/' | relative_url }}).
 
 ## Learning resources
 

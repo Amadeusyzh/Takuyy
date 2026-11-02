@@ -589,6 +589,10 @@ void main() {
 | Heitz, *Understanding the Masking-Shadowing Function in Microfacet-Based BRDFs* | JCGT 3(2) | 2014 | [JCGT](https://jcgt.org/published/0003/02/03/) | Smith の $G_1$ と高さ相関型 $G_2$ を厳密に導出 |
 | Heitz, *Sampling the GGX Distribution of Visible Normals* | JCGT 7(4) | 2018 | [JCGT](https://jcgt.org/published/0007/04/01/) | 低分散な GGX サンプリング。現代のあらゆるパストレーサーで使用 |
 | Kulla & Conty, *Revisiting Physically Based Shading at Imageworks* | SIGGRAPH コース | 2017 | — | 多重散乱のためのエネルギー補償 |
+| Portsmouth, Kutz & Hill, *EON: A practical energy-preserving rough diffuse BRDF* | JCGT 14(1) | 2025 | [arXiv](https://arxiv.org/abs/2410.18026) | エネルギーを保存する Oren-Nayar の変種で、OpenPBR の粗い拡散モデルに採用されています |
+| Raghavan et al., *Generative Neural Materials* | SIGGRAPH Conference Papers | 2025 | [DOI](https://doi.org/10.1145/3721238.3730746) | 1 つの共有ネットワークで多数のニューラルマテリアルを生成し、リアルタイムに描画します |
+
+本記事のマイクロファセットモデルを土台にした 2026 年のニューラル／ハイブリッドマテリアルの研究は、[第 13 回「2026 年のグラフィックス研究フロンティア」]({{ '/blog/2026/graphics-13-research-frontiers-2026/' | relative_url }})をご覧ください。
 
 ## 学習リソース
 

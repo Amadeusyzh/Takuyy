@@ -636,6 +636,11 @@ The path tracer on the [home page lab]({{ '/' | relative_url }}#lab) has **Albed
 | Reeves, Salesin, Cook, *Rendering Antialiased Shadows with Depth Maps* | SIGGRAPH | 1987 | [Pixar Graphics](https://graphics.pixar.com/library/ShadowMaps) | Percentage-closer filtering |
 | Donnelly, Lauritzen, *Variance Shadow Maps* | I3D | 2006 | | Filterable shadow maps from depth moments |
 | Mikkelsen, *Simulation of Wrinkled Surfaces Revisited* (MSc thesis, Univ. of Copenhagen) | Thesis | 2008 | | Basis of the MikkTSpace tangent standard |
+| Belcour & Benyoub, *Hardware Accelerated Neural Block Texture Compression with Cooperative Vectors* | HPG | 2025 | [arXiv](https://arxiv.org/abs/2506.06040) | Neural texture compression stored in block-compressed (BC) formats, so hardware filtering still works |
+| Akenine-Möller, Ebelin, Pharr & Wronski, *Collaborative Texture Filtering* | HPG | 2025 | [arXiv](https://arxiv.org/abs/2506.17770) | GPU threads share texel work to make high-quality texture filtering cheap |
+| Hu, Lu & Xu, *Kernel Predicting Neural Shadow Maps* | SIGGRAPH Conference Papers | 2025 | [DOI](https://doi.org/10.1145/3721238.3730645) | A network predicts filter kernels that reconstruct soft shadows: a learned alternative to PCF/PCSS |
+
+For where texture compression, shadows and perceptual display research stand in 2026, see [chapter 13, graphics research frontiers 2026]({{ '/blog/2026/graphics-13-research-frontiers-2026/' | relative_url }}).
 
 ## Learning resources
 

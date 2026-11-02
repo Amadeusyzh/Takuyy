@@ -636,6 +636,11 @@ void main() {
 | Reeves, Salesin, Cook, *Rendering Antialiased Shadows with Depth Maps* | SIGGRAPH | 1987 | [Pixar Graphics](https://graphics.pixar.com/library/ShadowMaps) | 百分比渐近过滤（PCF） |
 | Donnelly, Lauritzen, *Variance Shadow Maps* | I3D | 2006 | | 基于深度矩的可过滤阴影贴图 |
 | Mikkelsen, *Simulation of Wrinkled Surfaces Revisited*（硕士论文，哥本哈根大学） | 学位论文 | 2008 | | MikkTSpace 切线标准的基础 |
+| Belcour & Benyoub, *Hardware Accelerated Neural Block Texture Compression with Cooperative Vectors* | HPG | 2025 | [arXiv](https://arxiv.org/abs/2506.06040) | 以块压缩（BC）格式存储的神经纹理压缩，硬件过滤依然可用 |
+| Akenine-Möller, Ebelin, Pharr & Wronski, *Collaborative Texture Filtering* | HPG | 2025 | [arXiv](https://arxiv.org/abs/2506.17770) | GPU 线程之间共享纹素计算，让高质量纹理过滤变得廉价 |
+| Hu, Lu & Xu, *Kernel Predicting Neural Shadow Maps* | SIGGRAPH Conference Papers | 2025 | [DOI](https://doi.org/10.1145/3721238.3730645) | 网络预测滤波核来重建软阴影：PCF/PCSS 的学习式替代 |
+
+纹理压缩、阴影以及感知显示研究在 2026 年的进展，请见[第 13 篇：2026 图形学研究前沿]({{ '/blog/2026/graphics-13-research-frontiers-2026/' | relative_url }})。
 
 ## 学习资源
 

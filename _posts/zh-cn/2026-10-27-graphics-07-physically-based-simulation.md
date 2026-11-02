@@ -477,6 +477,10 @@ $$
 | Macklin, Müller & Chentanez, *XPBD: Position-Based Simulation of Compliant Constrained Dynamics* | MIG | 2016 | [DOI](https://doi.org/10.1145/2994258.2994272) | 柔度 + 拉格朗日乘子：与迭代次数无关的刚度 |
 | Macklin, Storey, Lu, Terdiman, Chentanez, Jeschke & Müller, *Small Steps in Physics Simulation* | SCA | 2019 | [DOI](https://doi.org/10.1145/3309486.3340247) | 多个子步各迭代一次，优于多次迭代 |
 | Müller, Macklin, Chentanez, Jeschke & Kim, *Detailed Rigid Body Simulation with Extended Position Based Dynamics* | SCA / CGF | 2020 | [DOI](https://doi.org/10.1111/cgf.14105) | 将 XPBD 用于刚体、关节和接触 |
+| Giles, Diaz & Yuksel, *Augmented Vertex Block Descent* | ACM TOG 44(4) (SIGGRAPH) | 2025 | [DOI](https://doi.org/10.1145/3731195) | 为 Vertex Block Descent 加入增广拉格朗日式的硬约束处理，在 GPU 上模拟刚硬接触与关节体 |
+| Diaz, Hsu, Montalvo-Ruiz, Giles & Yuksel, *Implicit Position-Based Fluids* | SIGGRAPH Asia Conference Papers | 2025 | [DOI](https://doi.org/10.1145/3757377.3764005) | Position Based Fluids 的完全隐式版本，稳定地模拟不可压缩粒子流体 |
+
+IPC 接触、可微流体、布料、头发和 MPM 在 2026 年的研究，请见[第 13 篇：2026 图形学研究前沿]({{ '/blog/2026/graphics-13-research-frontiers-2026/' | relative_url }})。
 
 ## 学习资源
 

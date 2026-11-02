@@ -601,6 +601,10 @@ Unidirectional path tracing struggles when light reaches the camera only through
 | Möller, Trumbore, "Fast, Minimum Storage Ray-Triangle Intersection" | Journal of Graphics Tools | 1997 | [DOI](https://doi.org/10.1080/10867651.1997.10487468) | The standard ray-triangle test |
 | Veach, "Robust Monte Carlo Methods for Light Transport Simulation" | PhD thesis, Stanford | 1997 | [Project page](https://graphics.stanford.edu/papers/veach_thesis/) | Path-space formulation, MIS, BDPT, MLT |
 | Heitz, "Sampling the GGX Distribution of Visible Normals" | JCGT 7(4) | 2018 | [Paper](https://jcgt.org/published/0007/04/01/) | Exact, cheap VNDF sampling for GGX |
+| Hua, Grittmann, Slusallek, "Correct your balance heuristic: Optimizing balance-style multiple importance sampling weights" | ACM TOG 44(4) (SIGGRAPH) | 2025 | [DOI](https://doi.org/10.1145/3730819) | Optimizes MIS weights beyond the classic balance heuristic |
+| Fan et al., "Multiple Importance Reweighting for Path Guiding" | ACM TOG 44(4) (SIGGRAPH) | 2025 | [DOI](https://doi.org/10.1145/3731144) | Combines guided and unguided samples with MIS-style reweighting for more robust path guiding |
+
+For 2026 work on path guiding, Gaussian ray tracing and path-traced holograms, see [chapter 13, graphics research frontiers 2026]({{ '/blog/2026/graphics-13-research-frontiers-2026/' | relative_url }}).
 
 ## Learning resources
 
