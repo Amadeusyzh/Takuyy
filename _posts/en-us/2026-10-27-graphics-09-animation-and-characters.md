@@ -42,7 +42,7 @@ $$
 h_{00} = 2t^3 - 3t^2 + 1,\quad h_{10} = t^3 - 2t^2 + t,\quad h_{01} = -2t^3 + 3t^2,\quad h_{11} = t^3 - t^2 .
 $$
 
-You can derive these. Write $p(t) = a t^3 + b t^2 + c t + d$ and impose $p(0)=p_0$, $p(1)=p_1$, $p'(0)=m_0$, $p'(1)=m_1$. That gives four linear equations for $a, b, c, d$; collect the coefficients of each input. **Worked example** (1D): $p_0 = 0$, $p_1 = 1$. With flat tangents $m_0 = m_1 = 0$, $p(0.5) = h_{01}(0.5) = -0.25 + 0.75 = 0.5$, an ease-in/ease-out curve. With $m_0 = 2$, add $h_{10}(0.5)\cdot 2 = 0.125 \cdot 2 = 0.25$, so $p(0.5) = 0.75$: the curve leaves faster and overshoots the straight line.
+You can derive these. Write $p(t) = a t^3 + b t^2 + c t + d$ and impose $p(0)=p_0$, $p(1)=p_1$, $p'(0)=m_0$, $p'(1)=m_1$. That gives four linear equations for $a, b, c, d$; after solving, group the terms by $p_0, p_1, m_0, m_1$, and the coefficient of each one is one of the four basis functions above. **Worked example** (1D): $p_0 = 0$, $p_1 = 1$. With flat tangents $m_0 = m_1 = 0$, $p(0.5) = h_{01}(0.5) = -0.25 + 0.75 = 0.5$, an ease-in/ease-out curve. With $m_0 = 2$, add $h_{10}(0.5)\cdot 2 = 0.125 \cdot 2 = 0.25$, so $p(0.5) = 0.75$: the curve leaves faster and overshoots the straight line.
 
 ### The spline family
 
@@ -72,11 +72,13 @@ curve = catmull_rom(keys)
 print(curve.shape, curve[0], curve[-1])                     # starts and ends on the keys
 ```
 
-{% include blog_figure.liquid path="assets/img/blog/graphics/09-spline-family.svg" caption="Left: four interpolants built from the same seven points. Linear (dashed) has kinks; Catmull–Rom (purple) passes through every key smoothly; two cubic Béziers pass only through $P_0$, $P_3$ and $P_6$ and use the others as handles; the uniform cubic B-spline (green) is the smoothest but passes through none of them. Middle and right: the basis functions. The B-spline basis is non-negative and sums to 1, so the curve stays in the convex hull of its control points; the Hermite tangent bases $h_{10}$ and $h_{11}$ start and end at zero." %}
+The figure below draws the same seven keys (the `keys` array above) with all four curve types and shows the two families of basis functions.
+
+{% include blog_figure.liquid path="assets/img/blog/graphics/09-spline-family.svg" caption="Left: four interpolants built from the same seven points. Linear (dashed) has kinks; Catmull–Rom (purple) passes through every key smoothly; two cubic Béziers (orange) pass only through $P_0$, $P_3$ and $P_6$ and use the others as handles; the uniform cubic B-spline (green) is the smoothest but passes through none of them. Middle and right: the basis functions. The B-spline basis is non-negative and sums to 1, so the curve stays in the convex hull of its control points; the Hermite tangent bases $h_{10}$ and $h_{11}$ start and end at zero." %}
 
 ### Continuity: $C^1$ versus $G^1$
 
-Where two segments meet, **$C^k$ continuity** means that the first $k$ derivatives with respect to the parameter agree. **Geometric continuity $G^1$** only asks that the tangent *directions* agree: the curve has no visible corner, but the speed can jump. For a path that an object follows over time, that difference matters. A $G^1$ joint looks smooth as a drawing but gives a velocity jump, which shows as a visible hitch in the motion. In the Bézier picture: $C^1$ needs $c_1' - c_3 = c_3 - c_2$ (handles collinear *and* of equal length), while $G^1$ only needs them collinear.
+Where two segments meet, **$C^k$ continuity** means that the first $k$ derivatives with respect to the parameter agree. **Geometric continuity $G^1$** only asks that the tangent *directions* agree: the curve has no visible corner, but the speed can jump. For a path that an object follows over time, that difference matters. A $G^1$ joint looks smooth as a drawing but gives a velocity jump, which shows as a visible hitch in the motion. In the Bézier picture, let the first segment have control points $c_0..c_3$ and the second segment's first control point (handle) be $c_1'$, so the joint is $c_3$. $C^1$ needs $c_1' - c_3 = c_3 - c_2$ (handles collinear *and* of equal length), while $G^1$ only needs them collinear. The figure below tries three positions for $c_1'$.
 
 {% include blog_figure.liquid path="assets/img/blog/graphics/09-continuity.svg" caption="Two cubic Bézier segments meeting at $(3,0)$, with three choices for the first handle of the second segment. Red: not collinear, so the curve has a corner ($C^0$). Orange: collinear but shorter ($G^1$): the curve looks smooth, but the speed plot on the right jumps at $u=1$. Purple: mirrored handle ($C^1$): no jump. Only the purple version would move an object without a hitch." %}
 
@@ -110,6 +112,8 @@ even = point_at_distance(np.linspace(0, L, 17))
 gaps = np.linalg.norm(np.diff(even, axis=0), axis=1)
 print(f"length {L:.3f}, gap spread {gaps.min():.3f}..{gaps.max():.3f}")   # length 5.304, gap spread 0.330..0.331
 ```
+
+The figure below shows how different the spacing is on the same curve when points are taken at uniform $t$ versus uniform arc length.
 
 {% include blog_figure.liquid path="assets/img/blog/graphics/09-arc-length.svg" caption="Left: 17 points at uniform $t$ (orange circles) bunch up near the start, where the short first handle makes the curve slow, and spread out near the end, where it is fast (gaps from 0.13 to 0.63); 17 points at uniform arc length (purple squares, drawn slightly lower so both rows are visible) are evenly spaced (every gap 0.33). Right: the arc-length table $s(t)/L$; the thin lines show how each evenly spaced value of $s$ is mapped back to its $t$." %}
 
@@ -186,6 +190,8 @@ S = squad_controls(Q)
 print(squad(Q[1], Q[2], S[1], S[2], 0.0), Q[1])                       # squad hits the keys
 ```
 
+The figure below compares piecewise slerp and squad on the unit sphere and plots the angular speed of both.
+
 {% include blog_figure.liquid path="assets/img/blog/graphics/09-squad.svg" caption="Six key orientations $q_0..q_5$, shown by where each rotates the $z$ axis (black dots on the unit sphere). Left: piecewise slerp (orange) follows great-circle arcs with a corner at every key; squad (purple) passes through the same keys smoothly. Right: angular speed measured from the samples. Slerp's is constant within each interval and jumps at each key (dotted lines); here the jumps in magnitude are small, and the larger break is the sudden change of rotation axis, visible as the corners on the left. Squad's speed varies more, but continuously, and its axis turns smoothly." %}
 
 In production, animation curves are often stored per channel. Euler angles are interpolated separately, which is simple but can gimbal-lock. Quaternion curves are usually resampled at every frame, and the engine nlerps between neighboring frames.
@@ -233,9 +239,9 @@ for (name, _, _), g in zip(skel, forward_kinematics(skel, pose)):
     print(f"{name:10s}", np.round(g[:3, 3], 3))
 ```
 
-With the upper arm rotated by $-90^\circ$ about $y$ (pointing up) and the elbow bent by $90^\circ$ about $z$, the wrist ends up at $(0.18, 0.27, 1.95)$. The shoulder is at $(0.18, 0, 1.65)$, the elbow $0.3$ m above it, and the forearm points along $+y$. Check it by hand: it is three matrix products.
+With the upper arm rotated by $-90^\circ$ about $y$ (pointing up) and the elbow bent by $90^\circ$ about $z$, the wrist ends up at $(0.18, 0.27, 1.95)$. The shoulder is at $(0.18, 0, 1.65)$, the elbow $0.3$ m above it, and the forearm points along $+y$. Check it by hand: $\mathbf{R}_y(-90^\circ)$ maps $+x$ to $+z$, so the elbow is $0.3$ m straight above the shoulder; $\mathbf{R}_y(-90^\circ)\mathbf{R}_z(90^\circ)$ maps $+x$ to $+y$, so the wrist is $0.27$ m from the elbow along $+y$. The figure below shows the full 17-joint skeleton in the bind pose and in a posed configuration.
 
-{% include blog_figure.liquid path="assets/img/blog/graphics/09-fk-skeleton.svg" caption="A 17-joint skeleton evaluated with `forward_kinematics`. Each joint draws its local frame ($x$ red, $y$ green, $z$ blue). Left: the bind pose, where all local rotations are the identity and every frame is aligned with the world. Right: a pose set by eleven local rotations. A rotation at the pelvis turns everything below it in the tree, and a knee rotation only moves the shin and foot." %}
+{% include blog_figure.liquid path="assets/img/blog/graphics/09-fk-skeleton.svg" caption="A 17-joint skeleton evaluated with `forward_kinematics`. Each joint draws the three axes of its frame ($x$ red, $y$ green, $z$ blue; the columns of $\mathbf{G}_j$). Left: the bind pose, where all local rotations are the identity and every frame is aligned with the world. Right: a pose set by eleven local rotations. A rotation at the pelvis turns everything below it in the tree, and a knee rotation only moves the shin and foot." %}
 
 ## 4. Skinning
 
@@ -290,7 +296,7 @@ $$
 \hat b = \sum_j w_j \hat q_j, \qquad \hat q = \frac{\hat b}{\lVert b_r\rVert}, \qquad \mathbf{v}' = q_r\,\mathbf{v}\,q_r^{*} + \mathbf{t}.
 $$
 
-The result is always a rigid transform, so the twisted limb keeps its radius. It costs a bit more than LBS, and it can produce a slight bulge near bent joints. Many engines (Unity, Unreal, Maya) offer both.
+The result is always a rigid transform, so the twisted limb keeps its radius. It costs a bit more than LBS, and it can produce a slight bulge near bent joints. Common tools such as Maya and Blender offer both LBS and DQS (Blender calls the latter Preserve Volume).
 
 ```python
 import numpy as np   # uses qmul / qconj from Section 2
@@ -311,6 +317,8 @@ def skin_dqs(V, W, qs, ts):
         out[i] = rotate(qr, v) + 2 * qmul(qd, qconj(qr))[1:]
     return out
 ```
+
+In the figure below we take a cylinder bound to two bones, twist the second bone by $160^\circ$, and compare LBS with DQS.
 
 {% include blog_figure.liquid path="assets/img/blog/graphics/09-lbs-dqs.svg" caption="A cylinder skinned to two bones (weights blend smoothly over $0.6\le x\le 1.4$), with the second bone twisted by $160^\circ$ about the limb axis. The stripes show the twist and the color shows radius over rest radius. LBS (left) pinches to a thin neck in the middle; DQS (middle) keeps the radius. Right: ring radius along the limb, with LBS exactly on the formula $\sqrt{w_0^2+w_1^2+2w_0w_1\cos\theta}$; the legend gives the enclosed volume relative to the rest shape." %}
 
@@ -354,7 +362,7 @@ $$
 \cos\alpha = \frac{l_1^2 + d^2 - l_2^2}{2 l_1 d}.
 $$
 
-The remaining freedom, rotation of the triangle about the root–target axis, is set by a **pole vector** (where the knee should point). **Worked example**: $l_1 = l_2 = 1$ and a target at $(1, 1)$, so $d = \sqrt2$. Then $\cos\gamma = (1 + 1 - 2)/2 = 0$, so $\gamma = 90^\circ$; and $\cos\alpha = (1 + 2 - 1)/(2\sqrt2) = 0.707$, so $\alpha = 45^\circ$. The upper bone points at $45^\circ - 45^\circ = 0^\circ$ (along $x$) and the lower bone straight up: $(1,0) + (0,1) = (1,1)$. If $d > l_1 + l_2$, clamp $d$ and the limb points straight at the target.
+The remaining freedom, rotation of the triangle about the root–target axis, is set by a **pole vector** (where the knee should point). **Worked example**: $l_1 = l_2 = 1$ and a target at $(1, 1)$, so $d = \sqrt2$. Then $\cos\gamma = (1 + 1 - 2)/2 = 0$, so $\gamma = 90^\circ$; and $\cos\alpha = (1 + 2 - 1)/(2\sqrt2) = 0.707$, so $\alpha = 45^\circ$. The target direction is $45^\circ$, so the upper bone points at $45^\circ - 45^\circ = 0^\circ$ (along $x$) and the lower bone straight up: $(1,0) + (0,1) = (1,1)$. If $d > l_1 + l_2$, clamp $d$ and the limb points straight at the target.
 
 ```python
 import numpy as np
@@ -401,7 +409,9 @@ print(np.linalg.norm(P[-1] - [0.6, 1.9]), np.linalg.norm(np.diff(P, axis=0), axi
 # 5.5e-10 [1.  0.8 0.6 0.4]: on target, bone lengths kept
 ```
 
-{% include blog_figure.liquid path="assets/img/blog/graphics/09-ik-ccd-fabrik.svg" caption="The same four-bone chain (bone lengths 1, 0.8, 0.6, 0.4) reaching for the red star from the same start, after 1, 2, 3 and 20 iterations. CCD (left) swings the outer joints first; FABRIK (middle) distributes the motion along the whole chain. Right: end-effector error per iteration for both on a log scale. Both solvers converge here; how fast depends on the chain and the target." %}
+The figure below lets CCD and FABRIK reach for the same target from the same start pose, one iteration at a time.
+
+{% include blog_figure.liquid path="assets/img/blog/graphics/09-ik-ccd-fabrik.svg" caption="The same four-bone chain (bone lengths 1, 0.8, 0.6, 0.4) reaching for the red star from the same start, after 1, 2, 3 and 20 iterations (gray is the start pose; darker means later). CCD (left) swings the outer joints first; FABRIK (middle) distributes the motion along the whole chain. Right: end-effector error per iteration for both on a log scale: FABRIK is much closer after the first iteration, while CCD falls faster from about iteration 4 on. Both solvers converge here; how fast depends on the chain and the target." %}
 
 {% include widget.liquid name="graphics-ik-chain" height="440" caption="CCD (purple) and FABRIK (orange) on the four-bone chain of the figure. Drag the red target with the mouse or a finger. The slider sets how many iterations are run from the gray rest pose, and the faint chains show the intermediate iterations. Try targets close to the root and at the edge of the reach circle, and compare how each solver bends the chain and how fast the error drops." %}
 
@@ -437,7 +447,7 @@ $$
 i^* = \arg\min_i \sum_k \Big(\frac{f_{i,k} - q_k}{\sigma_k}\Big)^2 .
 $$
 
-The features are typically future root positions and directions at a few horizons (for example 0.33, 0.67 and 1 s, in the character's local frame), current foot positions and velocities, and the hip velocity. They are normalized by their standard deviations $\sigma_k$ and weighted by the designer. The pose then switches to the matched clip, and **inertialization** hides the discontinuity by decaying the offset between the old and new poses over a few frames. Search acceleration (KD-trees, bounding boxes, clustering) keeps this cheap.
+Here $f_{i,k}$ is the $k$-th feature of database frame $i$ and $q_k$ is the matching component of the query. The features are typically future root positions and directions at a few horizons (for example 0.33, 0.67 and 1 s, in the character's local frame), current foot positions and velocities, and the hip velocity. They are normalized by their standard deviations $\sigma_k$ and weighted by the designer. The pose then switches to the matched clip, and **inertialization** hides the discontinuity by decaying the offset between the old and new poses over a few frames. Search acceleration (KD-trees, bounding boxes, clustering) keeps this cheap.
 
 ```python
 import numpy as np
@@ -448,6 +458,8 @@ def match(F, q, sigma, weights=None):
     cost = (w * ((F - q) / sigma) ** 2).sum(1)
     return int(np.argmin(cost)), cost
 ```
+
+The figure below runs this search on a synthetic database and shows which frame it picks for a "run while turning left" query.
 
 {% include blog_figure.liquid path="assets/img/blog/graphics/09-motion-matching.svg" caption="A toy motion-matching search over a synthetic 50 s locomotion database (random turning, walk and run speeds, 30 fps). Features: root positions 1/3, 2/3 and 1 s ahead in the local frame plus current speed. The query asks to run while turning left. Left: the database path (gray), the best-matching frame and its next second of motion (purple), and the desired future placed at that frame (orange): they line up (zoomed to 12 m around the frame). Middle: the cost of every frame, with the minimum marked. Right: all feature vectors projected on their first two principal components, colored by cost, with the query (star) right next to the best match (circle)." %}
 
@@ -474,6 +486,8 @@ def pd_step(q, dq, q_ref, dq_ref, kp, kd):
 #   ddq = solve(M(q), Q(tau) - c(q, dq) - g(q));  dq += dt * ddq;  q += dt * dq
 ```
 
+The figure below runs this loop on a two-link pendulum that tracks a sinusoidal reference, comparing different gains $k_p$ and feedforward.
+
 {% include blog_figure.liquid path="assets/img/blog/graphics/09-pd-tracking.svg" caption="A simulated two-link pendulum (1 kg point masses on 0.5 m links, under gravity) tracking a sinusoidal reference with joint PD control, critically damped-style gains $k_d = 2\sqrt{0.3\,k_p}$. Left: the elbow angle. With $k_p=20$ the arm sags and lags far behind; $k_p=500$ follows closely. Right: tracking error on a log scale. Adding the reference motion's inverse-dynamics torques as feedforward (green, only $k_p=100$) gives a smaller error than the stiffest pure PD." %}
 
 **Learning the policy.** **DeepMimic** (Peng et al. 2018) trains a neural policy with RL (PPO) that outputs PD targets at 30 Hz. The reward is for imitating one reference clip:
@@ -485,7 +499,7 @@ r ={}& w_p e^{-k_p\sum\lVert q - \hat q\rVert^2} + w_v e^{-k_v\sum\lVert\dot q -
 \end{aligned}
 $$
 
-The four terms reward matching the joint rotations, joint velocities, end-effector positions and center of mass of the clip. Two tricks made it work: reference state initialization (start episodes at random frames of the clip) and early termination (stop when the character falls). **AMP** (Peng et al. 2021) replaces the hand-made tracking reward with a GAN-style discriminator that tells the character's transitions apart from a motion dataset, so a task reward (go there) can be combined with "move like the data" without choosing clips. **ASE** (Peng et al. 2022) pre-trains a large latent skill space with adversarial and diversity objectives, so that high-level controllers only choose latents. **PHC** (Luo et al. 2023) is a single policy that tracks almost all of AMASS, recovers from falls, and drives avatars from video or VR input. **MaskedMimic** (Tessler et al. 2024) treats control as motion inpainting: one policy, trained by distilling a full-body tracker, accepts any subset of constraints (joint targets, VR head and hands, text, object goals). Follow-ups include **PARC** (Xu et al., SIGGRAPH 2025), which iterates a kinematic motion generator and a physics tracker to expand parkour data, and **MaskedManipulator** (Tessler et al., SIGGRAPH Asia 2025), which extends MaskedMimic to whole-body object manipulation.
+The four terms reward matching the joint rotations, joint velocities, end-effector positions and center of mass of the clip. Hatted quantities are the reference clip's values, $w$ are term weights and $k$ are scale factors in the exponents (this $k_p$, $k_v$ is unrelated to the PD gains above). Two tricks made it work: reference state initialization (start episodes at random frames of the clip) and early termination (stop when the character falls). **AMP** (Peng et al. 2021) replaces the hand-made tracking reward with a GAN-style discriminator that tells the character's transitions apart from a motion dataset, so a task reward (go there) can be combined with "move like the data" without choosing clips. **ASE** (Peng et al. 2022) pre-trains a large latent skill space with adversarial and diversity objectives, so that high-level controllers only choose latents. **PHC** (Luo et al. 2023) is a single policy that tracks almost all of AMASS, recovers from falls, and drives avatars from video or VR input. **MaskedMimic** (Tessler et al. 2024) treats control as motion inpainting: one policy, trained by distilling a full-body tracker, accepts any subset of constraints (joint targets, VR head and hands, text, object goals). Follow-ups include **PARC** (Xu et al., SIGGRAPH 2025), which iterates a kinematic motion generator and a physics tracker to expand parkour data, and **MaskedManipulator** (Tessler et al., SIGGRAPH Asia 2025), which extends MaskedMimic to whole-body object manipulation.
 
 **The bridge to humanoid robots (as of November 2026).** The same recipe moved to real hardware in 2024-2026: retarget human motion to the robot (Section 7), train a tracking policy in a massively parallel simulator ([embodied AI 3]({{ '/blog/2026/embodied-ai-03-simulation-platforms/' | relative_url }})) with domain randomization, and deploy it zero-shot.
 
