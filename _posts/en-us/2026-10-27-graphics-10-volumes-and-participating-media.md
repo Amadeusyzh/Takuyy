@@ -24,7 +24,7 @@ Until now every ray in this series travelled through a vacuum and interacted wit
 
 ## 1. What happens to light inside a medium
 
-Picture a thin beam of light passing through a cloud of tiny particles. Over a small distance $dt$ three things can happen to the photons in the beam, and one thing can add photons to it:
+Picture a thin beam of light passing through a cloud of tiny particles. Over a small distance $dt$ four things change the number of photons in the beam: the first two remove photons, the last two add photons to it:
 
 1. **Absorption**: a particle swallows the photon and turns its energy into heat. The probability per unit length is the **absorption coefficient** $\sigma_a(\mathbf{x})$, in units of 1/m.
 2. **Out-scattering**: a particle deflects the photon into another direction. It leaves *this* beam, with probability per unit length $\sigma_s(\mathbf{x})$, the **scattering coefficient**.
@@ -67,8 +67,10 @@ $\tau$ is the **optical depth** (optical thickness): a dimensionless count of ho
 
 Two properties matter for everything that follows:
 
-- **Multiplicativity**: $T(0 \to b) = T(0 \to a)\,T(a \to b)$, because optical depths add. This is what lets us march along a ray and update $T$ step by step.
+- **Multiplicativity**: $T(0 \to b) = T(0 \to a)\,T(a \to b)$ ($T(a \to b)$ is the transmittance of the ray segment from $a$ to $b$), because optical depths add. This is what lets us march along a ray and update $T$ step by step.
 - **Order independence**: only the integral of $\sigma_t$ matters, not where along the ray the density sits.
+
+As the figure below shows, every curve drops to $e^{-1}$ at $d = 1/\sigma_t$, and becomes a straight line on a log axis.
 
 {% include blog_figure.liquid path="assets/img/blog/graphics/10-beer-lambert.svg" caption="Beer-Lambert transmittance for four extinction coefficients. (a) Linear axes: the dots mark one mean free path d = 1/σt, where every curve passes through e⁻¹ ≈ 0.37 (dashed). (b) Log axis: exponential decay becomes a straight line with slope −σt, so doubling σt doubles the slope." %}
 
@@ -78,7 +80,7 @@ Two properties matter for everything that follows:
 
 For smoke or clouds $\sigma_t(\mathbf{x})$ varies, and $\tau$ is an integral we have to evaluate numerically. The figure below shows a one-dimensional density with three bumps, its optical depth and its transmittance. Most of the drop in $T$ happens inside the bumps. A homogeneous medium with the same *average* extinction ends at the same $T(10)$ but follows a different path in between, so averaging density loses information about *where* light gets attenuated.
 
-{% include blog_figure.liquid path="assets/img/blog/graphics/10-heterogeneous-transmittance.svg" caption="A heterogeneous ray. (a) Extinction σt(t) with three bumps; the dashed line is the mean, the dotted line the maximum (used later as a majorant). (b) Transmittance T = e^−τ (purple) falls in steps where the density is high; the optical depth τ(t) (gray, right axis) is the running integral. The homogeneous curve with the same mean (orange, dashed) meets it only at the end." %}
+{% include blog_figure.liquid path="assets/img/blog/graphics/10-heterogeneous-transmittance.svg" caption="A heterogeneous ray. (a) Extinction σt(t) with three bumps; the dashed line is the mean, the dotted line the maximum (used later as a majorant). (b) Transmittance T = e^−τ (purple) falls in steps where the density is high; the optical depth τ(t) (gray, right axis) is the running integral. The homogeneous curve with the same mean (orange, dashed) converges with it at t = 10 but differs clearly in between." %}
 
 ```python
 import numpy as np
@@ -118,7 +120,7 @@ $$
 
 ### 3.1 The integral form: the volume rendering equation
 
-The RTE is a linear first-order ODE along the ray, $\frac{dL}{dt} = -\sigma_t L + q$ with source $q = \sigma_a L_e + \sigma_s L_s$. Solving it with the integrating factor $e^{\tau}$, exactly as one solves $y' + a y = q$, gives the **volume rendering equation**. A camera at $\mathbf{o}$ looks along $\boldsymbol{\omega}$, the ray hits a surface at distance $d$, and $\mathbf{x}_t = \mathbf{o} + t\boldsymbol{\omega}$:
+The RTE is a linear first-order ODE along the ray, $\frac{dL}{dt} = -\sigma_t L + q$ with source $q = \sigma_a L_e + \sigma_s L_s$. Solving it with the integrating factor $e^{\tau}$, exactly as one solves $y' + a y = q$, gives the **volume rendering equation**. A camera at $\mathbf{o}$ looks along $\boldsymbol{\omega}$, the ray hits a surface at distance $d$, and $\mathbf{x}_t = \mathbf{o} + t\boldsymbol{\omega}$ (the light travels toward the camera, in direction $-\boldsymbol{\omega}$, hence $L(\mathbf{o}, -\boldsymbol{\omega})$ on the left):
 
 $$
 L(\mathbf{o}, -\boldsymbol{\omega}) =
@@ -161,9 +163,11 @@ Its single parameter is exactly the mean cosine $g$, which makes it easy to fit 
 
 **Worked example** ($g = 0.6$): $p(0) = \frac{1}{4\pi}\cdot\frac{0.64}{0.16^{3/2}}$ $= 0.0796 \cdot 0.64 / 0.064 = 0.796$ and $p(\pi) = 0.0796 \cdot 0.64/2.56^{3/2} = 0.0124$. The ratio is $64 = (1.6/0.4)^3$. Compare with $1/(4\pi) = 0.0796$ for isotropic scattering.
 
+The left panel of the figure below shows the lobe shape for several values of $g$; the right panel shows directions drawn with the sampling method described afterwards.
+
 {% include blog_figure.liquid path="assets/img/blog/graphics/10-hg-lobes.svg" caption="Henyey-Greenstein lobes. (a) 4π·p(θ) on a logarithmic radius for g from −0.3 to 0.85. Light travels from left to right (yellow arrow); the isotropic g = 0 curve is the circle at radius 1. Positive g stretches the lobe forward, negative g backward. (b) 500 directions sampled with the inverse CDF below for g = 0.7, drawn on the unit sphere: they crowd around the direction of travel, and their mean cosine is close to 0.7." %}
 
-**Importance sampling HG.** In a path tracer we need to *sample* a new direction with density $p$. The azimuth $\phi$ is uniform in $[0, 2\pi)$. For $\mu$ we invert the CDF of the marginal density $2\pi p(\mu)$:
+**Importance sampling HG.** In a path tracer we need to *sample* a new direction with density $p$. The azimuth $\phi$ is uniform in $[0, 2\pi)$. For $\mu$ we invert the CDF of the marginal density $2\pi p(\mu)$ (substitute $u = 1+g^2-2g\mu$ when integrating, the same trick as in Exercise 1):
 
 $$
 P(\mu) = 2\pi\int_{-1}^{\mu} p_{HG}(\mu')\,d\mu'
@@ -215,7 +219,9 @@ The right phase function depends on the particle size $r$ compared with the wave
   $p_D(\mu; g, \alpha) = p_{HG}(\mu; g)\,\frac{1+\alpha\mu^2}{1+\alpha(1+2g^2)/3}$.
   With $\alpha = 0$ it is HG; with $\alpha = 1$ it is the Cornette-Shanks function. Jendersie and d'Eon (2023) fitted a blend of an HG lobe and a Draine lobe to Lorenz-Mie theory for water droplets as a function of droplet diameter, which gives a cheap, sampleable fog and cloud phase function. The fitted formulas are in their paper and supplement.
 
-{% include blog_figure.liquid path="assets/img/blog/graphics/10-phase-functions.svg" caption="(a) Four phase functions on the same log-radius polar plot (light travels left to right): Rayleigh (peanut-shaped, symmetric), HG with g = 0.76, a two-lobe HG mixture with some back-scattering, and Draine with α = 1, which adds the 1 + μ² shape to HG. (b) Histograms of 200,000 cos θ samples from the inverse CDF overlaid on the exact density 2π p(cos θ) for three values of g (log scale). Bars and curves agree, and the sample means match g." %}
+The figure below puts these phase functions on one plot so that their shapes can be compared.
+
+{% include blog_figure.liquid path="assets/img/blog/graphics/10-phase-functions.svg" caption="(a) Four phase functions on the same log-radius polar plot (light travels left to right): Rayleigh (blue, peanut-shaped, symmetric), HG with g = 0.76 (orange), a two-lobe HG mixture with some back-scattering (green), and Draine with α = 1 (red), which adds the 1 + μ² shape to HG. (b) Histograms of 200,000 cos θ samples from the inverse CDF overlaid on the exact density 2π p(cos θ) for g = 0.6, −0.3 and 0 (log scale). Bars and curves agree, and the sample means match g." %}
 
 The widget below lets you feel these shapes. Drag on the plot to change where the light comes from and move the $g$ slider. The dots are live samples: 3D unit vectors drawn with the sampler above (or by rejection sampling for Rayleigh and Draine), projected onto the screen.
 
@@ -241,6 +247,8 @@ $$
 The factor $\frac{\sigma_s}{\sigma_t}(1 - e^{-\sigma_t\Delta t})$ is the exact integral $\int_0^{\Delta t}\sigma_s e^{-\sigma_t s}\,ds$ over a segment with constant coefficients. The naive Riemann term $\sigma_s\Delta t$ exceeds 1 when $\sigma_t\Delta t > 1$ and creates energy. This "energy-conserving" form was popularized for real-time fog by Hillaire (2015).
 
 **Worked example.** A segment with $\sigma_t = 2$, $\sigma_s = 1.8$, $\Delta t = 0.1$, current $T = 0.7$ and $S_i = 0.5$: $1 - e^{-0.2} = 0.1813$, so $L$ grows by $0.7 \times 0.9 \times 0.1813 \times 0.5 = 0.0571$ and $T$ becomes $0.7\,e^{-0.2} = 0.573$. The naive term would add $0.7 \times 1.8 \times 0.1 \times 0.5 = 0.063$, about 10% too much.
+
+The figure below shows the geometry of this process in a procedural cloud.
 
 {% include blog_figure.liquid path="assets/img/blog/graphics/10-ray-march.svg" caption="Ray marching through a procedural cloud. (a) A slice of the density (blue). The camera ray from o along ω is cut into segments of length Δt (ticks); each segment gets one jittered sample (orange) and a shadow ray toward the light ω_ℓ (dashed yellow). (b) Density along the ray (purple, filled) and the camera transmittance T(t) (black), which drops wherever the ray crosses dense material. Samples beyond the point where T ≈ 0 contribute nothing and can be skipped (early termination)." %}
 
@@ -293,7 +301,7 @@ plt.imsave("sphere_volume.png", img, cmap="gray", vmin=0, vmax=1)
 
 With a fixed sample position per segment (`jitter=False`), every pixel samples the density at the same depths. Smooth density gradients then turn into **banding**: contour lines that sit at the same place in every frame. In the very soft cloud below they are faint (panel a); in hard-edged media or with fewer steps they become obvious stripes. **Jittering** the start offset per pixel (and per frame, in real time) converts that structured error into noise, which the eye tolerates better and which temporal accumulation and denoisers (as in [post 06]({{ '/blog/2026/graphics-06-real-time-ray-tracing/' | relative_url }})) can average away. Blue-noise offsets are better still. The cost is $N_{\text{steps}} \times N_{\text{shadow}}$ density lookups per pixel. Practical renderers cut it with **early termination** when $T < 10^{-3}$, **empty-space skipping** with a coarse occupancy grid (Section 8) and adaptive step sizes.
 
-{% include blog_figure.liquid path="assets/img/blog/graphics/10-cloud-render.svg" caption="A procedural cloud (value-noise fBm eroding a union of spheres, stored in a 96×56×72 grid) rendered by the figure script's ray marcher, with the sun above and to the right behind the cloud. (a) 8 steps at fixed positions: the image looks smooth, but its error is structured (faint step contours along the dark lower lobes) and identical in every frame, so it never averages out. (b) The same 8 steps with per-pixel jitter: the structured error becomes visible per-pixel noise, which temporal accumulation removes. (c) 96 steps, single scattering only: the side facing away from the sun is almost black, because light needs several bounces to get there. (d) The same render plus the multiple-scattering octave approximation of Section 7: the shadowed regions fill with soft light, much closer to how real clouds look." %}
+{% include blog_figure.liquid path="assets/img/blog/graphics/10-cloud-render.svg" caption="A procedural cloud (value-noise fBm eroding a union of spheres, stored in a 96×56×72 grid) rendered by the figure script's ray marcher, with the sun above and to the right behind the cloud. (a) 8 steps at fixed positions: the image looks smooth, but its error is structured (faint step contours along the dark lower lobes) and identical in every frame, so it never averages out. (b) The same 8 steps with per-pixel jitter: the structured error becomes visible per-pixel noise, which temporal accumulation removes. (c) 96 steps, single scattering only: the side facing away from the sun (lower left) is very dark, because light needs several bounces to get there. (d) The same render plus the multiple-scattering octave approximation of Section 7: the shadowed regions fill with soft light, much closer to how real clouds look." %}
 
 ## 6. Unbiased distance sampling: delta, ratio and residual tracking
 
@@ -456,7 +464,7 @@ print({k: fates.count(k) / len(fates) for k in "RTA"})   # {'R': 0.2436, 'T': 0.
 
 The random walks in the figure below show the paths themselves. High-albedo media scatter photons dozens of times, which spreads light sideways and lets it reach regions the sun never sees directly. That is the physical reason panel (c) of the cloud figure is too dark.
 
-{% include blog_figure.liquid path="assets/img/blog/graphics/10-random-walk.svg" caption="Random walks in a slab four mean free paths thick with albedo 0.98, light entering at the top (yellow arrow); 24 paths each, projected onto the x-z plane, coloured by fate: reflected (orange), transmitted (blue), absorbed (gray). The fractions R, T, A in the titles come from 20,000 walks. Isotropic scattering (left) sends many photons back out of the top; forward scattering with g = 0.85 (right) carries them deeper and transmits more, because each bounce changes the direction only a little." %}
+{% include blog_figure.liquid path="assets/img/blog/graphics/10-random-walk.svg" caption="Random walks in a slab four mean free paths thick with albedo 0.98, light entering at the top (yellow arrow); 24 paths each, projected onto the x-z plane, coloured by fate: reflected (orange), transmitted (blue), absorbed (gray). The fractions R, T, A in the titles come from 20,000 walks (the figure uses a homogeneous medium with albedo 0.98, unlike the code above, so the numbers differ). Isotropic scattering (left) sends many photons back out of the top; forward scattering with g = 0.85 (right) carries them deeper and transmits more, because each bounce changes the direction only a little." %}
 
 **Similarity and the octave trick.** Two approximations make multiple scattering affordable. The **similarity relation** says a forward-scattering medium with $(\sigma_s, g)$ behaves, after many bounces, like an isotropic one with reduced scattering $\sigma_s' = \sigma_s(1-g)$; this reappears in the diffusion models of Section 10. In real time and in film, a popular heuristic (Wrenninge, Kulla and Lundqvist's 2013 talk *Oz: The Great and Volumetric*) approximates multiple scattering by summing single-scattering terms with progressively weaker extinction, scattering and anisotropy:
 
@@ -465,7 +473,7 @@ L_{ms} \approx \sum_{k=0}^{K-1} a^k\,\sigma_s\,p(\cos\theta;\, c^k g)\, e^{-b^k 
 \qquad a, b, c < 1 .
 $$
 
-Panel (d) of the cloud figure uses $a=b=c=\tfrac12$ and $K=4$. It is not physically exact, but it captures the main effect: light leaking into shadowed regions.
+Here $a$ successively shrinks the scattering contribution, $b$ shrinks the optical depth (light penetrates deeper), and $c$ shrinks the anisotropy $g$ (closer to isotropic); $k=0$ is ordinary single scattering and larger $k$ stands for light that has bounced more often. Panel (d) of the cloud figure uses $a=b=c=\tfrac12$ and $K=4$. It is not physically exact, but it captures the main effect: light leaking into shadowed regions.
 
 ## 8. Data structures: OpenVDB and NanoVDB
 
@@ -490,7 +498,9 @@ The grid is coarse, so froxel positions are jittered every frame and blended wit
 
 The atmosphere is a spherical shell of air (Rayleigh, scale height about 8 km), aerosols (Mie, scale height about 1.2 km) and ozone (pure absorption, which keeps the twilight sky blue). Densities fall off exponentially with altitude $h$: $\sigma(h) = \sigma(0)\,e^{-h/H}$. Single scattering of sunlight along each view ray already explains the main colours. Short wavelengths are scattered more strongly, so the sky away from the sun is blue. Near sunset the light reaching us has crossed so much air that the blue has been scattered out, leaving orange and red.
 
-**Worked example.** With the sea-level Rayleigh coefficients used by Hillaire (2020), $\beta_R = (5.80, 13.56, 33.1)\times10^{-6}\ \text{m}^{-1}$ for (R, G, B), the zenith optical depth is $\beta_R H_R = (0.046, 0.108, 0.265)$. The direct sun at noon keeps $e^{-0.265} = 77\%$ of its blue. At the horizon the path is roughly 35-40 times longer, so blue drops to $e^{-9.3}\approx 10^{-4}$ while red keeps about $e^{-1.6} \approx 0.2$.
+**Worked example.** With the sea-level Rayleigh coefficients used by Hillaire (2020), $\beta_R = (5.80, 13.56, 33.1)\times10^{-6}\ \text{m}^{-1}$ for (R, G, B), the zenith optical depth is $\beta_R H_R = (0.046, 0.108, 0.265)$. The direct sun at noon keeps $e^{-0.265} = 77\%$ of its blue. At the horizon the path is roughly 35 times longer, so blue drops to $e^{-9.3}\approx 10^{-4}$ while red keeps about $e^{-1.6} \approx 0.2$.
+
+The figure below computes the sky colour as a function of sun elevation with numerical single-scattering quadrature.
 
 {% include blog_figure.liquid path="assets/img/blog/graphics/10-rayleigh-sky.svg" caption="Single-scattering sky computed by the figure script (Rayleigh + Mie + ozone, spherical Earth, quadrature along each view ray and each sun ray). Each column is one sun elevation, each row one view elevation, looking toward the sun (a) and away from it (b). Note the bright Mie glow around the sun's direction (the diagonal in a), the deepening blue toward the zenith, and the darkening and reddening as the sun approaches and drops below the horizon. The strip shows the hue of the direct sun disk, T_sun normalized per column: white at high elevations, orange then red near the horizon." %}
 
@@ -508,7 +518,7 @@ The later Nubis talks by the same studio describe how the system evolved, includ
 
 ## 10. Subsurface scattering
 
-Skin, marble, wax, milk and leaves are **translucent**: light enters at one point, scatters many times inside, and exits somewhere else. A BRDF assumes entry and exit at the same point. The general description is the **BSSRDF** $S(\mathbf{x}_i, \boldsymbol{\omega}_i; \mathbf{x}_o, \boldsymbol{\omega}_o)$, which relates radiance leaving $\mathbf{x}_o$ to light arriving at a *different* point $\mathbf{x}_i$:
+Skin, marble, wax, milk and leaves are **translucent**: light enters at one point, scatters many times inside, and exits somewhere else. A BRDF assumes entry and exit at the same point. The general description is the **BSSRDF** (bidirectional scattering-surface reflectance distribution function) $S(\mathbf{x}_i, \boldsymbol{\omega}_i; \mathbf{x}_o, \boldsymbol{\omega}_o)$, which relates radiance leaving $\mathbf{x}_o$ to light arriving at a *different* point $\mathbf{x}_i$:
 
 $$
 L_o(\mathbf{x}_o, \boldsymbol{\omega}_o) = \int_A \int_{H^2} S(\mathbf{x}_i, \boldsymbol{\omega}_i; \mathbf{x}_o, \boldsymbol{\omega}_o)\, L_i(\mathbf{x}_i, \boldsymbol{\omega}_i)\,\cos\theta_i\, d\boldsymbol{\omega}_i\, dA(\mathbf{x}_i).
@@ -552,6 +562,8 @@ radii = np.where(pick, -d * np.log(1 - xi), -3 * d * np.log(1 - xi))
 print(radii.mean(), 0.25 * d + 0.75 * 3 * d)                 # both ~2.5
 ```
 
+In the figure below, the left panel is the dipole profile and the right panel is Burley's profile.
+
 {% include blog_figure.liquid path="assets/img/blog/graphics/10-diffusion-profiles.svg" caption="Diffusion profiles. (a) The dipole R_d(r) for skin-like RGB coefficients (listed in the figure script) on log-log axes: red light, which is absorbed least, spreads furthest, which is why backlit ears glow red and why skin looks soft. (b) Burley's normalized profile as a radial density 2πr R(r) for three (A, d) pairs; the legend shows the numerically integrated area, which equals A." %}
 
 ### 10.3 Real time and production
@@ -588,6 +600,8 @@ w = T * alpha
 print(alpha.round(4), T.round(4), w.round(4), w.sum().round(4), (w * c).sum().round(4))
 # [0.3935 0.7769] [1.     0.6065] [0.3935 0.4712] 0.8647 0.4484
 ```
+
+The figure below checks this on the medium of Section 2.
 
 {% include blog_figure.liquid path="assets/img/blog/graphics/10-quadrature.svg" caption="Alpha compositing as quadrature on the medium of Section 2. (a) The continuous weight T(t)σt(t) (purple) and the discrete weights T_iα_i/δ_i from 16 segments (bars): the bars follow the curve, including the shadowing of the last bump by the earlier ones. (b) Error of the rendered colour against the exact integral as the number of samples N grows. The exponential α = 1 − e^−σδ (energy-conserving) converges about quadratically (dotted line ∝ N⁻²). The naive α = σδ (clamped to 1) converges only at first order (∝ 1/N), because it overestimates the opacity of every segment; at N = 512 its error is several hundred times larger." %}
 

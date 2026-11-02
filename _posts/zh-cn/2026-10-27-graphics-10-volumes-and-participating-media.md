@@ -24,7 +24,7 @@ related_posts: false
 
 ## 1. 光在介质中会发生什么
 
-想象一束细光穿过由微小粒子组成的云。在一小段距离 $dt$ 内，光束中的光子可能遭遇三件事，另有一件事会向光束中添加光子：
+想象一束细光穿过由微小粒子组成的云。在一小段距离 $dt$ 内，有四件事会改变光束中的光子数：前两件移除光子，后两件向光束添加光子：
 
 1. **吸收**（absorption）：粒子吞掉光子，把能量变成热。单位长度上的概率是**吸收系数**（absorption coefficient）$\sigma_a(\mathbf{x})$，单位为 1/m。
 2. **外散射**（out-scattering）：粒子把光子偏转到别的方向，它离开了*这条*光束。单位长度上的概率为**散射系数**（scattering coefficient）$\sigma_s(\mathbf{x})$。
@@ -67,8 +67,10 @@ $\tau$ 是**光学深度**（optical depth，又称光学厚度）：一个无�
 
 后面的一切都依赖两条性质：
 
-- **可乘性**：$T(0 \to b) = T(0 \to a)\,T(a \to b)$，因为光学深度可以相加。这使我们可以沿光线步进、逐步更新 $T$。
+- **可乘性**：$T(0 \to b) = T(0 \to a)\,T(a \to b)$（$T(a \to b)$ 表示光线从 $a$ 走到 $b$ 这一段的透射率），因为光学深度可以相加。这使我们可以沿光线步进、逐步更新 $T$。
 - **与顺序无关**：只有 $\sigma_t$ 的积分重要，与密度位于光线上的哪个位置无关。
+
+如下图所示，每条曲线在 $d = 1/\sigma_t$ 处都降到 $e^{-1}$，对数坐标下则是直线。
 
 {% include blog_figure.liquid path="assets/img/blog/graphics/10-beer-lambert.svg" caption="四个消光系数下的 Beer-Lambert 透射率。(a) 线性坐标：圆点标出一个平均自由程 d = 1/σt，每条曲线都在此处经过 e⁻¹ ≈ 0.37（虚线）。(b) 对数坐标：指数衰减变成斜率为 −σt 的直线，σt 加倍则斜率加倍。" %}
 
@@ -78,7 +80,7 @@ $\tau$ 是**光学深度**（optical depth，又称光学厚度）：一个无�
 
 对于烟或云，$\sigma_t(\mathbf{x})$ 随位置变化，$\tau$ 只能数值计算。下图展示了一维密度（带三个峰）、它的光学深度和透射率。$T$ 的下降大多发生在峰内部。*平均*消光相同的均匀介质在 $T(10)$ 处与之相同，但中间的走势不同。所以对密度取平均会丢失光在*何处*衰减的信息。
 
-{% include blog_figure.liquid path="assets/img/blog/graphics/10-heterogeneous-transmittance.svg" caption="一条非均匀光线。(a) 带三个峰的消光 σt(t)；虚线为均值，点线为最大值（稍后用作上界 majorant）。(b) 透射率 T = e^−τ（紫色）在密度高处阶梯式下降；光学深度 τ(t)（灰色，右轴）是累计积分。平均值相同的均匀介质曲线（橙色虚线）只在终点与之相交。" %}
+{% include blog_figure.liquid path="assets/img/blog/graphics/10-heterogeneous-transmittance.svg" caption="一条非均匀光线。(a) 带三个峰的消光 σt(t)；虚线为均值，点线为最大值（稍后用作上界 majorant）。(b) 透射率 T = e^−τ（紫色）在密度高处阶梯式下降；光学深度 τ(t)（灰色，右轴）是累计积分。平均值相同的均匀介质曲线（橙色虚线）与之在 t = 10 处汇合，中间的走势却明显不同。" %}
 
 ```python
 import numpy as np
@@ -118,7 +120,7 @@ $$
 
 ### 3.1 积分形式：体渲染方程
 
-RTE 是沿光线的一阶线性常微分方程 $\frac{dL}{dt} = -\sigma_t L + q$，源项 $q = \sigma_a L_e + \sigma_s L_s$。像解 $y' + a y = q$ 那样用积分因子 $e^{\tau}$ 求解，就得到**体渲染方程**（volume rendering equation）。设相机位于 $\mathbf{o}$，沿 $\boldsymbol{\omega}$ 看去，光线在距离 $d$ 处击中表面，$\mathbf{x}_t = \mathbf{o} + t\boldsymbol{\omega}$，则
+RTE 是沿光线的一阶线性常微分方程 $\frac{dL}{dt} = -\sigma_t L + q$，源项 $q = \sigma_a L_e + \sigma_s L_s$。像解 $y' + a y = q$ 那样用积分因子 $e^{\tau}$ 求解，就得到**体渲染方程**（volume rendering equation）。设相机位于 $\mathbf{o}$，沿 $\boldsymbol{\omega}$ 看去，光线在距离 $d$ 处击中表面，$\mathbf{x}_t = \mathbf{o} + t\boldsymbol{\omega}$（光朝相机传播，方向为 $-\boldsymbol{\omega}$，所以左边写成 $L(\mathbf{o}, -\boldsymbol{\omega})$），则
 
 $$
 L(\mathbf{o}, -\boldsymbol{\omega}) =
@@ -161,9 +163,11 @@ $$
 
 **数值例子**（$g = 0.6$）：$p(0) = \frac{1}{4\pi}\cdot\frac{0.64}{0.16^{3/2}}$ $= 0.0796 \cdot 0.64 / 0.064 = 0.796$，$p(\pi) = 0.0796 \cdot 0.64/2.56^{3/2} = 0.0124$。两者之比为 $64 = (1.6/0.4)^3$。各向同性时为 $1/(4\pi) = 0.0796$，可作对照。
 
+下图左侧画出不同 $g$ 的波瓣形状，右侧是用后面介绍的方法采样得到的方向。
+
 {% include blog_figure.liquid path="assets/img/blog/graphics/10-hg-lobes.svg" caption="Henyey-Greenstein 波瓣。(a) 以对数半径绘制 4π·p(θ)，g 从 −0.3 到 0.85。光从左向右传播（黄色箭头）；各向同性的 g = 0 曲线是半径为 1 的圆。正的 g 把波瓣向前拉长，负的 g 向后。(b) 用下面的逆 CDF 为 g = 0.7 采样的 500 个方向，画在单位球面上：它们聚集在传播方向周围，平均余弦接近 0.7。" %}
 
-**HG 的重要性采样。** 在路径追踪器里，我们需要按密度 $p$ *采样*新方向。方位角 $\phi$ 在 $[0, 2\pi)$ 内均匀分布。对 $\mu$，我们对边缘密度 $2\pi p(\mu)$ 的 CDF 求逆：
+**HG 的重要性采样。** 在路径追踪器里，我们需要按密度 $p$ *采样*新方向。方位角 $\phi$ 在 $[0, 2\pi)$ 内均匀分布。对 $\mu$，我们对边缘密度 $2\pi p(\mu)$ 的 CDF 求逆（积分时代换 $u = 1+g^2-2g\mu$，与练习 1 是同一技巧）：
 
 $$
 P(\mu) = 2\pi\int_{-1}^{\mu} p_{HG}(\mu')\,d\mu'
@@ -215,7 +219,9 @@ print(2 * np.pi * np.sum(hg(m, g)) * (2 / 200000))  # ~1.0: normalized
   $p_D(\mu; g, \alpha) = p_{HG}(\mu; g)\,\frac{1+\alpha\mu^2}{1+\alpha(1+2g^2)/3}$。
   $\alpha = 0$ 时即为 HG；$\alpha = 1$ 时即为 Cornette-Shanks 函数。Jendersie 和 d'Eon（2023）把一个 HG 波瓣与一个 Draine 波瓣的混合，按水滴直径拟合到 Lorenz-Mie 理论，得到了一种廉价且可采样的雾/云相函数。拟合公式见其论文和补充材料。
 
-{% include blog_figure.liquid path="assets/img/blog/graphics/10-phase-functions.svg" caption="(a) 同一张对数半径极坐标图上的四种相函数（光从左向右）：Rayleigh（花生形、对称）、g = 0.76 的 HG、带少量后向散射的双瓣 HG 混合，以及 α = 1 的 Draine（在 HG 上叠加 1 + μ² 的形状）。(b) 对三个 g 值，用逆 CDF 采样 200,000 个 cos θ 的直方图与精确密度 2π p(cos θ) 的对比（对数坐标）。柱与曲线吻合，样本均值与 g 一致。" %}
+下图把这几种相函数画在同一张图上，便于比较形状。
+
+{% include blog_figure.liquid path="assets/img/blog/graphics/10-phase-functions.svg" caption="(a) 同一张对数半径极坐标图上的四种相函数（光从左向右）：Rayleigh（蓝，花生形、对称）、g = 0.76 的 HG（橙）、带少量后向散射的双瓣 HG 混合（绿）以及 α = 1 的 Draine（红，在 HG 上叠加 1 + μ² 的形状）。(b) 对 g = 0.6、−0.3、0 三个值，用逆 CDF 采样 200,000 个 cos θ 的直方图与精确密度 2π p(cos θ) 的对比（对数坐标）。柱与曲线吻合，样本均值与 g 一致。" %}
 
 下面的小部件可以让你亲手感受这些形状。在图上拖动可改变光的来向，并移动 $g$ 滑块。圆点是实时样本：用上面的采样器（Rayleigh 和 Draine 用拒绝采样）抽取的三维单位向量，投影到屏幕上。
 
@@ -241,6 +247,8 @@ $$
 因子 $\frac{\sigma_s}{\sigma_t}(1 - e^{-\sigma_t\Delta t})$ 是系数恒定的一段上的精确积分 $\int_0^{\Delta t}\sigma_s e^{-\sigma_t s}\,ds$。朴素黎曼项 $\sigma_s\Delta t$ 在 $\sigma_t\Delta t > 1$ 时会超过 1，凭空产生能量。这种“能量守恒”形式由 Hillaire（2015）在实时雾中推广开来。
 
 **数值例子。** 一段 $\sigma_t = 2$、$\sigma_s = 1.8$、$\Delta t = 0.1$，当前 $T = 0.7$，$S_i = 0.5$：$1 - e^{-0.2} = 0.1813$，所以 $L$ 增加 $0.7 \times 0.9 \times 0.1813 \times 0.5 = 0.0571$，$T$ 变为 $0.7\,e^{-0.2} = 0.573$。朴素项会增加 $0.7 \times 1.8 \times 0.1 \times 0.5 = 0.063$，多了约 10%。
+
+下图用一朵程序化云展示这一过程的几何。
 
 {% include blog_figure.liquid path="assets/img/blog/graphics/10-ray-march.svg" caption="在程序化云中做光线步进。(a) 密度的一个切片（蓝色）。从 o 沿 ω 出发的相机光线被分成长度为 Δt 的段（刻度）；每段取一个抖动采样点（橙色），并向光源 ω_ℓ 发出一条阴影光线（黄色虚线）。(b) 沿光线的密度（紫色填充）和相机透射率 T(t)（黑色），光线穿过稠密物质处 T 就下降。T ≈ 0 之后的采样点没有贡献，可以跳过（提前终止）。" %}
 
@@ -293,7 +301,7 @@ plt.imsave("sphere_volume.png", img, cmap="gray", vmin=0, vmax=1)
 
 如果每段的采样位置固定（`jitter=False`），所有像素都在相同深度上采样密度，平滑的密度梯度就会变成**条带**（banding）：每一帧都停在同一位置的等高线。在下图这种非常柔和的云里它们很淡（图 (a)）；在边缘锐利的介质中或步数更少时，就会变成明显的条纹。按像素（实时渲染中还按帧）**抖动**（jittering）起始偏移，可以把这种结构化误差变成噪声。人眼对噪声更宽容，时间累积和降噪器（见 [第 06 篇]({{ '/blog/2026/graphics-06-real-time-ray-tracing/' | relative_url }})）也能把它平均掉。用蓝噪声偏移效果更好。开销是每像素 $N_{\text{steps}} \times N_{\text{shadow}}$ 次密度查询。实际渲染器用三种办法削减它：$T < 10^{-3}$ 时**提前终止**（early termination）、用粗糙占用网格做**空域跳过**（empty-space skipping，第 8 节）、以及自适应步长。
 
-{% include blog_figure.liquid path="assets/img/blog/graphics/10-cloud-render.svg" caption="用图脚本中的光线步进器渲染的程序化云（用值噪声 fBm 侵蚀一组球的并集，存于 96×56×72 的网格），太阳位于云的右上后方。(a) 8 步、位置固定：图像看起来平滑，但误差是结构化的（下方暗部边缘有淡淡的阶梯状等高线），而且每帧都完全相同，永远不会被平均掉。(b) 同样 8 步、按像素抖动：结构化误差变成可见的逐像素噪声，时间累积可以去除它。(c) 96 步、只有单次散射：背向太阳的一侧几乎全黑，因为光要经过多次反弹才能到达那里。(d) 同一渲染加上第 7 节的多次散射八度（octave）近似：阴影区域被柔和的光填满，更接近真实的云。" %}
+{% include blog_figure.liquid path="assets/img/blog/graphics/10-cloud-render.svg" caption="用图脚本中的光线步进器渲染的程序化云（用值噪声 fBm 侵蚀一组球的并集，存于 96×56×72 的网格），太阳位于云的右上后方。(a) 8 步、位置固定：图像看起来平滑，但误差是结构化的（下方暗部边缘有淡淡的阶梯状等高线），而且每帧都完全相同，永远不会被平均掉。(b) 同样 8 步、按像素抖动：结构化误差变成可见的逐像素噪声，时间累积可以去除它。(c) 96 步、只有单次散射：背向太阳的一侧（左下）很暗，因为光要经过多次反弹才能到达那里。(d) 同一渲染加上第 7 节的多次散射八度（octave）近似：阴影区域被柔和的光填满，更接近真实的云。" %}
 
 ## 6. 无偏距离采样：delta、ratio 与 residual tracking
 
@@ -311,7 +319,7 @@ $$
 
 ### 6.2 Delta（Woodcock）tracking
 
-这个技巧来自中子输运（Woodcock 等，1965）：**用虚构的“空”（null）粒子填满介质**，使之变成均匀介质。选一个处处满足 $\bar\sigma \ge \sigma_t(\mathbf{x})$ 的**上界**（majorant），定义空系数 $\sigma_n = \bar\sigma - \sigma_t \ge 0$。合并后的介质消光恒为 $\bar\sigma$，于是可以用上面的公式采样试探碰撞（tentative collision）。在每次试探碰撞处：
+这个技巧（德尔塔追踪）来自中子输运（Woodcock 等，1965）：**用虚构的“空”（null）粒子填满介质**，使之变成均匀介质。选一个处处满足 $\bar\sigma \ge \sigma_t(\mathbf{x})$ 的**上界**（majorant），定义空系数 $\sigma_n = \bar\sigma - \sigma_t \ge 0$。合并后的介质消光恒为 $\bar\sigma$，于是可以用上面的公式采样试探碰撞（tentative collision）。在每次试探碰撞处：
 
 - 以概率 $\sigma_t(\mathbf{x})/\bar\sigma$ 判为**真实**碰撞：停止（吸收或散射）；
 - 否则为**空**碰撞：光子沿原方向继续前进，状态不变。
@@ -328,7 +336,7 @@ $$
 
 ### 6.3 Ratio tracking
 
-当我们只需要透射率时（例如阴影光线），在第一次真实碰撞处终止会丢掉信息。**Ratio tracking**（Novák、Selle 与 Jarosz 2014）会走完这一段上的*所有*试探碰撞，并把每处“是空碰撞”的概率相乘：
+当我们只需要透射率时（例如阴影光线），在第一次真实碰撞处终止会丢掉信息。**Ratio tracking**（比率追踪；Novák、Selle 与 Jarosz 2014）会走完这一段上的*所有*试探碰撞，并把每处“是空碰撞”的概率相乘：
 
 $$
 \langle T\rangle = \prod_{i=1}^{n}\left(1 - \frac{\sigma_t(\mathbf{x}_i)}{\bar\sigma}\right).
@@ -402,7 +410,7 @@ Delta 与 ratio tracking 是一个更大家族中的两员。Novák、Georgiev�
 
 ## 7. 带多次散射的体积路径追踪
 
-体积路径追踪器在第 05 篇的表面路径追踪器上，为每一段增加一个决策：*路径是先击中下一个表面，还是先在介质中碰撞？* 用 delta tracking：
+体积路径追踪器（volumetric path tracer）在第 05 篇的表面路径追踪器上，为每一段增加一个决策：*路径是先击中下一个表面，还是先在介质中碰撞？* 用 delta tracking：
 
 1. 从当前顶点出发，沿方向做 delta tracking，找到第一次真实碰撞（或到达表面、或逃逸）。
 2. 在介质中发生真实碰撞时：以概率 $\sigma_a/\sigma_t$ 被吸收（若有自发光则累加），否则散射。等价做法是把通量乘以反照率 $\rho$ 并总是散射，再用俄罗斯轮盘终止。
@@ -456,7 +464,7 @@ print({k: fates.count(k) / len(fates) for k in "RTA"})   # {'R': 0.2436, 'T': 0.
 
 下图中的随机游走展示了路径本身。高反照率介质会让光子散射几十次，光因此向侧面扩散，到达太阳直射不到的区域。这就是云图 (c) 过暗的物理原因。
 
-{% include blog_figure.liquid path="assets/img/blog/graphics/10-random-walk.svg" caption="厚度为 4 个平均自由程、反照率 0.98 的平板中的随机游走，光从顶部进入（黄色箭头）；每幅 24 条路径，投影到 x-z 平面，按结局着色：反射（橙）、透射（蓝）、吸收（灰）。标题中的比例 R、T、A 来自 20,000 次游走。各向同性散射（左）把许多光子从顶部送回；g = 0.85 的前向散射（右）把它们带得更深、透射更多，因为每次反弹只稍微改变方向。" %}
+{% include blog_figure.liquid path="assets/img/blog/graphics/10-random-walk.svg" caption="厚度为 4 个平均自由程、反照率 0.98 的平板中的随机游走，光从顶部进入（黄色箭头）；每幅 24 条路径，投影到 x-z 平面，按结局着色：反射（橙）、透射（蓝）、吸收（灰）。标题中的比例 R、T、A 来自 20,000 次游走（图中是均匀介质，ρ = 0.98，与上面代码的设置不同，所以数值不同）。各向同性散射（左）把许多光子从顶部送回；g = 0.85 的前向散射（右）把它们带得更深、透射更多，因为每次反弹只稍微改变方向。" %}
 
 **相似性与八度技巧。** 有两种近似让多次散射变得负担得起。**相似性关系**（similarity relation）指出：参数为 $(\sigma_s, g)$ 的前向散射介质，经过多次反弹后，表现得像约化散射系数 $\sigma_s' = \sigma_s(1-g)$ 的各向同性介质。这一点会在第 10 节的扩散模型中再次出现。在实时渲染和电影中，一种流行的启发式方法（Wrenninge、Kulla 与 Lundqvist 2013 年的演讲 *Oz: The Great and Volumetric*）用消光、散射和各向异性逐级减弱的单次散射项之和来近似多次散射：
 
@@ -465,7 +473,7 @@ L_{ms} \approx \sum_{k=0}^{K-1} a^k\,\sigma_s\,p(\cos\theta;\, c^k g)\, e^{-b^k 
 \qquad a, b, c < 1 .
 $$
 
-云图 (d) 使用 $a=b=c=\tfrac12$、$K=4$。它在物理上并不精确，但抓住了主要效应：光渗入阴影区域。
+其中 $a$ 逐级缩小散射贡献，$b$ 逐级缩小光学深度（光透入更深），$c$ 逐级缩小各向异性 $g$（越来越接近各向同性）；$k=0$ 就是普通的单次散射，$k$ 越大代表反弹次数越多的光。云图 (d) 使用 $a=b=c=\tfrac12$、$K=4$。它在物理上并不精确，但抓住了主要效应：光渗入阴影区域。
 
 ## 8. 数据结构：OpenVDB 与 NanoVDB
 
@@ -490,7 +498,9 @@ $$
 
 大气是一个球壳，由三部分组成：空气（Rayleigh，标高约 8 km）、气溶胶（Mie，标高约 1.2 km）和臭氧（纯吸收，让暮光中的天空保持蓝色）。密度随高度 $h$ 指数下降：$\sigma(h) = \sigma(0)\,e^{-h/H}$。沿每条视线计算阳光的单次散射，已经能解释主要的颜色。短波长散射更强，所以远离太阳的天空是蓝色的。日落时，到达我们的光穿过了极长的空气路径，蓝光已被散射殆尽，只剩下橙色和红色。
 
-**数值例子。** 使用 Hillaire（2020）所用的海平面 Rayleigh 系数 $\beta_R = (5.80, 13.56, 33.1)\times10^{-6}\ \text{m}^{-1}$（R, G, B），天顶光学深度为 $\beta_R H_R = (0.046, 0.108, 0.265)$。正午的直射阳光保留了 $e^{-0.265} = 77\%$ 的蓝光。在地平线方向，路径大约长 35-40 倍，蓝光降到 $e^{-9.3}\approx 10^{-4}$，红光仍保留约 $e^{-1.6} \approx 0.2$。
+**数值例子。** 使用 Hillaire（2020）所用的海平面 Rayleigh 系数 $\beta_R = (5.80, 13.56, 33.1)\times10^{-6}\ \text{m}^{-1}$（R, G, B），天顶光学深度为 $\beta_R H_R = (0.046, 0.108, 0.265)$。正午的直射阳光保留了 $e^{-0.265} = 77\%$ 的蓝光。在地平线方向，路径大约长 35 倍，蓝光降到 $e^{-9.3}\approx 10^{-4}$，红光仍保留约 $e^{-1.6} \approx 0.2$。
+
+下图用单次散射的数值求积，算出天空颜色随太阳高度角的变化。
 
 {% include blog_figure.liquid path="assets/img/blog/graphics/10-rayleigh-sky.svg" caption="由图脚本计算的单次散射天空（Rayleigh + Mie + 臭氧，球形地球，沿每条视线和每条太阳光线做数值求积）。每列对应一个太阳高度角，每行对应一个视线仰角；(a) 朝向太阳，(b) 背向太阳。注意太阳方向周围明亮的 Mie 光晕（(a) 中的对角线）、越接近天顶越深的蓝色，以及太阳接近并落到地平线以下时天空的变暗和变红。下方条带显示太阳圆盘直射光的色调（每列归一化的 T_sun）：高度角大时为白色，接近地平线时变橙再变红。" %}
 
@@ -508,7 +518,7 @@ $$
 
 ## 10. 次表面散射
 
-皮肤、大理石、蜡、牛奶和树叶是**半透明**（translucent）的：光从一点进入，在内部散射多次，再从别处射出。BRDF 假设入射点和出射点相同。一般的描述是 **BSSRDF** $S(\mathbf{x}_i, \boldsymbol{\omega}_i; \mathbf{x}_o, \boldsymbol{\omega}_o)$，它把离开 $\mathbf{x}_o$ 的辐射亮度与到达*另一*点 $\mathbf{x}_i$ 的光联系起来：
+皮肤、大理石、蜡、牛奶和树叶是**半透明**（translucent）的：光从一点进入，在内部散射多次，再从别处射出，这就是**次表面散射**（subsurface scattering，SSS）。BRDF 假设入射点和出射点相同。一般的描述是 **BSSRDF**（双向次表面散射反射分布函数，bidirectional scattering-surface reflectance distribution function）$S(\mathbf{x}_i, \boldsymbol{\omega}_i; \mathbf{x}_o, \boldsymbol{\omega}_o)$，它把离开 $\mathbf{x}_o$ 的辐射亮度与到达*另一*点 $\mathbf{x}_i$ 的光联系起来：
 
 $$
 L_o(\mathbf{x}_o, \boldsymbol{\omega}_o) = \int_A \int_{H^2} S(\mathbf{x}_i, \boldsymbol{\omega}_i; \mathbf{x}_o, \boldsymbol{\omega}_o)\, L_i(\mathbf{x}_i, \boldsymbol{\omega}_i)\,\cos\theta_i\, d\boldsymbol{\omega}_i\, dA(\mathbf{x}_i).
@@ -516,7 +526,7 @@ $$
 
 ### 10.1 扩散与偶极子
 
-在稠密、高反照率的介质中，光已散射了太多次，方向几乎随机。此时辐射亮度几乎各向同性，RTE 化简为关于通量密度（fluence）的**扩散方程**（diffusion equation）。**Jensen、Marschner、Levoy 与 Hanrahan（2001）**为半无限平板求解了它：在表面下深度 $z_r = 1/\sigma_t'$ 处放一个正点光源，在表面上方放一个负的镜像光源，以满足边界条件。这就是**偶极子**（dipole）。结果是一个径向的**漫反射剖面**（diffuse reflectance profile）$R_d(r)$，即在距入射点 $r$ 处射出的光所占的比例：
+在稠密、高反照率的介质中，光已散射了太多次，方向几乎随机。此时辐射亮度几乎各向同性，RTE 化简为关于注量（fluence）的**扩散方程**（diffusion equation）。**Jensen、Marschner、Levoy 与 Hanrahan（2001）**为半无限平板求解了它：在表面下深度 $z_r = 1/\sigma_t'$ 处放一个正点光源，在表面上方放一个负的镜像光源，以满足边界条件。这就是**偶极子**（dipole）。结果是一个径向的**漫反射剖面**（diffuse reflectance profile）$R_d(r)$，即在距入射点 $r$ 处射出的光所占的比例：
 
 $$
 R_d(r) = \frac{\alpha'}{4\pi}\left[ z_r\,(1+\sigma_{tr} d_r)\,\frac{e^{-\sigma_{tr} d_r}}{d_r^3} + z_v\,(1+\sigma_{tr} d_v)\,\frac{e^{-\sigma_{tr} d_v}}{d_v^3}\right],
@@ -551,6 +561,8 @@ xi, pick = rng.random(n), rng.random(n) < 0.25
 radii = np.where(pick, -d * np.log(1 - xi), -3 * d * np.log(1 - xi))
 print(radii.mean(), 0.25 * d + 0.75 * 3 * d)                 # both ~2.5
 ```
+
+下图左侧是偶极子剖面，右侧是 Burley 剖面。
 
 {% include blog_figure.liquid path="assets/img/blog/graphics/10-diffusion-profiles.svg" caption="扩散剖面。(a) 类似皮肤的 RGB 系数（列在图脚本中）下的偶极子 R_d(r)，双对数坐标：吸收最少的红光扩散最远，这就是背光的耳朵发红、皮肤看起来柔和的原因。(b) Burley 归一化剖面作为径向密度 2πr R(r)，三组 (A, d)；图例给出数值积分得到的面积，等于 A。" %}
 
@@ -588,6 +600,8 @@ w = T * alpha
 print(alpha.round(4), T.round(4), w.round(4), w.sum().round(4), (w * c).sum().round(4))
 # [0.3935 0.7769] [1.     0.6065] [0.3935 0.4712] 0.8647 0.4484
 ```
+
+下图在第 2 节的介质上检验这一点。
 
 {% include blog_figure.liquid path="assets/img/blog/graphics/10-quadrature.svg" caption="在第 2 节的介质上把 alpha 合成看作数值求积。(a) 连续权重 T(t)σt(t)（紫色）与 16 段的离散权重 T_iα_i/δ_i（柱）：柱紧跟曲线，包括最后一个峰被前面的峰遮挡的效果。(b) 随采样数 N 增加，渲染颜色相对精确积分的误差。指数形式 α = 1 − e^−σδ（能量守恒）大约以二阶收敛（点线 ∝ N⁻²）。朴素的 α = σδ（截断到 1）只有一阶收敛（∝ 1/N），因为它高估了每一段的不透明度；在 N = 512 时误差要大几百倍。" %}
 

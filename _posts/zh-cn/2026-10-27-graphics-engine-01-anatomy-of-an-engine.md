@@ -2,7 +2,7 @@
 layout: post
 title: "游戏引擎解剖：主循环、数据、ECS、任务系统与工具"
 date: 2026-10-27 13:01:00+0900
-description: "游戏引擎由什么构成：分层架构、游戏主循环与固定时间步长、帧预算、面向数据设计、ECS、场景图与空间结构、任务系统以及资源管线，配有可运行代码和实测图。"
+description: "游戏引擎由什么构成：分层架构、游戏主循环与固定时间步长、帧预算、面向数据设计、ECS、场景图与空间结构、任务系统以及资产管线，配有可运行代码和实测图。"
 categories: graphics-engine
 tags: [game-engine, game-loop, fixed-timestep, data-oriented-design, ecs, job-system, scene-graph]
 series: graphics-engine
@@ -41,13 +41,13 @@ related_posts: false
 
 1. **运行时**（runtime）：随游戏发布、每帧都在运行的代码（渲染、物理、动画、音频、输入、网络、玩法逻辑）。
 2. **工具**（tools）：内容创作者每天使用的编辑器、导入器、性能分析器、调试器和关卡设计界面。
-3. **管线**（pipeline）：离线把源资源（FBX 或 glTF 网格、PSD 纹理、WAV 音频）转换成各平台紧凑运行时格式的机制。
+3. **资产管线**（asset pipeline）：离线把源资源（FBX 或 glTF 网格、PSD 纹理、WAV 音频）转换成各平台紧凑运行时格式的机制。
 
 初学者往往只想到第一部分。在商业引擎中，工具和管线至少占一半代码，它们决定了一个团队能工作得多快（第 8 节）。
 
 运行时按**层**（layer）组织（图 1）。每一层只能调用它下方的层。**平台层**（platform layer）屏蔽操作系统、文件系统、线程和 GPU API。**核心层**（core）提供数学库、内存分配器、容器、日志和任务系统。**资源层**（resource layer）知道每个资源在哪里，负责加载以及流式换入换出。其上是几大子系统（渲染、物理、动画、音频、输入与网络），再往上是**玩法层**（gameplay layer，包括实体、脚本、AI、UI），最上面才是游戏本身。Gregory 的《Game Engine Architecture》正是按这些层组织的，是这方面的标准参考书。
 
-{% include blog_figure.liquid path="assets/img/blog/graphics-engine/01-layers.svg" localized="true" caption="典型引擎的分层运行时（左）以及离线操作它的编辑器和工具（右）。依赖只能指向下方：渲染可以使用核心层和资源层，但核心层永远不调用渲染。正是这条规则使得移植引擎时只需重写平台层。" %}
+{% include blog_figure.liquid path="assets/img/blog/graphics-engine/01-layers.svg" localized="true" caption="图 1：典型引擎的分层运行时（左）以及离线操作它的编辑器和工具（右）。依赖只能指向下方：渲染可以使用核心层和资源层，但核心层永远不调用渲染。正是这条规则使得移植引擎时只需重写平台层。" %}
 
 “只向下依赖”并不是学究式的讲究。正因为有这条规则，引擎才能通过只重写平台层登陆新主机，才能在服务器上去掉渲染器无头运行，也才能替换物理库。在[具身智能 03]({{ '/blog/2026/embodied-ai-03-simulation-platforms/' | relative_url }}) 的机器人模拟器中也有同样的规则：那里的“游戏”层是训练脚本，渲染可以完全关闭。
 
@@ -72,11 +72,11 @@ $$
 v_{n+1} = v_n - g\,\Delta t, \qquad y_{n+1} = y_n + v_{n+1}\,\Delta t .
 $$
 
-精确的最高点高度是 $v_0^2 / (2g) = 1.274$ m。离散解的最高点大约低 $v_0 \Delta t / 2$，因为第一次位置更新用的已经是减小后的速度。在 30 fps（$\Delta t = 33$ ms）下约低 8 cm，在 144 fps 下约低 2 cm。机器越快，玩家跳得越高：这对关卡设计是个问题，对联网游戏则是致命的，因为所有机器必须得出一致的结果。图 3（左）给出了三条轨迹。
+精确的最高点高度是 $v_0^2 / (2g) = 1.274$ m。离散解的最高点大约低 $v_0 \Delta t / 2$（练习 1 给出推导），因为第一次位置更新用的已经是减小后的速度。在 30 fps（$\Delta t = 33$ ms）下约低 8 cm，在 144 fps 下约低 2 cm。机器越快，玩家跳得越高：这对关卡设计是个问题，对联网游戏则是致命的，因为所有机器必须得出一致的结果。图 2（左）给出了三条轨迹。
 
-还有第二个问题。弹簧、接触等刚性力只有在步长足够小时才稳定（[图形学 07]({{ '/blog/2026/graphics-07-physically-based-simulation/' | relative_url }}) 推导了辛欧拉法的稳定条件 $\omega\Delta t \le 2$）。一帧过长（例如操作系统换页或加载关卡时）就可能越过这个极限，让模拟爆炸。即使没有越界，长步长也带来大误差：图 3（右）中弹簧的能量本应严格守恒，但当 $\Delta t$ 等于抖动的帧时间时，它大幅摆动，并在每个长帧处跳变。
+还有第二个问题。弹簧、接触等刚性力只有在步长足够小时才稳定（[图形学 07]({{ '/blog/2026/graphics-07-physically-based-simulation/' | relative_url }}) 推导了辛欧拉法的稳定条件 $\omega\Delta t \le 2$，其中 $\omega=\sqrt{k/m}$ 是弹簧的角频率）。一帧过长（例如操作系统换页或加载关卡时）就可能越过这个极限，让模拟爆炸。即使没有越界，长步长也带来大误差：图 2（右）中弹簧的能量本应严格守恒，但当 $\Delta t$ 等于抖动的帧时间时，它大幅摆动，并在每个长帧处跳变。
 
-{% include blog_figure.liquid path="assets/img/blog/graphics-engine/01-timestep.svg" caption="左：同一次跳跃分别以 30、60、144 fps 用 dt = 帧时间积分，图例给出各自的最高点高度，帧率越低跳得越低。右：帧时间抖动时的无摩擦弹簧（1.5 Hz）。可变步长（红）的能量比摆动大得多，并在长帧处跳变；带累加器的固定 120 Hz 步长（蓝）始终停留在 1 附近的窄带内。" %}
+{% include blog_figure.liquid path="assets/img/blog/graphics-engine/01-timestep.svg" caption="图 2：左：同一次跳跃分别以 30、60、144 fps 用 dt = 帧时间积分，图例给出各自的最高点高度，帧率越低跳得越低。右：帧时间抖动时的无摩擦弹簧（1.5 Hz）。可变步长（红）的能量比大幅摆动，并在长帧处跳变；带累加器的固定 120 Hz 步长（蓝）始终停留在 1 附近的窄带内。" %}
 
 ### 带累加器的固定时间步长
 
@@ -88,11 +88,11 @@ n = \left\lfloor A / \Delta t \right\rfloor, \qquad
 A \leftarrow A - n\,\Delta t .
 $$
 
-剩余量 $A \in [0, \Delta t)$ 是现实中已经过去、但模拟中尚未推进的时间。图 4 展示了一次帧时间抖动的运行：有的帧一步也不走，有的帧走三步。
+剩余量 $A \in [0, \Delta t)$ 是现实中已经过去、但模拟中尚未推进的时间。图 3 展示了一次帧时间抖动的运行：有的帧一步也不走，有的帧走三步。
 
-{% include blog_figure.liquid path="assets/img/blog/graphics-engine/01-accumulator.svg" caption="30 个抖动帧中的累加器，物理步长为 120 Hz（上图虚线）。上：帧时间。中：该帧执行的固定步数（短于 DT 的帧常常一步不走，长帧走两三步）。下：用于插值的剩余比例 alpha = A/DT。" %}
+{% include blog_figure.liquid path="assets/img/blog/graphics-engine/01-accumulator.svg" caption="图 3：30 个抖动帧中的累加器，物理步长为 120 Hz（上图虚线）。上：帧时间。中：该帧执行的固定步数（短于 DT 的帧常常一步不走，长帧走两三步）。下：用于插值的剩余比例 alpha = A/DT。" %}
 
-直接渲染最新的物理状态会带来新的瑕疵。假设物理以 50 Hz 运行、显示器为 60 Hz。六个显示帧共 0.1 s，其间恰好发生五个物理步，于是每六帧中有一帧完全没有运动：可见的**顿挫**（judder，图 5 红线）。解决办法是渲染最后两个物理状态的混合，权重为
+直接渲染最新的物理状态会带来新的瑕疵。假设物理以 50 Hz 运行、显示器为 60 Hz。六个显示帧共 0.1 s，其间恰好发生五个物理步，于是每六帧中有一帧完全没有运动：可见的**顿挫**（judder，图 4 红线）。解决办法是渲染最后两个物理状态的混合，权重为
 
 $$
 \alpha = A / \Delta t, \qquad x_\text{shown} = (1-\alpha)\,x_\text{prev} + \alpha\, x_\text{curr} .
@@ -100,7 +100,7 @@ $$
 
 这相当于显示一步之前的状态，但子步相位恰好正确，因此运动是平滑的（蓝线）。代价是最多增加一个物理步长的延迟。
 
-{% include blog_figure.liquid path="assets/img/blog/graphics-engine/01-interpolation.svg" caption="物理 50 Hz、显示 60 Hz，物体以 1 m/s 运动。左：屏幕上的位置；不插值时（红）阶梯每第六帧出现一个平台。右：每帧位移。不插值时在 20 mm 和 0 mm 之间交替；插值后（蓝）从第一帧之后起恒为 16.7 mm（虚线）。" %}
+{% include blog_figure.liquid path="assets/img/blog/graphics-engine/01-interpolation.svg" caption="图 4：物理 50 Hz、显示 60 Hz，物体以 1 m/s 运动。左：屏幕上的位置；不插值时（红）阶梯每第六帧出现一个平台。右：每帧位移。不插值时多数帧为 20 mm，每第六帧为 0；插值后（蓝）从第 3 帧起恒为 16.7 mm（虚线），前两帧是启动过渡。" %}
 
 下面是一个包含全部要素的可运行循环：固定步长、累加器、插值，以及对帧时间的钳制，用来防止**死亡螺旋**（spiral of death：一帧慢了就需要更多步，而更多步又让下一帧更慢）：
 
@@ -138,7 +138,7 @@ E = 0.5 * curr["v"] ** 2 + 0.5 * K * curr["x"] ** 2
 print(f"energy after 2 s: {E:.3f} (start 20.000)")
 ```
 
-无论休眠时间如何变化，打印出的能量都接近 20，因为物理永远只看到 $\Delta t = 1/120$ s。图 5 的顿挫实验可以用整数时间单位精确复现（1 单位 = 1/300 s，于是 60 Hz 的一帧是 5 单位，50 Hz 的一步是 6 单位）：
+无论休眠时间如何变化，打印出的能量都接近 20，因为物理永远只看到 $\Delta t = 1/120$ s。图 4 的顿挫实验可以用整数时间单位精确复现（1 单位 = 1/300 s，于是 60 Hz 的一帧是 5 单位，50 Hz 的一步是 6 单位）：
 
 ```python
 FRAME, STEP = 5, 6                    # units of 1/300 s
@@ -168,7 +168,7 @@ raw  dx (m)     : [0.0, 0.02, 0.02, 0.02, 0.02, 0.02, 0.0, 0.02, 0.02, 0.02, 0.0
 lerp dx (m)     : [0.0, 0.0133, 0.0167, 0.0167, 0.0167, 0.0167, 0.0167, 0.0167, 0.0167, 0.0167, 0.0167, 0.0167]
 ```
 
-为什么偏偏是物理需要固定步长？有三个原因：**稳定性**（步长始终低于刚度极限）、**确定性**（相同输入得到逐位相同的结果，锁步多人游戏、回放和自动化测试都依赖这一点）以及**可调性**（像图形学 07 中 XPBD 这样的约束求解器，其刚度依赖于步长）。因此许多引擎把循环拆开：Unity 用 `FixedUpdate` 处理物理、用 `Update` 处理逐帧逻辑；Unreal 的 Chaos 物理可以以固定步长模式运行；机器人模拟器则总是使用固定步长，因为以 500 Hz 训练的控制器必须看到 500 Hz。
+为什么偏偏是物理需要固定步长？有三个原因：**稳定性**（步长始终低于刚度极限）、**确定性**（相同输入得到逐位相同的结果，锁步（lockstep）多人游戏、回放和自动化测试都依赖这一点）以及**可调性**（像图形学 07 中 XPBD 这样的约束求解器，其刚度依赖于步长）。因此许多引擎把循环拆开：Unity 用 `FixedUpdate` 处理物理、用 `Update` 处理逐帧逻辑；Unreal 的 Chaos 物理可以以固定步长模式运行；机器人模拟器则总是使用固定步长，因为以 500 Hz 训练的控制器必须看到 500 Hz。
 
 ### 动手试试
 
@@ -180,15 +180,15 @@ lerp dx (m)     : [0.0, 0.0133, 0.0167, 0.0167, 0.0167, 0.0167, 0.0167, 0.0167, 
 
 显示器以固定的**垂直同步**（vsync）间隔刷新。开启 V-sync 时，渲染完的帧要等到下一次 vsync 才显示；如果错过一次，就要晚整整一个间隔。所以在 60 Hz 显示器上交替出现 15 ms 和 18 ms 帧的游戏，有的帧显示 16.7 ms，有的显示 33.3 ms。这种**不均匀的帧节奏**（frame pacing）看起来比稳定的 30 fps 还差。关闭 V-sync 可以避免等待，但会造成**画面撕裂**（tearing）：屏幕上半部分是一帧，下半部分是下一帧。可变刷新率显示器（G-Sync、FreeSync）则让显示器等待帧。
 
-**输入延迟**（input latency）是从按下按键到显示其效果的第一个光子之间的时间。它在整条流水线上累加：输入在 CPU 帧开始时采样，然后模拟该帧，再为 GPU 录制命令、渲染，最后扫描输出。图 2 展示了一个典型的流水线化引擎，这里的延迟是三个 vsync 间隔，在 60 Hz 下为 50 ms。引擎降低延迟的办法包括：尽可能晚地采样输入、限制可以提前排队的帧数，以及使用厂商的低延迟模式（如 NVIDIA Reflex），通过控制 CPU 节奏让 GPU 队列保持很短。
+**输入延迟**（input latency）是从按下按键到显示其效果的第一个光子之间的时间。它在整条流水线上累加：输入在 CPU 帧开始时采样，然后模拟该帧，再为 GPU 录制命令、渲染，最后扫描输出。图 5 展示了一个典型的流水线化引擎，这里的延迟是三个 vsync 间隔，在 60 Hz 下为 50 ms。引擎降低延迟的办法包括：尽可能晚地采样输入、限制可以提前排队的帧数，以及使用厂商的低延迟模式（如 NVIDIA Reflex），通过控制 CPU 节奏让 GPU 队列保持很短。
 
 ## 3. 帧预算：CPU 与 GPU 并行
 
 在 60 Hz 下每帧必须在 $1000/60 = 16.7$ ms 内完成；90 Hz（典型的 VR）下为 11.1 ms；120 Hz 下为 8.3 ms。这就是**帧预算**（frame budget），每个子系统分到其中一份（例如动画 2 ms、物理 3 ms、渲染提交 4 ms）。
 
-但 CPU 和 GPU 并不是轮流工作，而是**并行地处理不同的帧**（图 2）。GPU 渲染第 $N$ 帧时，CPU 的渲染线程在录制第 $N+1$ 帧的命令，主线程在模拟第 $N+2$ 帧。吞吐量由最慢的阶段决定，而不是各阶段之和，这就是性能分析时首先要问“是 CPU 瓶颈还是 GPU 瓶颈”的原因。延迟则是各阶段之和。
+但 CPU 和 GPU 并不是轮流工作，而是**并行地处理不同的帧**（图 5）。GPU 渲染第 $N$ 帧时，CPU 的渲染线程在录制第 $N+1$ 帧的命令，主线程在模拟第 $N+2$ 帧。吞吐量由最慢的阶段决定，而不是各阶段之和，这就是性能分析时首先要问“是 CPU 瓶颈还是 GPU 瓶颈”的原因。延迟则是各阶段之和。
 
-{% include blog_figure.liquid path="assets/img/blog/graphics-engine/01-frame-timeline.svg" caption="流水线化的一帧，框中数字是帧序号。第 0 帧在主线程上模拟（10 ms），在下一个间隔内由渲染线程录制（6 ms），由 GPU 渲染（12 ms），并在随后的 vsync（虚线）显示。每个阶段都在 16.7 ms 内完成，所以引擎能达到 60 fps，但每帧从输入到光子要经历三个间隔（50 ms）。" %}
+{% include blog_figure.liquid path="assets/img/blog/graphics-engine/01-frame-timeline.svg" caption="图 5：流水线化的一帧，框中数字是帧序号。第 0 帧在主线程上模拟（10 ms），在下一个间隔内由渲染线程录制（6 ms），由 GPU 渲染（12 ms），并在随后的 vsync（虚线）显示。每个阶段都在 16.7 ms 内完成，所以引擎能达到 60 fps，但每帧从输入到光子要经历三个间隔（50 ms）。" %}
 
 为了让 CPU 领先于 GPU，每一份逐帧数据（uniform 缓冲、命令缓冲）都需要为每个可能同时“在途”（in flight）的帧准备一份副本，再用栅栏（fence）阻止 CPU 覆写 GPU 仍在读取的副本。这是[第 02 篇]({{ '/blog/2026/graphics-engine-02-gpu-apis-and-render-graphs/' | relative_url }})的主题。
 
@@ -200,12 +200,14 @@ lerp dx (m)     : [0.0, 0.0133, 0.0167, 0.0167, 0.0167, 0.0167, 0.0167, 0.0167, 
 
 ### AoS 与 SoA
 
-设想每个实体有 16 个 float 字段（位置、速度、生命值、质量、颜色、UV、标志位），共 64 字节，正好一个缓存行。移动系统只读位置和速度，即每个实体 24 字节。
+设想每个实体有 16 个 float 字段（位置、速度、生命值、质量、颜色、UV、标志位），共 64 字节，正好一个缓存行。移动系统只访问位置和速度，即每个实体 24 字节。
 
 - **结构体数组**（array of structures，AoS）：`Entity entities[N]`。遍历时每一行都被整行加载，64 字节中有 40 字节被浪费。
 - **数组结构体**（structure of arrays，SoA）：`float px[N], py[N], ..., vz[N]`。移动系统流式读取六个紧密数组，加载的每个字节都有用，循环也能直接映射到 SIMD 通道上。
 
-{% include blog_figure.liquid path="assets/img/blog/graphics-engine/01-cache-lines.svg" caption="同一批实体的两种布局，每个矩形是一个 4 字节 float，每一行是一个 64 字节缓存行。上（AoS）：每行存放一个实体，移动系统只用到六个着色字段，即加载字节的 37.5 %。下（SoA）：每行存放 16 个实体的同一字段，加载的每个字节都被使用。" %}
+图 6 把两种布局画在一起：每个小方块是一个 4 字节 float，每一行是一个缓存行。请对比彩色方块（移动系统真正用到的位置和速度）占每行的比例：AoS 中每行 16 个方块只有 6 个是彩色的，SoA 中则全部都是。
+
+{% include blog_figure.liquid path="assets/img/blog/graphics-engine/01-cache-lines.svg" caption="图 6：同一批实体的两种布局，每个矩形是一个 4 字节 float，每一行是一个 64 字节缓存行。上（AoS）：每行存放一个实体，移动系统只用到六个彩色字段（红：位置，橙：速度；灰色字段用不到），即加载字节的 37.5 %。下（SoA）：每行存放 16 个实体的同一字段，加载的每个字节都被使用。" %}
 
 一个 NumPy 微基准可以把这一点量化。NumPy 的结构化数组就是 AoS 布局（每个实体一条 64 字节记录），`aos["px"]` 是对它的跨步视图；分开的数组则是 SoA：
 
@@ -235,7 +237,7 @@ for f in (update_aos, update_soa):
 
 图 7 给出了运行作图脚本时在四种数组规模下实测的耗时，每组上方标出了加速比。你的数字会因机器而异。差距的来源是：每次对 AoS 数组的跨步遍历都要把每条记录的全部 64 字节拖过缓存。小数组能装进缓存，因此惩罚最小；到一百万个实体时，AoS 数组有 64 MB，只能从主存流式读取。
 
-{% include blog_figure.liquid path="assets/img/blog/graphics-engine/01-aos-soa-bench.svg" caption="更新 p += v dt（x、y、z）时每个实体的耗时：AoS 布局（红）与 SoA 布局（蓝），在生成该图的机器上用 timeit 测得；粗体标签是 SoA 的加速比。具体数值取决于 CPU 和内存，但 SoA 布局每个实体只触及 24 字节而不是 64 字节。" %}
+{% include blog_figure.liquid path="assets/img/blog/graphics-engine/01-aos-soa-bench.svg" caption="图 7：更新 p += v dt（x、y、z）时每个实体的耗时：AoS 布局（红）与 SoA 布局（蓝），在生成该图的机器上用 timeit 测得；粗体标签是 SoA 的加速比。具体数值取决于 CPU 和内存，但 SoA 布局每个实体只触及 24 字节而不是 64 字节。" %}
 
 DOD 不只是 SoA。它的其他习惯包括：成批处理而不是一次一个虚函数调用；冷热数据分离；用数组下标代替指针；对数据排序或分组，使一个循环无分支地处理一类对象。实体组件系统（ECS）就是把这些习惯变成默认做法的架构。
 
@@ -243,7 +245,7 @@ DOD 不只是 SoA。它的其他习惯包括：成批处理而不是一次一个
 
 经典引擎用继承（`GameObject -> Actor -> Pawn -> Character`）或挂在游戏对象上的组件对象（Unity 早期的 `MonoBehaviour`）来建模对象，两者都会把数据散布在堆上。**ECS**（Entity Component System）把世界拆成三个概念：
 
-- **实体**（entity）：只是一个 ID（一个整数，通常附带代数计数器，用来检测失效句柄）。
+- **实体**（entity）：只是一个 ID（一个整数，通常附带世代计数器（generation counter），用来检测失效句柄）。
 - **组件**（component）：不含行为的纯数据，例如 `Position`、`Velocity`、`Health`。
 - **系统**（system）：作用于所有拥有某组组件的实体的函数，例如作用于 `(Position, Velocity)` 的 `movement`。
 
@@ -253,7 +255,7 @@ DOD 不只是 SoA。它的其他习惯包括：成批处理而不是一次一个
 
 **稀疏集**（sparse set；EnTT，以及 Bevy 可选的 `SparseSet` 存储）。每种组件类型有自己的池：一个紧密排列的组件数组（dense），加上一个把实体 ID 映射到 dense 下标的稀疏数组（sparse）。添加或移除组件是 $O(1)$，且只涉及一个池；但跨多个组件的查询需要遍历一个池并在其他池中查找，局部性较差。
 
-{% include blog_figure.liquid path="assets/img/blog/graphics-engine/01-ecs-storage.svg" caption="上：三张原型表。查询 (Position, Velocity) 匹配 A1 和 A2（紫色列）并跳过 A3，于是移动系统流式读取两对紧密的列。下：同样的 Velocity 数据用稀疏集存储。以实体 ID 为下标的稀疏数组指向紧密排列的 dense 数组（短横表示没有该组件），所以添加或移除 Velocity 只涉及这一个池。" %}
+{% include blog_figure.liquid path="assets/img/blog/graphics-engine/01-ecs-storage.svg" caption="图 8：上：三张原型表。查询 (Position, Velocity) 匹配 A1 和 A2（紫色列）并跳过 A3，于是移动系统流式读取两对紧密的列。下：同样的 Velocity 数据用稀疏集存储。以实体 ID 为下标的稀疏数组指向紧密排列的 dense 数组（短横表示没有该组件），所以添加或移除 Velocity 只涉及这一个池。" %}
 
 下面是一个约 50 行的最小原型 ECS（Python）。真正的实现会把列存成类型化的连续数组并缓存查询结果，但结构是一样的：
 
@@ -344,7 +346,7 @@ print(len(world.archetypes), "archetypes")
 3 archetypes
 ```
 
-实体 `c` 直到第三步才加入 `{pos, vel}` 表，所以它移动了 $2 \times 0.5 = 1$。`{pos}` 表仍然存在，只是现在为空。（字典的 `|` 合并需要 Python 3.9 及以上。）
+实体 `c` 最初只在 `{pos}` 表里，前两次 `movement` 不会碰它；第三次调用之前它才加入 `{pos, vel}` 表，所以只移动了一次：速度 2 乘以 $\Delta t = 0.5$，位移 $2 \times 0.5 = 1$（y 从 1 变为 2）。`{pos}` 表仍然存在，只是现在为空。（字典的 `|` 合并需要 Python 3.9 及以上。）
 
 **调度**（scheduling）。由于每个系统都声明了自己读写哪些组件，引擎可以自动并行地运行系统：只有当一个系统写入另一个系统读或写的组件时，两者才冲突。Bevy 正是根据系统签名构建这样的调度。改变结构的系统（生成实体、添加组件）通常把操作记录为**命令**（command），在同步点统一应用，以免表在查询运行时被改动。
 
@@ -354,13 +356,13 @@ ECS 并不是唯一的好架构：Unreal 使用 Actor 与组件，并用 Mass �
 
 ### 变换层级
 
-许多物体相对于父物体运动：手相对于手臂、炮塔相对于坦克、相机相对于汽车。**变换层级**（transform hierarchy）为每个节点保存一个局部变换 $L$；世界变换是从根到该节点路径上的乘积：
+许多物体相对于父物体运动：手相对于手臂、炮塔相对于坦克、相机相对于汽车。**变换层级**（transform hierarchy）为每个节点保存一个局部变换 $L$；世界变换是从根到该节点路径上的矩阵乘积（矩阵作用在列向量上，所以最右边的 $L_\text{hand}$ 最先作用于手自身坐标系中的点）：
 
 $$
 M_\text{hand} = L_\text{root}\, L_\text{arm}\, L_\text{hand} .
 $$
 
-使用二维齐次矩阵
+使用二维齐次矩阵（$\theta$ 是旋转角，$(t_x, t_y)$ 是平移量）
 
 $$
 L = \begin{pmatrix} \cos\theta & -\sin\theta & t_x \\ \sin\theta & \cos\theta & t_y \\ 0 & 0 & 1 \end{pmatrix} ,
@@ -374,7 +376,7 @@ $$
 
 因为施加手的偏移时，手臂坐标系已经转过了 $20° + 40° = 60°$。旋转根节点会带动所有后代（图 9）。
 
-{% include blog_figure.liquid path="assets/img/blog/graphics-engine/01-transform-hierarchy.svg" caption="一个三节点层级。每个节点的局部 x 轴（红）和 y 轴（绿）画在其世界位置上，并标注计算出的世界坐标。虚线和淡色：根节点从 20° 转到 30° 后，手臂和手随之移动，而它们的局部变换没有改变。" %}
+{% include blog_figure.liquid path="assets/img/blog/graphics-engine/01-transform-hierarchy.svg" caption="图 9：一个三节点层级。每个节点的局部 x 轴（红）和 y 轴（绿）画在其世界位置上，并标注计算出的世界坐标。虚线和淡色：根节点从 20° 转到 30° 后，手臂和手随之移动，而它们的局部变换没有改变。" %}
 
 当大部分物体静止时，每帧重算所有世界矩阵是浪费。**脏标记**（dirty flag）解决了这个问题：修改局部变换时把该节点及其子树标记为脏，世界矩阵只在被读取时才重算：
 
@@ -440,7 +442,7 @@ after root moves : hand at (3.709, 2.878), recomputed 3 matrices
 
 用 BVH 做视锥剔除（frustum culling）时，先用根节点的包围盒与视锥平面测试。完全位于任何一个平面外侧的包围盒连同整棵子树一起被拒绝；否则递归测试子节点。图 10 是一次真实的二维运行。
 
-{% include blog_figure.liquid path="assets/img/blog/graphics-engine/01-bvh-culling.svg" caption="用中位数划分的 BVH（叶子最多 4 个盒子）对 200 个盒子做视锥剔除。蓝色楔形：相机的二维视锥。紫色轮廓：被测试过的 BVH 节点；位于楔形外的整棵子树只需一次测试就被拒绝。橙色盒子通过了剔除测试。标题给出包围盒测试次数，暴力方法则需要 200 次。" %}
+{% include blog_figure.liquid path="assets/img/blog/graphics-engine/01-bvh-culling.svg" caption="图 10：用中位数划分的 BVH（叶子最多 4 个盒子）对 200 个盒子做视锥剔除。蓝色楔形：相机的二维视锥。紫色轮廓：被测试过的 BVH 节点；位于楔形外的整棵子树只需一次测试就被拒绝。橙色盒子通过了剔除测试。标题给出包围盒测试次数，暴力方法则需要 200 次。" %}
 
 ## 7. 并发：任务、任务图与纤程
 
@@ -515,21 +517,21 @@ for p in (1, 2, 3, 4):
 4 workers: makespan 12 ms
 ```
 
-验证一下下界：$W = 27$ ms，$C = 12$ ms（input、physics、gameplay、cull、build、submit）。两个工作线程时下界为 $\max(12, 13.5) = 13.5$ ms，调度器达到 15 ms。从三个线程开始，关键路径成为瓶颈，第四个线程只会增加空闲时间（图 11）。要让这一帧更快，必须缩短关键路径（例如把物理拆分成多个岛），而不是增加核心。
+验证一下下界：$W = 27$ ms，$C = 12$ ms（input、physics、gameplay、cull、build、submit）。两个工作线程时下界为 $\max(12, 13.5) = 13.5$ ms，调度器达到 15 ms。从三个线程开始，关键路径成为瓶颈，第四个线程只会增加空闲时间（图 11）。要让这一帧更快，必须缩短关键路径（例如把物理拆分成多个模拟岛（island，互不接触的物体组）），而不是增加核心。
 
-{% include blog_figure.liquid path="assets/img/blog/graphics-engine/01-job-graph.svg" caption="上：代码中的任务 DAG，红色是 12 ms 的关键路径。下：列表调度器在 4 个工作线程上生成的甘特图。总时长等于关键路径；线程 2 有一半时间空闲，线程 3 根本没有分到任务，所以更多核心对这一帧没有帮助。" %}
+{% include blog_figure.liquid path="assets/img/blog/graphics-engine/01-job-graph.svg" caption="图 11：上：代码中的任务 DAG，红色是 12 ms 的关键路径。下：列表调度器在 4 个工作线程（编号从 0 开始）上生成的甘特图。总时长等于关键路径；线程 2 有一半时间空闲，线程 3 根本没有分到任务，所以更多核心对这一帧没有帮助。" %}
 
 下面的小部件运行同一个调度器。改变工作线程数，把优先级切换成单纯的声明顺序，再把物理拆成两个并行的 2 ms 岛：物理链变短了，但关键路径只从 12 ms 降到 11 ms，因为现在限制这一帧的是动画链（input、anim、skinning、cull、build、submit）。
 
 {% include widget.liquid name="graphics-engine-job-scheduler" height="360" caption="在 P 个工作线程上调度这 12 个任务。红色描边标出关键路径；绿色虚线是下界 max(C, W/P)，当调度达到下界时总时长显示为绿色。试试 P = 2 时两种优先级的差别，再勾选拆分物理。" %}
 
-**纤程**（fiber）。如果一个任务必须等待另一个任务（比如 `cull` 等待某个子任务的结果），就会阻塞它所在的工作线程。顽皮狗（Naughty Dog）的引擎用**纤程**解决了这一问题，Christian Gyrling 在 GDC 2015 的演讲《Parallelizing the Naughty Dog Engine Using Fibers》对此有详细介绍。纤程是拥有独立栈的轻量级用户态执行上下文。等待某个原子计数器的任务会让自己的纤程休眠，工作线程随即切换到另一个纤程，不需要操作系统的上下文切换。同一个演讲还介绍了引擎如何让帧重叠：一帧的游戏逻辑运行时，上一帧的渲染工作也在进行，也就是图 2 的流水线。
+**纤程**（fiber）。如果一个任务必须等待另一个任务（比如 `cull` 等待某个子任务的结果），就会阻塞它所在的工作线程。顽皮狗（Naughty Dog）的引擎用**纤程**解决了这一问题，Christian Gyrling 在 GDC 2015 的演讲《Parallelizing the Naughty Dog Engine Using Fibers》对此有详细介绍。纤程是拥有独立栈的轻量级用户态执行上下文。等待某个原子计数器的任务会让自己的纤程休眠，工作线程随即切换到另一个纤程，不需要操作系统的上下文切换。同一个演讲还介绍了引擎如何让帧重叠：一帧的游戏逻辑运行时，上一帧的渲染工作也在进行，也就是图 5 的流水线。
 
 **主线程与渲染线程。** 即使有任务系统，引擎仍会保留少数专用线程。Unreal 有游戏线程、把场景转换成渲染命令的渲染线程，以及与 GPU API 打交道的 RHI 线程。把模拟与命令录制分开，二者就能在不同的帧上重叠，代价是二者之间传递的数据需要复制或双缓冲。
 
 ## 8. 资源、序列化、热重载与编辑器
 
-美术使用便于编辑的格式创作：FBX、glTF、USD、PSD、高分辨率 EXR、WAV。运行时需要的则是便于加载的格式：GPU 压缩纹理（桌面上的 BC1-7、移动端的 ASTC）、完全符合着色器读取布局的顶点缓冲、拆分为 LOD 或 meshlet 的网格，并且全部打包进大型归档文件，以便用很少的 I/O 请求读取。**资源管线**（asset pipeline）负责这一转换：
+美术使用便于编辑的格式创作：FBX、glTF、USD、PSD、高分辨率 EXR、WAV。运行时需要的则是便于加载的格式：GPU 压缩纹理（桌面上的 BC1-7、移动端的 ASTC）、完全符合着色器读取布局的顶点缓冲、拆分为 LOD 或 meshlet 的网格，并且全部打包进大型归档文件，以便用很少的 I/O 请求读取。**资产管线**（asset pipeline）负责这一转换：
 
 1. **导入**（import）：把源文件解析成与引擎无关的表示，并给每个资源分配一个稳定 ID（GUID）。
 2. **烘焙**（cook，也叫 build 或 bake）：针对一个目标平台进行转换，包括纹理压缩、网格优化、为每种排列组合编译着色器，以及烘焙光照或导航网格。烘焙结果按内容哈希缓存，因为完整游戏的烘焙可能需要数小时。
@@ -556,7 +558,7 @@ for p in (1, 2, 3, 4):
 3. 带脏标记的变换层级，加上基于 BVH 的视锥剔除。
 4. 一个带工作窃取线程池的任务系统，然后把第 2 级的系统改写为任务。
 5. 一个带渲染图的 WebGPU 渲染器（[第 02 篇]({{ '/blog/2026/graphics-engine-02-gpu-apis-and-render-graphs/' | relative_url }})和[第 03 篇]({{ '/blog/2026/graphics-engine-03-build-a-mini-engine/' | relative_url }})）。
-6. 一条资源管线：导入 glTF，烘焙为二进制格式，文件变化时热重载。
+6. 一条资产管线：导入 glTF，烘焙为二进制格式，文件变化时热重载。
 
 ## 代表性论文
 
@@ -583,9 +585,9 @@ for p in (1, 2, 3, 4):
 
 ## 练习
 
-1. 证明对于半隐式欧拉法的跳跃，离散最高点为 $h_\Delta = \frac{v_0^2}{2g} - \frac{v_0\Delta t}{2} + O(\Delta t^2)$，并与图 3 的图例对照。
+1. 证明对于半隐式欧拉法的跳跃，离散最高点为 $h_\Delta = \frac{v_0^2}{2g} - \frac{v_0\Delta t}{2} + O(\Delta t^2)$，并与图 2 的图例对照。
 2. 在固定步长循环中去掉 `MAX_FRAME` 钳制，并人为让 `physics_step` 变慢（在 `DT = 1/120` 时在函数里休眠 10 ms）。累加器和帧时间会怎样？解释死亡螺旋。
-3. 为 Python ECS 增加 `remove(eid, name)` 和 `despawn(eid)`，并给实体 ID 加上代数计数器，以便检测失效句柄。
+3. 为 Python ECS 增加 `remove(eid, name)` 和 `despawn(eid)`，并给实体 ID 加上世代计数器，以便检测失效句柄。
 4. 把 `schedule` 中的优先级改成先到先服务（只按名字对 `ready` 排序）。对比 2、3、4 个工作线程时与关键路径优先级的总时长。
 5. 用一个按“父节点在前、子节点在后”排序的扁平节点数组取代脏标记递归，在一个循环里更新所有世界矩阵。为什么这对大型层级更快？
 

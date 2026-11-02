@@ -52,18 +52,18 @@ OpenGL（以及 Direct3D 11）把 GPU 呈现为一个**全局状态机**（state
 
 GPU 是一台深度流水线化、大规模并行的机器。如果 pass A 写一张纹理而 pass B 读它，没有任何东西能保证 B 开始时 A 的写入已经完成，或者已经离开缓存。这就是**写后读冒险**（read-after-write hazard）。应用程序必须插入一个**屏障**（barrier），它表达的是：“等前面这些阶段写完，让写入可见，并把纹理转换成下一次使用所需的布局”。Vulkan 用源与目标**管线阶段**（pipeline stage）、**访问掩码**（access mask）和图像**布局**（layout）转换来表达屏障；D3D12 用**资源状态**（resource state）转换来表达（例如从 `RENDER_TARGET` 到 `PIXEL_SHADER_RESOURCE`），或使用风格类似 Vulkan 的新式 enhanced barriers。
 
-把每张纹理想象成一个小状态机会很有帮助。在图 3 中，每一行是延迟渲染器中的一张纹理，每一列是一个 pass，颜色是该纹理在这个 pass 期间必须处于的状态。每次颜色变化都需要一个屏障（红色竖线）。这张图由第 4 节的玩具编译器生成，它会自动插入屏障。
+把每张纹理想象成一个小状态机会很有帮助。在图 2 中，每一行是延迟渲染器中的一张纹理，每一列是一个 pass，颜色是该纹理在这个 pass 期间必须处于的状态。图中用到的状态名是：`RT`（渲染目标，被写入颜色）、`DEPTH_WRITE`（深度写入）、`SRV`（shader resource view，被着色器只读采样）、`PRESENT`（交给呈现引擎）和 `UNDEFINED`（内容尚未定义）。每次颜色变化都需要一个屏障（红色竖线）：请顺着 depth 这一行看它的颜色如何变化。这张图由第 4 节的玩具编译器生成，它会自动插入屏障。
 
-{% include blog_figure.liquid path="assets/img/blog/graphics-engine/02-barrier-states.svg" caption="示例帧中各 pass 的资源状态（行：纹理，列：实际执行的 pass，R/W：该 pass 读或写）。橙色：渲染目标；灰蓝色：深度写入；绿色：着色器读取（SRV）；紫色：呈现。红色竖线表示该 pass 之前的屏障。例如 depth 由 gbuffer 写入，随后被 ssao、lighting 和 taa 读取，因此恰好需要一次从 DEPTH_WRITE 到 SRV 的转换。" %}
+{% include blog_figure.liquid path="assets/img/blog/graphics-engine/02-barrier-states.svg" caption="示例帧中各 pass 的资源状态（行：纹理，列：实际执行的 pass，R/W：该 pass 读或写）。白色：尚未使用（UNDEFINED）；橙色：渲染目标（RT）；灰蓝色：深度写入；绿色：着色器读取（SRV）；紫色：呈现。红色竖线表示该 pass 之前的屏障。例如 depth 由 gbuffer 写入，随后被 ssao、lighting 和 taa 读取，因此恰好需要一次从 DEPTH_WRITE 到 SRV 的转换。" %}
 
 ### CPU-GPU 同步：栅栏、信号量与在途帧
 
 屏障负责 GPU *内部*的顺序。另外两种原语连接不同的时间线：
 
 - **栅栏**（fence）让 CPU 等待 GPU：一次提交完成时，队列发出栅栏信号。（Vulkan 还有**时间线信号量**（timeline semaphore），即一个单调递增的 64 位计数器；D3D12 的栅栏也是这样工作的。）
-- **信号量**（semaphore）负责*队列之间*或与交换链之间的顺序，例如“在呈现引擎释放交换链图像之前，不要开始往里渲染”。
+- **信号量**（semaphore）负责*队列之间*或与交换链（swapchain）之间的顺序，例如“在呈现引擎释放交换链图像之前，不要开始往里渲染”。
 
-CPU 想在 GPU 渲染第 $N$ 帧时录制第 $N+1$ 帧。但第 $N+1$ 帧使用自己的 uniform 缓冲和命令缓冲，并且绝不能覆写 GPU 仍在读取的那一帧的数据。因此引擎为所有逐帧数据保留 $F$ 份副本（**在途帧**，frames in flight），在复用第 $i \bmod F$ 份副本之前，等待第 $i - F$ 帧的栅栏。图 2 模拟了 CPU 每帧需要 9 ms、GPU 需要 12 ms 的情形：
+CPU 想在 GPU 渲染第 $N$ 帧时录制第 $N+1$ 帧。但第 $N+1$ 帧使用自己的 uniform 缓冲和命令缓冲，并且绝不能覆写 GPU 仍在读取的那一帧的数据。因此引擎为所有逐帧数据保留 $F$ 份副本（**在途帧**，frames in flight），在复用第 $i \bmod F$ 份副本之前，等待第 $i - F$ 帧的栅栏。图 3 模拟了 CPU 每帧需要 9 ms、GPU 需要 12 ms 的情形，请对比三个子图中斜线框（CPU 在等栅栏）的有无：
 
 - $F = 1$ 时两个处理器轮流工作：每帧 $9 + 12 = 21$ ms。
 - $F = 2$ 时 GPU 从不空闲。帧时间降到 $\max(9, 12) = 12$ ms，CPU 每帧在栅栏上稍作等待：引擎处于 **GPU 瓶颈**。
@@ -169,14 +169,14 @@ requestAnimationFrame(frame);
 
 ### 问题
 
-一个现代帧有 20 到 100 个 pass：阴影贴图、深度预通道、G-buffer、SSAO、光照、透明物体、体积效果、TAA、泛光、色调映射、UI。每个 pass 都读写纹理。如果手写，每个 pass 都得知道该发出哪些屏障，每张纹理即使只用于一个 pass 也要为整帧分配，而关闭一个功能（例如低画质下关闭 SSAO）意味着要在好几处修改代码。
+一个现代帧有 20 到 100 个 pass：阴影贴图、深度预通道、G-buffer、SSAO（屏幕空间环境光遮蔽）、光照、透明物体、体积效果、TAA（时间抗锯齿）、泛光、色调映射、UI。每个 pass 都读写纹理。如果手写，每个 pass 都得知道该发出哪些屏障，每张纹理即使只用于一个 pass 也要为整帧分配，而关闭一个功能（例如低画质下关闭 SSAO）意味着要在好几处修改代码。
 
 ### 思路
 
 Yuriy O'Donnell 在 GDC 2017 的演讲《FrameGraph: Extensible Rendering Architecture in Frostbite》提出了如今大多数引擎采用的设计。Unreal Engine 有 **Render Dependency Graph（RDG）**，Unity 的 URP 和 HDRP 使用 **RenderGraph**。一帧分三个阶段构建：
 
 1. **设置**（setup）。每个 pass *声明*它读写的资源，并只通过描述（格式和尺寸）创建瞬态资源，不分配内存。
-2. **编译**（compile）。把整张图（由资源连接起来的 pass 组成的 DAG）作为一个整体分析：**剔除**无用的 pass，对 pass 排序，计算每个资源的**生命周期**，用**别名**分配内存，并根据声明的用途推导出**屏障**。
+2. **编译**（compile）。把整张图（由资源连接起来的 pass 组成的有向无环图，DAG）作为一个整体分析：**剔除**无用的 pass，对 pass 排序，计算每个资源的**生命周期**，用**别名**分配内存，并根据声明的用途推导出**屏障**。
 3. **执行**（execute）。按顺序运行各 pass 的录制回调，并绑定真实资源。
 
 由于整帧在执行任何东西之前就已知，编译器可以做出任何单个 pass 都做不到的全局决策。
@@ -304,13 +304,13 @@ tonemap   bloom:RT->SRV, backbuffer:PRESENT->RT
 
 **生命周期。** 一个瞬态资源从第一个使用它的 pass 存活到最后一个（图 5 左）。`shadow_map` 在 pass 0 中写入，最后一次被 pass 3 的 lighting 读取。`depth` 一直存活到 pass 4，因为 TAA 要用它做重投影。
 
-**别名。** 生命周期不重叠的两个资源可以共享内存。分配器按从大到小的顺序处理资源，把每个资源放在既不在时间上、也不在地址范围上与已放置资源冲突的最低偏移处。跟踪一下 `taa_out`（16 MB，存活于 pass 4-6）：与它同时存活的已放置资源只有位于 [16, 32) 的 `hdr`，因此偏移 0 是空闲的，`taa_out` 复用了在 pass 3 之后死亡的 `shadow_map` 的内存。同样，`bloom` 落在原来 `hdr` 的范围里。堆只需要 58 MB 而不是 78 MB，而 58 MB 在这里是最优的：在 lighting（pass 3）期间，有六个资源同时存活，合计 16 + 8 + 8 + 8 + 2 + 16 = 58 MB（图 5 右）。真实的帧有多得多的短命目标，引擎报告的节省可达渲染目标内存的三分之一甚至更多。
+**别名。** 生命周期不重叠的两个资源可以共享内存。分配器按从大到小的顺序处理资源，把每个资源放在既不在时间上、也不在地址范围上与已放置资源冲突的最低偏移处。跟踪一下 `taa_out`（16 MB，存活于 pass 4-6）：此时已放置且与它同时存活的资源只有位于 [16, 32) 的 `hdr`（8 MB 及更小的资源按顺序排在后面，它们之后会自己避开已占用的范围），因此偏移 0 是空闲的，`taa_out` 复用了在 pass 3 之后死亡的 `shadow_map` 的内存。同样，`bloom` 落在原来 `hdr` 的范围里。堆只需要 58 MB 而不是 78 MB，而 58 MB 在这里是最优的：在 lighting（pass 3）期间，有六个资源同时存活，合计 16 + 8 + 8 + 8 + 2 + 16 = 58 MB（图 5 右）。真实的帧有多得多的短命目标，引擎报告的节省可达渲染目标内存的三分之一甚至更多。
 
 {% include blog_figure.liquid path="assets/img/blog/graphics-engine/02-lifetimes-aliasing.svg" caption="compile_graph 的输出。左：每个瞬态资源在七个实际执行的 pass 中的生命周期及其大小。右：每个资源在瞬态堆中的位置（纵轴：内存偏移，横轴：生命周期）。taa_out 复用了 shadow_map 的字节，bloom 复用了 hdr 的一部分，所以堆是 58 MB 而不是 78 MB；虚线为堆大小。" %}
 
 别名有一个微妙之处：当 `taa_out` 接管 `shadow_map` 的字节时，新资源的内容是垃圾数据。在真实 API 中，这块内存需要一个**别名屏障**（aliasing barrier，D3D12）或一次从 `UNDEFINED` 出发的初始布局转换（Vulkan），并且在任何读取之前要先清除或完全覆写。我们的 `UNDEFINED->RT` 转换代表的正是这件事。
 
-**屏障。** 编译器知道每一次使用，所以它发出上面所示的 18 个转换，每个都位于尽可能晚的时刻，并且只覆盖涉及的阶段。它们就是图 3 中的红色竖线。真实的编译器还会把一个 pass 的屏障合并成一次 API 调用，并使用**拆分屏障**（split barrier：提前开始转换，在使用前才结束），让 GPU 有时间完成转换工作。
+**屏障。** 编译器知道每一次使用，所以它发出上面所示的 18 个转换，每个都位于尽可能晚的时刻，并且只覆盖涉及的阶段。它们就是图 2 中的红色竖线。真实的编译器还会把一个 pass 的屏障合并成一次 API 调用，并使用**拆分屏障**（split barrier：提前开始转换，在使用前才结束），让 GPU 有时间完成转换工作。
 
 **异步计算。** 彼此没有依赖的 pass 可以并发执行。在我们的图中，`ssao`（适合计算着色器）只依赖 `gbuffer`，因此编译器可以把它调度到**计算队列**上，同时让图形队列光栅化阴影贴图。跨队列的边变成信号量。当两种工作负载压在不同的硬件单元上时（阴影光栅化受固定功能硬件限制，SSAO 受 ALU 和带宽限制），异步计算才有收益。
 
@@ -322,7 +322,7 @@ tonemap   bloom:RT->SRV, backbuffer:PRESENT->RT
 
 ## 5. 光照架构：前向、延迟、分块、分簇
 
-渲染图是骨架；光照架构决定它包含哪些 pass。问题在于如何高效地计算大量光源。记 $N_\text{obj}$ 为物体数，$N_L$ 为光源数，$P$ 为像素数。每次光源计算背后的着色数学见[图形学 04]({{ '/blog/2026/graphics-04-physically-based-rendering/' | relative_url }})和[图形学 11]({{ '/blog/2026/graphics-11-real-time-rendering-techniques/' | relative_url }})。
+渲染图是骨架；光照架构决定它包含哪些 pass。问题在于如何高效地计算大量光源。记 $N_L$ 为场景中的光源数。每次光源计算背后的着色数学见[图形学 04]({{ '/blog/2026/graphics-04-physically-based-rendering/' | relative_url }})和[图形学 11]({{ '/blog/2026/graphics-11-real-time-rendering-techniques/' | relative_url }})。
 
 **前向渲染**（forward rendering）。每个物体用一个遍历影响它的光源的着色器绘制一次。开销大约是（被着色的片元数）× $N_L$，而**过度绘制**（overdraw：片元被着色后又被更近的片元遮住）会浪费工作。前向渲染天然支持透明物体和 MSAA。
 
@@ -337,17 +337,17 @@ z_k = z_\text{near} \left(\frac{z_\text{far}}{z_\text{near}}\right)^{k/S}, \qqua
 k(z) = \left\lfloor S\, \frac{\ln(z / z_\text{near})}{\ln(z_\text{far}/z_\text{near})} \right\rfloor ,
 $$
 
-其中 $S$ 是切片数，$k(z)$ 是视空间深度为 $z$ 的片元所在的切片。取 $z_\text{near} = 0.5$、$z_\text{far} = 50$、$S = 12$，比值为 100。位于 $z = 5$ 的片元落在切片 $k = \lfloor 12 \cdot \ln 10 / \ln 100 \rfloor = 6$，它覆盖 $z \in [5, 7.34]$。每个片元根据所在块和深度算出自己的簇，然后遍历该簇的光源列表。
+其中 $S$ 是切片数，$z_k$ 是第 $k$ 个切片的近边界（$k = 0, \dots, S$，$z_0 = z_\text{near}$，$z_S = z_\text{far}$），$k(z)$ 是视空间深度为 $z$ 的片元所在的切片：它由解 $z_k = z$ 得到 $k$ 再向下取整而来。取 $z_\text{near} = 0.5$、$z_\text{far} = 50$、$S = 12$，比值为 100。位于 $z = 5$ 的片元落在切片 $k = \lfloor 12 \cdot \ln 10 / \ln 100 \rfloor = 6$，它覆盖 $z \in [5, 7.34]$。每个片元根据所在块和深度算出自己的簇，然后遍历该簇的光源列表。
 
-{% include blog_figure.liquid path="assets/img/blog/graphics-engine/02-clustered-lights.svg" caption="对 48 个随机点光源（蓝色圆）计算的分簇光源分配，视锥的俯视图：8 个屏幕列 × 12 个指数深度切片，每个单元按与之重叠的光源数着色。右：在 4000 个随机表面点上，一个像素平均需要计算的光源数：二维分块（该列中任何位置的光源）与三维分簇（只包含该深度附近的光源）。" %}
+{% include blog_figure.liquid path="assets/img/blog/graphics-engine/02-clustered-lights.svg" caption="对 48 个随机点光源（蓝色圆）计算的分簇光源分配，视锥的俯视图：8 个屏幕列 × 12 个指数深度切片，每个单元按与之重叠的光源数着色（颜色越深，光源越多）。右：在 4000 个随机表面点上，一个像素平均需要计算的光源数：橙色柱为二维分块（该列中任何位置的光源），蓝色柱为三维分簇（只包含该深度附近的光源）；比较两根柱子的高度。" %}
 
 图 6 展示了在玩具数据上计算出的效果：逐列（分块）的列表包含整个深度范围内的所有光源，而分簇只保留表面附近的光源。光源分配 pass 是一个以簇为单位运行的计算着色器，列表存放在一个紧凑的索引缓冲中。分簇着色可以与前向和延迟管线结合，许多当今引擎使用分簇前向或分簇延迟路径。
 
 ### 可见性缓冲
 
-G-buffer 存储的是*属性*，这消耗带宽，并且每当材质模型改变时都得重新设计。**可见性缓冲**（visibility buffer，Burns 与 Hunt，JCGT 2013）只存储每个像素被*哪个三角形*覆盖：一个 32 位 ID（三角形和实例）加上深度。之后的一个 pass 取出该三角形的三个顶点，解析地重新计算像素的重心坐标，插值属性并着色。屏幕尺寸的缓冲变小了（图 7），几何体只需用一个极简的着色器光栅化一次，而属性读取只发生在可见像素上。Unreal Engine 5 的 Nanite 会光栅化到一个 64 位可见性缓冲（深度加上簇和三角形 ID）中，详见《Nanite: A Deep Dive》（Karis、Stubbe 与 Wihlidal，SIGGRAPH 2021）。
+G-buffer 存储的是*属性*，这消耗带宽，并且每当材质模型改变时都得重新设计。**可见性缓冲**（visibility buffer，Burns 与 Hunt，JCGT 2013）只存储每个像素被*哪个三角形*覆盖：一个 32 位 ID（三角形和实例）加上深度。之后的一个 pass 取出该三角形的三个顶点，解析地重新计算像素的重心坐标，插值属性并着色。屏幕尺寸的缓冲变小了：在图 7 的示意布局中，每像素从 24 字节（延迟，含深度和 HDR 颜色）降到 16 字节，1080p 下约为 47 MB 对 32 MB。几何体只需用一个极简的着色器光栅化一次，而属性读取只发生在可见像素上。Unreal Engine 5 的 Nanite 会光栅化到一个 64 位可见性缓冲（深度加上簇和三角形 ID）中，详见《Nanite: A Deep Dive》（Karis、Stubbe 与 Wihlidal，SIGGRAPH 2021）。
 
-{% include blog_figure.liquid path="assets/img/blog/graphics-engine/02-gbuffer-bytes.svg" caption="左：三种典型布局下屏幕尺寸目标的每像素字节数（示意布局：32 位深度、8 位 RGBA 或 10 位打包的属性、16 位浮点 HDR 颜色）。右：在三种分辨率下每帧对应的内存，不含 MSAA。可见性缓冲用一个 32 位的三角形与实例 ID 取代了反照率、法线和材质通道。" %}
+{% include blog_figure.liquid path="assets/img/blog/graphics-engine/02-gbuffer-bytes.svg" caption="左：三种典型布局下屏幕尺寸目标的每像素字节数（前向 12、延迟 24、可见性缓冲 16 字节；示意布局：32 位深度、8 位 RGBA 或 10 位打包的属性、16 位浮点 HDR 颜色）。右：在三种分辨率下每帧对应的内存，不含 MSAA。可见性缓冲用一个 32 位的三角形与实例 ID 取代了反照率、法线和材质通道。" %}
 
 ## 6. GPU 驱动渲染
 
@@ -359,23 +359,23 @@ G-buffer 存储的是*属性*，这消耗带宽，并且每当材质模型改变
 
 ### 用层次 Z 缓冲做遮挡剔除
 
-视锥剔除去掉视野外的东西，但在城市中，视锥内的大多数物体都藏在建筑后面。**层次 Z 缓冲**（hierarchical Z-buffer，HZB；Greene、Kass 与 Miller，SIGGRAPH 1993）让遮挡测试变得廉价。为深度缓冲构建一条 mip 链，第 $\ell + 1$ 级的每个纹素存储其下方 $2 \times 2$ 个纹素中的**最大**（最远）深度：
+视锥剔除去掉视野外的东西，但在城市中，视锥内的大多数物体都藏在建筑后面。**层次 Z 缓冲**（hierarchical Z-buffer，HZB；Greene、Kass 与 Miller，SIGGRAPH 1993）让遮挡测试变得廉价。本文约定深度越大越远（1 为远平面）。把深度缓冲本身记作第 0 级 $H_0$，并为它构建一条 mip 链，第 $\ell + 1$ 级的每个纹素存储其下方 $2 \times 2$ 个纹素中的**最大**（最远）深度：
 
 $$
 H_{\ell+1}(x, y) = \max\{ H_\ell(2x, 2y),\ H_\ell(2x+1, 2y),\ H_\ell(2x, 2y+1),\ H_\ell(2x+1, 2y+1) \} .
 $$
 
-测试一个物体时，把它的包围盒投影成一个 $w \times h$ 像素的屏幕矩形，其最近深度为 $z_\text{min}$。选择级别 $\ell = \lceil \log_2 \max(w, h) \rceil$，在这一级上矩形最多覆盖 $2 \times 2$ 个纹素，读取这些纹素。如果 $z_\text{min} > \max H_\ell$，说明盒子下方的每个像素都已有更近的东西，物体被遮挡。对于一个 $10 \times 6$ 像素的盒子，$\ell = \lceil \log_2 10 \rceil = 4$：读取四个各自概括 $16 \times 16$ 像素的纹素。这个测试是**保守的**：它可能保留一个被遮挡的物体（粗纹素上的最大值是悲观的），但绝不会剔除可见物体，如图 8 所示。
+测试一个物体时，把它的包围盒投影成一个 $w \times h$ 像素的屏幕矩形，其最近深度为 $z_\text{min}$。选择级别 $\ell = \lceil \log_2 \max(w, h) \rceil$：第 $\ell$ 级的一个纹素对应 $2^\ell \times 2^\ell$ 个像素，而 $2^\ell \ge \max(w, h)$，所以矩形在每个方向上最多跨过两个纹素，即最多覆盖 $2 \times 2$ 个纹素，读取这些纹素。如果 $z_\text{min} > \max H_\ell$，说明盒子下方的每个像素都已有更近的东西，物体被遮挡。对于一个 $10 \times 6$ 像素的盒子，$\ell = \lceil \log_2 10 \rceil = 4$：读取四个各自概括 $16 \times 16$ 像素的纹素。这个测试是**保守的**：它可能保留一个被遮挡的物体（粗纹素上的最大值是悲观的），但绝不会剔除可见物体，如图 8 所示。
 
 {% include blog_figure.liquid path="assets/img/blog/graphics-engine/02-hzb-culling.svg" caption="在一个 64 × 64 的玩具深度缓冲（黑色 = 近处遮挡物，白色 = 远平面）上对 60 个随机盒子做 HZB 遮挡剔除，每个盒子在公式选出的级别上最多读取四次。红色：被 HZB 测试剔除。橙色：实际被遮挡但被保留，因为粗纹素也覆盖了背景。绿色：可见。下：最大深度金字塔的第 1-6 级 mip。从第 5 级起，每个纹素都已包含远处背景，所以最粗的几级全白，什么也剔除不了。脚本断言没有任何可见盒子被剔除。" %}
 
 {% include widget.liquid name="graphics-engine-hzb" height="470" caption="在同一张深度缓冲上进行 HZB 测试。拖动盒子，并改变它的尺寸和最近深度 z_min。蓝色虚线方框是在所选级别 L 上读取的纹素（小的 mip 图上也有显示）。红色：被剔除。橙色：实际被遮挡但被保留（保守）。绿色：绘制且可见。让盒子跨在遮挡物的边缘上，看看为什么这个测试必须保持保守。" %}
 
-本帧的深度还不存在时，要用哪张深度缓冲来测试？常见答案是**两阶段遮挡剔除**（two-phase occlusion culling）：先绘制上一帧可见的物体，用这次的深度构建 HZB，再用它测试其余所有物体，绘制新变为可见的物体，并为下一帧更新可见性列表。
+本帧的深度还不存在时，要用哪张深度缓冲来测试？常见答案是**两阶段遮挡剔除**（two-phase occlusion culling）：先绘制上一帧可见的物体，用由此得到的深度构建 HZB，再用它测试其余所有物体，绘制新变为可见的物体，并为下一帧更新可见性列表。
 
 ### Meshlet 与网格着色器
 
-GPU 驱动管线以 **meshlet** 为粒度进行剔除：meshlet 是小的三角形簇（通常最多 64 个顶点和 124 或 126 个三角形），拥有自己的包围球和法线锥。背向相机、位于视锥外或被遮挡的 meshlet 可以被跳过，无需触碰其中的三角形。图 9 用一个贪心构建器划分一个圆环：它沿共享边的相邻三角形扩展每个 meshlet，直到达到顶点或三角形上限。这是 meshoptimizer 库中的 meshlet 构建器等工具所用贪心策略的简化版本。
+GPU 驱动管线以 **meshlet** 为粒度进行剔除：meshlet 是小的三角形簇（通常最多 64 个顶点和 124 或 126 个三角形），拥有自己的包围球和法线锥（normal cone，概括该 meshlet 中所有三角形朝向的圆锥，用于背面剔除）。背向相机、位于视锥外或被遮挡的 meshlet 可以被跳过，无需触碰其中的三角形。图 9 用一个贪心构建器划分一个圆环：它沿共享边的相邻三角形扩展每个 meshlet，直到达到顶点或三角形上限。这是 meshoptimizer 库中的 meshlet 构建器等工具所用贪心策略的简化版本。
 
 {% include blog_figure.liquid path="assets/img/blog/graphics-engine/02-meshlets.svg" caption="对一个 2304 个三角形的圆环做贪心 meshlet 划分，上限为 64 个顶点和 124 个三角形（每个 meshlet 一种颜色）。右：排序后每个 meshlet 的三角形数和顶点数，虚线是上限。大多数 meshlet 先达到顶点上限，因为在规则网格的紧凑区域中，每个顶点大约被六个三角形共享。" %}
 
@@ -392,7 +392,7 @@ GPU 的 bug 很少导致崩溃。它会渲染出黑屏、闪烁，或者变慢�
 - **RenderDoc**（免费、开源；支持 Vulkan、D3D11/12、OpenGL）：捕获一帧，让你逐个调用地单步执行，在任意时刻查看每张纹理和每个缓冲，查看管线状态，并针对单个像素调试着色器。它应该是你安装的第一个工具。
 - **PIX on Windows**（微软，用于 D3D12）：帧捕获以及计时捕获，可以同时显示 CPU 和 GPU 时间线，包括队列重叠。
 - **NVIDIA Nsight Graphics**、**AMD Radeon GPU Profiler** 和 Xcode 的 Metal 调试器提供硬件计数器，例如占用率、缓存命中率，以及哪些单元是瓶颈。
-- **验证层**：Vulkan 的验证层（包括同步验证）和 D3D12 调试层能尽早发现 API 误用。开发期间请一直开着。
+- **验证层**（validation layer）：Vulkan 的验证层（包括同步验证）和 D3D12 调试层能尽早发现 API 误用。开发期间请一直开着。
 
 在自己的引擎中测量时，使用 **GPU 时间戳查询**（timestamp query）。在每个 pass 前后写入时间戳，把查询结果解析到一个缓冲里，并在一两帧之后再读回，以免停顿。差值乘以时间戳周期就是该 pass 的 GPU 时间（`vkCmdWriteTimestamp`；D3D12 用带时间戳查询堆的 `EndQuery`；WebGPU 用可选的 `"timestamp-query"` 特性，在 pass 上设置 `timestampWrites`）。渲染图是做这件事的天然位置：它自动给每个 pass 包上时间戳和调试标签，这样在 RenderDoc 或 PIX 的捕获中就能看到你的 pass 名字。
 

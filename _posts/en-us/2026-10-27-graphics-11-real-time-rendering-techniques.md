@@ -43,7 +43,9 @@ Shading now costs (pixels) × (lights per pixel), independent of overdraw, and m
 | Material variety | any shader | limited to what the G-buffer stores |
 | Bandwidth | low | high: several full-screen targets written and read |
 
-{% include blog_figure.liquid path="assets/img/blog/graphics/11-gbuffer.svg" caption="A real G-buffer from the figure script: three spheres on a checkered plane, ray-cast in NumPy. (a) Albedo, (b) world normal as colour, (c) linear view depth, (d) the normal packed into two channels with octahedral encoding, (e) roughness in red and metalness in green (the gold sphere is metallic), (f) the deferred lighting pass: three point lights shaded per pixel with the GGX BRDF of post 04, reading only (a)-(e)." %}
+The figure below runs the two passes on a small scene: (a)-(e) are what the geometry pass writes, and (f) is what the lighting pass produces.
+
+{% include blog_figure.liquid path="assets/img/blog/graphics/11-gbuffer.svg" caption="A real G-buffer from the figure script: three spheres on a checkered plane, ray-cast in NumPy. (a) Albedo, (b) world normal as colour, (c) view-space depth (log grey scale: near is dark, far is bright), (d) the normal packed into two channels with octahedral encoding, (e) roughness in red and metalness in green (the gold sphere is metallic), (f) the deferred lighting pass: three point lights shaded per pixel with the GGX BRDF of post 04, reading only (a)-(e)." %}
 
 **A typical layout.** Engines pack the G-buffer tightly. One common arrangement uses four 32-bit targets plus depth: RGBA8 for albedo and AO, RGB10A2 or RG16 for the normal, RGBA8 for roughness, metalness and material ID, and RG16F for motion vectors. **Worked example**: at 1920 × 1080 that is $2.07\text{M px} \times 16\ \text{B} = 33\ \text{MB}$ written in the geometry pass and read back in the lighting pass, which is about 4 GB/s at 60 fps before any lighting work. This is why G-buffer size is fought over bit by bit.
 
@@ -85,6 +87,8 @@ err = np.degrees(np.arccos(np.clip(oct_decode(q) @ n, -1, 1)))
 print(e, err)                                 # error well below 0.01 degrees
 ```
 
+Figure (a) below draws the map, and (b) compares the angular error of several normal encodings after quantization.
+
 {% include blog_figure.liquid path="assets/img/blog/graphics/11-octahedral.svg" caption="(a) The octahedral map: each point of the square decodes to a unit normal (shown as colour). The inner diamond holds the upper hemisphere z > 0; the four corners are the folded lower hemisphere. (b) Maximum angular error over 200,000 random normals after quantization, versus the total number of bits: octahedral (u, v) is about as accurate as spherical angles at equal bits (angles are even slightly better) but needs no trigonometry to encode or decode, and three quantized xyz channels need about 50% more bits for a comparable error." %}
 
 ### 1.3 Tiled and clustered light culling
@@ -99,6 +103,8 @@ $$
 
 **Worked example**: $z_n = 0.1$, $z_f = 1000$, $S = 24$ slices. A pixel at depth $z = 10$ falls into slice $\lfloor 24 \cdot \ln 100/\ln 10^4\rfloor = \lfloor 24 \cdot 0.5\rfloor = 12$. The cluster lookup for a pixel is two divisions and a logarithm. The light lists are built once per frame on the GPU by testing each light's sphere against each cluster's bounding box.
 
+The figure below carries out this assignment for a random scene of point lights.
+
 {% include blog_figure.liquid path="assets/img/blog/graphics/11-clusters.svg" caption="Clustered light assignment, computed. (a) A view frustum cut into 16 × 9 tiles and 16 exponentially spaced depth slices (gray outlines, near part shown) with 30 point lights (yellow spheres); every dot is a cluster touched by at least one light, coloured by its light count. (b) Top view: each cell is coloured by the largest light count over its column of tiles; red circles are the lights' ranges. Most clusters see only a few lights, which is what makes per-pixel loops cheap." %}
 
 How the cluster grid is built and consumed in a render graph, and how forward+ and visibility-buffer renderers use the same lists, is covered in [graphics-engine 02]({{ '/blog/2026/graphics-engine-02-gpu-apis-and-render-graphs/' | relative_url }}).
@@ -111,7 +117,7 @@ Post 03 covered one shadow map, bias and PCF. Three problems remain: **resolutio
 
 A single shadow map for a directional light (the sun) covering 200 m of view distance has the same texel size near the camera, where a pixel covers millimetres, as far away, where it covers metres. **Perspective aliasing** is the result: blocky shadows up close. **Cascaded shadow maps** (CSM; parallel-split shadow maps, Zhang et al. 2006) cut the view frustum into $N$ depth ranges $[z_i, z_{i+1}]$ and give each its own shadow map fitted tightly around that slice.
 
-Where to put the splits? Look at the ratio between a shadow texel's footprint and a screen pixel's footprint. A cascade covering $[z_i, z_{i+1}]$ is as wide as the frustum at $z_{i+1}$, so its texel size is proportional to $z_{i+1}$, while a pixel's footprint at depth $z$ is proportional to $z$. With equal resolutions the ratio is about $z_{i+1}/z$, worst at the near end of each cascade. Making the worst case equal for all cascades gives **logarithmic** splits, with ratio $(z_f/z_n)^{1/N}$ everywhere. **Uniform** splits waste resolution far away and starve the near cascade. The **practical split scheme** blends the two with a parameter $\lambda$:
+Where to put the splits? Look at the ratio between a shadow texel's footprint and a screen pixel's footprint. A cascade covering $[z_i, z_{i+1}]$ is as wide as the frustum at $z_{i+1}$, so its texel size is proportional to $z_{i+1}$, while a pixel's footprint at depth $z$ is proportional to $z$. With equal resolutions the ratio is about $z_{i+1}/z$, worst at the near end of each cascade. Making the worst case equal for all cascades gives **logarithmic** splits, whose worst-case ratio is $(z_f/z_n)^{1/N}$ in every cascade. **Uniform** splits waste resolution far away and starve the near cascade. The **practical split scheme** blends the two with a parameter $\lambda$:
 
 $$
 z_i^{\log} = z_n\Big(\frac{z_f}{z_n}\Big)^{i/N},\qquad
@@ -133,9 +139,11 @@ for lam in [0.0, 0.5, 0.9, 1.0]:
 # 0.9 -> [  0.1    5.61   14.03   41.92  200.  ]
 ```
 
-{% include blog_figure.liquid path="assets/img/blog/graphics/11-csm-splits.svg" caption="Cascade splits for n = 0.1, f = 200, four cascades. (a) The four depth ranges for λ from 0 (uniform) to 1 (logarithmic) on a log axis, with split depths labelled. (b) The approximate texel-to-pixel footprint ratio z_{i+1}/z across the view depth: uniform splits leave the nearest metres hundreds of times under-resolved, logarithmic splits keep the ratio at (f/n)^{1/4} ≈ 6.7 everywhere, and λ = 0.9 is a compromise." %}
+Figure (a) below draws the splits for four values of λ, and (b) the texel-to-pixel footprint ratio at each depth.
 
-Production details: **stabilization**, which snaps each cascade's projection to whole texels and keeps its size constant so that shadows do not shimmer as the camera moves; **blending** across cascade borders; and **sample distribution shadow maps** (Lauritzen, Salvi and Lefohn 2011), which read the depth buffer to fit the cascades to the depth range actually visible.
+{% include blog_figure.liquid path="assets/img/blog/graphics/11-csm-splits.svg" caption="Cascade splits for n = 0.1, f = 200, four cascades. (a) The four depth ranges for λ from 0 (uniform) to 1 (logarithmic) on a log axis, with split depths labelled. (b) The approximate texel-to-pixel footprint ratio z_{i+1}/z across the view depth (within each cascade it falls from its maximum at the near end to 1 at the far end): uniform splits (λ = 0) reach about 500 at z = 0.1 and are still about 50 at 1 m, logarithmic splits (λ = 1) have a maximum of (f/n)^{1/4} ≈ 6.7 everywhere, and λ = 0.9 is a compromise." %}
+
+Production details: **stabilization**, which snaps each cascade's projection to whole texels and keeps its size constant so that shadows do not shimmer as the camera moves; **blending** across cascade borders to hide visible seams; and **sample distribution shadow maps** (Lauritzen, Salvi and Lefohn 2011), which read the depth buffer to fit the cascades to the depth range actually visible.
 
 ### 2.2 PCF and percentage-closer soft shadows
 
@@ -179,6 +187,8 @@ float pcss(vec2 uv, float dReceiver) {
 }
 ```
 
+Figure (a) below plots the penumbra formula against the blocker distance, and (b) compares PCSS and fixed-kernel PCF with the exact result for a straight-edged blocker.
+
 {% include blog_figure.liquid path="assets/img/blog/graphics/11-pcss.svg" caption="(a) PCSS penumbra width versus the blocker-receiver distance for three light sizes (receiver 10 units from the light): the width grows slowly at first and explodes as the blocker approaches the light. (b) Visibility across a shadow edge cast by a straight blocker at height h = 2 (blue) and h = 6 (red): the exact fraction of a 1-unit light that is visible (thick, faint), PCSS (dotted), which reproduces both ramps, and fixed-kernel PCF (dashed), which gives the same 0.4-wide ramp regardless of h." %}
 
 ### 2.3 Variance and moment shadow maps
@@ -217,7 +227,9 @@ Remedies:
 - **Exponential VSM** (EVSM, from Lauritzen's work on layered and warped VSMs) applies Chebyshev to the warped moments $e^{cz}$ and $-e^{-cz}$ and keeps the smaller bound. The warp compresses the occluders' depths relative to the receiver, which makes the bound much tighter.
 - **Moment shadow maps** (Peters and Klein 2015) store four moments and reconstruct the tightest distribution consistent with them (a Hamburger moment problem), which almost eliminates bleeding.
 
-{% include blog_figure.liquid path="assets/img/blog/graphics/11-vsm-chebyshev.svg" caption="(a) For a filter region with half its depths at 0.3 and half at 0.7, the true fraction P(z ≥ t) (black steps) versus the VSM Chebyshev bound (orange) and EVSM with c = 10 (green): the bound touches the truth at t = 0.7 but stays high behind it. (b) Light bleeding on a strip: blocker A (z = 0.2, shaded) partly covers blocker B (z = 0.5), and the receiver is at t = 0.6. True PCF visibility (black) is 0 everywhere under the blockers and only ramps up where the filter reaches B's edge at x ≈ 0.75, but VSM lets light leak where the filter straddles both blockers; EVSM suppresses most of it." %}
+Figure (a) below plots the true fraction, the VSM bound and EVSM for the worked example above, and (b) shows light bleeding.
+
+{% include blog_figure.liquid path="assets/img/blog/graphics/11-vsm-chebyshev.svg" caption="(a) For a filter region with half its depths at 0.3 and half at 0.7, the true fraction P(z ≥ t) (black steps) versus the VSM Chebyshev bound (orange) and EVSM with c = 10 (green): the bound touches the truth at t = 0.7 but stays high behind it. (b) Light bleeding on a strip: in the depth map, blocker A (z = 0.2, lilac area) is on the left, blocker B (z = 0.5) in the middle, and the receiver itself (z = t = 0.6) on the right. True PCF visibility (black) is 0 everywhere under A and B and only ramps up once the filter (half-width 0.08) touches B's edge at x = 0.75, but VSM lets light leak where the filter straddles both A and B (around x = 0.45); EVSM suppresses most of it." %}
 
 ### 2.4 Contact shadows and virtual shadow maps
 
@@ -292,7 +304,9 @@ ao = horizon_ao(hill)
 print(ao.min().round(3), ao.max().round(3))           # 0.753 1.0: dark ring at the hill's foot, 1.0 on flat ground
 ```
 
-{% include blog_figure.liquid path="assets/img/blog/graphics/11-ao-horizon.svg" caption="Ambient occlusion on a height field (hills, a box and a pit). (a) One slice through the point p: the marcher samples the height field on both sides (dots) and keeps the highest elevation, the horizons e₁ and e₂; the slice's visible fraction is ½(cos²e₁ + cos²e₂). (b) Monte Carlo with 8 cosine-weighted rays per pixel is very noisy. (c) 64 rays is better but still grainy. (d) The horizon form with only 4 slices (8 marches) and a random rotation per pixel already has a lower error than (c). RMSE is measured against the horizon method with 64 slices." %}
+The figure below puts the slice integral on a real height field: (a) is a single slice, and (b)-(d) compare the noise of Monte Carlo estimates with the horizon form.
+
+{% include blog_figure.liquid path="assets/img/blog/graphics/11-ao-horizon.svg" caption="Ambient occlusion on a height field (hills, a box and a pit). (a) One slice through the point p: the marcher samples the height field on both sides (dots) and keeps the highest elevation, the horizons e₁ and e₂; the slice's visible fraction is ½(cos²e₁ + cos²e₂). (b) Monte Carlo with 8 cosine-weighted rays per pixel is very noisy. (c) 64 rays is better but still grainy. (d) The horizon form with only 4 slices (12 steps on each side of every slice) and a random rotation per pixel already has a lower error than (c). RMSE is measured against the horizon method with 64 slices." %}
 
 ## 4. Screen-space reflections
 
@@ -305,7 +319,7 @@ print(ao.min().round(3), ao.max().round(3))           # 0.753 1.0: dark ring at 
 
 McGuire and Mara (2014) showed how to march in screen space with a DDA that interpolates $1/z$ (which is linear in screen space under perspective). This visits every pixel exactly once, instead of stepping in 3D and oversampling near the camera.
 
-**Hierarchical-Z tracing.** A linear march with step size $\Delta x$ either costs many steps or skips thin objects. A **Hi-Z pyramid** stores, at level $L$, the *minimum* depth over $2^L \times 2^L$ pixels (the nearest surface). The tracer walks the ray through this quadtree. If the ray stays in front of a coarse cell's nearest depth until it exits the cell, it skips the whole cell and moves up a level. Otherwise it advances to where it reaches that depth and refines one level down. A hit is declared at level 0. The cost becomes logarithmic in the distance travelled. Uludag's chapter *Hi-Z Screen-Space Cone-Traced Reflections* (GPU Pro 5, 2014) popularized this for SSR. Here is a 1D version that reproduces the figure:
+**Hierarchical-Z tracing.** A linear march with step size $\Delta x$ either costs many steps or skips thin objects. A **Hi-Z pyramid** stores, at level $L$, the *minimum* depth over $2^L \times 2^L$ pixels (the nearest surface). The tracer walks the ray through this quadtree. If the ray stays in front of a coarse cell's nearest depth until it exits the cell, it skips the whole cell and moves up a level. Otherwise it advances to where it reaches that depth and refines one level down. A hit is declared at level 0. The cost becomes logarithmic in the distance travelled. Uludag's chapter *Hi-Z Screen-Space Cone-Traced Reflections* (GPU Pro 5, 2014) popularized this for SSR. Here is a 1D version that reproduces the figure. The depth buffer has 64 pixels: ground at depth 0.9, a pillar (x = 20-23, depth 0.55) and a box (x = 40-51, depth 0.62). The ray starts at x = 4 with depth 0.3 and gains 0.009 of depth per pixel, so it passes in front of the pillar and hits the front face of the box.
 
 ```python
 import numpy as np
@@ -339,7 +353,7 @@ def hiz_trace(x0, z0, slope, pyr, thickness=0.05, max_iter=64):
 print(hiz_trace(4.0, 0.3, 0.009, pyr))   # (40, 12): hits the front of the box at x = 40 after 12 iterations
 ```
 
-{% include blog_figure.liquid path="assets/img/blog/graphics/11-ssr-march.svg" caption="Screen-space ray marching through a 1D depth buffer (gray: the scene behind the stored depth; camera at the top). (a) A linear march with steps of 7 pixels (dots) jumps over the pillar, overshoots behind the box, and needs a bisection refinement to find the hit (star). (b) Hierarchical-Z: coloured bars show the min-depth cells visited at each pyramid level; the ray skips large empty cells at coarse levels and refines only near the box." %}
+{% include blog_figure.liquid path="assets/img/blog/graphics/11-ssr-march.svg" caption="Screen-space ray marching through a 1D depth buffer (gray: the scene behind the stored depth; camera at the top). (a) A linear march with steps of 7 pixels (dots): at x = 39 it is still in front of the box, the next step at x = 46 is already behind the box's front face, so a bisection between those two points is needed to find the hit (star); with larger steps or thinner objects the hit would be missed altogether. (b) Hierarchical-Z: coloured bars show the min-depth cells visited at each pyramid level; the ray skips large empty cells at coarse levels and refines only near the box." %}
 
 **Failure cases** come from the fact that the depth buffer is a single layer of what the camera sees:
 
@@ -419,6 +433,8 @@ for nz in [1.0, 0.0, -1.0]:
 
 The two checks have exact answers. A constant environment $L = 1$ gives $L_{00} = 4\pi \cdot 0.282095 = 3.5449$ and $E = \pi$ for every normal. A white upper hemisphere gives $E(\mathbf{n}) = \pi(1 + n_z)/2$. Because that is linear in $n_z$, bands $l \le 1$ already reproduce it exactly.
 
+The figure below compares exact irradiance with SH approximations of increasing order for an environment with a sky gradient, a dark ground and a small bright sun.
+
 {% include blog_figure.liquid path="assets/img/blog/graphics/11-sh-irradiance.svg" caption="SH irradiance of an environment with a sky gradient, a dark ground and a small bright sun, as lat-long maps (θ down, φ across). (a) Radiance (log scale): the sun is a tiny spot. (b) Exact irradiance by brute-force integration: a broad, smooth lobe. (c)-(e) SH approximations with bands l ≤ 0, 1, 2 (1, 4 and 9 coefficients): l ≤ 2 is visually indistinguishable from (b). (f) Relative RMS error: irradiance error drops fast and l = 3 adds nothing, because Â₃ = 0; the radiance itself is still badly approximated at the same orders." %}
 
 The widget below puts this in your hands. The left sphere is lit by the exact irradiance of a sky, a ground and a disc-shaped sun, and the right sphere by its SH approximation. Below them, the environment and its SH reconstruction at the same order show that the *radiance* rings and smears long before the *irradiance* does.
@@ -476,7 +492,7 @@ print(variance_clip(np.array([0.9, 0.0, 0.0]), neigh))   # [0.5816 0. 0.]  (= 0.
 
 Lighting must be computed in **linear** radiometric units. Values range from $10^{-3}$ in shadow to $10^{5}$ at the sun's disc and are stored in floating-point (RGBA16F) targets. Textures authored in sRGB are decoded to linear on load (post 03). The final image has to fit into a display's range, and that takes three steps:
 
-1. **Exposure**: scale by $2^{EV}$ so that the scene's middle grey lands around 0.18. **Automatic exposure** computes the log-average luminance $\bar L = \exp\big(\tfrac{1}{N}\sum\ln(\delta + L_i)\big)$ (Reinhard et al. 2002), or a luminance histogram that ignores the darkest and brightest few percent. It then adapts smoothly over time, like the eye.
+1. **Exposure**: scale by $2^{EV}$ so that the scene's middle grey lands around 0.18. **Automatic exposure** computes the log-average luminance $\bar L = \exp\big(\tfrac{1}{N}\sum\ln(\delta + L_i)\big)$ (Reinhard et al. 2002; $L_i$ is the luminance of pixel $i$, $N$ the number of pixels, and $\delta$ a small constant that avoids $\ln 0$), or a luminance histogram that ignores the darkest and brightest few percent. It then adapts smoothly over time, like the eye.
 2. **Tone mapping**: a curve that compresses $[0, \infty)$ into $[0, 1)$ with a gentle shoulder for highlights and, optionally, a toe for shadows.
 3. **Output encoding**: the sRGB transfer function for SDR displays, or PQ for HDR10.
 
@@ -485,7 +501,7 @@ Lighting must be computed in **linear** radiometric units. Values range from $10
 - **Reinhard**: $y = x/(1+x)$, the simplest operator. Its *extended* form $y = x(1 + x/L_w^2)/(1+x)$ maps a chosen white point $L_w$ to 1. **Worked example**: middle grey $0.18 \mapsto 0.153$.
 - **Filmic (Hable, *Uncharted 2*)**: a rational curve with a toe and a shoulder,
   $f(x) = \frac{x(Ax + CB) + DE}{x(Ax+B) + DF} - \frac{E}{F}$,
-  normalized by $f(W)$. The constants are $A=0.15$, $B=0.50$, $C=0.10$, $D=0.20$, $E=0.02$, $F=0.30$ and the white point is $W = 11.2$.
+  normalized by $f(W)$ (the original talk also multiplies the input by an exposure bias of 2.0, which the code and the figure below include). The constants are $A=0.15$, $B=0.50$, $C=0.10$, $D=0.20$, $E=0.02$, $F=0.30$ and the white point is $W = 11.2$.
 - **ACES**: the Academy Color Encoding System defines a reference rendering transform and output transforms for film. Games often use Narkowicz's (2016) one-line fit, $y = \frac{x(2.51x + 0.03)}{x(2.43x + 0.59) + 0.14}$, applied per channel. It gives punchy contrast, but bright saturated colours shift in hue and desaturate (a saturated orange drifts toward yellow), because each channel saturates separately. **Worked example**: $0.18 \mapsto 0.267$.
 - **AgX** (introduced as a view transform in Blender 4.0) applies its curve in a carefully chosen, slightly desaturated working space. Very bright saturated lights then roll smoothly toward white instead of clipping to pure hues.
 - **Khronos PBR Neutral** (released in 2024) is designed for product visualization. It leaves base colours untouched up to about 0.8 so that a material looks like its albedo under neutral lighting, then compresses only the highlights and desaturates them toward white.
@@ -512,6 +528,8 @@ for f in (reinhard, hable, aces_fit):
 print(round(float(srgb_encode(0.18)) * 255))   # 118: middle grey in 8-bit sRGB
 ```
 
+The figure below plots the response of these operators to grey input: (a) on linear axes, (b) after sRGB encoding on a log axis.
+
 {% include blog_figure.liquid path="assets/img/blog/graphics/11-tonemap-curves.svg" caption="Tone-mapping curves for grey input. (a) Linear axes: clamping (dotted) clips everything above 1, Reinhard approaches 1 slowly, the extended Reinhard reaches 1 at L_w = 4, Hable and the ACES fit have a toe and a steeper midtone, and PBR Neutral follows the identity (minus a small 0.04 offset) up to about 0.8 before its shoulder. (b) The same curves after sRGB encoding on a log axis spanning five decades of scene luminance; the dotted line marks middle grey 0.18. The ACES fit has the most contrast around middle grey; Reinhard keeps the most highlight detail." %}
 
 The widget below applies these operators to an HDR test chart of six hues, each ramping over 12 stops. Watch what happens to saturated colours as they get brighter.
@@ -527,6 +545,8 @@ V = \begin{cases} 12.92\,L & L \le 0.0031308\\ 1.055\,L^{1/2.4} - 0.055 & L > 0.
 $$
 
 a linear toe joined to a power curve. The pair is close to, but not the same as, $L^{1/2.2}$. Its purpose is perceptual: the eye is sensitive to *relative* changes, so codes should be spaced closer together in the darks. With 8 bits, linear encoding wastes most codes on highlights and bands visibly in the shadows. **Worked example**: middle grey 0.18 encodes to $V = 1.055 \cdot 0.18^{1/2.4} - 0.055 = 0.461$, code 118 of 255. Linear storage would put it at code 46.
+
+Figure (a) below compares the sRGB curve with a pure power, and (b) the relative step size of 8-bit linear and 8-bit sRGB codes.
 
 {% include blog_figure.liquid path="assets/img/blog/graphics/11-srgb.svg" caption="(a) The sRGB encoding curve against a pure 2.2 power and the identity; the inset shows the linear segment below 0.0031308, which avoids an infinite slope at 0. (b) The relative step ΔL/L between adjacent 8-bit codes: linear encoding gives steps of 10-100% in the darks (visible banding), while sRGB keeps them within a few percent over most of the range (the dotted line marks 1% for reference)." %}
 
@@ -604,7 +624,7 @@ Also influential, as talks without papers: Salvi, *An Excursion in Temporal Supe
 3. Show that the VSM bound is exact for one planar occluder at depth $z_1$ covering a fraction $f$ of the kernel, over a receiver plane at depth $t$ (the rest of the kernel). Then show where it fails with two occluders.
 
    <details markdown="1"><summary>Hint</summary>
-   With depths $z_1$ (fraction $f$) and $t$ (fraction $1-f$), compute $\mu$ and $\sigma^2$ and substitute into $\sigma^2/(\sigma^2 + (t-\mu)^2)$: the result is $1-f$. With two occluders the distribution has three atoms and two moments no longer determine it.
+   With depths $z_1$ (fraction $f$) and $t$ (fraction $1-f$), compute $\mu$ and $\sigma^2$ and substitute into $\sigma^2/(\sigma^2 + (t-\mu)^2)$: the result is $1-f$. With two occluders the depth distribution has three discrete values (occluder 1, occluder 2 and the receiver plane), and two moments no longer determine it, so the bound becomes loose.
    </details>
 
 4. Extend the SH code to bands $l \le 4$ (25 coefficients, using $\hat A_4 = -\pi/24$) and measure how much the irradiance error drops for an environment with a sun of 1° radius. Is it worth 16 more coefficients per channel?

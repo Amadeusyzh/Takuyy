@@ -21,7 +21,7 @@ The mathematics of integrators, PBD/XPBD and cloth is in [graphics post 07]({{ '
 ## Prerequisites
 
 - Vectors, dot and cross products; convex sets (a set that contains the segment between any two of its points).
-- Newton's laws and impulses ($\Delta \mathbf{v} = \mathbf{J}/m$ for an impulse $\mathbf{J}$).
+- Newton's laws and impulses (an impulse $\lambda$, the integral of force over time, changes the velocity of a body of mass $m$ by $\Delta v = \lambda/m$).
 - Symplectic Euler and XPBD from [graphics 07]({{ '/blog/2026/graphics-07-physically-based-simulation/' | relative_url }}); the fixed-timestep loop from [engine post 01]({{ '/blog/2026/graphics-engine-01-anatomy-of-an-engine/' | relative_url }}).
 - Python with NumPy.
 
@@ -29,7 +29,7 @@ The mathematics of integrators, PBD/XPBD and cloth is in [graphics post 07]({{ '
 
 A rigid body stores its mass $m$, inertia tensor $\mathbf{I}$, position $\mathbf{x}$, orientation $\mathbf{q}$, linear velocity $\mathbf{v}$ and angular velocity $\boldsymbol{\omega}$, plus one or more collision **shapes** (sphere, box, capsule, convex hull, triangle mesh, height field). Every call of `step(dt)` runs the same stages, shown in the figure:
 
-1. **Integrate forces**: $\mathbf{v} \mathrel{+}= h\,\mathbf{M}^{-1}\mathbf{f}_{\text{ext}}$ (gravity, user forces).
+1. **Integrate forces**: $\mathbf{v} \mathrel{+}= h\,\mathbf{M}^{-1}\mathbf{f}_{\text{ext}}$ (gravity, user forces; $h$ is this step's time step and $\mathbf{M}$ the mass matrix built from $m$ and $\mathbf{I}$).
 2. **Broad phase**: find pairs whose bounding boxes overlap. Cheap, conservative.
 3. **Narrow phase**: for each pair, exact geometry: are they touching, where, how deep?
 4. **Contact manifolds**: a few contact points with a shared normal and penetration depth, matched with last frame's contacts.
@@ -78,7 +78,7 @@ print(n * (n - 1) // 2, len(cand), len(true))   # all pairs, x-candidates, true 
 
 Why does this help? If the boxes are spread uniformly over a world of width $L$ and have mean half-width $\bar r$, two intervals overlap on $x$ with probability about $4\bar r / L$. So the expected number of candidates is about $\tfrac{n^2}{2}\cdot\tfrac{4\bar r}{L}$. If the world grows with the number of objects at constant density ($L \propto \sqrt{n}$ in 2D), candidates grow like $n^{1.5}$ instead of $n^2$, and true overlaps grow like $n$.
 
-Two engine tricks make SAP fast in practice. Between frames objects move a little, so the sorted list is almost sorted and **insertion sort** fixes it in close to $O(n)$. And instead of re-sweeping, engines track overlap begin and end events whenever two endpoints swap.
+Two engine tricks make SAP fast in practice. Between frames objects move a little, so the sorted list is almost sorted and **insertion sort** fixes it in close to $O(n)$. And instead of re-sweeping, engines track overlap begin and end events whenever two endpoints swap. The figure below tests the estimate above on random boxes: on the left, see which boxes truly overlap; on the right, compare how fast the three kinds of pair counts grow.
 
 {% include blog_figure.liquid path="assets/img/blog/graphics-engine/05-sweep-and-prune.svg" caption="Sweep and prune on random boxes (a real run of the script). Left: 40 boxes; the gray bars below the scene are their x-intervals in sweep order, and red boxes are in at least one true AABB overlap. Right: pair counts against $n$ at constant density, on log-log axes. All pairs grow as $n^2$. SAP's x-candidates follow the dotted estimate $\frac{n^2}{2}\frac{4\bar r}{L}\propto n^{1.5}$, and true overlaps grow roughly linearly. The gap between the blue and red curves is wasted narrow-phase work, which a second axis or a tree removes." %}
 
@@ -110,7 +110,7 @@ $$
 s_A(\mathbf{d}) = \arg\max_{\mathbf{a}\in A} \mathbf{a}\cdot\mathbf{d}, \qquad s_{A\ominus B}(\mathbf{d}) = s_A(\mathbf{d}) - s_B(-\mathbf{d}).
 $$
 
-For a polygon the support point is the vertex with the largest dot product. For a sphere it is $\mathbf{c} + r\,\mathbf{d}/\lVert\mathbf{d}\rVert$. For a capsule it is the support of a segment plus that of a sphere. That is why GJK handles any convex shape with the same code.
+The second equality holds because $(\mathbf{a}-\mathbf{b})\cdot\mathbf{d} = \mathbf{a}\cdot\mathbf{d} + \mathbf{b}\cdot(-\mathbf{d})$, so the two terms can be maximized separately. For a polygon the support point is the vertex with the largest dot product. For a sphere it is $\mathbf{c} + r\,\mathbf{d}/\lVert\mathbf{d}\rVert$. For a capsule it is the support of a segment plus that of a sphere. That is why GJK handles any convex shape with the same code.
 
 GJK grows a **simplex** (a point, a segment, a triangle, and in 3D a tetrahedron) of support points:
 
@@ -119,7 +119,7 @@ GJK grows a **simplex** (a point, a segment, a triangle, and in 3D a tetrahedron
 3. Add $\mathbf{p}$ to $S$. Keep only the sub-simplex (vertex, edge or the full simplex) whose region contains the origin, and set $\mathbf{d}$ to point from that feature towards the origin.
 4. If the simplex encloses the origin: **collision**. Otherwise go to 2.
 
-In 2D, "perpendicular to edge $\mathbf{ab}$, towards the origin" is computed with the vector triple product $(\mathbf{ab}\times\mathbf{ao})\times\mathbf{ab} = \mathbf{ao}\,(\mathbf{ab}\cdot\mathbf{ab}) - \mathbf{ab}\,(\mathbf{ab}\cdot\mathbf{ao})$. The whole algorithm fits on one screen:
+In 2D, "perpendicular to edge $\mathbf{ab}$, towards the origin" is computed with the vector triple product $(\mathbf{ab}\times\mathbf{ao})\times\mathbf{ab} = \mathbf{ao}\,(\mathbf{ab}\cdot\mathbf{ab}) - \mathbf{ab}\,(\mathbf{ab}\cdot\mathbf{ao})$. For a triangle $\mathbf{abc}$ ($\mathbf{a}$ the newest point), the same computation is applied to the two edges $\mathbf{ab}$ and $\mathbf{ac}$ (`ab_perp` and `ac_perp` in the code point away from the third vertex): if the origin lies outside an edge, drop the opposite vertex and continue along that normal; if it lies inside both, the origin is inside the triangle and the shapes collide. Edge $\mathbf{bc}$ was already ruled out in the previous iteration. The whole algorithm fits on one screen:
 
 ```python
 import numpy as np
@@ -224,7 +224,7 @@ n, depth = epa(A, B, s)
 print(n, depth)   # -> [ 0.9701425  -0.24253563] 0.7276068751089989
 ```
 
-Check the sign convention on a simple case. If $A$ is on the left and $B$ overlaps it from the right, $A\ominus B$ lies mostly at negative $x$ and pokes past the origin a little on the $+x$ side. EPA returns $\mathbf{n} = (+1, 0)$, and pushing $B$ by $d\,\mathbf{n}$ moves it to the right, out of $A$.
+Check the sign convention on a simple case. If $A$ is on the left and $B$ overlaps it from the right, $A\ominus B$ lies mostly at negative $x$ and pokes past the origin a little on the $+x$ side. EPA returns $\mathbf{n} = (+1, 0)$, and pushing $B$ by $d\,\mathbf{n}$ moves it to the right, out of $A$. In general, $A\ominus(B + d\,\mathbf{n}) = (A\ominus B) - d\,\mathbf{n}$, which moves the boundary point $d\,\mathbf{n}$ exactly onto the origin, so after the push the shapes just touch. The figure below runs EPA on the same pair.
 
 {% include blog_figure.liquid path="assets/img/blog/graphics-engine/05-epa.svg" caption="EPA on the same pair (script output). First panel: the starting polytope is GJK's final triangle (red). Middle: the final polytope, whose closest edge lies on the boundary of $A\ominus B$; the green arrow from the origin is the penetration vector $d\,\mathbf{n}$. Right: moving $B$ (dashed, original position) by $d\,\mathbf{n}$ leaves the shapes exactly touching." %}
 
@@ -250,7 +250,7 @@ $$
 \dot C = \mathbf{J}\mathbf{u}, \qquad \mathbf{J} = \big(-\mathbf{n}^\top,\ -(\mathbf{r}_A\times\mathbf{n})^\top,\ \mathbf{n}^\top,\ (\mathbf{r}_B\times\mathbf{n})^\top\big),
 $$
 
-where $\mathbf{r}_A, \mathbf{r}_B$ are the vectors from each center of mass to the contact point. The contact can only push, so its impulse $\lambda$ satisfies the **complementarity** conditions
+where $\mathbf{J}$ is the Jacobian row of this contact, $\mathbf{r}_A, \mathbf{r}_B$ are the vectors from each center of mass to the contact point, and the mass matrix matching $\mathbf{u}$ is $\mathbf{M} = \operatorname{diag}(m_A\mathbf{1}, \mathbf{I}_A, m_B\mathbf{1}, \mathbf{I}_B)$. The contact can only push, so its impulse $\lambda$ satisfies the **complementarity** conditions
 
 $$
 \lambda \ge 0, \qquad \mathbf{J}\mathbf{u}^+ + b \ge 0, \qquad \lambda\,(\mathbf{J}\mathbf{u}^+ + b) = 0,
@@ -260,7 +260,7 @@ where $\mathbf{u}^+$ is the velocity after the impulse and $b$ is a bias. In wor
 
 ### Sequential impulses = projected Gauss–Seidel (PGS)
 
-Solving one constraint at a time is enough. Applying an impulse $\Delta\lambda$ changes the velocity by $\mathbf{M}^{-1}\mathbf{J}^\top\Delta\lambda$. Requiring $\mathbf{J}\mathbf{u}^+ + b = 0$ gives
+Solving one constraint at a time is enough. Applying an impulse $\Delta\lambda$ changes the velocity by $\mathbf{M}^{-1}\mathbf{J}^\top\Delta\lambda$. Hence $\mathbf{u}^+ = \mathbf{u} + \mathbf{M}^{-1}\mathbf{J}^\top\Delta\lambda$, and requiring $\mathbf{J}\mathbf{u}^+ + b = 0$, i.e. $\mathbf{J}\mathbf{u} + b + \mathbf{J}\mathbf{M}^{-1}\mathbf{J}^\top\Delta\lambda = 0$, gives
 
 $$
 \Delta\lambda = -\frac{\mathbf{J}\mathbf{u} + b}{\mathbf{J}\mathbf{M}^{-1}\mathbf{J}^\top} = -m_{\text{eff}}\,(\mathbf{J}\mathbf{u} + b), \qquad m_{\text{eff}} = \big(\mathbf{J}\mathbf{M}^{-1}\mathbf{J}^\top\big)^{-1}.
@@ -322,7 +322,7 @@ $$
 \lambda = -h\Big(k\,(C + h\,\mathbf{J}\mathbf{u}^+) + c\,\mathbf{J}\mathbf{u}^+\Big).
 $$
 
-Solving for $\lambda$ gives, after a few lines of algebra,
+Solve for $\lambda$. Expand the brackets, substitute $\mathbf{J}\mathbf{u}^+ = \mathbf{J}\mathbf{u} + \lambda/m$, $k = m\omega^2$ and $c = 2m\zeta\omega$, and use $(h^2 k + h c)/m = h^2\omega^2 + 2\zeta h\omega$. With $a = h\omega\,(2\zeta + h\omega)$ this gives $\lambda\,(1 + a) = -m\,(h\omega^2 C + a\,\mathbf{J}\mathbf{u})$. Dividing by $1 + a$ and factoring $a$ out of the bracket (since $h\omega^2/a = \omega/(2\zeta + h\omega)$) yields
 
 $$
 \lambda = -m\,\underbrace{\frac{a}{1+a}}_{\text{mass scale}}\Big(\mathbf{J}\mathbf{u} + \underbrace{\frac{\omega}{2\zeta + h\omega}}_{\text{bias rate}}\, C\Big), \qquad a = h\omega\,(2\zeta + h\omega).
@@ -369,7 +369,7 @@ $$
 \mathbf{M}(\mathbf{q})\,\ddot{\mathbf{q}} + \mathbf{c}(\mathbf{q},\dot{\mathbf{q}}) = \boldsymbol{\tau} + \mathbf{J}_c^\top\boldsymbol{\lambda}_c,
 $$
 
-with the configuration-dependent mass matrix $\mathbf{M}(\mathbf{q}) = \sum_i m_i\,\mathbf{J}_i^\top\mathbf{J}_i$ (plus rotational terms), Coriolis and gravity terms $\mathbf{c}$, joint torques $\boldsymbol{\tau}$ and contact impulses $\boldsymbol{\lambda}_c$. **Featherstone's** articulated-body algorithm (ABA) computes $\ddot{\mathbf{q}}$ in $O(n)$ for a tree of $n$ links, without forming $\mathbf{M}$. The composite-rigid-body algorithm (CRBA) builds $\mathbf{M}$ in $O(n^2)$, and recursive Newton–Euler (RNEA) does inverse dynamics. Controllers also need these quantities: the mass matrix, the gravity torque and the Jacobians are what a robot controller works with.
+with the configuration-dependent mass matrix $\mathbf{M}(\mathbf{q}) = \sum_i m_i\,\mathbf{J}_i^\top\mathbf{J}_i$ (with $\mathbf{J}_i$ the position Jacobian of link $i$'s center of mass, plus rotational terms), Coriolis and gravity terms $\mathbf{c}$, joint torques $\boldsymbol{\tau}$ and contact impulses $\boldsymbol{\lambda}_c$. **Featherstone's** articulated-body algorithm (ABA) computes $\ddot{\mathbf{q}}$ in $O(n)$ for a tree of $n$ links, without forming $\mathbf{M}$. The composite-rigid-body algorithm (CRBA) builds $\mathbf{M}$ in $O(n^2)$, and recursive Newton–Euler (RNEA) does inverse dynamics. Controllers also need these quantities: the mass matrix, the gravity torque and the Jacobians are what a robot controller works with.
 
 The figure runs both formulations on a 4-link pendulum with light links and a heavy end mass.
 

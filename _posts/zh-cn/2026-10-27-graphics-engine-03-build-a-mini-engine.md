@@ -14,7 +14,7 @@ related_posts: false
 
 ## 为什么重要
 
-[第一篇]({{ '/blog/2026/graphics-engine-01-anatomy-of-an-engine/' | relative_url }})把引擎拆解为若干层、游戏循环、面向数据的存储和实体组件系统（ECS, entity component system）。[第二篇]({{ '/blog/2026/graphics-engine-02-gpu-apis-and-render-graphs/' | relative_url }})讲解了显式 GPU API、同步和渲染图（render graph）。本文把这些思想重新拼装起来。我们用大约 900 行 JavaScript 和 WGSL（WebGPU Shading Language，WebGPU 着色语言）写一个**小而完整的真实引擎**：它能加载 glTF 2.0 模型，用基于物理的材质（physically based material）着色，投射阴影，运行固定时间步长（fixed timestep）的模拟，把场景存放在 ECS 中，根据声明的通道列表（pass list）调度各个渲染通道，并用 GPU 时间戳查询（timestamp query）测量自身性能。
+[第一篇]({{ '/blog/2026/graphics-engine-01-anatomy-of-an-engine/' | relative_url }})把引擎拆解为若干层、游戏循环、面向数据的存储和实体组件系统（ECS, entity component system）。[第二篇]({{ '/blog/2026/graphics-engine-02-gpu-apis-and-render-graphs/' | relative_url }})讲解了显式 GPU API、同步和渲染图（render graph）。本文把这些思想重新拼装起来。我们用大约 900 行 JavaScript 和 WGSL（WebGPU Shading Language，WebGPU 着色语言）写一个**小而完整的真实引擎**：它能加载 glTF 2.0 模型，用基于物理的渲染（PBR, physically based rendering）材质着色，投射阴影，运行固定时间步长（fixed timestep）的模拟，把场景存放在 ECS 中，根据声明的通道列表（pass list）调度各个渲染通道，并用 GPU 时间戳查询（timestamp query）测量自身性能。
 
 目的不是与[下一篇]({{ '/blog/2026/graphics-engine-04-inside-production-engines/' | relative_url }})中的那些引擎竞争，而是让你在亲手把每一块实现一遍之后，能够读懂它们的源码，并认出其中的每一层。
 
@@ -247,7 +247,7 @@ export class Resources {
 
 管线的键是一个字符串，编码了所有会改变已编译管线的因素，例如 `pbr|rgba16float|cull-back`。真实的引擎会根据材质的着色器变体、顶点布局和渲染目标格式来构造键，并在加载期间用 `createRenderPipelineAsync` 创建管线，使第一帧不会卡顿。在 Vulkan 中与之对应的对象是 `VkPipelineCache`（把已编译管线持久化到磁盘）和 VMA 之类的内存分配器；在 wgpu 中则是 `Device::create_render_pipeline` 加上你自己的管线 `HashMap`。
 
-**Uniform 对齐。**我们会把每个对象的模型矩阵存放在一个大的 uniform 缓冲区里，并用*动态偏移*（dynamic offset）来选取。WebGPU 要求这些偏移是 `minUniformBufferOffsetAlignment` 的倍数，默认值为 256 字节。一个模型矩阵是 64 字节，所以每个对象占用一个 256 字节的槽位：第 $i$ 个对象位于字节 $256\,i$ 处，1024 个对象需要 256 KiB，其中 75 % 是填充。这种取舍（浪费一些字节，换来只需一次缓冲区写入、无需为每个对象创建绑定组）几乎总是值得的；按实例 ID 索引的存储缓冲区（storage buffer）可以去掉填充，这是练习之一。
+**统一缓冲的对齐。**我们会把每个对象的模型矩阵存放在一个大的统一缓冲（uniform buffer）里，并用*动态偏移*（dynamic offset）来选取。WebGPU 要求这些偏移是 `minUniformBufferOffsetAlignment` 的倍数，默认值为 256 字节。一个模型矩阵是 64 字节，所以每个对象占用一个 256 字节的槽位：第 $i$ 个对象位于字节 $256\,i$ 处，1024 个对象需要 256 KiB，其中 75 % 是填充。这种取舍（浪费一些字节，换来只需一次缓冲区写入、无需为每个对象创建绑定组）几乎总是值得的；按实例 ID 索引的存储缓冲区（storage buffer）可以去掉填充，这是练习之一。
 
 ## 4. 加载 glTF 2.0
 
@@ -265,9 +265,9 @@ $$
 
 其中 $\text{stride}$ 在存在时取 `byteStride`，否则取紧密排列的元素大小（`FLOAT` 类型的 `VEC3` 为 12 字节）。
 
-**算例。** 一个交错（interleaved）顶点缓冲区为每个顶点存放位置（12 字节）、法线（12）和 UV（8），因此 `byteStride = 32`。`NORMAL` 访问器的 `byteOffset = 12`。顶点 2 的法线起始于 $0 + 12 + 2 \cdot 32 = 76$，它的 $z$ 分量位于 $76 + 2 \cdot 4 = 84$。
+**算例。** 一个交错（interleaved）顶点缓冲为每个顶点存放位置（12 字节）、法线（12）和 UV（8），因此 `byteStride = 32`。`NORMAL` 访问器的 `byteOffset = 12`。顶点 2 的法线起始于 $0 + 12 + 2 \cdot 32 = 76$，它的 $z$ 分量位于 $76 + 2 \cdot 4 = 84$。下图把这个交错布局逐字节画了出来，请找到加粗边框的那一格。
 
-{% include blog_figure.liquid path="assets/img/blog/graphics-engine/03-accessor-layout.svg" caption="上述交错 bufferView 的字节布局：三个访问器（POSITION 偏移 0，NORMAL 偏移 12，TEXCOORD_0 偏移 24）共享 32 字节的同一个步长。高亮的格子就是算例，即字节 84 = 顶点 2 的法线的 z。索引访问器位于第二个紧密排列的 bufferView 中。" %}
+{% include blog_figure.liquid path="assets/img/blog/graphics-engine/03-accessor-layout.svg" caption="上述交错 bufferView 的字节布局：红、绿、蓝格子分别是位置、法线和 UV 的 4 字节分量，三个访问器（POSITION 偏移 0，NORMAL 偏移 12，TEXCOORD_0 偏移 24）共享 32 字节的同一个步长，因此同一个访问器的相邻元素相隔 32 字节。加粗边框的格子就是算例，即字节 84 = 顶点 2 的法线的 z。索引访问器位于另一个紧密排列的 bufferView 中，图中未画出。" %}
 
 下面的加载器处理 `.gltf` 和 `.glb`、外部与内嵌的缓冲区和图像、归一化整数属性，并在文件没有法线时自行计算法线。它有意跳过了稀疏访问器、蒙皮、形变目标、动画、相机和扩展（都是很好的练习）。请注意 GLB 头部的样子：魔数 `0x46546C67`（即 ASCII 字节 `glTF`），版本号 2，然后是标记为 `JSON` 和 `BIN` 的数据块（chunk）。
 
@@ -532,7 +532,7 @@ $$
 
 拖动改变 $\psi$ 和 $\phi$（俯仰角被钳制在 $\pm 90°$ 以内，使 `lookAt` 的 `up` 向量永远不会与视线方向平行），滚轮按几何方式缩放 $r$（每格 10 %，使缩放在任何距离上手感都相同），WASD 则在相机的水平面内移动目标点。
 
-{% include blog_figure.liquid path="assets/img/blog/graphics-engine/03-orbit-camera.svg" caption="使用默认参数（$r = 4$、$\psi = 0.6$、$\phi = 0.35$）的轨道相机：位于目标周围球面上的眼睛 $\mathbf{e}$，以及由 `lookAt` 算出的相机基（红色 $x$ 指向右，绿色 $y$ 指向上，蓝色 $z$ 指向后方，即背离目标）。视锥体按 60° 视场角绘制，为了清晰在 1.5 个单位处截断。" %}
+{% include blog_figure.liquid path="assets/img/blog/graphics-engine/03-orbit-camera.svg" caption="使用默认参数（$r = 4$、$\psi = 0.6$、$\phi = 0.35$）的轨道相机：位于目标 $\mathbf{t}$ 周围球面上的眼睛 $\mathbf{e}$，圆弧分别标出偏航角 $\psi$（在水平面内，从 $+z$ 轴量起）和俯仰角 $\phi$，细虚线是世界坐标轴；眼睛处的三根箭头是由 `lookAt` 算出的相机基（红色 $x_c$ 指向右，绿色 $y_c$ 指向上，蓝色 $z_c$ 指向后方，即背离目标）。视锥体按 60° 视场角绘制，为了清晰在 1.5 个单位处截断。" %}
 
 如图所示，相机的 $z$ 轴指向它所看对象的*反方向*，这就是投影矩阵最后一行为 $-1$ 的原因。
 
@@ -601,7 +601,7 @@ export class OrbitCamera {
 
 ## 6. 用 WGSL 编写 PBR 材质着色器
 
-理论部分见[图形学第 04 篇]({{ '/blog/2026/graphics-04-physically-based-rendering/' | relative_url }})；这里我们只做翻译。对于一个方向光，其按辐射度缩放的颜色为 $E_L$，从方向 $\mathbf{l}$ 到达，朝向观察者 $\mathbf{v}$ 的出射辐射度为
+理论部分见[图形学第 04 篇]({{ '/blog/2026/graphics-04-physically-based-rendering/' | relative_url }})；这里我们只做翻译。对于一个方向光，设其颜色（已乘以强度）为 $E_L$，光从方向 $\mathbf{l}$ 到达，表面法线为 $\mathbf{n}$，则朝向观察者 $\mathbf{v}$ 的出射辐射度为
 
 $$
 L_o = \Big( \underbrace{(1 - F)(1 - m)\,\frac{\mathbf{c}}{\pi}}_{\text{diffuse}} + \underbrace{D(\mathbf{h})\, V(\mathbf{v}, \mathbf{l})\, F(\mathbf{v}, \mathbf{h})}_{\text{specular}} \Big)\, E_L\, (\mathbf{n} \cdot \mathbf{l})\, s,
@@ -738,15 +738,17 @@ $$
 \mathbf{q} = P_L V_L \begin{pmatrix}\mathbf{p}\\ 1\end{pmatrix}, \qquad (u, v) = \Big(\tfrac{q_x + 1}{2},\ \tfrac{1 - q_y}{2}\Big), \qquad \text{lit} \iff q_z - b < \text{shadowMap}(u, v),
 $$
 
-其中 $b$ 是一个小的深度偏置（bias）。
+其中 $b$ 是一个小的深度偏置（bias）。第 6 节着色器里的 `shadowFactor` 并不只比较一次，而是在 $(u, v)$ 周围的 3×3 个纹素上各比较一次（每次比较硬件还会对 2×2 个相邻纹素做双线性滤波），再取平均；这称为百分比渐近过滤（PCF，percentage-closer filtering），能让阴影边缘变软。落在光源正交盒之外的点（代码中的 `inside` 为假）一律视为被照亮。
+
+如下图所示，左图是光源的正交盒，以及点 $\mathbf{p}$ 沿光线方向的投影；右图是对应的深度图。请对比右图标出的纹素处存储的深度与 $\mathbf{p}$ 自身的深度。
 
 {% include blog_figure.liquid path="assets/img/blog/graphics-engine/03-shadow-geometry.svg" caption="阴影通道，由计算得出。左：光源的正交视锥（黄色盒）包围着一个玩具场景（地面、球体、盒子）；箭头为光线方向。地面上的点 $\mathbf{p}$（黑色）沿光线方向投影到纹素 $(u, v)$；该射线上遇到的第一个表面是球体，所以 $\mathbf{p}$ 处于阴影中。右：真正从光源渲染出的深度图（越暗越靠近光源），并标出 $(u, v)$；其中存储的深度小于 $\mathbf{p}$ 自身的深度。" %}
 
-**阴影痤疮与偏置。**一个阴影贴图纹素覆盖接收面上有限大小的一小块。在相对光线倾斜 $\theta$ 角的表面上，世界尺寸为 $w$ 的一个纹素内部的深度，会在存储的中心值附近变化最多 $\tfrac{w}{2}\tan\theta$，因此没有偏置时，表面有一半会以条纹图案给自己投下阴影（**痤疮**，acne）。偏置过大则会让阴影与遮挡物分离（**彼得潘现象**，peter-panning）。所需的最小偏置随斜率增长，这就是 GPU 在光栅化器中提供*斜率缩放*（slope-scaled）深度偏置的原因。
+**阴影痤疮与偏置。**一个阴影贴图纹素覆盖接收面上有限大小的一小块。在表面法线与光线方向夹角为 $\theta$（$\theta = 0$ 即正对光源）的倾斜表面上，世界尺寸为 $w$ 的一个纹素内部的深度，会在存储的中心值附近变化最多 $\tfrac{w}{2}\tan\theta$，因此没有偏置时，表面有一半会以条纹图案给自己投下阴影（**痤疮**，acne）。偏置过大则会让阴影与遮挡物分离（**彼得潘现象**，peter-panning）。所需的最小偏置随斜率增长，这就是 GPU 在光栅化器中提供*斜率缩放*（slope-scaled）深度偏置的原因。
 
-**算例。**一个半径为 $R = 5$ m 的场景使用 2048² 的贴图，纹素大小为 $w = 2R/2048 \approx 4.9$ mm。在 45° 的斜面上，深度误差最大为 $w/2 \approx 2.4$ mm；换算成归一化深度（范围 $2R = 10$ m）就是 $2.4 \times 10^{-4}$。仅用一个常数 `shadowBias` 取 $5 \times 10^{-4}$，就能覆盖最大 $\arctan(5/2.44) \approx 64°$ 的斜率；对更陡的表面，则由光栅化器的斜率缩放偏置（阴影管线中的 `depthBiasSlopeScale`）来起作用。
+**算例。**一个半径为 $R = 5$ m 的场景使用 2048² 的贴图，纹素大小为 $w = 2R/2048 \approx 4.9$ mm。在 45° 的斜面上，深度误差最大为 $w/2 \approx 2.4$ mm；换算成归一化深度（范围 $2R = 10$ m）就是 $2.4 \times 10^{-4}$。仅用一个常数 `shadowBias` 取 $5 \times 10^{-4}$，就能覆盖最大 $\arctan(5/2.44) \approx 64°$ 的斜率；对更陡的表面，则由光栅化器的斜率缩放偏置（阴影管线中的 `depthBiasSlopeScale`）来起作用。下图在二维中重现了痤疮，并画出所需偏置随斜率角变化的曲线。
 
-{% include blog_figure.liquid path="assets/img/blog/graphics-engine/03-shadow-bias.svg" caption="阴影痤疮，在 2D 中计算得出。左：一个倾斜 30° 的接收面处于来自上方的光照下；阴影贴图每个纹素存储一个深度（阶梯状）。没有偏置时，图中红色的接收点位于其所属纹素存储深度的后面，被错误地置于阴影中，呈规则的条纹图案。右：消除痤疮所需的偏置 $\tfrac{w}{2}\tan\theta$ 随斜率角的变化，并对比常数偏置（水平线）和常数加斜率缩放偏置（曲线）。" %}
+{% include blog_figure.liquid path="assets/img/blog/graphics-engine/03-shadow-bias.svg" caption="阴影痤疮，在 2D 中计算得出。左：一个倾斜 30° 的接收面处于来自上方的光照下；阴影贴图每个纹素存储一个深度（阶梯状）。没有偏置时，图中红色的接收点位于其所属纹素存储深度的后面，被错误地置于阴影中，呈规则的条纹图案。右：消除痤疮所需的偏置 $\tfrac{w}{2}\tan\theta$ 随斜率角的变化，并对比常数偏置（红色水平虚线，刚好够用于 30°）和常数加斜率缩放偏置（绿色曲线）；红色浅色区域是常数偏置不足、仍会出现痤疮的斜率范围，灰色竖点线标出左图所用的 30°。" %}
 
 下面的小部件在一个 2D 场景上执行与着色器完全相同的测试 `depth - bias <= stored`，并与精确可见性进行比较。先把偏置设为零，观察阴影痤疮的条纹；增大偏置直到条纹消失；再继续增大，就会看到光线从盒子底下漏出（peter-panning，悬浮阴影）。打开斜率缩放项并倾斜光源：它只需小得多的常数偏置就能消除斜坡上的痤疮。
 
@@ -1068,7 +1070,7 @@ passes
 // lifetimes: shadowMap [0,1], hdr [1,2], depth [1,1], backbuffer [2,2]
 ```
 
-`depth` 的生命周期在 `opaque` 通道内部就结束了，所以渲染器可以把它的 `depthStoreOp` 设为 `'discard'`：在基于分块（tile-based）的移动 GPU 上，这样可以省去把整个深度缓冲区写回内存的开销。生命周期还能告诉我们哪些瞬态纹理可以共享内存。下面两张图展示了同一个编译器处理一个更大、更真实的帧。
+`depth` 的生命周期在 `opaque` 通道内部就结束了，所以渲染器可以把它的 `depthStoreOp` 设为 `'discard'`：在基于分块（tile-based）的移动 GPU 上，这样可以省去把整个深度缓冲写回内存的开销。生命周期还能告诉我们哪些瞬态纹理可以共享内存。下面两张图展示了同一个编译器处理一个更大、更真实的帧。
 
 {% include blog_figure.liquid path="assets/img/blog/graphics-engine/03-frame-graph.svg" caption="一个更完整的帧的数据流，由图脚本中 `PassList.compile` 的 Python 移植版计算得出：通道（圆角框）按执行顺序从左到右排列，资源（灰色标签）位于边上。被剔除的通道 `ssaoDebug`（虚线）写入的纹理无人读取，所以它从不运行。" %}
 
@@ -1454,7 +1456,7 @@ export class DebugPanel {
 
 {% include blog_figure.liquid path="assets/img/blog/graphics-engine/03-frame-budget.svg" localized="true" caption="渲染循环的 CPU 计时模型（假设的单次调用开销，已在图脚本中说明；不是实测）。左：三种提交策略下 CPU 帧时间随对象数量的变化：每个对象一次缓冲区写入加一个绑定组（朴素做法）、一次批量写入加动态偏移（本引擎）以及实例化。虚线是 60 Hz 和 120 Hz 的预算。右：3,000 个对象时时间的去向。" %}
 
-该图是模型而非实测，但它传达的信息与性能分析器在实践中显示的一致：在 GPU 忙起来之前很久，按对象的 API 调用就已主导了 CPU 时间。我们引擎中单次 `writeBuffer` 加动态偏移，把拐点移到了很靠右的位置；实例化（一次绘制多个网格副本）或 GPU 驱动渲染（第 02 篇）会把它推得更远。
+请先看左图：朴素做法的曲线最早越过 60 Hz 预算线；再看右图，按该模型的假设，3,000 个对象时朴素做法约 40 ms（其中逐对象的写入与绑定组创建约占 30 ms），本引擎约 11 ms，实例化约 1.7 ms。该图是模型而非实测，但它传达的信息与性能分析器在实践中显示的一致：在 GPU 忙起来之前很久，按对象的 API 调用就已主导了 CPU 时间。我们引擎中单次 `writeBuffer` 加动态偏移，把拐点移到了很靠右的位置；实例化（一次绘制多个网格副本）或 GPU 驱动渲染（第 02 篇）会把它推得更远。
 
 ### 10.1 引擎跑起来的样子
 
@@ -1553,7 +1555,7 @@ export class DebugPanel {
 
 ## 练习
 
-1. **反向 Z。**修改 `perspective`，使近平面映射到 1、远平面映射到 0，把深度缓冲区改为 `depth32float`，清除值改为 0，比较函数改为 `'greater'`。重做算例：原点现在得到的 NDC 深度是多少，为什么精度更好？
+1. **反向 Z。**修改 `perspective`，使近平面映射到 1、远平面映射到 0，把深度缓冲改为 `depth32float`，清除值改为 0，比较函数改为 `'greater'`。重做算例：原点现在得到的 NDC 深度是多少，为什么精度更好？
    <details markdown="1"><summary>提示</summary>
    交换 $n$ 和 $f$ 的角色：$P_{22} = n/(f-n)$，$P_{23} = nf/(f-n)$。此时原点落在 $n(f-3)/\big(3(f-n)\big) \approx 0.032$。浮点数在 0 附近精度最高，而现在*远处*的几何体恰好落在那里，从而抵消了透视深度的双曲线分布。
    </details>
@@ -1562,7 +1564,7 @@ export class DebugPanel {
    每个对象 192 字节（256 减 64）。按网格对绘制列表排序，按网格连续写入矩阵，并把第一个槽位作为 `firstInstance` 传入。
    </details>
 3. **法线贴图。**扩展加载器以读取 `TANGENT` 和 `normalTexture`，并在着色器中用 TBN 矩阵扰动 `N`。当文件没有切线时应该怎么办？
-4. **级联阴影。**按公式 $z_i = \lambda\, z_i^{\log} + (1-\lambda)\, z_i^{\text{lin}}$（其中 $z_i^{\log} = n (f/n)^{i/3}$，$z_i^{\text{lin}} = n + (f-n)\, i/3$） 选取距离，把相机视锥分成 3 个级联，并为每个级联拟合一个正交光源矩阵。
+4. **级联阴影。**按公式 $z_i = \lambda\, z_i^{\log} + (1-\lambda)\, z_i^{\text{lin}}$（其中 $\lambda \in [0, 1]$ 是对数分割与线性分割的混合系数，$z_i^{\log} = n (f/n)^{i/3}$，$z_i^{\text{lin}} = n + (f-n)\, i/3$，$i = 0, 1, 2, 3$ 给出各级联的边界） 选取距离，把相机视锥分成 3 个级联，并为每个级联拟合一个正交光源矩阵。
 5. **测试加载器。**在内存中构建一个 3 顶点的 glTF（JSON 加上编码为 `data:` URI 的 36 字节缓冲区），用 `readAccessor` 解析它，并断言位置；然后添加一个 `byteStride = 32` 的交错版本，并检验第 4 节的算例。
    <details markdown="1"><summary>提示</summary>
    `readAccessor` 只需要 `json` 和一个 `ArrayBuffer` 数组，所以你可以在 Node 中不用 `fetch` 直接调用它。

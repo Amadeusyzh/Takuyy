@@ -21,7 +21,7 @@ related_posts: false
 ## 前置知识
 
 - 向量、点积与叉积；凸集（任意两点之间的线段都包含在集合内）。
-- 牛顿定律与冲量（冲量 $\mathbf{J}$ 产生 $\Delta \mathbf{v} = \mathbf{J}/m$）。
+- 牛顿定律与冲量（力对时间的积分；冲量 $\lambda$ 使质量为 $m$ 的物体速度改变 $\Delta v = \lambda/m$）。
 - [图形学第 07 篇]({{ '/blog/2026/graphics-07-physically-based-simulation/' | relative_url }})中的辛欧拉法与 XPBD；[引擎第 01 篇]({{ '/blog/2026/graphics-engine-01-anatomy-of-an-engine/' | relative_url }})中的固定时间步长循环。
 - Python 与 NumPy。
 
@@ -29,7 +29,7 @@ related_posts: false
 
 刚体（rigid body）保存质量 $m$、惯性张量 $\mathbf{I}$、位置 $\mathbf{x}$、朝向 $\mathbf{q}$、线速度 $\mathbf{v}$ 和角速度 $\boldsymbol{\omega}$，外加一个或多个碰撞**形状**（shape）：球、盒、胶囊、凸包、三角网格、高度场。每次调用 `step(dt)` 都运行相同的阶段（见图）：
 
-1. **积分外力**：$\mathbf{v} \mathrel{+}= h\,\mathbf{M}^{-1}\mathbf{f}_{\text{ext}}$（重力、用户施加的力）。
+1. **积分外力**：$\mathbf{v} \mathrel{+}= h\,\mathbf{M}^{-1}\mathbf{f}_{\text{ext}}$（重力、用户施加的力；$h$ 为本步的时间步长，$\mathbf{M}$ 为由 $m$ 和 $\mathbf{I}$ 组成的质量矩阵）。
 2. **粗测阶段**（broad phase）：找出包围盒重叠的物体对。代价低，结果保守。
 3. **细测阶段**（narrow phase）：对每一对做精确几何计算：是否接触？在哪里？有多深？
 4. **接触流形**（contact manifold）：若干个共享同一法线和穿透深度的接触点，并与上一帧的接触点匹配。
@@ -78,13 +78,13 @@ print(n * (n - 1) // 2, len(cand), len(true))   # all pairs, x-candidates, true 
 
 为什么这样有效？若盒子均匀分布在宽度为 $L$ 的世界中，平均半宽为 $\bar r$，则两个区间在 $x$ 上重叠的概率约为 $4\bar r / L$，候选对的期望数量约为 $\tfrac{n^2}{2}\cdot\tfrac{4\bar r}{L}$。如果世界随物体数量增长而保持密度不变（二维中 $L \propto \sqrt{n}$），候选对的增长是 $n^{1.5}$ 而不是 $n^2$，而真正的重叠只随 $n$ 线性增长。
 
-实践中有两个工程技巧让 SAP 很快。帧与帧之间物体只移动一点点，排好序的列表几乎仍然有序，**插入排序**能以接近 $O(n)$ 的代价修复它。此外，引擎并不重新扫描，而是在两个端点交换位置时记录重叠的开始和结束事件。
+实践中有两个工程技巧让 SAP 很快。帧与帧之间物体只移动一点点，排好序的列表几乎仍然有序，**插入排序**能以接近 $O(n)$ 的代价修复它。此外，引擎并不重新扫描，而是在两个端点交换位置时记录重叠的开始和结束事件。下图用随机盒子实测了上面的估计：左图看哪些盒子真正重叠，右图比较三类物体对数量的增长速度。
 
 {% include blog_figure.liquid path="assets/img/blog/graphics-engine/05-sweep-and-prune.svg" caption="随机盒子上的扫描与剪枝（脚本实际运行结果）。左：40 个盒子；场景下方的灰色条是它们按扫描顺序排列的 x 区间，红色盒子至少参与一个真正的 AABB 重叠。右：密度不变时各类物体对数量随 $n$ 的变化（双对数坐标）。全部物体对按 $n^2$ 增长；SAP 的 x 候选对沿虚线估计 $\frac{n^2}{2}\frac{4\bar r}{L}\propto n^{1.5}$ 增长；真正的重叠大致线性增长。蓝线与红线之间的差距是细测阶段的无用功，第二个轴或一棵树可以把它去掉。" %}
 
 ### 动态 AABB 树
 
-当许多物体沿扫描轴排成一列（例如一长排箱子）时，SAP 会退化。因此大多数现代引擎（Box2D、Bullet、Jolt；PhysX 提供 SAP 等多种选项）使用**动态 AABB 树**：一种层次包围体（bounding volume hierarchy, BVH，见[图形学第 05 篇]({{ '/blog/2026/graphics-05-ray-and-path-tracing/' | relative_url }})），叶子是按边距和预测运动放大过的**胖** AABB（fat AABB）。只有当物体离开自己的胖盒时才重新插入。插入时选择使表面积增量最小的兄弟节点（表面积启发式），并通过树旋转保持平衡。物体对查询就是对树的同步下降。开放世界还会为粒子和大量等尺寸物体加上**空间哈希**（spatial hashing）或均匀网格。
+当许多物体沿扫描轴排成一列（例如一长排箱子）时，SAP 会退化。因此大多数现代引擎（Box2D、Bullet、Jolt；PhysX 提供 SAP 等多种选项）使用**动态 AABB 树**：一种包围体层次结构（bounding volume hierarchy, BVH，见[图形学第 05 篇]({{ '/blog/2026/graphics-05-ray-and-path-tracing/' | relative_url }})），叶子是按边距和预测运动放大过的**胖** AABB（fat AABB）。只有当物体离开自己的胖盒时才重新插入。插入时选择使表面积增量最小的兄弟节点（表面积启发式），并通过树旋转保持平衡。物体对查询就是对树的同步下降。开放世界还会为粒子和大量等尺寸物体加上**空间哈希**（spatial hashing）或均匀网格。
 
 ## 3. 细测阶段：精确接触
 
@@ -110,7 +110,7 @@ $$
 s_A(\mathbf{d}) = \arg\max_{\mathbf{a}\in A} \mathbf{a}\cdot\mathbf{d}, \qquad s_{A\ominus B}(\mathbf{d}) = s_A(\mathbf{d}) - s_B(-\mathbf{d}).
 $$
 
-多边形的支撑点是点积最大的顶点；球的支撑点是 $\mathbf{c} + r\,\mathbf{d}/\lVert\mathbf{d}\rVert$；胶囊的支撑点是线段的支撑点加上球的支撑点。这就是 GJK 能用同一段代码处理任意凸形状的原因。
+第二个等式成立，是因为 $(\mathbf{a}-\mathbf{b})\cdot\mathbf{d} = \mathbf{a}\cdot\mathbf{d} + \mathbf{b}\cdot(-\mathbf{d})$，两项可以分别取最大。多边形的支撑点是点积最大的顶点；球的支撑点是 $\mathbf{c} + r\,\mathbf{d}/\lVert\mathbf{d}\rVert$；胶囊的支撑点是线段的支撑点加上球的支撑点。这就是 GJK 能用同一段代码处理任意凸形状的原因。
 
 GJK 用支撑点构建一个不断增长的**单纯形**（simplex）：点、线段、三角形，三维中还有四面体。
 
@@ -119,7 +119,7 @@ GJK 用支撑点构建一个不断增长的**单纯形**（simplex）：点、�
 3. 把 $\mathbf{p}$ 加入 $S$。只保留其区域包含原点的子单纯形（顶点、边或整个单纯形），并令 $\mathbf{d}$ 从该特征指向原点。
 4. 若单纯形包围了原点：**碰撞**。否则回到第 2 步。
 
-在二维中，"垂直于边 $\mathbf{ab}$ 并指向原点"的方向用向量三重积计算：$(\mathbf{ab}\times\mathbf{ao})\times\mathbf{ab} = \mathbf{ao}\,(\mathbf{ab}\cdot\mathbf{ab}) - \mathbf{ab}\,(\mathbf{ab}\cdot\mathbf{ao})$。整个算法一屏就能写完：
+在二维中，"垂直于边 $\mathbf{ab}$ 并指向原点"的方向用向量三重积计算：$(\mathbf{ab}\times\mathbf{ao})\times\mathbf{ab} = \mathbf{ao}\,(\mathbf{ab}\cdot\mathbf{ab}) - \mathbf{ab}\,(\mathbf{ab}\cdot\mathbf{ao})$。对三角形 $\mathbf{abc}$（$\mathbf{a}$ 是最新的点），同样的计算用在 $\mathbf{ab}$、$\mathbf{ac}$ 两条边上（代码中的 `ab_perp`、`ac_perp` 指向远离第三个顶点的一侧）：原点若在某条边的外侧，就丢掉对面的顶点，沿该法线继续搜索；若在两条边的内侧，原点就在三角形内部，发生碰撞。边 $\mathbf{bc}$ 在上一轮已经排除。整个算法一屏就能写完：
 
 ```python
 import numpy as np
@@ -224,7 +224,7 @@ n, depth = epa(A, B, s)
 print(n, depth)   # -> [ 0.9701425  -0.24253563] 0.7276068751089989
 ```
 
-用一个简单情形检查符号约定。若 $A$ 在左，$B$ 从右侧与它重叠，则 $A\ominus B$ 大部分位于 $x$ 负半轴，只在 $+x$ 一侧稍稍越过原点。EPA 返回 $\mathbf{n} = (+1, 0)$，把 $B$ 推动 $d\,\mathbf{n}$ 就是把它向右推出 $A$。
+用一个简单情形检查符号约定。若 $A$ 在左，$B$ 从右侧与它重叠，则 $A\ominus B$ 大部分位于 $x$ 负半轴，只在 $+x$ 一侧稍稍越过原点。EPA 返回 $\mathbf{n} = (+1, 0)$，把 $B$ 推动 $d\,\mathbf{n}$ 就是把它向右推出 $A$。一般地，$A\ominus(B + d\,\mathbf{n}) = (A\ominus B) - d\,\mathbf{n}$，边界点 $d\,\mathbf{n}$ 恰好被移到原点，所以平移之后两个形状刚好接触。下图在同一对形状上运行 EPA。
 
 {% include blog_figure.liquid path="assets/img/blog/graphics-engine/05-epa.svg" caption="同一对形状上的 EPA（脚本输出）。第一个面板：初始多胞形就是 GJK 最后的三角形（红）。中间：最终多胞形，其最近的边位于 $A\ominus B$ 的边界上；从原点出发的绿色箭头是穿透向量 $d\,\mathbf{n}$。右：把 $B$（虚线为原位置）平移 $d\,\mathbf{n}$ 后，两个形状恰好接触。" %}
 
@@ -250,7 +250,7 @@ $$
 \dot C = \mathbf{J}\mathbf{u}, \qquad \mathbf{J} = \big(-\mathbf{n}^\top,\ -(\mathbf{r}_A\times\mathbf{n})^\top,\ \mathbf{n}^\top,\ (\mathbf{r}_B\times\mathbf{n})^\top\big),
 $$
 
-其中 $\mathbf{r}_A, \mathbf{r}_B$ 是从各自质心指向接触点的向量。接触只能推、不能拉，所以其冲量 $\lambda$ 满足**互补**（complementarity）条件
+其中 $\mathbf{J}$ 是这个接触的雅可比行，$\mathbf{r}_A, \mathbf{r}_B$ 是从各自质心指向接触点的向量；与 $\mathbf{u}$ 对应的质量矩阵为 $\mathbf{M} = \operatorname{diag}(m_A\mathbf{1}, \mathbf{I}_A, m_B\mathbf{1}, \mathbf{I}_B)$。接触只能推、不能拉，所以其冲量 $\lambda$ 满足**互补**（complementarity）条件
 
 $$
 \lambda \ge 0, \qquad \mathbf{J}\mathbf{u}^+ + b \ge 0, \qquad \lambda\,(\mathbf{J}\mathbf{u}^+ + b) = 0,
@@ -260,7 +260,7 @@ $$
 
 ### 顺序冲量 = 投影 Gauss–Seidel（PGS）
 
-一次处理一个约束就够了。施加冲量 $\Delta\lambda$ 会让速度改变 $\mathbf{M}^{-1}\mathbf{J}^\top\Delta\lambda$。要求 $\mathbf{J}\mathbf{u}^+ + b = 0$，得到
+一次处理一个约束就够了。施加冲量 $\Delta\lambda$ 会让速度改变 $\mathbf{M}^{-1}\mathbf{J}^\top\Delta\lambda$。于是 $\mathbf{u}^+ = \mathbf{u} + \mathbf{M}^{-1}\mathbf{J}^\top\Delta\lambda$。要求 $\mathbf{J}\mathbf{u}^+ + b = 0$，即 $\mathbf{J}\mathbf{u} + b + \mathbf{J}\mathbf{M}^{-1}\mathbf{J}^\top\Delta\lambda = 0$，解得
 
 $$
 \Delta\lambda = -\frac{\mathbf{J}\mathbf{u} + b}{\mathbf{J}\mathbf{M}^{-1}\mathbf{J}^\top} = -m_{\text{eff}}\,(\mathbf{J}\mathbf{u} + b), \qquad m_{\text{eff}} = \big(\mathbf{J}\mathbf{M}^{-1}\mathbf{J}^\top\big)^{-1}.
@@ -322,7 +322,7 @@ $$
 \lambda = -h\Big(k\,(C + h\,\mathbf{J}\mathbf{u}^+) + c\,\mathbf{J}\mathbf{u}^+\Big).
 $$
 
-对 $\lambda$ 求解，经过几行代数得到
+对 $\lambda$ 求解。展开括号，代入 $\mathbf{J}\mathbf{u}^+ = \mathbf{J}\mathbf{u} + \lambda/m$、$k = m\omega^2$、$c = 2m\zeta\omega$，并利用 $(h^2 k + h c)/m = h^2\omega^2 + 2\zeta h\omega$。记 $a = h\omega\,(2\zeta + h\omega)$，得 $\lambda\,(1 + a) = -m\,(h\omega^2 C + a\,\mathbf{J}\mathbf{u})$。两边除以 $1 + a$，再从括号中提出 $a$（因为 $h\omega^2/a = \omega/(2\zeta + h\omega)$），就得到
 
 $$
 \lambda = -m\,\underbrace{\frac{a}{1+a}}_{\text{mass scale}}\Big(\mathbf{J}\mathbf{u} + \underbrace{\frac{\omega}{2\zeta + h\omega}}_{\text{bias rate}}\, C\Big), \qquad a = h\omega\,(2\zeta + h\omega).
@@ -359,7 +359,7 @@ $$
 
 ## 6. 关节与关节体
 
-**关节**（joint）是两个刚体之间的约束。铰链移除 6 个相对自由度中的 5 个；球关节移除 3 个；滑动关节同样移除 5 个，但允许平移。游戏引擎对待关节和对待接触完全一样：在 $\mathbf{J}$ 中增加几行，用同一个 PGS/TGS 循环求解。这就是**最大坐标**（maximal coordinates）：每个刚体保留 6 个自由度，由约束努力把它们连在一起。
+**关节**（joint）是两个刚体之间的约束。铰链移除 6 个相对自由度中的 5 个；球关节移除 3 个；滑动关节同样移除 5 个，但允许平移。游戏引擎对待关节和对待接触完全一样：在 $\mathbf{J}$ 中增加几行，用同一个 PGS/TGS 循环求解。这就是**最大坐标**（maximal coordinates）：每个刚体保留 6 个自由度，靠约束把它们维系在一起。
 
 机器人是长链：7 自由度机械臂、30 多个关节的人形机器人、20 个自由度的手。它们常常有很大的质量比，比如沉重的基座与轻巧的手指，或者轻的连杆承载重的负载。在最大坐标下，每个关节误差都必须由迭代求解器消除，残余误差表现为**关节漂移**：连杆明显分开，或链条在负载下被拉长。
 
@@ -369,7 +369,7 @@ $$
 \mathbf{M}(\mathbf{q})\,\ddot{\mathbf{q}} + \mathbf{c}(\mathbf{q},\dot{\mathbf{q}}) = \boldsymbol{\tau} + \mathbf{J}_c^\top\boldsymbol{\lambda}_c,
 $$
 
-其中质量矩阵依赖于构型，$\mathbf{M}(\mathbf{q}) = \sum_i m_i\,\mathbf{J}_i^\top\mathbf{J}_i$（再加上转动项）；$\mathbf{c}$ 为科里奥利项与重力项，$\boldsymbol{\tau}$ 为关节力矩，$\boldsymbol{\lambda}_c$ 为接触冲量。**Featherstone** 的关节体算法（articulated-body algorithm, ABA）对 $n$ 个连杆组成的树以 $O(n)$ 计算 $\ddot{\mathbf{q}}$，无需构造 $\mathbf{M}$。复合刚体算法（CRBA）以 $O(n^2)$ 构造 $\mathbf{M}$，递归牛顿-欧拉算法（RNEA）计算逆动力学。控制器也需要这些量：质量矩阵、重力力矩和雅可比矩阵正是机器人控制器的工作对象。
+其中质量矩阵依赖于构型，$\mathbf{M}(\mathbf{q}) = \sum_i m_i\,\mathbf{J}_i^\top\mathbf{J}_i$（$\mathbf{J}_i$ 为连杆 $i$ 质心的位置雅可比，再加上转动项）；$\mathbf{c}$ 为科里奥利项与重力项，$\boldsymbol{\tau}$ 为关节力矩，$\boldsymbol{\lambda}_c$ 为接触冲量。**Featherstone** 的关节体算法（articulated-body algorithm, ABA）对 $n$ 个连杆组成的树以 $O(n)$ 计算 $\ddot{\mathbf{q}}$，无需构造 $\mathbf{M}$。复合刚体算法（composite rigid body algorithm, CRBA）以 $O(n^2)$ 构造 $\mathbf{M}$，递归牛顿-欧拉算法（recursive Newton–Euler algorithm, RNEA）计算逆动力学。控制器也需要这些量：质量矩阵、重力力矩和雅可比矩阵正是机器人控制器的工作对象。
 
 下图在一个连杆轻、末端质量重的 4 连杆摆上运行两种表述。
 

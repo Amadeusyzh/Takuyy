@@ -23,7 +23,7 @@ mermaid:
 
 ## 前置知识
 
-- 实时管线：G-buffer、时间性抗锯齿、光线追踪效果与降噪（[图形学第 06 篇]({{ '/blog/2026/graphics-06-real-time-ray-tracing/' | relative_url }})、[图形学第 11 篇]({{ '/blog/2026/graphics-11-real-time-rendering-techniques/' | relative_url }})）。
+- 实时管线：G-buffer、时间性抗锯齿（TAA）、光线追踪效果与去噪（[图形学第 06 篇]({{ '/blog/2026/graphics-06-real-time-ray-tracing/' | relative_url }})、[图形学第 11 篇]({{ '/blog/2026/graphics-11-real-time-rendering-techniques/' | relative_url }})）。
 - 3D 高斯泼溅（[神经渲染第 04 篇]({{ '/blog/2026/neural-rendering-04-3d-gaussian-splatting/' | relative_url }})）。
 - 深度学习基础：MLP、Transformer、扩散模型（[世界模型第 02 篇]({{ '/blog/2026/world-models-02-generative-modeling-foundations/' | relative_url }})）。
 
@@ -32,13 +32,15 @@ mermaid:
 把每个引擎组件放到一个四级刻度上会很有帮助：
 
 1. **经典**：手写算法（光栅化器、阴影贴图、PGS 求解器）。
-2. **ML 辅助**：网络帮助一个经典阶段，但可以去掉，例如对路径追踪图像做 ML 降噪，或者基于 TAA 输入的 ML 超分。
+2. **ML 辅助**：网络帮助一个经典阶段，但可以去掉，例如对路径追踪图像做 ML 去噪，或者基于 TAA 输入的 ML 超分辨率。
 3. **混合**：网络是管线中的一个*组件*，有工程化的接口：在着色器中解码的神经纹理、运行时在线训练的辐射缓存、与网格一起绘制的泼溅场景。
 4. **完全神经**：网络*就是*引擎。它把过去的帧和动作映射为下一帧，没有显式的几何、物理或游戏逻辑。
 
-{% include blog_figure.liquid path="assets/img/blog/graphics-engine/06-spectrum.svg" localized="true" caption="截至 2026 年 11 月各引擎组件所处的位置（作者根据本文来源做出的评估）。实色条：已部署在发售的游戏或引擎中；虚线延伸：研究或公开演示。图像重建（超分、帧生成、降噪）是当今引擎中神经化程度最高的部分。物理和游戏逻辑在产品中仍是经典的，而在研究中，完全神经的世界模型会隐式地生成它们。" %}
+下图把各引擎组件放到这四级刻度上：每一行是一个组件，条延伸到哪一列，就表示它目前神经化到哪一级。
 
-为什么是现在？三件事同时到位。第一，**每块 GPU 都有张量硬件**：RTX 张量核心、RDNA 4 的 ML 加速器、Intel XMX 单元执行小矩阵乘法远快于着色器 ALU。第二，**像素代价之墙**：高帧率 4K 加路径追踪，每个像素的代价远超 GPU 的承受能力，于是重建像素比渲染像素更便宜。第三，**生成模型**如今能以可用的质量生成图像、视频、3D 资产和代码。本文其余部分按图中从下到上的顺序逐一讨论这些组件。
+{% include blog_figure.liquid path="assets/img/blog/graphics-engine/06-spectrum.svg" localized="true" caption="截至 2026 年 11 月各引擎组件所处的位置（作者根据本文来源做出的评估）。每行一个组件，条越往右延伸，神经化程度越高。实色条：已部署在发售的游戏或引擎中；虚线延伸：研究或公开演示。图像重建（超分辨率、帧生成、去噪）是当今引擎中神经化程度最高的部分。物理和游戏逻辑在产品中仍是经典的，而在研究中，完全神经的世界模型会隐式地生成它们。" %}
+
+为什么是现在？三件事同时到位。第一，**每块 GPU 都有张量硬件**：RTX 张量核心、RDNA 4 的 ML 加速器、Intel XMX 单元执行小矩阵乘法远快于着色器 ALU。第二，**像素代价之墙**：高帧率 4K 加路径追踪，每个像素的代价远超 GPU 的承受能力，于是重建像素比渲染像素更便宜。第三，**生成模型**如今能以可用的质量生成图像、视频、3D 资产和代码。本文其余部分按图中从上到下的顺序逐一讨论这些组件。
 
 ## 2. 实时引擎中的神经渲染
 
@@ -50,14 +52,16 @@ mermaid:
 
 | 技术 | 当前版本 | 神经化的部分 | 硬件 |
 | --- | --- | --- | --- |
-| **NVIDIA DLSS 4**（2025 年 1 月） | 超分辨率与光线重建（Ray Reconstruction）采用 Transformer 模型；**多帧生成**（MFG）每个渲染帧最多生成 3 帧 | 超分、降噪、帧生成 | MFG：RTX 50；Transformer SR/RR：所有 RTX |
+| **NVIDIA DLSS 4**（2025 年 1 月） | 超分辨率与光线重建（Ray Reconstruction）采用 Transformer 模型；**多帧生成**（MFG）每个渲染帧最多生成 3 帧 | 超分辨率、去噪、帧生成 | MFG：RTX 50；Transformer SR/RR：所有 RTX |
 | **NVIDIA DLSS 4.5**（2026 年 1 月发布消息） | 第二代 Transformer 超分辨率；**动态 MFG** 与 **6X** 模式（最多生成 5 帧），2026 年 3 月推出；DLSS 4.5 光线重建自 2026 年 8 月起抢先体验 | 同上，模型更大 | 6X 与动态 MFG：RTX 50；SR：所有 RTX |
-| **AMD FSR "Redstone"**（2025 年 12 月） | ML **超分**（原 FSR 4）、ML **帧生成**、**Ray Regeneration**（ML 降噪）以及 **Radiance Caching**（技术预览） | 超分、帧生成、降噪、神经辐射缓存 | ML 功能：RDNA 4（Radeon RX 9000）；旧 GPU 使用解析式回退方案 |
+| **AMD FSR "Redstone"**（2025 年 12 月） | ML **超分**（原 FSR 4）、ML **帧生成**、**Ray Regeneration**（ML 去噪）以及 **Radiance Caching**（技术预览） | 超分辨率、帧生成、去噪、神经辐射缓存 | ML 功能：RDNA 4（Radeon RX 9000）；旧 GPU 使用解析式回退方案 |
 | **Intel XeSS 3**（SDK 3.0，2026 年 3 月） | 超分加多帧生成（XeSS-MFG） | 超分、帧生成 | Arc GPU |
 
 官方来源：[DLSS 4.5 发布消息](https://www.nvidia.com/en-us/geforce/news/dlss-4-5-dynamic-multi-frame-gen-6x-2nd-gen-transformer-super-res/)、[DLSS 4.5 动态 MFG 上线](https://www.nvidia.com/en-us/geforce/news/nvidia-app-dlss-4-5-dynamic-multi-frame-generation-available-now/)、[面向开发者的 AMD FSR Redstone](https://gpuopen.com/learn/amd-fsr-redstone-developers-neural-rendering/)、[XeSS 发布页](https://github.com/intel/xess/releases)。
 
-{% include blog_figure.liquid path="assets/img/blog/graphics-engine/06-upscale-framegen.svg" caption="时间轴上的超分与 4 倍帧生成。GPU 以内部分辨率渲染 R0（蓝），对其超分（橙），并生成 3 个中间帧（绿）。显示端上，渲染帧（蓝）与生成帧（浅绿）交替出现。R0 与 R1 之间的插值帧需要 R1，因此 R0 只能在 R1 渲染完之后才能显示：帧生成让画面成倍流畅，但大约增加一个渲染帧的延迟（红色箭头）。" %}
+下图把超分和帧生成画在时间轴上，重点看红色箭头比灰色箭头多出来的那一段：
+
+{% include blog_figure.liquid path="assets/img/blog/graphics-engine/06-upscale-framegen.svg" caption="时间轴上的超分辨率与 4 倍帧生成。GPU 以内部分辨率渲染 R0（蓝），对其超分（橙），并生成 3 个中间帧（绿）。显示端上，渲染帧（蓝）与生成帧（浅绿）交替出现。R0 与 R1 之间的插值帧需要 R1，因此 R0 只能在 R1 渲染完之后才能显示：帧生成让画面成倍流畅，但大约增加一个渲染帧的延迟（红色箭头；灰色箭头是不开帧生成时，R0 超分后立即显示的情形）。" %}
 
 用一个模型最容易看清这种取舍。设 $t_n$ 为原生分辨率下渲染一帧的 GPU 时间，把它分成与分辨率无关的部分 $t_f$ 和与像素数成正比的部分。设每轴分辨率缩放为 $s$，超分代价为 $t_u$，帧生成倍数为 $k$（1 表示关闭），每个生成帧代价为 $t_g$，CPU 时间为 $t_c$（与 GPU 流水并行）：
 
@@ -69,6 +73,8 @@ $$
 \text{fps}_{\text{shown}} = \min\!\Big(\frac{1000\,k}{t_{\text{frame}}},\ f_{\text{refresh}}\Big), \qquad
 L \approx t_c + t_{\text{gpu}} + [k>1]\,t_{\text{frame}} + \tfrac{1}{2}\,\frac{1000}{\text{fps}_{\text{shown}}}.
 $$
+
+符号补充：$t_{\text{gpu}}$ 是每个渲染帧的 GPU 总时间；$t_{\text{frame}}$ 是相邻两个渲染帧的间隔（CPU 与 GPU 流水并行，取较慢的一方）；$f_{\text{refresh}}$ 是显示器刷新率（Hz）；乘 1000 是把毫秒换算成秒，所以 $1000/t_{\text{frame}}$ 是渲染帧率，再乘 $k$ 就是显示帧率；$t_u$ 只在 $s<1$ 时计入（原生分辨率不需要超分）；$[k>1]$ 是指示函数，条件成立时取 1，否则取 0。
 
 延迟 $L$（单位 ms）包括处理输入的 CPU 工作、GPU 工作、$k > 1$ 时为插值而多保留的一帧，以及平均半个显示间隔。它忽略了操作系统、显示器以及 NVIDIA Reflex 之类的技术，所以只能当作示意，而不是测量值。
 
@@ -93,7 +99,9 @@ for scale, k in [(1.0, 1), (0.67, 1), (0.67, 4)]:
     print(scale, k, [round(v, 1) for v in frame_model(scale, k)])
 ```
 
-{% include blog_figure.liquid path="assets/img/blog/graphics-engine/06-fps-latency.svg" caption="上述模型在四种分辨率缩放下的结果（$t_n = 20$ ms，不限刷新率）。左：显示帧率随帧生成倍数 $k$ 几乎线性增长。右：降低内部分辨率时延迟下降，但只要 $k>1$ 延迟就跳升约一个渲染帧，之后每多生成一帧还会缓慢上升。帧生成换来流畅度，超分换来响应速度。" %}
+如下图所示，让 $k$ 从 1 取到 6、$s$ 取四个值，分别看显示帧率和延迟怎么变：
+
+{% include blog_figure.liquid path="assets/img/blog/graphics-engine/06-fps-latency.svg" caption="上述模型在四种分辨率缩放（$s$ = 1.00、0.67、0.50、0.33，四条曲线）下的结果（$t_n = 20$ ms，不限刷新率）。左：显示帧率随帧生成倍数 $k$ 几乎线性增长。右：降低内部分辨率时延迟下降，但只要 $k>1$ 延迟就跳升约一个渲染帧，之后每多生成一帧还会缓慢上升。帧生成换来流畅度，超分换来响应速度。" %}
 
 这就是厂商把帧生成与降低延迟的技术配套使用的原因（NVIDIA Reflex；Reflex 2 的 "Frame Warp" 用最新的鼠标输入对已完成的帧做重投影，在 [NVIDIA 的页面](https://www.nvidia.com/en-us/geforce/technologies/reflex/)上仍标为即将推出）。这也是为什么建议在基础帧率已经可玩的前提下才开启帧生成。在这里亲手体验这些取舍：
 
@@ -101,7 +109,7 @@ for scale, k in [(1.0, 1), (0.67, 1), (0.67, 4)]:
 
 ### 神经辐射缓存
 
-实时路径追踪需要多次弹射，代价太高。**神经辐射缓存**（neural radiance cache, NRC；Müller et al.，SIGGRAPH 2021）在*游戏运行时*训练一个小 MLP：少数路径追踪得更长，用来提供训练目标，网络学习出射辐射度关于位置、方向和材质的函数。其余所有路径在一两次弹射后停止，转而查询缓存。论文报告在 1080p 下每帧约 2.6 ms。它是[图形学第 06 篇]({{ '/blog/2026/graphics-06-real-time-ray-tracing/' | relative_url }})中辐照度缓存和探针的学习版亲戚。AMD FSR Redstone 中的 Radiance Caching 遵循同样的思路。
+实时路径追踪需要多次弹射，代价太高。**神经辐射缓存**（neural radiance cache, NRC；Müller et al.，SIGGRAPH 2021）在*游戏运行时*训练一个小 MLP：少数路径追踪得更长，用来提供训练目标，网络学习出射辐射度关于位置、方向和材质的函数。其余所有路径在一两次弹射后停止，转而查询缓存。论文报告在 1080p 下每帧约 2.6 ms。可以把它看作[图形学第 06 篇]({{ '/blog/2026/graphics-06-real-time-ray-tracing/' | relative_url }})中辐照度缓存和探针的学习版。AMD FSR Redstone 中的 Radiance Caching 遵循同样的思路。
 
 ### 神经材质与神经纹理压缩
 
@@ -109,9 +117,11 @@ for scale, k in [(1.0, 1), (0.67, 1), (0.67, 4)]:
 
 **神经纹理压缩**（neural texture compression, NTC；Vaidyanathan et al.，SIGGRAPH 2023）把材质的*所有*通道（反照率、法线、粗糙度、金属度、环境光遮蔽）一起压缩。它为每个材质存储低分辨率的潜特征网格和一个极小的 MLP。着色一个像素时，着色器在该纹素的 UV 处采样潜变量并运行 MLP，一次输出所有通道。因为按纹素求值，它保留了随机访问能力，这是视频编解码器做不到的。论文中的配置为**每像素每通道 0.2 到 1.0 比特**（bits per pixel per channel, BPPC），而其块压缩（BCn）基线约为 **4 BPPC**。论文报告，与该基线相比，它能以约少 30% 的内存存储 16 倍的纹素。
 
+如下图所示，左半边是着色器内的解码过程，右半边比较存储量：
+
 {% include blog_figure.liquid path="assets/img/blog/graphics-engine/06-neural-textures.svg" caption="神经纹理压缩。左：一次 UV 查询在两个不同分辨率的潜变量网格上采样（双线性过滤，红圈）；着色器内的小 MLP 一次解码出所有材质通道。右：Vaidyanathan et al.（2023）报告的存储量（每像素每通道比特数）：NTC 各配置为 0.2 到 1.0，BCn 基线约为 4。" %}
 
-**算例。** 一个 4096 × 4096、9 通道的材质有 $4096^2 \times 9 = 150{,}994{,}944$ 个通道-纹素。4 BPPC 时为 $603{,}979{,}776$ 比特 $= 72$ MiB；1.0 BPPC 时为 18 MiB；0.2 BPPC 时为 3.6 MiB。乘以几百种材质，这个差距决定了场景能否装进 8 GB 的 GPU。
+**算例。** 通道数随材质集而异（上图示意画了 8 个通道），这里假设一个 4096 × 4096、9 通道的材质，它有 $4096^2 \times 9 = 150{,}994{,}944$ 个通道-纹素。4 BPPC 时为 $603{,}979{,}776$ 比特 $= 72$ MiB；1.0 BPPC 时为 18 MiB；0.2 BPPC 时为 3.6 MiB。乘以几百种材质，这个差距决定了场景能否装进 8 GB 的 GPU。
 
 ```python
 texels, channels = 4096 * 4096, 9
@@ -165,7 +175,7 @@ for name, bppc in [("BCn baseline", 4.0), ("NTC high", 1.0), ("NTC low", 0.2)]:
 
 - **PBR 纹理与材质**：扩散模型可以从文本或照片生成可平铺的反照率、法线和粗糙度贴图（Adobe 的 Substance 3D 工具提供基于 Firefly 的文本生成纹理功能）。Hunyuan3D 的 Paint 模型和 TRELLIS.2 直接输出 PBR 贴图。
 - **动作**：**MDM**（Tevet et al.，ICLR 2023，[arXiv 2209.14916](https://arxiv.org/abs/2209.14916)）等文本到动作的扩散模型生成骨骼动画，送入[第 05 篇]({{ '/blog/2026/graphics-engine-05-physics-and-simulation-engines/' | relative_url }})的动画运行时；其余内容见[图形学第 09 篇]({{ '/blog/2026/graphics-09-animation-and-characters/' | relative_url }})。
-- **程序化生成 + LLM**：LLM 不直接生成几何，而是为经典的程序化系统（Houdini 节点图、Blender 脚本、关卡布局语法）编写*参数或代码*。输出保持可编辑、确定，并且在预算之内，这就是这种模式在生产中流行的原因。
+- **程序化生成 + LLM**：大语言模型（LLM）不直接生成几何，而是为经典的程序化系统（Houdini 节点图、Blender 脚本、关卡布局语法）编写*参数或代码*。输出保持可编辑、确定，并且在预算之内，这就是这种模式在生产中流行的原因。
 
 ## 5. 引擎与编辑器中的 LLM 智能体
 
@@ -189,9 +199,11 @@ $$
 \mathbf{o}_{t+1} \sim p_\theta\big(\mathbf{o}_{t+1} \,\big\vert\, \mathbf{o}_{t-c+1:t},\ \mathbf{a}_{t-c+1:t}\big),
 $$
 
-其中 $\mathbf{o}_t$ 是一帧（通常是自编码器的潜变量），$\mathbf{a}_t$ 是动作（按键、鼠标、相机位姿或文本），$c$ 是上下文长度。大多数模型是**自回归视频扩散**模型：扩散或流模型以过去潜变量和动作的窗口为条件，生成下一个潜变量帧，并被蒸馏到只需几步去噪以达到实时。生成机制见[世界模型第 03 篇]({{ '/blog/2026/world-models-03-video-world-simulators/' | relative_url }})，3D 一致的世界生成见[世界模型第 04 篇]({{ '/blog/2026/world-models-04-3d-and-4d-world-generation/' | relative_url }})。这里我们把它们当作*引擎*来看。
+其中 $\mathbf{o}_t$ 是一帧（通常是自编码器的潜变量），$\mathbf{a}_t$ 是动作（按键、鼠标、相机位姿或文本），$c$ 是上下文长度，$p_\theta$ 是参数为 $\theta$ 的网络所表示的条件分布，$\sim$ 表示从中采样（所以同样的输入可以得到不同的下一帧）。大多数模型是**自回归视频扩散**模型：扩散或流模型以过去潜变量和动作的窗口为条件，生成下一个潜变量帧，并被蒸馏到只需几步去噪以达到实时。生成机制见[世界模型第 03 篇]({{ '/blog/2026/world-models-03-video-world-simulators/' | relative_url }})，3D 一致的世界生成见[世界模型第 04 篇]({{ '/blog/2026/world-models-04-3d-and-4d-world-generation/' | relative_url }})。这里我们把它们当作*引擎*来看。
 
-{% include blog_figure.liquid path="assets/img/blog/graphics-engine/06-neural-engines-timeline.svg" caption="2024 到 2026 年的神经游戏引擎与交互式世界模型，按首次公开日期排列（论文和预印本为蓝色，产品或博客公告为橙色）。所有日期都来自下表中的来源。两年之内，这个领域从低分辨率的单个游戏（DOOM、CS:GO）发展到 720p、部分达到 1080p 的通用、可提示的世界。" %}
+下图先按时间顺序给出这些系统的首次公开日期，可以看到 2025 年下半年起发布明显密集：
+
+{% include blog_figure.liquid path="assets/img/blog/graphics-engine/06-neural-engines-timeline.svg" caption="2024 到 2026 年的神经游戏引擎与交互式世界模型，按首次公开日期排列（论文和预印本为蓝色，产品或博客公告为橙色）。表中系统的日期来自下表中的来源；图中另有 Mirage、MirageLSD 和 Waymo World Model 三项产品或博客公告，未列入下表。两年之内，这个领域从低分辨率的单个游戏（DOOM、CS:GO）发展到 720p、部分达到 1080p 的通用、可提示的世界。" %}
 
 截至 2026 年 11 月（只列出来源明确给出的数字）：
 
@@ -214,6 +226,8 @@ $$
 | **Runway GWM-1 / Worlds 2** | Runway | [GWM-1，2025 年 12 月](https://runway.com/research/introducing-runway-gwm-1)；[Worlds 2，2026 年 9 月](https://runway.com/research/introducing-gwm-worlds-2) | 相机运动、文本动作 | 720p、24 fps（Worlds 2），最长 2 分钟（GWM-1） |
 | **Genie 4** | Google DeepMind | [研究预览，2026 年 10 月 27 日](https://deepmind.google/blog/genie-4-a-new-generation-of-world-simulation/) | 键盘和相机，通过 Gemini 进行文本引导，原生音频 | 未说明 |
 
+下图把表中的数字画出来，左图看分辨率与帧率，右图看各来源声称的记忆或一致性时长：
+
 {% include blog_figure.liquid path="assets/img/blog/graphics-engine/06-world-models.svg" caption="只用各来源声明的数字，并非基准测试。左：来源同时给出分辨率和帧率的系统（紫），以及只给出帧率的系统（灰色方块，放在 'n/s' 处）。右：各来源声称的记忆或一致性时长（秒，对数坐标）。这些说法的定义各不相同（记忆范围、会话长度、生成长度），所以请把这张图当作数量级来看。" %}
 
 它们与本系列的引擎相比如何？
@@ -230,11 +244,13 @@ $$
 
 引擎的最后一个角色把本系列和具身智能连接起来：为世界模型和机器人策略生成**训练数据**（[第 05 篇]({{ '/blog/2026/graphics-engine-05-physics-and-simulation-engines/' | relative_url }})第 10 节）。
 
-- **仿真与合成数据**：带 Omniverse Replicator 的 Isaac Sim（[文档](https://docs.omniverse.nvidia.com/extensions/latest/ext_replicator.html)）、Genesis 以及第 05 篇中的 GPU 模拟器，能渲染数百万带标注的帧和机器人轨迹。Matrix-Game 3.0 明确把 Unreal Engine 的渲染结果作为其数据引擎的一部分进行训练：经典引擎如今在为神经引擎生产训练数据。
+- **仿真与合成数据**：带 Omniverse Replicator 的 Isaac Sim（[文档](https://docs.omniverse.nvidia.com/extensions/latest/ext_replicator.html)）、Genesis 以及第 05 篇中的 GPU 模拟器，能渲染数百万带标注的帧和机器人轨迹。Matrix-Game 3.0 的训练数据明确包含 Unreal Engine 渲染的合成数据，是其数据引擎的一部分：经典引擎如今在为神经引擎生产训练数据。
 - **世界基础模型**：NVIDIA 的 **Cosmos** 平台（[Agarwal et al.，arXiv 2501.03575](https://arxiv.org/abs/2501.03575)）提供面向物理 AI 的开放视频世界模型。**Cosmos-Predict2.5** 和 **Cosmos-Transfer2.5**（[arXiv 2511.00062](https://arxiv.org/abs/2511.00062)）预测未来视频，并把模拟器的渲染结果（分割、深度、边缘）转换为照片级视频。这是用生成模型而不是更好的渲染器来弥合 sim-to-real 的*外观*差距。2026 年 5 月，NVIDIA 发布了 **Cosmos 3** 系列（[仓库](https://github.com/NVIDIA/Cosmos)）。
 - **合成的机器人经验**：NVIDIA 的 [GR00T-Dreams 蓝图](https://nvidianews.nvidia.com/news/nvidia-powers-humanoid-robot-industry-with-cloud-to-robot-computing-platforms-for-physical-ai)在特定机器人上对 Cosmos 模型做后训练，从单张图像生成任务视频，并从中提取动作。**Cosmos Policy**（[arXiv 2601.16163](https://arxiv.org/abs/2601.16163)）则把视频世界模型直接微调为机器人策略。
 
-{% include blog_figure.liquid path="assets/img/blog/graphics-engine/06-data-factory.svg" caption="作为数据工厂的引擎。模拟器以完美的真值渲染场景（上）。生成式迁移模型可以把这些渲染结果变成照片级图像（中）。这些数据用来训练世界模型和视觉-语言-动作策略，后者部署到真实机器人上。真实数据以扫描、泼溅和辨识出的物理参数的形式回流（虚线，real-to-sim）。" %}
+如下图所示，数据沿箭头从模拟器流向真实机器人，再沿虚线回流：
+
+{% include blog_figure.liquid path="assets/img/blog/graphics-engine/06-data-factory.svg" caption="作为数据工厂的引擎。上排：模拟器以完美的真值（RGB、深度、分割、位姿、动作）渲染场景，数据送入世界模型（上排右）。下排左：生成式迁移模型可以把这些渲染结果变成照片级图像。这些数据用来训练世界模型和视觉-语言-动作（VLA）策略（下排右），策略部署到真实机器人上（最右）。真实数据以扫描、泼溅和系统辨识得到的物理参数的形式回流（灰色虚线，real-to-sim）。" %}
 
 这里就是交接点。模拟器的深入介绍见[具身智能第 03 篇]({{ '/blog/2026/embodied-ai-03-simulation-platforms/' | relative_url }})，用这些数据训练的视觉-语言-动作模型见[具身智能第 05 篇]({{ '/blog/2026/embodied-ai-05-vision-language-action-models/' | relative_url }})。
 
@@ -302,7 +318,7 @@ flowchart LR
 
 ## 练习
 
-1. 用 `frame_model`，对 $t_n = 30$ ms 求出 $k = 1$ 达到 60 fps 时的内部分辨率缩放，并把它的延迟与 $s = 1$、$k = 2$ 的延迟比较。
+1. 用 `frame_model`（其余参数同算例），对 $t_n = 30$ ms 求出 $k = 1$ 达到 60 fps 时的内部分辨率缩放，并把它的延迟与 $s = 1$、$k = 2$ 的延迟比较。
 2. 给模型加上显示刷新率上限和"帧节奏"规则：只有当 $k \cdot F \le R$（$F$ 为渲染帧率，$R$ 为刷新率）时生成帧才有用。渲染帧率为 70 fps 时，144 Hz 下最好的 $k$ 是多少？
 3. 计算一个场景的纹理内存：300 种互不相同的 2048² 材质，每种 9 个通道，分别按 4 BPPC 和 0.5 BPPC 计算。节省下来的内存能多装多少种材质？
 4. 为"在某位置生成预制体"和"设置材质参数"写一个伪 MCP 工具模式（名称、描述、JSON 参数）。在执行 LLM 的调用之前，编辑器应当做哪些校验？
@@ -310,7 +326,11 @@ flowchart LR
 
 <details markdown="1"><summary>提示</summary>
 
-1. 解 $2 + 28 s^2 + 1 = 16.7$ 得 $s$（约 $0.70$）；延迟约为 $4 + 16.7 + 8.3 = 29$ ms。$s = 1$、$k = 2$ 时：$t_{\text{gpu}} = 31$ ms，渲染 32 fps（显示 65 fps），延迟约 $4 + 31 + 31 + 7.8 \approx 74$ ms。2. $k = 2$（140 fps）；$k = 3$ 会超过刷新率，多出的帧永远不会被显示。3. $300 \times 2048^2 \times 9 \times 4 / 8$ 字节 $\approx 5.3$ GiB，对比约 $0.66$ GiB；节省的 4.6 GiB 在 0.5 BPPC 下可以多装约 2,100 种材质（每种 2.25 MiB）。4. 检查预制体是否存在、位置是否在关卡边界内、参数类型是否匹配；并要求提供撤销步骤。5. 物体身份、状态变化和位置的持久性；经典引擎把它们显式保存在场景和游戏状态中。
+1. 60 fps 对应 $t_{\text{gpu}} = 1000/60 \approx 16.7$ ms，解 $2 + 28 s^2 + 1 = 16.7$ 得 $s$（约 $0.70$）；延迟约为 $4 + 16.7 + 8.3 = 29$ ms。$s = 1$、$k = 2$ 时：$t_{\text{gpu}} = 31$ ms，渲染 32 fps（显示 65 fps），延迟约 $4 + 31 + 31 + 7.8 \approx 74$ ms。
+2. $k = 2$（140 fps）；$k = 3$ 会超过刷新率，多出的帧永远不会被显示。
+3. $300 \times 2048^2 \times 9 \times 4 / 8$ 字节 $\approx 5.3$ GiB，对比约 $0.66$ GiB；节省的 4.6 GiB 在 0.5 BPPC 下可以多装约 2,100 种材质（每种 2.25 MiB）。
+4. 检查预制体是否存在、位置是否在关卡边界内、参数类型是否匹配；并要求提供撤销步骤。
+5. 物体身份、状态变化和位置的持久性；经典引擎把它们显式保存在场景和游戏状态中。
 
 </details>
 

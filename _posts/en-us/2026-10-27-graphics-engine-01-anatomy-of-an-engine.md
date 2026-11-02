@@ -47,7 +47,7 @@ Beginners think of the first part only. In a production engine the tools and the
 
 The runtime is organized in **layers** (Figure 1). Each layer may call only the layers below it. The **platform layer** hides the operating system, the file system, threads and the GPU API. The **core** provides math, memory allocators, containers, logging and the job system. The **resource layer** knows where every asset is, loads it, and streams it in and out. Above those sit the big subsystems (rendering, physics, animation, audio, input and networking), then the **gameplay layer** (entities, scripting, AI, UI), and finally the game itself. Gregory's *Game Engine Architecture* is organized in exactly these layers and is the standard reference.
 
-{% include blog_figure.liquid path="assets/img/blog/graphics-engine/01-layers.svg" localized="true" caption="The layered runtime of a typical engine (left) and the editor and tools that work on it offline (right). Dependencies point downwards only: rendering may use the core and resource layers, but the core never calls rendering. This rule is what lets you port an engine by rewriting only the platform layer." %}
+{% include blog_figure.liquid path="assets/img/blog/graphics-engine/01-layers.svg" localized="true" caption="Figure 1. The layered runtime of a typical engine (left) and the editor and tools that work on it offline (right). Dependencies point downwards only: rendering may use the core and resource layers, but the core never calls rendering. This rule is what lets you port an engine by rewriting only the platform layer." %}
 
 The downward-only rule is not academic. It is what lets an engine run on a new console by rewriting the platform layer, run headless on a server without the renderer, or replace its physics library. The same rule appears in the robot simulators of [embodied AI 03]({{ '/blog/2026/embodied-ai-03-simulation-platforms/' | relative_url }}): there, the "game" layer is a training script, and rendering can be switched off entirely.
 
@@ -72,11 +72,11 @@ $$
 v_{n+1} = v_n - g\,\Delta t, \qquad y_{n+1} = y_n + v_{n+1}\,\Delta t .
 $$
 
-The exact apex height is $v_0^2 / (2g) = 1.274$ m. The discrete apex is lower by roughly $v_0 \Delta t / 2$, because the first position update already uses the reduced velocity. At 30 fps ($\Delta t = 33$ ms) that is about 8 cm; at 144 fps about 2 cm. Players on faster machines jump higher, which matters for level design and is fatal for networked games, where all machines must agree. Figure 3 (left) shows the three trajectories.
+The exact apex height is $v_0^2 / (2g) = 1.274$ m. The discrete apex is lower by roughly $v_0 \Delta t / 2$ (Exercise 1 derives this), because the first position update already uses the reduced velocity. At 30 fps ($\Delta t = 33$ ms) that is about 8 cm; at 144 fps about 2 cm. Players on faster machines jump higher, which matters for level design and is fatal for networked games, where all machines must agree. Figure 2 (left) shows the three trajectories.
 
-There is a second problem. Stiff forces such as springs and contacts are only stable for small steps ([graphics 07]({{ '/blog/2026/graphics-07-physically-based-simulation/' | relative_url }}) derives the limit $\omega\Delta t \le 2$ for symplectic Euler). One long frame, for example while the OS swaps memory or a level loads, can push the simulation over that limit and make it explode. Even below the limit, a long step gives a large error: in Figure 3 (right) the spring's energy should stay exactly constant, but with $\Delta t$ equal to a jittery frame time it swings widely and jumps at every long frame.
+There is a second problem. Stiff forces such as springs and contacts are only stable for small steps ([graphics 07]({{ '/blog/2026/graphics-07-physically-based-simulation/' | relative_url }}) derives the limit $\omega\Delta t \le 2$ for symplectic Euler, where $\omega=\sqrt{k/m}$ is the spring's angular frequency). One long frame, for example while the OS swaps memory or a level loads, can push the simulation over that limit and make it explode. Even below the limit, a long step gives a large error: in Figure 2 (right) the spring's energy should stay exactly constant, but with $\Delta t$ equal to a jittery frame time it swings widely and jumps at every long frame.
 
-{% include blog_figure.liquid path="assets/img/blog/graphics-engine/01-timestep.svg" caption="Left: the same jump integrated with dt = frame time at 30, 60 and 144 fps; the legend gives each apex height, and lower frame rates jump lower. Right: a frictionless spring (1.5 Hz) under jittered frame times. The energy ratio of the variable-step run (red) swings much more widely and jumps at the long frames; the fixed 120 Hz step with an accumulator (blue) stays in a narrow band around 1." %}
+{% include blog_figure.liquid path="assets/img/blog/graphics-engine/01-timestep.svg" caption="Figure 2. Left: the same jump integrated with dt = frame time at 30, 60 and 144 fps; the legend gives each apex height, and lower frame rates jump lower. Right: a frictionless spring (1.5 Hz) under jittered frame times. The energy ratio of the variable-step run (red) swings much more widely and jumps at the long frames; the fixed 120 Hz step with an accumulator (blue) stays in a narrow band around 1." %}
 
 ### Fixed timestep with an accumulator
 
@@ -88,11 +88,11 @@ n = \left\lfloor A / \Delta t \right\rfloor, \qquad
 A \leftarrow A - n\,\Delta t .
 $$
 
-The leftover $A \in [0, \Delta t)$ is time that has passed in reality but not yet in the simulation. Figure 4 shows a run with jittered frames: some frames take zero steps, some take three.
+The leftover $A \in [0, \Delta t)$ is time that has passed in reality but not yet in the simulation. Figure 3 shows a run with jittered frames: some frames take zero steps, some take three.
 
-{% include blog_figure.liquid path="assets/img/blog/graphics-engine/01-accumulator.svg" caption="The accumulator over 30 jittered frames with a 120 Hz physics step (dashed line in the top panel). Top: frame time. Middle: number of fixed steps taken in that frame (frames shorter than DT often take none, long frames take two or three). Bottom: the leftover fraction alpha = A/DT that is used for interpolation." %}
+{% include blog_figure.liquid path="assets/img/blog/graphics-engine/01-accumulator.svg" caption="Figure 3. The accumulator over 30 jittered frames with a 120 Hz physics step (dashed line in the top panel). Top: frame time. Middle: number of fixed steps taken in that frame (frames shorter than DT often take none, long frames take two or three). Bottom: the leftover fraction alpha = A/DT that is used for interpolation." %}
 
-Rendering the newest physics state directly causes a new artifact. Suppose physics runs at 50 Hz and the display at 60 Hz. Six display frames span 0.1 s, during which exactly five physics steps happen, so one frame in six shows no motion at all: a visible **judder** (Figure 5, red). The cure is to render a blend of the last two physics states with weight
+Rendering the newest physics state directly causes a new artifact. Suppose physics runs at 50 Hz and the display at 60 Hz. Six display frames span 0.1 s, during which exactly five physics steps happen, so one frame in six shows no motion at all: a visible **judder** (Figure 4, red). The cure is to render a blend of the last two physics states with weight
 
 $$
 \alpha = A / \Delta t, \qquad x_\text{shown} = (1-\alpha)\,x_\text{prev} + \alpha\, x_\text{curr} .
@@ -100,7 +100,7 @@ $$
 
 This displays the state as it was one step ago, at exactly the right sub-step phase, so the motion is smooth (blue). The price is up to one physics step of extra latency.
 
-{% include blog_figure.liquid path="assets/img/blog/graphics-engine/01-interpolation.svg" caption="Physics at 50 Hz, display at 60 Hz, an object moving at 1 m/s. Left: position on screen; without interpolation (red) the staircase has a flat step every sixth frame. Right: displacement per frame. Without interpolation it alternates between 20 mm and 0 mm; with interpolation (blue) it is a constant 16.7 mm (dashed line) after the first frame." %}
+{% include blog_figure.liquid path="assets/img/blog/graphics-engine/01-interpolation.svg" caption="Figure 4. Physics at 50 Hz, display at 60 Hz, an object moving at 1 m/s. Left: position on screen; without interpolation (red) the staircase has a flat step every sixth frame. Right: displacement per frame. Without interpolation it is 20 mm in most frames and 0 in every sixth; with interpolation (blue) it is a constant 16.7 mm (dashed line) from frame 3 on, after a two-frame start-up." %}
 
 Here is a runnable loop with all the pieces: a fixed step, the accumulator, interpolation, and a clamp on the frame time that prevents the **spiral of death** (a slow frame demands many steps, which make the next frame even slower):
 
@@ -138,7 +138,7 @@ E = 0.5 * curr["v"] ** 2 + 0.5 * K * curr["x"] ** 2
 print(f"energy after 2 s: {E:.3f} (start 20.000)")
 ```
 
-Whatever the sleep pattern, the energy printed stays close to 20, because physics only ever sees $\Delta t = 1/120$ s. The judder experiment of Figure 5 can be reproduced exactly with integer time units (1 unit = 1/300 s, so a 60 Hz frame is 5 units and a 50 Hz step is 6):
+Whatever the sleep pattern, the energy printed stays close to 20, because physics only ever sees $\Delta t = 1/120$ s. The judder experiment of Figure 4 can be reproduced exactly with integer time units (1 unit = 1/300 s, so a 60 Hz frame is 5 units and a 50 Hz step is 6):
 
 ```python
 FRAME, STEP = 5, 6                    # units of 1/300 s
@@ -180,15 +180,15 @@ The widget runs the three versions side by side on a frictionless spring. Raise 
 
 The display refreshes at fixed **vsync** intervals. With V-sync on, a finished frame waits for the next vsync before it is shown; if it misses one, it is shown a whole interval later. So a game that alternates between 15 ms and 18 ms frames on a 60 Hz display shows some frames for 16.7 ms and others for 33.3 ms. That **uneven pacing** looks worse than a steady 30 fps. V-sync off avoids the wait but causes **tearing**: the screen shows the top of one frame and the bottom of the next. Variable refresh rate displays (G-Sync, FreeSync) let the display wait for the frame instead.
 
-**Input latency** is the time from a button press to the first photon that shows its effect. It adds up across the pipeline: the input is sampled at the start of the CPU frame, the frame is simulated, then recorded for the GPU, rendered, and finally scanned out. Figure 2 shows a typical pipelined engine where this is three vsync intervals, 50 ms at 60 Hz. Engines reduce it by sampling input as late as possible, limiting how many frames may be queued ahead, and using vendor latency-reduction modes (such as NVIDIA Reflex) that pace the CPU so the GPU queue stays short.
+**Input latency** is the time from a button press to the first photon that shows its effect. It adds up across the pipeline: the input is sampled at the start of the CPU frame, the frame is simulated, then recorded for the GPU, rendered, and finally scanned out. Figure 5 shows a typical pipelined engine where this is three vsync intervals, 50 ms at 60 Hz. Engines reduce it by sampling input as late as possible, limiting how many frames may be queued ahead, and using vendor latency-reduction modes (such as NVIDIA Reflex) that pace the CPU so the GPU queue stays short.
 
 ## 3. Frame budget: CPU and GPU in parallel
 
 At 60 Hz every frame must be finished within $1000/60 = 16.7$ ms; at 90 Hz (typical VR) within 11.1 ms; at 120 Hz within 8.3 ms. That is the **frame budget**, and each subsystem gets a slice of it (for example 2 ms animation, 3 ms physics, 4 ms render submission).
 
-But the CPU and GPU do not take turns. They run **in parallel, on different frames** (Figure 2). While the GPU renders frame $N$, the CPU's render thread records commands for frame $N+1$ and the main thread simulates frame $N+2$. Throughput is set by the slowest stage, not by the sum of the stages, which is why a profiler always asks first: "are we CPU-bound or GPU-bound?". Latency, on the other hand, is the sum of the stages.
+But the CPU and GPU do not take turns. They run **in parallel, on different frames** (Figure 5). While the GPU renders frame $N$, the CPU's render thread records commands for frame $N+1$ and the main thread simulates frame $N+2$. Throughput is set by the slowest stage, not by the sum of the stages, which is why a profiler always asks first: "are we CPU-bound or GPU-bound?". Latency, on the other hand, is the sum of the stages.
 
-{% include blog_figure.liquid path="assets/img/blog/graphics-engine/01-frame-timeline.svg" caption="A pipelined frame. The number in each box is the frame index. Frame 0 is simulated on the main thread (10 ms), recorded on the render thread during the next interval (6 ms), rendered by the GPU (12 ms) and shown at the following vsync (dashed lines). Every stage fits in 16.7 ms, so the engine delivers 60 fps, but each frame takes three intervals (50 ms) from input to photons." %}
+{% include blog_figure.liquid path="assets/img/blog/graphics-engine/01-frame-timeline.svg" caption="Figure 5. A pipelined frame. The number in each box is the frame index. Frame 0 is simulated on the main thread (10 ms), recorded on the render thread during the next interval (6 ms), rendered by the GPU (12 ms) and shown at the following vsync (dashed lines). Every stage fits in 16.7 ms, so the engine delivers 60 fps, but each frame takes three intervals (50 ms) from input to photons." %}
 
 To let the CPU run ahead of the GPU, each piece of per-frame data (uniform buffers, command buffers) needs a separate copy for each frame that can be in flight. Fences then stop the CPU from overwriting a copy that the GPU is still reading. That is the topic of [post 02]({{ '/blog/2026/graphics-engine-02-gpu-apis-and-render-graphs/' | relative_url }}).
 
@@ -200,12 +200,14 @@ A modern CPU core can do several floating-point operations per nanosecond, but a
 
 ### AoS versus SoA
 
-Consider entities with 16 float fields (position, velocity, health, mass, color, UV, flags): 64 bytes, exactly one cache line. The movement system reads only position and velocity, 24 bytes per entity.
+Consider entities with 16 float fields (position, velocity, health, mass, color, UV, flags): 64 bytes, exactly one cache line. The movement system touches only position and velocity, 24 bytes per entity.
 
 - **Array of structures (AoS)**: `Entity entities[N]`. Iterating loads every line in full, so 40 of the 64 bytes are wasted.
 - **Structure of arrays (SoA)**: `float px[N], py[N], ..., vz[N]`. The movement system streams six dense arrays, so every byte loaded is used, and the loop maps directly onto SIMD lanes.
 
-{% include blog_figure.liquid path="assets/img/blog/graphics-engine/01-cache-lines.svg" caption="The same entities in two layouts, one rectangle per 4-byte float and one row per 64-byte cache line. Top (AoS): each line holds one entity, and the movement system uses only the six colored fields, 37.5 % of the bytes it loads. Bottom (SoA): each line holds the same field of 16 entities, and every loaded byte is used." %}
+Figure 6 draws the two layouts together: each small square is a 4-byte float and each row is one cache line. Compare how much of each row the colored squares (the position and velocity that the movement system actually uses) fill: 6 of the 16 squares per line in AoS, all of them in SoA.
+
+{% include blog_figure.liquid path="assets/img/blog/graphics-engine/01-cache-lines.svg" caption="Figure 6. The same entities in two layouts, one rectangle per 4-byte float and one row per 64-byte cache line. Top (AoS): each line holds one entity, and the movement system uses only the six colored fields (red: position, orange: velocity; grey fields are unused), 37.5 % of the bytes it loads. Bottom (SoA): each line holds the same field of 16 entities, and every loaded byte is used." %}
 
 A NumPy micro-benchmark makes this measurable. A NumPy structured array is an AoS layout (one 64-byte record per entity), and `aos["px"]` is a strided view into it. Separate arrays are SoA:
 
@@ -235,7 +237,7 @@ for f in (update_aos, update_soa):
 
 Figure 7 shows the timings measured when the figure script ran, for four array sizes, with the speedup written above each pair. Your numbers will differ by machine. The gap appears because every strided pass over the AoS array drags all 64 bytes of each record through the cache. Small arrays fit in cache, so the penalty is smallest there; at a million entities the AoS array is 64 MB and must stream from main memory.
 
-{% include blog_figure.liquid path="assets/img/blog/graphics-engine/01-aos-soa-bench.svg" caption="Time per entity of the update p += v dt (x, y and z) in the AoS layout (red) and the SoA layout (blue), measured with timeit on the machine that generated the figure; the bold label is the SoA speedup. The exact numbers depend on the CPU and memory, but the SoA layout touches 24 instead of 64 bytes per entity." %}
+{% include blog_figure.liquid path="assets/img/blog/graphics-engine/01-aos-soa-bench.svg" caption="Figure 7. Time per entity of the update p += v dt (x, y and z) in the AoS layout (red) and the SoA layout (blue), measured with timeit on the machine that generated the figure; the bold label is the SoA speedup. The exact numbers depend on the CPU and memory, but the SoA layout touches 24 instead of 64 bytes per entity." %}
 
 DOD is more than SoA. Its other habits: process items in batches rather than one virtual call at a time, keep hot and cold data apart, replace pointers with indices into arrays, and sort or group data so that one loop handles one kind of item without branches. The Entity Component System is the architecture that makes these habits the default.
 
@@ -253,7 +255,7 @@ A **query** names the components a system reads and writes. The storage must mak
 
 **Sparse sets** (EnTT, and Bevy's opt-in `SparseSet` storage). Each component type has its own pool: a dense packed array of components plus a sparse array that maps an entity ID to its index in the dense array. Adding or removing a component is $O(1)$ and touches only one pool, but a query over several components must iterate one pool and look up the others, with less locality.
 
-{% include blog_figure.liquid path="assets/img/blog/graphics-engine/01-ecs-storage.svg" caption="Top: three archetype tables. The query (Position, Velocity) matches A1 and A2 (purple columns) and skips A3, so the movement system streams two dense column pairs. Bottom: the same Velocity data as a sparse set. The sparse array, indexed by entity ID, points into the packed dense array (a dash means no component), so adding or removing Velocity touches only this pool." %}
+{% include blog_figure.liquid path="assets/img/blog/graphics-engine/01-ecs-storage.svg" caption="Figure 8. Top: three archetype tables. The query (Position, Velocity) matches A1 and A2 (purple columns) and skips A3, so the movement system streams two dense column pairs. Bottom: the same Velocity data as a sparse set. The sparse array, indexed by entity ID, points into the packed dense array (a dash means no component), so adding or removing Velocity touches only this pool." %}
 
 Here is a minimal archetype ECS in about 50 lines of Python. Real implementations store columns in typed contiguous arrays and cache query results, but the structure is the same:
 
@@ -344,7 +346,7 @@ print(len(world.archetypes), "archetypes")
 3 archetypes
 ```
 
-Entity `c` joined the `{pos, vel}` table only at the third step, so it moved by $2 \times 0.5 = 1$. The `{pos}` table still exists, now empty. (The `|` merge of dictionaries needs Python 3.9 or newer.)
+Entity `c` starts in the `{pos}` table, so the first two `movement` calls skip it; it joins `{pos, vel}` just before the third call and moves once, by velocity 2 times $\Delta t = 0.5$, that is $2 \times 0.5 = 1$ (y goes from 1 to 2). The `{pos}` table still exists, now empty. (The `|` merge of dictionaries needs Python 3.9 or newer.)
 
 **Scheduling.** Because each system declares what it reads and writes, the engine can run systems in parallel automatically: two systems conflict only if one writes a component that the other reads or writes. Bevy builds exactly this kind of schedule from system signatures. Systems that change structure (spawning, adding components) usually record **commands** that are applied at a sync point, so that tables do not change under a running query.
 
@@ -354,13 +356,13 @@ ECS is not the only good architecture: Unreal uses actors and components with it
 
 ### Transform hierarchies
 
-Many objects move relative to a parent: a hand relative to the arm, a turret relative to a tank, a camera relative to a car. A **transform hierarchy** stores a local transform $L$ per node; the world transform is the product along the path from the root:
+Many objects move relative to a parent: a hand relative to the arm, a turret relative to a tank, a camera relative to a car. A **transform hierarchy** stores a local transform $L$ per node; the world transform is the product along the path from the root (matrices act on column vectors, so the rightmost $L_\text{hand}$ is applied first, to points in the hand's own frame):
 
 $$
 M_\text{hand} = L_\text{root}\, L_\text{arm}\, L_\text{hand} .
 $$
 
-With 2D homogeneous matrices
+With 2D homogeneous matrices ($\theta$ is the rotation angle, $(t_x, t_y)$ the translation)
 
 $$
 L = \begin{pmatrix} \cos\theta & -\sin\theta & t_x \\ \sin\theta & \cos\theta & t_y \\ 0 & 0 & 1 \end{pmatrix} ,
@@ -374,7 +376,7 @@ $$
 
 because the arm's frame is rotated by $20° + 40° = 60°$ when the hand offset is applied. Rotating the root moves every descendant (Figure 9).
 
-{% include blog_figure.liquid path="assets/img/blog/graphics-engine/01-transform-hierarchy.svg" caption="A three-node hierarchy. Each node's local x axis (red) and y axis (green) are drawn at its world position, labeled with the computed world coordinates. Dashed and faded: after the root is rotated from 20° to 30°, arm and hand follow without their local transforms changing." %}
+{% include blog_figure.liquid path="assets/img/blog/graphics-engine/01-transform-hierarchy.svg" caption="Figure 9. A three-node hierarchy. Each node's local x axis (red) and y axis (green) are drawn at its world position, labeled with the computed world coordinates. Dashed and faded: after the root is rotated from 20° to 30°, arm and hand follow without their local transforms changing." %}
 
 Recomputing every world matrix every frame wastes time when most objects are static. **Dirty flags** fix this: changing a local transform marks the node and its subtree dirty, and world matrices are recomputed only when read:
 
@@ -440,7 +442,7 @@ The scene graph answers "what is attached to what". A different question is "wha
 
 Frustum culling with a BVH tests the root box against the frustum planes. A box completely outside any one plane is rejected together with its whole subtree; otherwise the test recurses into the children. Figure 10 shows a real 2D run.
 
-{% include blog_figure.liquid path="assets/img/blog/graphics-engine/01-bvh-culling.svg" caption="Frustum culling of 200 boxes with a median-split BVH (leaves of up to 4 boxes). Blue wedge: the camera's 2D frustum. Purple outlines: BVH nodes that were tested; whole subtrees outside the wedge are rejected with one test. Orange boxes pass the culling test. The title gives the number of box tests compared with 200 for brute force." %}
+{% include blog_figure.liquid path="assets/img/blog/graphics-engine/01-bvh-culling.svg" caption="Figure 10. Frustum culling of 200 boxes with a median-split BVH (leaves of up to 4 boxes). Blue wedge: the camera's 2D frustum. Purple outlines: BVH nodes that were tested; whole subtrees outside the wedge are rejected with one test. Orange boxes pass the culling test. The title gives the number of box tests compared with 200 for brute force." %}
 
 ## 7. Concurrency: jobs, task graphs and fibers
 
@@ -515,15 +517,15 @@ for p in (1, 2, 3, 4):
 4 workers: makespan 12 ms
 ```
 
-Check the bound: $W = 27$ ms and $C = 12$ ms (input, physics, gameplay, cull, build, submit). With two workers the bound is $\max(12, 13.5) = 13.5$ ms and the scheduler reaches 15 ms. From three workers on, the critical path is the limit, and a fourth worker only adds idle time (Figure 11). To speed this frame up you must shorten the critical path, for example by splitting physics into islands, not add cores.
+Check the bound: $W = 27$ ms and $C = 12$ ms (input, physics, gameplay, cull, build, submit). With two workers the bound is $\max(12, 13.5) = 13.5$ ms and the scheduler reaches 15 ms. From three workers on, the critical path is the limit, and a fourth worker only adds idle time (Figure 11). To speed this frame up you must shorten the critical path, for example by splitting physics into independent islands (groups of bodies that do not touch each other), not add cores.
 
-{% include blog_figure.liquid path="assets/img/blog/graphics-engine/01-job-graph.svg" caption="Top: the job DAG of the code, with the 12 ms critical path in red. Bottom: the Gantt chart that the list scheduler produces on 4 workers. The makespan equals the critical path; worker 2 is idle half of the time and worker 3 never receives a job, so more cores would not help this frame." %}
+{% include blog_figure.liquid path="assets/img/blog/graphics-engine/01-job-graph.svg" caption="Figure 11. Top: the job DAG of the code, with the 12 ms critical path in red. Bottom: the Gantt chart that the list scheduler produces on 4 workers (numbered from 0). The makespan equals the critical path; worker 2 is idle half of the time and worker 3 never receives a job, so more cores would not help this frame." %}
 
 The widget runs the same scheduler. Change the number of workers, switch the priority to plain declaration order, and split physics into two parallel 2 ms islands: the physics chain gets shorter, but the critical path only drops from 12 to 11 ms, because the animation chain (input, anim, skinning, cull, build, submit) now limits the frame.
 
 {% include widget.liquid name="graphics-engine-job-scheduler" height="360" caption="The 12-job frame on P workers. Red outlines mark the critical path; the green dashed line is the lower bound max(C, W/P), and the makespan turns green when the schedule reaches it. Try P = 2 with both priorities, then tick the split-physics box." %}
 
-**Fibers.** A job that must wait for another job (say, `cull` waiting for the result of a sub-job) would block its worker thread. Naughty Dog's engine, described by Christian Gyrling at GDC 2015 ("Parallelizing the Naughty Dog Engine Using Fibers"), solves this with **fibers**: lightweight user-space execution contexts with their own stacks. A job that waits on an atomic counter puts its fiber to sleep, and the worker thread switches to another fiber, with no OS context switch. The same talk describes how the engine overlaps frames: game logic for one frame runs while rendering work for the previous frame is processed, which is the pipelining of Figure 2.
+**Fibers.** A job that must wait for another job (say, `cull` waiting for the result of a sub-job) would block its worker thread. Naughty Dog's engine, described by Christian Gyrling at GDC 2015 ("Parallelizing the Naughty Dog Engine Using Fibers"), solves this with **fibers**: lightweight user-space execution contexts with their own stacks. A job that waits on an atomic counter puts its fiber to sleep, and the worker thread switches to another fiber, with no OS context switch. The same talk describes how the engine overlaps frames: game logic for one frame runs while rendering work for the previous frame is processed, which is the pipelining of Figure 5.
 
 **Main thread and render thread.** Even engines with job systems keep a few dedicated threads. Unreal has a game thread, a render thread that turns the scene into rendering commands, and an RHI thread that talks to the GPU API. Separating simulation from command recording lets the two overlap on different frames, at the cost of having to copy or double-buffer the data passed between them.
 
@@ -583,7 +585,7 @@ Engine architecture is documented mostly in books and conference talks rather th
 
 ## Exercises
 
-1. Show that for the semi-implicit Euler jump the discrete apex is $h_\Delta = \frac{v_0^2}{2g} - \frac{v_0\Delta t}{2} + O(\Delta t^2)$, and check it against the legend of Figure 3.
+1. Show that for the semi-implicit Euler jump the discrete apex is $h_\Delta = \frac{v_0^2}{2g} - \frac{v_0\Delta t}{2} + O(\Delta t^2)$, and check it against the legend of Figure 2.
 2. In the fixed-timestep loop, remove the `MAX_FRAME` clamp and make `physics_step` artificially slow (sleep 10 ms inside it at `DT = 1/120`). What happens to the accumulator and the frame time? Explain the spiral of death.
 3. Extend the Python ECS with `remove(eid, name)` and a `despawn(eid)`, and add generation counters to entity IDs so that a stale handle is detected.
 4. Change the priority in `schedule` to first-come-first-served (sort `ready` by name only). Compare the makespans for 2, 3 and 4 workers with the critical-path priority.

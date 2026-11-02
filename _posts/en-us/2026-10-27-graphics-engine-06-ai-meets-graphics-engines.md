@@ -36,9 +36,11 @@ It helps to place every engine component on a four-step scale:
 3. **Hybrid**: a network is a *component* of the pipeline with an engineered interface: a neural texture decoded inside a shader, a radiance cache trained on the fly, a splat-based scene drawn next to meshes.
 4. **Fully neural**: the network *is* the engine. It maps past frames and actions to the next frame, with no explicit geometry, physics or game logic.
 
-{% include blog_figure.liquid path="assets/img/blog/graphics-engine/06-spectrum.svg" localized="true" caption="Where engine components stand as of November 2026 (my assessment from the sources in this post). Solid bars: deployed in shipping games or engines; dashed extensions: research or public demos. Image reconstruction (upscaling, frame generation, denoising) is the most neural part of today's engines. Physics and game logic are still classical in products, while fully neural world models generate them implicitly in research." %}
+The figure below places each engine component on this scale: every row is one component, and the column its bar reaches shows how neural it is today.
 
-Why now? Three things came together. First, **tensor hardware in every GPU**: RTX tensor cores, the RDNA 4 ML accelerators and Intel XMX units execute small matrix multiplies far faster than the shader ALUs do. Second, a **pixel cost wall**: 4K at high frame rates with path tracing costs far more than a GPU can afford per pixel, so reconstructing pixels became cheaper than rendering them. Third, **generative models** that can now produce images, video, 3D assets and code at useful quality. The rest of the post follows the components from the bottom of the figure to the top.
+{% include blog_figure.liquid path="assets/img/blog/graphics-engine/06-spectrum.svg" localized="true" caption="Where engine components stand as of November 2026 (my assessment from the sources in this post). One row per component; the further right a bar extends, the more neural the component. Solid bars: deployed in shipping games or engines; dashed extensions: research or public demos. Image reconstruction (upscaling, frame generation, denoising) is the most neural part of today's engines. Physics and game logic are still classical in products, while fully neural world models generate them implicitly in research." %}
+
+Why now? Three things came together. First, **tensor hardware in every GPU**: RTX tensor cores, the RDNA 4 ML accelerators and Intel XMX units execute small matrix multiplies far faster than the shader ALUs do. Second, a **pixel cost wall**: 4K at high frame rates with path tracing costs far more than a GPU can afford per pixel, so reconstructing pixels became cheaper than rendering them. Third, **generative models** that can now produce images, video, 3D assets and code at useful quality. The rest of the post follows the components from the top of the figure to the bottom.
 
 ## 2. Neural rendering inside real-time engines
 
@@ -57,7 +59,9 @@ Status as of November 2026, from the vendors' announcements:
 
 Official sources: [DLSS 4.5 announcement](https://www.nvidia.com/en-us/geforce/news/dlss-4-5-dynamic-multi-frame-gen-6x-2nd-gen-transformer-super-res/), [DLSS 4.5 dynamic MFG release](https://www.nvidia.com/en-us/geforce/news/nvidia-app-dlss-4-5-dynamic-multi-frame-generation-available-now/), [AMD FSR Redstone for developers](https://gpuopen.com/learn/amd-fsr-redstone-developers-neural-rendering/), [XeSS releases](https://github.com/intel/xess/releases).
 
-{% include blog_figure.liquid path="assets/img/blog/graphics-engine/06-upscale-framegen.svg" caption="Upscaling and 4x frame generation on a timeline. The GPU renders R0 at internal resolution (blue), upscales it (orange) and generates 3 intermediate frames (green). On the display, rendered frames (blue) alternate with generated ones (light green). An interpolated frame between R0 and R1 needs R1, so R0 can be shown only after R1 is rendered: frame generation multiplies smoothness but adds roughly one rendered frame of latency (red arrow)." %}
+The figure below lays upscaling and frame generation out on a timeline; look at how much longer the red arrow is than the gray one:
+
+{% include blog_figure.liquid path="assets/img/blog/graphics-engine/06-upscale-framegen.svg" caption="Upscaling and 4x frame generation on a timeline. The GPU renders R0 at internal resolution (blue), upscales it (orange) and generates 3 intermediate frames (green). On the display, rendered frames (blue) alternate with generated ones (light green). An interpolated frame between R0 and R1 needs R1, so R0 can be shown only after R1 is rendered: frame generation multiplies smoothness but adds roughly one rendered frame of latency (red arrow; the gray arrow is the case without frame generation, where R0 is shown right after upscaling)." %}
 
 The trade-off is easiest to see in a model. Let $t_n$ be the GPU time to render a frame at native resolution, and split it into a part that does not depend on resolution, $t_f$, and a part proportional to the pixel count. With a resolution scale $s$ per axis, an upscaler cost $t_u$, a frame-generation factor $k$ (1 = off) costing $t_g$ per generated frame, and CPU time $t_c$ (pipelined with the GPU):
 
@@ -69,6 +73,8 @@ $$
 \text{fps}_{\text{shown}} = \min\!\Big(\frac{1000\,k}{t_{\text{frame}}},\ f_{\text{refresh}}\Big), \qquad
 L \approx t_c + t_{\text{gpu}} + [k>1]\,t_{\text{frame}} + \tfrac{1}{2}\,\frac{1000}{\text{fps}_{\text{shown}}}.
 $$
+
+Symbols: $t_{\text{gpu}}$ is the total GPU time per rendered frame; $t_{\text{frame}}$ is the interval between consecutive rendered frames (CPU and GPU run pipelined, so the slower one sets the pace); $f_{\text{refresh}}$ is the display refresh rate in Hz; the factor 1000 converts milliseconds to seconds, so $1000/t_{\text{frame}}$ is the rendered frame rate and multiplying by $k$ gives the displayed one; $t_u$ is counted only when $s<1$ (native resolution needs no upscaler); $[k>1]$ is an indicator that equals 1 when the condition holds and 0 otherwise.
 
 The latency $L$ (in ms) counts the CPU work for the input, the GPU work, the extra frame held back for interpolation when $k > 1$, and on average half a display interval. It ignores the OS, the display and techniques such as NVIDIA Reflex, so take it as an illustration, not a measurement.
 
@@ -93,7 +99,9 @@ for scale, k in [(1.0, 1), (0.67, 1), (0.67, 4)]:
     print(scale, k, [round(v, 1) for v in frame_model(scale, k)])
 ```
 
-{% include blog_figure.liquid path="assets/img/blog/graphics-engine/06-fps-latency.svg" caption="The model above for four resolution scales ($t_n = 20$ ms, no refresh cap). Left: displayed fps grows almost linearly with the frame-generation factor $k$. Right: latency drops when you lower the internal resolution but jumps by about one rendered frame as soon as $k>1$, and then creeps up with every additional generated frame. Frame generation buys smoothness, upscaling buys responsiveness." %}
+In the figure below, $k$ runs from 1 to 6 for four values of $s$, and we read off how displayed fps and latency change:
+
+{% include blog_figure.liquid path="assets/img/blog/graphics-engine/06-fps-latency.svg" caption="The model above for four resolution scales ($s$ = 1.00, 0.67, 0.50, 0.33, one curve each; $t_n = 20$ ms, no refresh cap). Left: displayed fps grows almost linearly with the frame-generation factor $k$. Right: latency drops when you lower the internal resolution but jumps by about one rendered frame as soon as $k>1$, and then creeps up with every additional generated frame. Frame generation buys smoothness, upscaling buys responsiveness." %}
 
 This is why vendors pair frame generation with latency reduction (NVIDIA Reflex; Reflex 2 "Frame Warp", which re-projects the finished frame with the latest mouse input, is still listed as coming soon on [NVIDIA's page](https://www.nvidia.com/en-us/geforce/technologies/reflex/)). It is also why frame generation is recommended from an already playable base frame rate. Play with the trade-offs here:
 
@@ -109,9 +117,11 @@ Film-quality layered materials (car paint with flakes, coated fabrics, ceramics)
 
 **Neural texture compression** (NTC; Vaidyanathan et al., SIGGRAPH 2023) compresses *all* channels of a material together (albedo, normal, roughness, metalness, ambient occlusion). It stores low-resolution grids of latent features and a tiny MLP per material. To shade a pixel, the shader samples the latents at the texel's UV and runs the MLP, which outputs all channels at once. Because it is evaluated per texel, it keeps random access, which video codecs do not offer. The paper's profiles range from **0.2 to 1.0 bits per pixel per channel** (BPPC), against about **4 BPPC** for its block-compressed (BCn) baseline. It reports 16 times more texels at about 30 % less memory than that baseline.
 
+In the figure below, the left half shows the decoding inside the shader and the right half compares storage:
+
 {% include blog_figure.liquid path="assets/img/blog/graphics-engine/06-neural-textures.svg" caption="Neural texture compression. Left: a UV lookup samples two latent grids at different resolutions (bilinear filtering, red circles); a tiny MLP inside the shader decodes all material channels at once. Right: the storage reported by Vaidyanathan et al. (2023), in bits per pixel per channel: 0.2 to 1.0 for the NTC profiles against about 4 for their BCn baseline." %}
 
-**Worked example.** A 4096 × 4096 material with 9 channels has $4096^2 \times 9 = 150{,}994{,}944$ channel-texels. At 4 BPPC that is $603{,}979{,}776$ bits $= 72$ MiB; at 1.0 BPPC, 18 MiB; at 0.2 BPPC, 3.6 MiB. Multiply by hundreds of materials and the difference decides whether a scene fits in an 8 GB GPU.
+**Worked example.** The channel count varies with the material set (the figure sketches 8); assume a 4096 × 4096 material with 9 channels, which has $4096^2 \times 9 = 150{,}994{,}944$ channel-texels. At 4 BPPC that is $603{,}979{,}776$ bits $= 72$ MiB; at 1.0 BPPC, 18 MiB; at 0.2 BPPC, 3.6 MiB. Multiply by hundreds of materials and the difference decides whether a scene fits in an 8 GB GPU.
 
 ```python
 texels, channels = 4096 * 4096, 9
@@ -189,9 +199,11 @@ $$
 \mathbf{o}_{t+1} \sim p_\theta\big(\mathbf{o}_{t+1} \,\big\vert\, \mathbf{o}_{t-c+1:t},\ \mathbf{a}_{t-c+1:t}\big),
 $$
 
-where $\mathbf{o}_t$ is a frame (usually a latent from an autoencoder), $\mathbf{a}_t$ the action (keys, mouse, camera pose or text) and $c$ the context length. Most models are **autoregressive video diffusion** models: a diffusion or flow model generates the next latent frame conditioned on a window of past latents and actions, and it is distilled to a few denoising steps to reach real time. [World-models 03]({{ '/blog/2026/world-models-03-video-world-simulators/' | relative_url }}) explains the generative machinery, and [world-models 04]({{ '/blog/2026/world-models-04-3d-and-4d-world-generation/' | relative_url }}) covers 3D-consistent world generation. Here we look at them as *engines*.
+where $\mathbf{o}_t$ is a frame (usually a latent from an autoencoder), $\mathbf{a}_t$ the action (keys, mouse, camera pose or text) $c$ the context length, and $p_\theta$ the conditional distribution represented by a network with parameters $\theta$ ($\sim$ means sampling from it, so the same input can yield different next frames). Most models are **autoregressive video diffusion** models: a diffusion or flow model generates the next latent frame conditioned on a window of past latents and actions, and it is distilled to a few denoising steps to reach real time. [World-models 03]({{ '/blog/2026/world-models-03-video-world-simulators/' | relative_url }}) explains the generative machinery, and [world-models 04]({{ '/blog/2026/world-models-04-3d-and-4d-world-generation/' | relative_url }}) covers 3D-consistent world generation. Here we look at them as *engines*.
 
-{% include blog_figure.liquid path="assets/img/blog/graphics-engine/06-neural-engines-timeline.svg" caption="Neural game engines and interactive world models, 2024 to 2026, by first public date (papers and preprints in blue, product or blog announcements in orange). All dates are from the sources in the table below. In two years the field went from a single game (DOOM, CS:GO) at low resolution to general, promptable worlds at 720p and in some cases 1080p." %}
+The figure below first orders these systems by first public date; note how dense the releases become from the second half of 2025:
+
+{% include blog_figure.liquid path="assets/img/blog/graphics-engine/06-neural-engines-timeline.svg" caption="Neural game engines and interactive world models, 2024 to 2026, by first public date (papers and preprints in blue, product or blog announcements in orange). Dates for systems in the table are from the sources in the table below; the figure also shows three product or blog announcements that are not in the table (Mirage, MirageLSD, Waymo World Model). In two years the field went from a single game (DOOM, CS:GO) at low resolution to general, promptable worlds at 720p and in some cases 1080p." %}
 
 As of November 2026 (numbers only where the source states them):
 
@@ -214,6 +226,8 @@ As of November 2026 (numbers only where the source states them):
 | **Runway GWM-1 / Worlds 2** | Runway | [GWM-1, Dec 2025](https://runway.com/research/introducing-runway-gwm-1); [Worlds 2, Sep 2026](https://runway.com/research/introducing-gwm-worlds-2) | camera motion, text actions | 720p, 24 fps (Worlds 2), up to 2 min (GWM-1) |
 | **Genie 4** | Google DeepMind | [research preview, 27 Oct 2026](https://deepmind.google/blog/genie-4-a-new-generation-of-world-simulation/) | keyboard and camera, text steering via Gemini, native audio | not stated |
 
+The figure below plots the numbers from the table: resolution against frame rate on the left, the memory or consistency horizon each source claims on the right.
+
 {% include blog_figure.liquid path="assets/img/blog/graphics-engine/06-world-models.svg" caption="Stated numbers only, not a benchmark. Left: output resolution against frame rate for the systems whose sources give both (purple), and frame rate alone where resolution is not stated (gray squares, placed at 'n/s'). Right: the memory or consistency horizon each source claims, in seconds (log scale). The claims use different definitions (memory reach, session length, generated length), so read the chart as orders of magnitude." %}
 
 How do they compare with the engine of this series?
@@ -234,7 +248,9 @@ The last role of the engine is the one that connects this series to embodied AI:
 - **World foundation models**: NVIDIA's **Cosmos** platform ([Agarwal et al., arXiv 2501.03575](https://arxiv.org/abs/2501.03575)) provides open video world models for physical AI. **Cosmos-Predict2.5** and **Cosmos-Transfer2.5** ([arXiv 2511.00062](https://arxiv.org/abs/2511.00062)) predict future video and turn simulator renders (segmentation, depth, edges) into photoreal video. That closes the sim-to-real *appearance* gap with a generative model instead of a better renderer. In May 2026 NVIDIA released the **Cosmos 3** family ([repository](https://github.com/NVIDIA/Cosmos)).
 - **Synthetic robot experience**: NVIDIA's [GR00T-Dreams blueprint](https://nvidianews.nvidia.com/news/nvidia-powers-humanoid-robot-industry-with-cloud-to-robot-computing-platforms-for-physical-ai) post-trains a Cosmos model on a robot, generates task videos from single images and extracts actions from them. **Cosmos Policy** ([arXiv 2601.16163](https://arxiv.org/abs/2601.16163)) fine-tunes a video world model directly into a robot policy.
 
-{% include blog_figure.liquid path="assets/img/blog/graphics-engine/06-data-factory.svg" caption="The engine as a data factory. A simulator renders scenes with perfect ground truth (top). A generative transfer model can make those renders photoreal (middle). The data trains world models and vision-language-action policies, which are deployed on real robots. Real data flows back (dashed) as scans, splats and identified physics parameters (real-to-sim)." %}
+In the figure below, data flows along the arrows from the simulator to the real robot and returns along the dashed line:
+
+{% include blog_figure.liquid path="assets/img/blog/graphics-engine/06-data-factory.svg" caption="The engine as a data factory. Top row: a simulator renders scenes with perfect ground truth (RGB, depth, segmentation, poses, actions), which feeds the world model (top right). Bottom left: a generative transfer model can make those renders photoreal. The data trains world models and vision-language-action (VLA) policies (bottom right), and the policy is deployed on a real robot (far right). Real data flows back (gray dashed line) as scans, splats and identified physics parameters (real-to-sim)." %}
 
 This is the handover point. [Embodied-ai 03]({{ '/blog/2026/embodied-ai-03-simulation-platforms/' | relative_url }}) covers the simulators in depth, and [embodied-ai 05]({{ '/blog/2026/embodied-ai-05-vision-language-action-models/' | relative_url }}) the vision-language-action models trained on this data.
 
@@ -302,7 +318,7 @@ flowchart LR
 
 ## Exercises
 
-1. Using `frame_model`, find for $t_n = 30$ ms the internal resolution scale at which $k = 1$ reaches 60 fps, and compare its latency with that of $s = 1$, $k = 2$.
+1. Using `frame_model` (other parameters as in the worked example), find for $t_n = 30$ ms the internal resolution scale at which $k = 1$ reaches 60 fps, and compare its latency with that of $s = 1$, $k = 2$.
 2. Extend the model with a display refresh cap and a "frame pacing" rule: generated frames are only useful if $k \cdot F \le R$, where $F$ is the rendered frame rate and $R$ the refresh rate. What is the best $k$ for 144 Hz when the rendered frame rate is 70 fps?
 3. Compute the texture memory of a scene with 300 unique 2048² materials of 9 channels at 4 BPPC and at 0.5 BPPC. How many additional materials fit into the saved memory?
 4. Write a pseudo-MCP tool schema (name, description, JSON parameters) for "spawn prefab at position" and "set material parameter". Which validation should the editor perform before executing an LLM's call?
@@ -310,7 +326,11 @@ flowchart LR
 
 <details markdown="1"><summary>Hints</summary>
 
-1. Solve $2 + 28 s^2 + 1 = 16.7$ for $s$ (about $0.70$); the latency is about $4 + 16.7 + 8.3 = 29$ ms. With $s = 1$, $k = 2$: $t_{\text{gpu}} = 31$ ms, 32 rendered fps (65 displayed), about $4 + 31 + 31 + 7.8 \approx 74$ ms of latency. 2. $k = 2$ (140 fps); $k = 3$ would exceed the refresh rate, so the extra frames would never be shown. 3. $300 \times 2048^2 \times 9 \times 4 / 8$ bytes $\approx 5.3$ GiB versus about $0.66$ GiB; the 4.6 GiB saved holds about 2,100 more materials at 0.5 BPPC (2.25 MiB each). 4. Check that the prefab exists, that positions are within level bounds, and that the parameter type matches; require an undo step. 5. Persistence of object identity, state changes and position; a classical engine stores them explicitly in its scene and game state.
+1. 60 fps means $t_{\text{gpu}} = 1000/60 \approx 16.7$ ms; solve $2 + 28 s^2 + 1 = 16.7$ for $s$ (about $0.70$); the latency is about $4 + 16.7 + 8.3 = 29$ ms. With $s = 1$, $k = 2$: $t_{\text{gpu}} = 31$ ms, 32 rendered fps (65 displayed), about $4 + 31 + 31 + 7.8 \approx 74$ ms of latency.
+2. $k = 2$ (140 fps); $k = 3$ would exceed the refresh rate, so the extra frames would never be shown.
+3. $300 \times 2048^2 \times 9 \times 4 / 8$ bytes $\approx 5.3$ GiB versus about $0.66$ GiB; the 4.6 GiB saved holds about 2,100 more materials at 0.5 BPPC (2.25 MiB each).
+4. Check that the prefab exists, that positions are within level bounds, and that the parameter type matches; require an undo step.
+5. Persistence of object identity, state changes and position; a classical engine stores them explicitly in its scene and game state.
 
 </details>
 

@@ -42,7 +42,7 @@ $$
 h_{00} = 2t^3 - 3t^2 + 1,\quad h_{10} = t^3 - 2t^2 + t,\quad h_{01} = -2t^3 + 3t^2,\quad h_{11} = t^3 - t^2 .
 $$
 
-你可以自己推导。写 $p(t) = a t^3 + b t^2 + c t + d$，施加 $p(0)=p_0$、$p(1)=p_1$、$p'(0)=m_0$、$p'(1)=m_1$。这给出关于 $a, b, c, d$ 的四个线性方程；再把每个输入的系数整理出来即可。**数值例子**（一维）：$p_0 = 0$，$p_1 = 1$。取平切线 $m_0 = m_1 = 0$，则 $p(0.5) = h_{01}(0.5) = -0.25 + 0.75 = 0.5$，这是一条缓入缓出曲线。若 $m_0 = 2$，则加上 $h_{10}(0.5)\cdot 2 = 0.125 \cdot 2 = 0.25$，得到 $p(0.5) = 0.75$：曲线出发更快，并超出直线。
+你可以自己推导。写 $p(t) = a t^3 + b t^2 + c t + d$，施加 $p(0)=p_0$、$p(1)=p_1$、$p'(0)=m_0$、$p'(1)=m_1$。这给出关于 $a, b, c, d$ 的四个线性方程；解出后按 $p_0, p_1, m_0, m_1$ 分别合并同类项，它们各自的系数就是上面的四个基函数。**数值例子**（一维）：$p_0 = 0$，$p_1 = 1$。取平切线 $m_0 = m_1 = 0$，则 $p(0.5) = h_{01}(0.5) = -0.25 + 0.75 = 0.5$，这是一条缓入缓出曲线。若 $m_0 = 2$，则加上 $h_{10}(0.5)\cdot 2 = 0.125 \cdot 2 = 0.25$，得到 $p(0.5) = 0.75$：曲线出发更快，并超出直线。
 
 ### 样条家族
 
@@ -72,11 +72,13 @@ curve = catmull_rom(keys)
 print(curve.shape, curve[0], curve[-1])                     # starts and ends on the keys
 ```
 
-{% include blog_figure.liquid path="assets/img/blog/graphics/09-spline-family.svg" caption="左：由同样七个点构造的四种插值。线性（虚线）有折角；Catmull–Rom（紫色）平滑地经过每个关键帧；两段三次 Bézier 只经过 $P_0$、$P_3$ 和 $P_6$，其余点作为手柄；均匀三次 B 样条（绿色）最光滑，但不经过任何控制点。中和右：基函数。B 样条基非负且和为 1，所以曲线位于控制点的凸包内；Hermite 切线基 $h_{10}$ 和 $h_{11}$ 在两端都为零。" %}
+如下图所示，用同样的七个关键帧（即上面代码中的 `keys`）分别画出四种曲线，并给出两族基函数。
+
+{% include blog_figure.liquid path="assets/img/blog/graphics/09-spline-family.svg" caption="左：由同样七个点构造的四种插值。线性（虚线）有折角；Catmull–Rom（紫色）平滑地经过每个关键帧；两段三次 Bézier（橙色）只经过 $P_0$、$P_3$ 和 $P_6$，其余点作为手柄；均匀三次 B 样条（绿色）最光滑，但不经过任何控制点。中和右：基函数。B 样条基非负且和为 1，所以曲线位于控制点的凸包内；Hermite 切线基 $h_{10}$ 和 $h_{11}$ 在两端都为零。" %}
 
 ### 连续性：$C^1$ 与 $G^1$
 
-两段相接处，**$C^k$ 连续**意味着关于参数的前 $k$ 阶导数一致。**几何连续 $G^1$** 只要求切线*方向*一致：曲线没有可见的尖角，但速率可以跳变。对于物体随时间沿其运动的路径，这个区别很重要。$G^1$ 的接头画出来很光滑，却带来速度跳变，在运动中表现为明显的顿挫。用 Bézier 的语言：$C^1$ 需要 $c_1' - c_3 = c_3 - c_2$（手柄共线*且*等长），而 $G^1$ 只需要共线。
+两段相接处，**$C^k$ 连续**意味着关于参数的前 $k$ 阶导数一致。**几何连续（geometric continuity）$G^1$** 只要求切线*方向*一致：曲线没有可见的尖角，但速率可以跳变。对于物体要随时间沿着它运动的路径，这个区别很重要。$G^1$ 的接头画出来很光滑，却带来速度跳变，在运动中表现为明显的顿挫。用 Bézier 的语言：设第一段的控制点为 $c_0..c_3$，第二段的第一个控制点（手柄）为 $c_1'$，接点就是 $c_3$。$C^1$ 需要 $c_1' - c_3 = c_3 - c_2$（两个手柄共线*且*等长），而 $G^1$ 只需要共线。下图把 $c_1'$ 取成三种位置来对比。
 
 {% include blog_figure.liquid path="assets/img/blog/graphics/09-continuity.svg" caption="两段三次 Bézier 在 $(3,0)$ 相接，第二段的第一个手柄有三种选择。红色：不共线，曲线有尖角（$C^0$）。橙色：共线但更短（$G^1$）：曲线看起来光滑，但右边的速率图在 $u=1$ 处跳变。紫色：镜像手柄（$C^1$）：没有跳变。只有紫色版本能让物体无顿挫地运动。" %}
 
@@ -111,11 +113,13 @@ gaps = np.linalg.norm(np.diff(even, axis=0), axis=1)
 print(f"length {L:.3f}, gap spread {gaps.min():.3f}..{gaps.max():.3f}")   # length 5.304, gap spread 0.330..0.331
 ```
 
-{% include blog_figure.liquid path="assets/img/blog/graphics/09-arc-length.svg" caption="左：均匀 $t$ 取的 17 个点（橙色圆）在起点附近挤在一起（第一个控制柄很短，曲线在那里运动慢），在终点附近散开（那里运动快），间距从 0.13 到 0.63；按均匀弧长取的 17 个点（紫色方块，略微下移以便两行都可见）间距均匀（每段都是 0.33）。右：弧长表 $s(t)/L$；细线显示每个等间距的 $s$ 值如何映射回对应的 $t$。" %}
+如下图所示，同一条曲线上，均匀 $t$ 取点与均匀弧长取点的间距差别很大。
+
+{% include blog_figure.liquid path="assets/img/blog/graphics/09-arc-length.svg" caption="左：均匀 $t$ 取的 17 个点（橙色圆）在起点附近挤在一起（第一个手柄很短，曲线在那里运动慢），在终点附近散开（那里运动快），间距从 0.13 到 0.63；按均匀弧长取的 17 个点（紫色方块，略微下移以便两行都可见）间距均匀（每段都是 0.33）。右：弧长表 $s(t)/L$；细线显示每个等间距的 $s$ 值如何映射回对应的 $t$。" %}
 
 ## 2. 随时间变化的旋转
 
-[第 1 篇]({{ '/blog/2026/graphics-01-roadmap-and-math/' | relative_url }})介绍了单位四元数 $q$ 和 **slerp**，即两个朝向之间沿大圆的匀速插值：
+[第 1 篇]({{ '/blog/2026/graphics-01-roadmap-and-math/' | relative_url }})介绍了单位四元数 $q$ 和 **slerp**（球面线性插值，spherical linear interpolation），即两个朝向之间沿大圆的匀速插值：
 
 $$
 \mathrm{slerp}(q_0, q_1; t) = q_0\,(q_0^{-1}q_1)^t = q_0 \exp\!\big(t \log(q_0^{-1} q_1)\big).
@@ -186,9 +190,11 @@ S = squad_controls(Q)
 print(squad(Q[1], Q[2], S[1], S[2], 0.0), Q[1])                       # squad hits the keys
 ```
 
-{% include blog_figure.liquid path="assets/img/blog/graphics/09-squad.svg" caption="六个关键朝向 $q_0..q_5$，用它们把 $z$ 轴转到的位置表示（单位球上的黑点）。左：分段 slerp（橙色）沿大圆弧前进，在每个关键帧处有拐角；squad（紫色）平滑地经过相同的关键帧。右：从采样测得的角速率。slerp 的角速率在每个区间内恒定，并在每个关键帧处（虚线）跳变；这里大小的跳变很小，更大的断裂是旋转轴的突变，即左图中的拐角。squad 的角速率变化更大，但它是连续的，旋转轴也平滑地转动。" %}
+下图在单位球上比较分段 slerp 与 squad，并画出两者的角速率。
 
-在生产中，动画曲线常按通道存储。欧拉角分别插值，简单但可能出现万向节锁。四元数曲线通常被重采样到每一帧，引擎在相邻帧之间做 nlerp。
+{% include blog_figure.liquid path="assets/img/blog/graphics/09-squad.svg" caption="六个关键朝向 $q_0..q_5$，每个朝向用它把 $z$ 轴转到的位置来表示（单位球上的黑点）。左：分段 slerp（橙色）沿大圆弧前进，在每个关键帧处有拐角；squad（紫色）平滑地经过相同的关键帧。右：从采样测得的角速率。slerp 的角速率在每个区间内恒定，并在每个关键帧处（虚线）跳变；这里大小的跳变很小，更大的断裂是旋转轴的突变，即左图中的拐角。squad 的角速率变化更大，但它是连续的，旋转轴也平滑地转动。" %}
+
+在生产中，动画曲线常按通道存储。欧拉角分别插值，简单但可能出现万向节锁（gimbal lock）。四元数曲线通常被重采样到每一帧，引擎在相邻帧之间做 nlerp。
 
 ## 3. 骨架与正向运动学
 
@@ -233,9 +239,9 @@ for (name, _, _), g in zip(skel, forward_kinematics(skel, pose)):
     print(f"{name:10s}", np.round(g[:3, 3], 3))
 ```
 
-上臂绕 $y$ 旋转 $-90^\circ$（指向上方）、肘部绕 $z$ 弯曲 $90^\circ$ 后，腕部位于 $(0.18, 0.27, 1.95)$。肩部在 $(0.18, 0, 1.65)$，肘部在它上方 $0.3$ m，前臂指向 $+y$。可以手算验证：只是三次矩阵乘法。
+上臂绕 $y$ 旋转 $-90^\circ$（指向上方）、肘部绕 $z$ 弯曲 $90^\circ$ 后，腕部位于 $(0.18, 0.27, 1.95)$。肩部在 $(0.18, 0, 1.65)$，肘部在它上方 $0.3$ m，前臂指向 $+y$。可以手算验证：$\mathbf{R}_y(-90^\circ)$ 把 $+x$ 转到 $+z$，所以肘部在肩部正上方 $0.3$ m；$\mathbf{R}_y(-90^\circ)\mathbf{R}_z(90^\circ)$ 把 $+x$ 转到 $+y$，所以腕部在肘部的 $+y$ 方向 $0.27$ m 处。下图是完整的 17 关节骨架，分别处于绑定姿态和一个摆好的姿态。
 
-{% include blog_figure.liquid path="assets/img/blog/graphics/09-fk-skeleton.svg" caption="用 `forward_kinematics` 计算的 17 关节骨架。每个关节画出其局部坐标系（$x$ 红、$y$ 绿、$z$ 蓝）。左：绑定姿态，所有局部旋转都是单位阵，每个坐标系都与世界对齐。右：由十一个局部旋转设定的姿态。骨盆处的旋转会转动树中它下面的一切，而膝盖的旋转只移动小腿和脚。" %}
+{% include blog_figure.liquid path="assets/img/blog/graphics/09-fk-skeleton.svg" caption="用 `forward_kinematics` 计算的 17 关节骨架。每个关节画出其坐标系的三个轴（$x$ 红、$y$ 绿、$z$ 蓝，即 $\mathbf{G}_j$ 的列）。左：绑定姿态，所有局部旋转都是单位阵，每个坐标系都与世界对齐。右：由十一个局部旋转设定的姿态。骨盆处的旋转会转动树中它下面的一切，而膝盖的旋转只移动小腿和脚。" %}
 
 ## 4. 蒙皮
 
@@ -243,7 +249,7 @@ for (name, _, _), g in zip(skel, forward_kinematics(skel, pose)):
 
 ### 线性混合蒙皮
 
-**线性混合蒙皮（linear blend skinning, LBS）**，也叫骨架子空间变形（早期形式见 Magnenat-Thalmann 等 1988），让顶点随每个关节做刚体变换，再对结果取平均：
+**线性混合蒙皮（linear blend skinning, LBS）**，也叫骨架子空间变形（skeletal subspace deformation, SSD；早期形式见 Magnenat-Thalmann 等 1988），让顶点随每个关节做刚体变换，再对结果取平均：
 
 $$
 \mathbf{v}' = \sum_j w_j\, \mathbf{M}_j\,\mathbf{v}, \qquad \mathbf{M}_j = \mathbf{G}_j\,\mathbf{B}_j^{-1}.
@@ -290,7 +296,7 @@ $$
 \hat b = \sum_j w_j \hat q_j, \qquad \hat q = \frac{\hat b}{\lVert b_r\rVert}, \qquad \mathbf{v}' = q_r\,\mathbf{v}\,q_r^{*} + \mathbf{t}.
 $$
 
-结果始终是刚体变换，所以扭转的肢体能保持半径。它比 LBS 稍贵，并可能在弯曲关节附近产生轻微鼓起。许多引擎和工具（Unity、Unreal、Maya）两者都提供。
+结果始终是刚体变换，所以扭转的肢体能保持半径。它比 LBS 稍贵，并可能在弯曲关节附近产生轻微鼓起。Maya、Blender 等常用工具都同时提供 LBS 和 DQS（后者在 Blender 中叫保持体积）。
 
 ```python
 import numpy as np   # uses qmul / qconj from Section 2
@@ -311,6 +317,8 @@ def skin_dqs(V, W, qs, ts):
         out[i] = rotate(qr, v) + 2 * qmul(qd, qconj(qr))[1:]
     return out
 ```
+
+如下图所示，我们取一个绑定到两根骨骼的圆柱，把第二根骨骼扭转 $160^\circ$，比较 LBS 与 DQS。
 
 {% include blog_figure.liquid path="assets/img/blog/graphics/09-lbs-dqs.svg" caption="一个绑定到两根骨骼的圆柱（权重在 $0.6\le x\le 1.4$ 上平滑过渡），第二根骨骼绕肢体轴扭转 $160^\circ$。条纹显示扭转，颜色表示半径与静止半径之比。LBS（左）在中间收缩成细颈；DQS（中）保持半径。右：沿肢体的环半径，LBS 恰好落在公式 $\sqrt{w_0^2+w_1^2+2w_0w_1\cos\theta}$ 上；图例给出相对静止形状的包围体积。" %}
 
@@ -354,7 +362,7 @@ $$
 \cos\alpha = \frac{l_1^2 + d^2 - l_2^2}{2 l_1 d}.
 $$
 
-剩下的自由度，即三角形绕根–目标轴的旋转，由**极向量（pole vector）**（膝盖应指向哪里）确定。**数值例子**：$l_1 = l_2 = 1$，目标在 $(1, 1)$，所以 $d = \sqrt2$。则 $\cos\gamma = (1 + 1 - 2)/2 = 0$，$\gamma = 90^\circ$；$\cos\alpha = (1 + 2 - 1)/(2\sqrt2) = 0.707$，$\alpha = 45^\circ$。上段骨骼指向 $45^\circ - 45^\circ = 0^\circ$（沿 $x$），下段骨骼竖直向上：$(1,0) + (0,1) = (1,1)$。若 $d > l_1 + l_2$，就截断 $d$，肢体直指目标。
+剩下的自由度，即三角形绕根–目标轴的旋转，由**极向量（pole vector）**（膝盖应指向哪里）确定。**数值例子**：$l_1 = l_2 = 1$，目标在 $(1, 1)$，所以 $d = \sqrt2$。则 $\cos\gamma = (1 + 1 - 2)/2 = 0$，$\gamma = 90^\circ$；$\cos\alpha = (1 + 2 - 1)/(2\sqrt2) = 0.707$，$\alpha = 45^\circ$。目标方向为 $45^\circ$，所以上段骨骼指向 $45^\circ - 45^\circ = 0^\circ$（沿 $x$），下段骨骼竖直向上：$(1,0) + (0,1) = (1,1)$。若 $d > l_1 + l_2$，就截断 $d$，肢体直指目标。
 
 ```python
 import numpy as np
@@ -401,7 +409,9 @@ print(np.linalg.norm(P[-1] - [0.6, 1.9]), np.linalg.norm(np.diff(P, axis=0), axi
 # 5.5e-10 [1.  0.8 0.6 0.4]: on target, bone lengths kept
 ```
 
-{% include blog_figure.liquid path="assets/img/blog/graphics/09-ik-ccd-fabrik.svg" caption="同一条四骨骼链（骨长 1、0.8、0.6、0.4）从同一初始姿态伸向红色星形，分别在 1、2、3 和 20 次迭代之后。CCD（左）先甩动外侧关节；FABRIK（中）把运动分布到整条链上。右：两者每次迭代的末端误差（对数坐标）。这里两种求解器都收敛；收敛快慢取决于链和目标。" %}
+下图让 CCD 和 FABRIK 从同一初始姿态出发，逐次迭代地伸向同一个目标。
+
+{% include blog_figure.liquid path="assets/img/blog/graphics/09-ik-ccd-fabrik.svg" caption="同一条四骨骼链（骨长 1、0.8、0.6、0.4）从同一初始姿态伸向红色星形，分别在 1、2、3 和 20 次迭代之后（灰色为初始姿态，颜色越深迭代越晚）。CCD（左）先甩动外侧关节；FABRIK（中）把运动分布到整条链上。右：两者每次迭代的末端误差（对数坐标）：FABRIK 第 1 次迭代后误差就小得多，约第 4 次迭代之后 CCD 下降更快。这里两种求解器都收敛；收敛快慢取决于链和目标。" %}
 
 {% include widget.liquid name="graphics-ik-chain" height="440" caption="在图中同一条四骨骼链上运行的 CCD（紫色）和 FABRIK（橙色）。用鼠标或手指拖动红色目标。滑块设置从灰色静止姿态出发运行多少次迭代，淡色的链显示中间迭代。试试靠近根部的目标和位于可达圆边缘的目标，比较两种求解器如何弯曲链条，以及误差下降得有多快。" %}
 
@@ -437,7 +447,7 @@ $$
 i^* = \arg\min_i \sum_k \Big(\frac{f_{i,k} - q_k}{\sigma_k}\Big)^2 .
 $$
 
-特征通常是若干时间跨度（例如 0.33、0.67 和 1 秒，在角色局部坐标系中）的未来根位置和朝向、当前脚的位置和速度，以及髋部速度。它们按标准差 $\sigma_k$ 归一化，并由设计者加权。姿态随后切换到匹配的片段，**惯性化（inertialization）**通过在几帧内衰减新旧姿态之间的偏移来掩盖不连续。搜索加速（KD 树、包围盒、聚类）让这一切保持廉价。
+其中 $f_{i,k}$ 是数据库第 $i$ 帧的第 $k$ 个特征，$q_k$ 是查询的对应分量。特征通常是若干时间跨度（例如 0.33、0.67 和 1 秒，在角色局部坐标系中）的未来根位置和朝向、当前脚的位置和速度，以及髋部速度。它们按标准差 $\sigma_k$ 归一化，并由设计者加权。姿态随后切换到匹配的片段，**惯性化（inertialization）**通过在几帧内衰减新旧姿态之间的偏移来掩盖不连续。搜索加速（KD 树、包围盒、聚类）让这一切保持廉价。
 
 ```python
 import numpy as np
@@ -449,13 +459,15 @@ def match(F, q, sigma, weights=None):
     return int(np.argmin(cost)), cost
 ```
 
+下图在一个合成数据库上运行这个搜索，看它如何为一个「边跑边左转」的查询选中帧。
+
 {% include blog_figure.liquid path="assets/img/blog/graphics/09-motion-matching.svg" caption="在一个合成的 50 秒运动数据库（随机转向、步行与跑步速度、30 fps）上做的玩具运动匹配搜索。特征：局部坐标系中 1/3、2/3 和 1 秒之后的根位置，加上当前速度。查询要求边跑边左转。左：数据库路径（灰色）、最佳匹配帧及其之后一秒的运动（紫色），以及放在该帧处的期望未来（橙色）：两者吻合（放大到该帧周围 12 米）。中：每一帧的代价，最小值已标出。右：所有特征向量投影到前两个主成分上，按代价着色，星形为查询，紧挨着最佳匹配（圆圈）。" %}
 
 **学习型运动匹配（learned motion matching）**（Holden 等 2020）保留运动匹配的行为，但用小型神经网络替代大型数据库。*解压器（decompressor）*从特征加潜码重建姿态，*步进器（stepper）*在时间上推进它们，*投影器（projector）*替代最近邻搜索。内存占用从数百 MB 降到几 MB，这在主机上很重要。**相位函数神经网络（phase-functioned neural network, PFNN**，Holden 等 2017）是更早的神经控制器：一个权重是步态相位的循环样条函数的 MLP。它在标注了地形的运动数据上训练，直接把用户控制和地形高度映射到下一帧姿态。
 
 ## 9. 物理角色与通往人形机器人的桥梁
 
-运动学方法可能产生违反物理的运动：脚滑、身体漂浮、被推时没有反应。**基于物理的角色（physics-based characters）**是模拟的刚体骨架，与[第 7 篇]({{ '/blog/2026/graphics-07-physically-based-simulation/' | relative_url }})相同。它们的关节由力矩驱动，通常来自跟踪目标角度的 **PD 控制器**：
+运动学方法可能产生违反物理的运动：脚滑、身体漂浮、被推时没有反应。**基于物理的角色（physics-based characters）**是模拟的刚体骨架，与[第 7 篇]({{ '/blog/2026/graphics-07-physically-based-simulation/' | relative_url }})相同。它们的关节由力矩驱动，通常来自跟踪目标角度的 **PD（比例-微分）控制器**：
 
 $$
 \boldsymbol\tau = k_p(\mathbf{q}_{\text{target}} - \mathbf{q}) + k_d(\dot{\mathbf{q}}_{\text{target}} - \dot{\mathbf{q}}).
@@ -474,6 +486,8 @@ def pd_step(q, dq, q_ref, dq_ref, kp, kd):
 #   ddq = solve(M(q), Q(tau) - c(q, dq) - g(q));  dq += dt * ddq;  q += dt * dq
 ```
 
+下图用这个循环模拟一个双连杆摆，让它跟踪正弦参考，比较不同的增益 $k_p$ 和前馈。
+
 {% include blog_figure.liquid path="assets/img/blog/graphics/09-pd-tracking.svg" caption="一个模拟的双连杆摆（0.5 m 连杆末端各有 1 kg 质点，受重力作用）用关节 PD 控制跟踪正弦参考，增益取近似临界阻尼的 $k_d = 2\sqrt{0.3\,k_p}$。左：肘部角度。$k_p=20$ 时手臂下垂并严重滞后；$k_p=500$ 时跟得很紧。右：对数坐标下的跟踪误差。把参考运动的逆动力学力矩作为前馈加入（绿色，仅 $k_p=100$），误差比最硬的纯 PD 还小。" %}
 
 **学习策略。** **DeepMimic**（Peng 等 2018）用强化学习（PPO）训练一个以 30 Hz 输出 PD 目标的神经策略。奖励针对模仿一个参考片段：
@@ -485,7 +499,7 @@ r ={}& w_p e^{-k_p\sum\lVert q - \hat q\rVert^2} + w_v e^{-k_v\sum\lVert\dot q -
 \end{aligned}
 $$
 
-四项分别奖励与片段的关节旋转、关节速度、末端执行器位置和质心相一致。让它奏效的两个技巧是：参考状态初始化（从片段的随机帧开始一个回合）和提前终止（角色摔倒就停止）。**AMP**（Peng 等 2021）用 GAN 式判别器替代手工设计的跟踪奖励，判别器区分角色的状态转移和运动数据集中的转移。这样就能把任务奖励（去那里）与"像数据一样运动"结合，而无需挑选片段。**ASE**（Peng 等 2022）用对抗和多样性目标预训练一个大型潜在技能空间，高层控制器只需选择潜变量。**PHC**（Luo 等 2023）是单个策略，能跟踪几乎整个 AMASS，能从摔倒中恢复，并能根据视频或 VR 输入驱动虚拟形象。**MaskedMimic**（Tessler 等 2024）把控制看作运动补全（inpainting）：一个通过蒸馏全身跟踪器训练出的策略，接受任意子集的约束（关节目标、VR 头部和双手、文本、物体目标）。后续工作包括 **PARC**（Xu 等，SIGGRAPH 2025），它迭代运动学运动生成器和物理跟踪器来扩充跑酷数据；以及 **MaskedManipulator**（Tessler 等，SIGGRAPH Asia 2025），它把 MaskedMimic 扩展到全身物体操作。
+四项分别奖励与片段的关节旋转、关节速度、末端执行器位置和质心相一致。带帽的量是参考片段中的对应值，$w$ 是各项权重，$k$ 是指数中的尺度系数（这里的 $k_p$、$k_v$ 与上面 PD 控制器的增益无关）。让它奏效的两个技巧是：参考状态初始化（从片段的随机帧开始一个回合）和提前终止（角色摔倒就停止）。**AMP**（Peng 等 2021）用 GAN 式判别器替代手工设计的跟踪奖励，判别器区分角色的状态转移和运动数据集中的转移。这样就能把任务奖励（去那里）与"像数据一样运动"结合，而无需挑选片段。**ASE**（Peng 等 2022）用对抗和多样性目标预训练一个大型潜在技能空间，高层控制器只需选择潜变量。**PHC**（Luo 等 2023）是单个策略，能跟踪几乎整个 AMASS，能从摔倒中恢复，并能根据视频或 VR 输入驱动虚拟形象。**MaskedMimic**（Tessler 等 2024）把控制看作运动补全（inpainting）：一个通过蒸馏全身跟踪器训练出的策略，接受任意子集的约束（关节目标、VR 头部和双手、文本、物体目标）。后续工作包括 **PARC**（Xu 等，SIGGRAPH 2025），它迭代运动学运动生成器和物理跟踪器来扩充跑酷数据；以及 **MaskedManipulator**（Tessler 等，SIGGRAPH Asia 2025），它把 MaskedMimic 扩展到全身物体操作。
 
 **通往人形机器人的桥梁（截至 2026 年 11 月）。** 同样的配方在 2024-2026 年移植到了真实硬件上：把人类运动重定向到机器人（第 7 节），在大规模并行模拟器（[具身智能第 3 篇]({{ '/blog/2026/embodied-ai-03-simulation-platforms/' | relative_url }})）中配合域随机化训练跟踪策略，再零样本部署。
 

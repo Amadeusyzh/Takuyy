@@ -20,7 +20,7 @@ related_posts: false
 
 ## 前置知识
 
-- 来自[基于物理的渲染]({{ '/blog/2026/graphics-04-physically-based-rendering/' | relative_url }})的渲染方程与 BRDF；来自[路径追踪]({{ '/blog/2026/graphics-05-ray-and-path-tracing/' | relative_url }})的蒙特卡洛积分。
+- 来自[基于物理的渲染]({{ '/blog/2026/graphics-04-physically-based-rendering/' | relative_url }})的渲染方程与双向反射分布函数（BRDF）；来自[路径追踪]({{ '/blog/2026/graphics-05-ray-and-path-tracing/' | relative_url }})的蒙特卡洛积分。
 - 来自[第 2 篇]({{ '/blog/2026/graphics-02-rasterization/' | relative_url }})的三角形光栅化与覆盖率。
 - 链式法则、梯度下降与 Adam；基础的 PyTorch（`requires_grad`、`backward`）。
 - 把狄拉克 δ 函数（Dirac delta）$\delta(x)$ 看作“阶跃函数的导数”：$\frac{d}{dx}H(x) = \delta(x)$，其中 $H$ 是海维赛德阶跃函数（Heaviside step，$H(x)=1$ 当 $x>0$，否则为 $0$），且 $\int g(x)\,\delta(x-a)\,dx = g(a)$。
@@ -33,13 +33,13 @@ $$
 \theta^\star = \arg\min_\theta \; \mathcal{L}\big(R(\theta), I^\star\big) + \mathcal{R}(\theta),
 $$
 
-其中 $\mathcal{L}$ 是图像损失（例如均方误差 $\frac{1}{P}\lVert R(\theta)-I^\star \rVert^2$），$\mathcal{R}$ 是编码先验知识（光滑的表面、合理的材质）的正则项。这就是**合成式分析**（analysis by synthesis）：通过合成图像来解释图像。梯度下降需要
+其中 $\mathcal{L}$ 是图像损失（例如均方误差 $\frac{1}{P}\lVert R(\theta)-I^\star \rVert^2$），$\mathcal{R}$ 是编码先验知识（光滑的表面、合理的材质）的正则项（regularizer）。这就是**合成式分析**（analysis by synthesis）：通过合成图像来解释图像。梯度下降需要
 
 $$
 \frac{\partial \mathcal{L}}{\partial \theta} = \Big(\frac{\partial I}{\partial \theta}\Big)^{\!\top} \frac{\partial \mathcal{L}}{\partial I},
 $$
 
-向量 $\partial\mathcal{L}/\partial I$（每个像素一个数）的计算很简单。所有的困难都在雅可比矩阵 $\partial I/\partial\theta$ 里，而我们从不显式构造它：反向模式微分（reverse-mode differentiation）会即时地把 $\partial\mathcal{L}/\partial I$ 与它相乘。
+向量 $\partial\mathcal{L}/\partial I$（每个像素一个数）的计算很简单。所有的困难都在雅可比矩阵（Jacobian）$\partial I/\partial\theta$ 里，而我们从不显式构造它：反向模式微分（reverse-mode differentiation）会即时地把 $\partial\mathcal{L}/\partial I$ 与它相乘。
 
 {% include blog_figure.liquid path="assets/img/blog/graphics/12-pipeline.svg" localized="true" caption="合成式分析的循环。前向传播渲染当前的场景参数 $\theta$ 并与照片比较；反向传播（红色虚线）把 $\partial\mathcal{L}/\partial\theta$ 沿渲染器传回去，使优化器能够更新 $\theta$。" %}
 
@@ -52,7 +52,7 @@ $$
 - *粗糙度与光源大小*：模糊的高光，既可能是小光源下的粗糙表面，也可能是大光源下的光滑表面。
 - *纹理与几何*：在单个视角下，画上去的阴影与真实的阴影无法区分。
 
-更多的视角、已知的光照以及先验（正则项 $\mathcal{R}$，或学习得到的先验）才能打破这些平局。请记住这份清单：当优化“失败”时，它往往只是找到了同一歧义族中的另一个成员。
+更多的视角、已知的光照以及先验（正则项 $\mathcal{R}$，或学习得到的先验）才能消除这些歧义。请记住这份清单：当优化“失败”时，它往往只是找到了同一歧义族中的另一个成员。
 
 ## 2. 图像的梯度
 
@@ -129,7 +129,7 @@ FD of sampled pixel, h = 0.1: 1.500
 
 下图在 $\theta$ 的整个取值范围上展示了同样的这些函数。左侧是精确的斜坡、单采样的阶跃（经典光栅化器对像素中心采样）和四采样的阶梯线。右侧是它们的导数：精确的方框、单采样像素的狄拉克 δ、自动微分返回的零线，以及尖刺状的 FD。
 
-{% include blog_figure.liquid path="assets/img/blog/graphics/12-edge-coverage.svg" caption="一维像素 $[0,1]$（阴影部分）与位于 $\theta$ 的边缘（这里取 $f_{\rm in}=1$，$f_{\rm out}=0$）。左：面积积分是一条斜坡，而点采样给出阶跃。右：精确导数是像素范围内高度为 1 的方框；单采样像素在其采样点处有一个狄拉克 δ（箭头）；任何采样版本的自动微分都给出点线表示的零线；4 采样阶梯线的有限差分在边缘越过采样点的位置给出高度为 $0.25/h$ 的方框。" %}
+{% include blog_figure.liquid path="assets/img/blog/graphics/12-edge-coverage.svg" caption="一维像素 $[0,1]$（阴影部分）与位于 $\theta$ 的边缘（这里取 $f_{\rm in}=1$，$f_{\rm out}=0$）。左：面积积分是一条斜坡，而点采样给出阶跃。右：精确导数是像素范围内高度为 1 的方框；单采样像素在其采样点处有一个狄拉克 δ（箭头）；任何采样版本的自动微分都给出点线表示的零线；4 采样阶梯线的有限差分（图中 $h=0.1$）在边缘越过采样点的位置给出宽为 $h$、高为 $0.25/h=2.5$ 的方框。" %}
 
 ### 一般规则：内部项加边界项
 
@@ -151,7 +151,7 @@ $$
 
 有限差分对每个参数都需要多渲染一次，因此无法扩展到数百万个参数，而且它很有噪声，一维例子已经说明了这一点。边界项启发了一种更好的估计量，即**边缘采样**（edge sampling）：以密度 $p(\mathbf{x}_k)$ 在轮廓上随机选取点 $\mathbf{x}_k$（沿边缘均匀分布：$p = 1/\text{length}$），查看两侧的值，并对 $(f^{-}-f^{+})(\mathbf{v}\cdot\mathbf{n})/p$ 取平均。对于整幅图像上的损失，每个边缘样本都对它所落入的像素有贡献，权重为该像素的 $\partial\mathcal{L}/\partial I$。
 
-我们来测量一下两种方法。一幅 $32\times 32$ 的图像中，在目标圆盘之上有一个半径为 $r$ 的硬边圆盘，每像素用 16 个抖动采样渲染，我们用每种方法各估计 300 次 $\partial\mathcal{L}/\partial r$。参考值是用 400,000 个求积点计算的边界积分。
+我们来测量一下两种方法。一幅 $32\times 32$ 的图像中，在目标圆盘之上有一个半径为 $r$ 的硬边圆盘，每像素用 16 个抖动采样渲染，我们用每种方法各估计 300 次 $\partial\mathcal{L}/\partial r$。参考值是用 400,000 个求积点计算的边界积分。结果如下图所示：看橙色和紫色两组点相对红色虚线的离散程度。
 
 {% include blog_figure.liquid path="assets/img/blog/graphics/12-fd-vs-edge.svg" caption="圆盘实验中 $\partial\mathcal{L}/\partial r$ 的估计值（对称对数坐标轴；红色虚线为参考值；黑色短条为均值）。有限差分（橙色）两次渲染使用相同的随机采样：$h$ 大时平滑但有偏，$h$ 小时无偏但噪声很大，因为两次渲染之间只有少数采样点发生变化（$h=0.01$ 时有些估计值甚至符号相反）。边缘采样（紫色）在圆周上取 $M$ 个点，其分布以参考值为中心，离散程度大致按 $1/\sqrt{M}$ 缩小。右：相对 RMSE（有限差分在 $h=1, 0.1, 0.01$ 时为 0.80、0.26、0.96；边缘采样在 $M=16, 64, 256$ 时为 0.67、0.32、0.18）。注意代价：有限差分每个参数需要渲染两次，而边缘采样一次就得到所有参数的梯度。" %}
 
@@ -187,13 +187,13 @@ $$
 I = \int_{\Omega} f(\bar{x};\theta)\,d\mu(\bar{x}),
 $$
 
-即[第 5 篇]({{ '/blog/2026/graphics-05-ray-and-path-tracing/' | relative_url }})中的路径积分。可见性出现在*每一次*反弹中，包括阴影、反射和间接光，而不仅仅是在主视线的轮廓处，所以边界项现在存在于多种不连续之上。基于物理的可微渲染（physically based differentiable rendering, PBDR）在这种设定下估计雷诺公式的两项。有四个思想定义了这个领域。
+即[第 5 篇]({{ '/blog/2026/graphics-05-ray-and-path-tracing/' | relative_url }})中的路径积分，其中 $\Omega$ 是所有光路的集合，$\mu$ 是其上的测度（measure）。可见性出现在*每一次*反弹中，包括阴影、反射和间接光，而不仅仅是在主视线的轮廓处，所以边界项现在存在于多种不连续之上。基于物理的可微渲染（physically based differentiable rendering, PBDR）在这种设定下估计雷诺公式的两项。有四个思想定义了这个领域。
 
 **边缘采样**（Li、Aittala、Durand 和 Lehtinen，SIGGRAPH Asia 2018）像第 2 节那样直接估计边界项。对于主可见性，它在屏幕空间中对轮廓边缘上的点采样；对于次级可见性（阴影、间接光），它对从着色点看到的轮廓边缘采样，并利用三角形边上的层次结构来找出相关的边。它是无偏的，但寻找轮廓开销很大，而且无法推广到隐式曲面。
 
 **重参数化**（reparameterization；Loubet、Holzschuch 和 Jakob，SIGGRAPH Asia 2019）避免了显式的边。如果我们变换积分变量 $\mathbf{x} = T(\mathbf{u},\theta)$，使得不连续*随着* $\theta$ 一起移动，那么在 $\mathbf{u}$ 空间中不连续是固定的，被积函数的导数又变回普通的导数。Loubet 等人估计附近的不连续如何移动（借助少量辅助光线），并用方向的一个小旋转来近似 $T$，得到方差低但略有偏差的梯度。
 
-**扭曲面积采样**（warped-area sampling；Bangaru、Li 和 Durand，SIGGRAPH Asia 2020）让同样的想法变得无偏。它利用散度定理，把边界积分改写为一个光滑扭曲场（warp field）散度的*面积*积分，该扭曲场在不连续处与边界速度一致。面积积分正是蒙特卡洛所擅长的，因此无需去寻找任何边。
+**扭曲面积采样**（warped-area sampling；Bangaru、Li 和 Durand，SIGGRAPH Asia 2020）让同样的想法变得无偏。它利用散度定理（divergence theorem），把边界积分改写为一个光滑扭曲场（warp field）散度的*面积*积分，该扭曲场在不连续处与边界速度一致。面积积分正是蒙特卡洛所擅长的，因此无需去寻找任何边。
 
 **路径空间可微渲染**（path-space differentiable rendering, PSDR；Zhang、Miller、Yan、Gkioulekas 和 Zhao，SIGGRAPH 2020）直接对路径积分本身求导，建立在辐射传输的微分理论（Zhang 等，SIGGRAPH Asia 2019）之上。边界项变成对*边界路径*的积分，即有一个顶点落在轮廓边缘上的光路，它们可以用双向和多方向的策略来采样。这使得复杂光传输（焦散、相互反射）的梯度变得可行。
 
@@ -247,17 +247,17 @@ $$
 \mathbf{u} = (\mathbf{I} + \lambda \mathbf{L})\,\mathbf{x},
 $$
 
-其中 $\mathbf{L}$ 是网格拉普拉斯算子，$\lambda$ 是平滑权重，并改为优化 $\mathbf{u}$ 而非 $\mathbf{x}$。记 $\mathbf{M} = \mathbf{I}+\lambda\mathbf{L}$（对称），由链式法则得 $\nabla_{\mathbf{u}} = \mathbf{M}^{-1}\nabla_{\mathbf{x}}$，所以对 $\mathbf{u}$ 的一步梯度更新会使顶点移动
+其中 $\mathbf{L}$ 是网格拉普拉斯算子，$\lambda$ 是平滑权重，并改为优化 $\mathbf{u}$ 而非 $\mathbf{x}$。记 $\mathbf{M} = \mathbf{I}+\lambda\mathbf{L}$（对称），由链式法则得 $\nabla_{\mathbf{u}} = \mathbf{M}^{-1}\nabla_{\mathbf{x}}$，所以对 $\mathbf{u}$ 的一步梯度更新 $\Delta\mathbf{u} = -\eta\,\nabla_{\mathbf{u}}\mathcal{L}$（$\eta$ 为步长）会使顶点移动
 
 $$
 \Delta\mathbf{x} = \mathbf{M}^{-1}\Delta\mathbf{u} = -\eta\,(\mathbf{I}+\lambda\mathbf{L})^{-2}\,\nabla_{\mathbf{x}}\mathcal{L}.
 $$
 
-在 $\mathbf{L}$ 的特征基下（特征值 $\mu_k \ge 0$；小的 $\mu_k$ 对应光滑的低频形状），第 $k$ 个模态上的步长被缩放为 $1/(1+\lambda\mu_k)^2$：光滑的形变几乎原样通过，而高频噪声被强烈抑制。这是一种 Sobolev 风格的预条件子（preconditioner），它让你可以迈出*很大*的步子而不破坏网格。（论文还修改了 Adam，使其逐参数的缩放不会抵消这种平滑。）下面的玩具实验把这个想法应用到一条有 100 个顶点的二维闭合曲线上，让它长成五瓣花形，每一步的梯度只触及随机 30% 的顶点并带有噪声，很像真实的轮廓梯度。
+在 $\mathbf{L}$ 的特征基下（特征值 $\mu_k \ge 0$；小的 $\mu_k$ 对应光滑的低频形状），第 $k$ 个模态上的步长被缩放为 $1/(1+\lambda\mu_k)^2$：光滑的形变几乎原样通过，而高频噪声被强烈抑制。这是一种 Sobolev 风格的预条件子（preconditioner），它让你可以迈出*很大*的步子而不破坏网格。（论文还修改了 Adam，使其逐参数的缩放不会抵消这种平滑。）下面的玩具实验把这个想法应用到一条有 100 个顶点的二维闭合曲线上，让它长成五瓣花形，每一步的梯度只触及随机 30% 的顶点并带有噪声，很像真实的轮廓梯度，结果如下图所示。
 
-{% include blog_figure.liquid path="assets/img/blog/graphics/12-large-steps.svg" caption="玩具形状优化（100 个顶点的闭合曲线，起点：点线圆，目标：虚线花形，300 步，步长 $\eta=0.3$，使用相同的带噪声稀疏梯度）。左：朴素梯度下降使噪声沿曲线累积，顶点沿曲线漂移并挤在一起：100 个顶点中有 32 个的角度顺序被打乱，即多边形自身折叠。中：$\lambda=5$ 的 Large Steps 更新 $(\mathbf{I}+\lambda\mathbf{L})^{-2}g$ 保持曲线光滑。右：每次迭代的平均径向误差；在最后 50 步中，朴素更新停滞在约 0.016，Large Steps 达到约 0.008。" %}
+{% include blog_figure.liquid path="assets/img/blog/graphics/12-large-steps.svg" caption="玩具形状优化（100 个顶点的闭合曲线，起点：点线圆，目标：虚线花形，300 步，步长 $\eta=0.3$，使用相同的带噪声稀疏梯度）。左：朴素梯度下降使噪声沿曲线累积，顶点沿曲线漂移并挤在一起：100 条边中有 32 条的角度方向反了过来（相邻顶点的角度顺序颠倒），即多边形自身折叠。中：$\lambda=5$ 的 Large Steps 更新 $(\mathbf{I}+\lambda\mathbf{L})^{-2}g$ 保持曲线光滑。右：每次迭代的平均径向误差；在最后 50 步中，朴素更新停滞在约 0.016，Large Steps 达到约 0.008。" %}
 
-**由粗到细与局部极小值。** 损失作为几何的函数，到处是平坦的高原和局部极小值。如果渲染出的物体与目标完全不重叠，硬渲染器的梯度为零（稍微移动一下什么也不会改变）。如果目标中有两个相似的物体，模型可能锁定到错误的那一个。上图为一个圆盘计算了这两种效应。标准的应对办法有：
+**由粗到细与局部极小值。** 损失作为几何的函数，到处是平坦的高原和局部极小值。如果渲染出的物体与目标完全不重叠，硬渲染器的梯度为零（稍微移动一下什么也不会改变）。如果目标中有两个相似的物体，模型可能锁定到错误的那一个。下图为一个圆盘计算了这两种效应。标准的应对办法有：
 
 - 一开始先让前向模型变光滑：使用较大的 SoftRas $\sigma$，或在损失中使用高斯模糊图像或图像金字塔，再随时间逐步锐化；
 - 从良好的初始化出发（视觉外壳、粗糙的重建结果、网络预测）；
@@ -265,7 +265,7 @@ $$
 - 加正则：拉普拉斯光滑项、法线一致性、边长项，或 Large Steps 参数化；
 - 使用多个视角，这能同时消除许多歧义和局部极小值。
 
-{% include blog_figure.liquid path="assets/img/blog/graphics/12-loss-landscape.svg" caption="左：损失随圆盘水平位置的变化（半径 6 px；目标中心位于 32 px），每条曲线都按其最大值缩放。硬损失在两个圆盘重叠的阴影带之外是平的，那是一块没有梯度的高原；用更大的 $\sigma$ 做软渲染，或对两幅图像做模糊，会让吸引盆变宽。右：当目标包含一大一小两个圆盘（点线）时，半径为 6.5 的圆盘在二维位置上的软损失。两次 Adam 运行（圆点：起点；星号：终点）落入不同的吸引盆，靠近小圆盘的那个是局部极小值。" %}
+{% include blog_figure.liquid path="assets/img/blog/graphics/12-loss-landscape.svg" caption="左：损失随圆盘水平位置的变化（半径 6 px；目标中心位于 32 px），每条曲线都按其最大值缩放。硬损失在两个圆盘重叠的阴影带之外是平的，那是一块没有梯度的高原；用更大的 $\sigma$ 做软渲染，或对两幅图像做模糊，会让吸引域（basin of attraction）变宽。右：当目标包含左侧一个大圆盘和右侧一个小圆盘（点线）时，半径为 6.5 的圆盘在二维位置 $(c_x,c_y)$ 上的软损失（$\sigma=1.5$，颜色越深损失越低）。两次 Adam 运行（圆点：起点；星号：终点；白色与橙色）落入不同的吸引域，停在右侧小圆盘处的橙色那条是局部极小值。" %}
 
 ## 6. 体与点云：绕开可见性
 
@@ -279,7 +279,7 @@ $$
 
 其中 $\sigma$ 是密度，$\mathbf{c}$ 是颜色，$T$ 是透射率（transmittance）。如果 $\sigma$ 是网络权重或网格值的光滑函数，那么 $C$ 也是：遮挡物不会突然出现，它的光学深度（optical depth）是连续增长的。可见性变成了一个积分的指数，这很容易求导。下图左半部分比较了一个不透明的盒子和一个高斯密度团滑过一条光线时的像素值。
 
-在 [3D Gaussian Splatting]({{ '/blog/2026/neural-rendering-04-3d-gaussian-splatting/' | relative_url }}) 中，对于与其投影中心偏移 $\mathbf{d}$ 的像素，每个高斯贡献 $\alpha_i = o_i \exp\!\big(-\tfrac12 \mathbf{d}^\top \Sigma_i'^{-1}\mathbf{d}\big)$，其中 $o_i$ 为不透明度，$\Sigma_i'$ 为二维协方差，像素则是由前到后的合成 $C = \sum_i \mathbf{c}_i\,\alpha_i \prod_{j<i}(1-\alpha_j)$。每个 $\alpha_i$ 都是均值、协方差和不透明度的光滑函数，所以梯度无需任何边界项就能到达它们所有人。
+在 [3D Gaussian Splatting]({{ '/blog/2026/neural-rendering-04-3d-gaussian-splatting/' | relative_url }}) 中，对于与其投影中心偏移 $\mathbf{d}$ 的像素，每个高斯贡献 $\alpha_i = o_i \exp\!\big(-\tfrac12 \mathbf{d}^\top \Sigma_i'^{-1}\mathbf{d}\big)$，其中 $o_i$ 为不透明度，$\Sigma_i'$ 为二维协方差，像素则是由前到后的合成 $C = \sum_i \mathbf{c}_i\,\alpha_i \prod_{j<i}(1-\alpha_j)$。每个 $\alpha_i$ 都是均值、协方差和不透明度的光滑函数，所以梯度无需任何边界项就能传到所有这些参数。
 
 **仍然不连续的地方。**
 
@@ -289,7 +289,7 @@ $$
 
 StopThePop（Radl 等，SIGGRAPH 2024）逐像素分层排序以减轻闪现；3D Gaussian ray tracing 和 EVER（第 8 节）则按正确的顺序、或精确地沿每条光线计算体积分。
 
-{% include blog_figure.liquid path="assets/img/blog/graphics/12-volume-vs-splat.svg" caption="左：遮挡物滑过光线时的像素值。不透明的盒子给出阶跃（导数为 δ 函数）；高斯密度团给出光滑曲线 $e^{-\tau(p)}$，导数定义明确（虚线）。右：一条穿过两个重叠高斯（红色和黑色，各自 $\alpha=0.7$）的光线，随着相机旋转它们的深度顺序发生交换。按中心深度排序的合成在 $\beta=0$ 处跳变（闪现）；沿光线精确地对体积分则连续变化。" %}
+{% include blog_figure.liquid path="assets/img/blog/graphics/12-volume-vs-splat.svg" caption="左：遮挡物滑过光线时的像素值。黑线：不透明的盒子给出阶跃（导数为 δ 函数）；紫色实线：高斯密度团给出光滑曲线 $e^{-\tau(p)}$，导数定义明确（紫色虚线，已缩放）。右：纵轴是像素的红色通道。一条光线穿过两个重叠的高斯（颜色分别为红色和黑色，各自 $\alpha=0.7$），随着相机旋转它们的深度顺序发生交换。红线：按中心深度排序的合成在 $\beta=0$ 处从 0.21 跳到 0.70（闪现）；蓝线：沿光线精确地对体积分则连续变化。" %}
 
 ## 7. 动手实践：三个 PyTorch 实验
 
@@ -311,7 +311,7 @@ def coverage(cx, cy, r, ss=8):
 
 ### 7.1 软光栅化器拟合轮廓
 
-未知量是圆盘的 $\theta = (c_x, c_y, r)$；目标是一个硬边圆盘。软渲染器把阶跃 $H(r-d)$ 替换为 $\operatorname{sigmoid}((r-d)/\sigma)$，其中 $d$ 是像素中心到 $(c_x,c_y)$ 的距离：这是 SoftRas 的一维版本，用的是符号距离而不是 SoftRas 的距离平方。我们把 $\sigma$ 从 3 个像素按几何级数退火到 0.5 个像素。
+未知量是圆盘的 $\theta = (c_x, c_y, r)$；目标是一个硬边圆盘。软渲染器把阶跃 $H(r-d)$ 替换为 $\operatorname{sigmoid}((r-d)/\sigma)$，其中 $d$ 是像素中心到 $(c_x,c_y)$ 的距离：这是 SoftRas 的简化版：它只用一维的符号距离，而不是 SoftRas 的距离平方。我们把 $\sigma$ 从 3 个像素按几何级数退火到 0.5 个像素。
 
 ```python
 def render_soft(p, sigma):
@@ -371,7 +371,7 @@ for it in range(150):
 print(p.detach())                    # e.g. tensor([40.0112, 26.0081, 12.0141]); varies with the seed
 ```
 
-第三次运行对硬渲染器做朴素求导，即 `(torch.sign(p[2] - d) + 1) / 2`，得到的梯度恰好为零，所以 Adam 始终不会移动。
+第三种做法对硬渲染器做朴素求导，即 `(torch.sign(p[2] - d) + 1) / 2`，得到的梯度恰好为零，所以 Adam 始终不会移动（见下图右侧的灰线）。
 
 {% include blog_figure.liquid path="assets/img/blog/graphics/12-silhouette-fit.svg" caption="第 7 节中的两个优化，从同一个起点（黑点）出发走向目标圆盘（灰色）。左：软光栅化器，$\sigma$ 从 3 退火到 0.5 px；圆圈表示第 0、10、25、50 和 150 次迭代（颜色越深越靠后），黑线是圆心的轨迹。中：带边缘采样梯度（$M=256$）的硬光栅化器。右：两者每次迭代的*真实*图像损失（硬边圆盘，每像素 64 个采样），以及朴素的硬渲染加自动微分的运行结果，它保持不变，因为它的梯度为零。" %}
 
@@ -387,7 +387,7 @@ $$
 f_r = \frac{\boldsymbol{\rho}}{\pi} + \frac{D(\mathbf{h})\,G(\mathbf{l},\mathbf{v})\,F(\mathbf{v},\mathbf{h})}{4\,(\mathbf{n}\cdot\mathbf{l})(\mathbf{n}\cdot\mathbf{v})}, \qquad L_o = f_r\,E\,\max(0,\mathbf{n}\cdot\mathbf{l}) + 0.05\,\boldsymbol{\rho},
 $$
 
-其中 GGX 分布为 $D$（$\alpha = $ roughness$^2$），Smith 遮蔽为 $G = G_1(\mathbf{l})G_1(\mathbf{v})$，Schlick 菲涅尔项取 $F_0 = 0.04$，另有一个很小的环境光项。未知量是 RGB 反照率 $\boldsymbol{\rho}$ 和粗糙度，并用 sigmoid 将其限制在取值范围内。
+其中 GGX 分布为 $D$（$\alpha = $ roughness$^2$），Smith 遮蔽为 $G = G_1(\mathbf{l})G_1(\mathbf{v})$，Schlick 菲涅尔项取 $F_0 = 0.04$，另有一个很小的环境光项。未知量是 RGB 反照率 $\boldsymbol{\rho}$ 和粗糙度，并用 sigmoid 将其限制在取值范围内。下面的代码给出了完整的拟合过程，代码之后的图展示了它的收敛情况。
 
 ```python
 import torch
@@ -426,7 +426,7 @@ print(torch.sigmoid(a_raw).detach(), (0.05 + 0.95 * torch.sigmoid(r_raw)).item()
 # tensor([0.8000, 0.3500, 0.2000]) 0.35000815987586975
 ```
 
-{% include blog_figure.liquid path="assets/img/blog/graphics/12-brdf-fit.svg" caption="在已知光照下拟合球体的反照率和粗糙度。上：第 0、25 和 200 次迭代的渲染结果以及目标（显示 gamma 2.2）。下：三个反照率通道和粗糙度随 Adam 迭代的变化（实线）及其真实值（虚线），以及损失。反照率由大片漫反射区域确定；粗糙度仅由高光的形状和大小决定。" %}
+{% include blog_figure.liquid path="assets/img/blog/graphics/12-brdf-fit.svg" caption="在已知光照下拟合球体的反照率和粗糙度。上：第 0、25 和 200 次迭代的渲染结果以及目标（显示 gamma 2.2）。下：三个反照率通道和粗糙度随 Adam 迭代的变化（实线）及其真实值（虚线），以及损失（注意图例中的 $\rho$ 表示紫色的粗糙度，而不是正文中的反照率）。反照率由大片漫反射区域确定；粗糙度仅由高光的形状和大小决定。" %}
 
 请注意是什么让这件事变得容易：一盏已知的光、已知的形状，以及形式正确的材质模型。如果把光强也设为自由参数，你就会遇到第 1 节的第一个歧义（不妨试试：光强与反照率的乘积可以恢复出来，但两个因子无法分开）。
 
@@ -482,7 +482,7 @@ print(torch.sigmoid(a_raw).detach(), (0.05 + 0.95 * torch.sigmoid(r_raw)).item()
 
 ## 练习
 
-1. **手算边界项。** 一个单位像素被边缘 $x\cos\varphi + y\sin\varphi = \theta$ 穿过，其中 $\varphi = 45^\circ$，$\theta = 0.5$；内部（$\mathbf{n}\cdot\mathbf{x}<\theta$）的值为 1，外部为 0。计算被覆盖的面积 $A$ 和 $dA/d\theta$，并用边缘梯度组件验证。
+1. **手算边界项。** 一个单位像素被边缘 $x\cos\varphi + y\sin\varphi = \theta$ 穿过，其中 $\varphi = 45^\circ$，$\theta = 0.5$；内部（$\mathbf{n}\cdot\mathbf{x}<\theta$）的值为 1，外部为 0。计算被覆盖的面积 $A$ 和 $dA/d\theta$，并用上面的边缘梯度小组件验证。
 
    <details markdown="1"><summary>提示</summary>
    这条直线经过 $(0.707, 0)$ 和 $(0, 0.707)$，所以被覆盖的区域是一个直角边为 $0.707$ 的直角三角形：$A = 0.25$。边缘落在像素内的长度为 $\ell = 0.707\sqrt2 = 1$，所以 $dA/d\theta = \ell = 1$（验证：对这个角度，$A(\theta) = \theta^2$，而 $2\theta = 1$）。
@@ -491,7 +491,7 @@ print(torch.sigmoid(a_raw).detach(), (0.05 + 0.95 * torch.sigmoid(r_raw)).item()
 2. **有限差分的偏差。** 在带有 $N$ 个分层采样的一维例子中，证明前向差分在边缘位置 $\theta$ 均匀随机的平均下（忽略像素两端）等于真实导数，然而对固定的 $\theta$，它只取 $0$ 和 $(f_{\rm in}-f_{\rm out})/(Nh)$ 的整数倍这些值。这对在 SGD 中使用 FD 梯度意味着什么？
 
    <details markdown="1"><summary>提示</summary>
-   当且仅当某个采样点落在 $(\theta, \theta+h]$ 内时，它贡献一个大小为 $(f_{\rm in}-f_{\rm out})/N$ 的跳变；对均匀随机的 $\theta$，这个概率为 $h$。该估计量在对 $\theta$ 取平均时是无偏的，但它的方差按 $1/(Nh)$ 增长。
+   当且仅当某个采样点落在 $(\theta, \theta+h]$ 内时，它贡献一个大小为 $(f_{\rm in}-f_{\rm out})/N$ 的跳变，此时差分商为 $(f_{\rm in}-f_{\rm out})/(Nh)$。$N$ 个分层采样点的间距为 $1/N$，所以对均匀随机的 $\theta$（$h \le 1/N$），这个概率为 $Nh$（而不是 $h$）。于是均值为 $f_{\rm in}-f_{\rm out}$，即该估计量在对 $\theta$ 取平均时是无偏的；但它的二阶矩为 $(f_{\rm in}-f_{\rm out})^2/(Nh)$，方差按 $1/(Nh)$ 增长。
    </details>
 
 3. **三角形的边缘采样。** 把 `HardDiscEdgeSampled` 扩展到顶点为 $\mathbf{p}_0,\mathbf{p}_1,\mathbf{p}_2$ 的三角形。对于边 $ab$ 上的点 $\mathbf{x} = (1-t)\mathbf{p}_a + t\,\mathbf{p}_b$，关于 $\mathbf{p}_a$ 的每个坐标，$\mathbf{v}\cdot\mathbf{n}$ 是多少？
