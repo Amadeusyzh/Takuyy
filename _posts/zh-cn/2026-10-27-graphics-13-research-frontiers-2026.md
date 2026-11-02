@@ -90,7 +90,7 @@ $$
 
 这是关于 $\beta$ 的抛物线。令导数为零得到 $\beta^* = \operatorname{Cov}(f,g)/\sigma_g^2$，代回后得到 $\operatorname{Var} = \sigma_f^2(1-\rho^2)/N$，其中 $\rho$ 是 $f(X)$ 与 $g(X)$ 之间的相关系数。$g$ 越贴近 $f$，$\rho^2$ 就越接近 1，被消除的方差也就越多。
 
-**算例。** 取 $[0,1]$ 上的 $f(x) = e^x$（$I = e-1 \approx 1.71828$）和 $g(x) = 1 + x$（$G = 1.5$）。于是 $\sigma_f^2 = \frac{e^2-1}{2} - (e-1)^2 \approx 0.24204$，$\sigma_g^2 = 1/12$，$\operatorname{Cov}(f,g) = \mathbb E[xe^x] - \tfrac12(e-1) = 1 - 0.85914 = 0.14086$。因此 $\beta^* \approx 1.690$，$\rho^2 \approx 0.9837$。取 $N = 8$ 个样本时，普通估计器的标准差为 $\sqrt{0.24204/8} \approx 0.174$，而控制变量估计器为 $\sqrt{0.24204 \cdot 0.0163/8} \approx 0.022$：在样本数相同的情况下，方差降低约 60 倍。
+**算例。** 取 $[0,1]$ 上的 $f(x) = e^x$（$I = e-1 \approx 1.71828$）和 $g(x) = 1 + x$（$G = 1.5$）。于是 $\sigma_f^2 = \frac{e^2-1}{2} - (e-1)^2 \approx 0.24204$，$\sigma_g^2 = 1/12$，$\operatorname{Cov}(f,g) = \mathbb E[xe^x] - \tfrac12(e-1)$，即 $1 - 0.85914 = 0.14086$。因此 $\beta^* \approx 1.690$，$\rho^2 \approx 0.9837$。取 $N = 8$ 个样本时，普通估计器的标准差为 $\sqrt{0.24204/8} \approx 0.174$，而控制变量估计器为 $\sqrt{0.24204 \cdot 0.0163/8} \approx 0.022$：在样本数相同的情况下，方差降低约 60 倍。
 
 用模拟得到同样的数字，并像渲染器那样从样本中拟合 $\beta$：
 
@@ -162,9 +162,9 @@ t^* = \frac{\mathbf d^\top\Sigma^{-1}(\boldsymbol\mu - \mathbf o)}{\mathbf d^\to
 G_{\max} = \exp\!\left(-\tfrac12\, q(t^*)\right).
 $$
 
-$t^*$ *不是*光线上按普通距离离 $\boldsymbol\mu$ 最近的点。它是在高斯自身度量下最近的点，这个度量会沿短轴方向拉伸空间。
+$t^{\ast}$ *不是*光线上按普通距离离 $\boldsymbol\mu$ 最近的点。它是在高斯自身度量下最近的点，这个度量会沿短轴方向拉伸空间。
 
-**算例。** 令 $\boldsymbol\mu = \mathbf 0$，$\Sigma = \operatorname{diag}(4,1,1)$（标准差为 2、1、1），$\mathbf o = (-4,-1,0)$，$\mathbf d = (1,1,0)/\sqrt2$。于是 $\Sigma^{-1} = \operatorname{diag}(0.25,1,1)$，$\mathbf d^\top\Sigma^{-1}(\boldsymbol\mu-\mathbf o) = (0.25\cdot4 + 1)/\sqrt2 = 1.4142$，$\mathbf d^\top\Sigma^{-1}\mathbf d = 0.625$，所以 $t^* = 2.263$。该点为 $(-2.4, 0.6, 0)$，$q = 0.25\cdot5.76 + 0.36 = 1.8$，因此 $G_{\max} = e^{-0.9} = 0.407$。欧氏距离最近的点位于 $t = \mathbf d\cdot(\boldsymbol\mu-\mathbf o) = 3.536$，那里只有 $G = e^{-1.406} = 0.245$。
+**算例。** 令 $\boldsymbol\mu = \mathbf 0$，$\Sigma = \operatorname{diag}(4,1,1)$（标准差为 2、1、1），$\mathbf o = (-4,-1,0)$，$\mathbf d = (1,1,0)/\sqrt2$。于是 $\Sigma^{-1} = \operatorname{diag}(0.25,1,1)$，$\mathbf d^\top\Sigma^{-1}(\boldsymbol\mu-\mathbf o) = (0.25\cdot4 + 1)/\sqrt2 = 1.4142$，$\mathbf d^\top\Sigma^{-1}\mathbf d = 0.625$，所以 $t^{\ast} = 2.263$。该点为 $(-2.4, 0.6, 0)$，$q = 0.25\cdot5.76 + 0.36 = 1.8$，因此 $G_{\max} = e^{-0.9} = 0.407$。欧氏距离最近的点位于 $t = \mathbf d\cdot(\boldsymbol\mu-\mathbf o) = 3.536$，那里只有 $G = e^{-1.406} = 0.245$。
 
 ```python
 import numpy as np
@@ -182,13 +182,13 @@ y = o + t_e * d - mu
 print(t_e, np.exp(-0.5 * y @ Si @ y))          # 3.5355..., 0.2451...
 ```
 
-{% include blog_figure.liquid path="assets/img/blog/graphics/13-gaussian-ray.svg" caption="左：一个旋转过的各向异性 3D 高斯（其 1-sigma 椭球）和三条偏移量依次增大的平行光线；方块标出各光线的起点，圆点标出其峰值点 $t^*$。右：沿每条光线的响应 $G(\mathbf o+t\mathbf d)$，由公式计算得到。每条曲线都是关于 $t$ 的一维高斯，其最大值位于 $t^*$（虚线）。峰值处标出的数值是 $G_{\max}$，它随偏移量迅速下降，因为光线是沿着一条短轴穿过的。" %}
+{% include blog_figure.liquid path="assets/img/blog/graphics/13-gaussian-ray.svg" caption="左：一个旋转过的各向异性 3D 高斯（其 1-sigma 椭球）和三条偏移量依次增大的平行光线；方块标出各光线的起点，圆点标出其峰值点 $t^{\ast}$。右：沿每条光线的响应 $G(\mathbf o+t\mathbf d)$，由公式计算得到。每条曲线都是关于 $t$ 的一维高斯，其最大值位于 $t^{\ast}$（虚线）。峰值处标出的数值是 $G_{\max}$，它随偏移量迅速下降，因为光线是沿着一条短轴穿过的。" %}
 
-在二维中亲手试一试同样的计算。控件的初始状态正是上面的数值例子（$\sigma_x = 2$，$\sigma_y = 1$，$\mathbf o = (-4,-1)$，方向 $(1,1)/\sqrt2$），因此读数显示 $t^* = 2.26$、$G = 0.407$，而欧氏最近点为 $t = 3.54$、$G = 0.245$。
+在二维中亲手试一试同样的计算。控件的初始状态正是上面的数值例子（$\sigma_x = 2$，$\sigma_y = 1$，$\mathbf o = (-4,-1)$，方向 $(1,1)/\sqrt2$），因此读数显示 $t^{\ast} = 2.26$、$G = 0.407$，而欧氏最近点为 $t = 3.54$、$G = 0.245$。
 
 <div id="gr-i18n" hidden data-drag="拖动方块（光线起点）或圆圈（方向）；滑块用于旋转和拉伸高斯。" data-rot="旋转" data-peak="峰值" data-eucl="最近点" data-reset="重置"></div>
 
-{% include widget.liquid name="graphics-gaussian-ray" height="470" caption="紫色：峰值 $t^*$，光线在此与高斯的一条等值椭圆相切（紫色虚线）。灰色：普通距离意义下的最近点，光线在此与以均值为圆心的圆相切（灰色虚线）。下方的曲线是 $G$ 沿光线的变化。旋转或拉伸高斯，观察两点如何分开：一般情况下两点不同，只在特殊情形下重合，例如各向同性的高斯、光线平行于某条主轴，或光线穿过均值。" %}
+{% include widget.liquid name="graphics-gaussian-ray" height="470" caption="紫色：峰值 $t^{\ast}$，光线在此与高斯的一条等值椭圆相切（紫色虚线）。灰色：普通距离意义下的最近点，光线在此与以均值为圆心的圆相切（灰色虚线）。下方的曲线是 $G$ 沿光线的变化。旋转或拉伸高斯，观察两点如何分开：一般情况下两点不同，只在特殊情形下重合，例如各向同性的高斯、光线平行于某条主轴，或光线穿过均值。" %}
 
 高斯光线追踪器会把每个高斯包在一个包围代理（例如一个被拉伸的二十面体）里，放入 BVH（[第 5 章]({{ '/blog/2026/graphics-05-ray-and-path-tracing/' | relative_url }})），收集光线上的命中，对每个命中求 $G_{\max}$ 和不透明度，并按深度顺序做 alpha 合成，与体渲染完全一样。下面这些论文讨论的是如何让它变快，以及它的替代方案。
 
@@ -490,7 +490,7 @@ for k in (1, 5, 60):
    $G = 1 + \tfrac12 + \tfrac16 = 5/3$，$\sigma_g^2 \approx 0.1889$，$\operatorname{Cov}(f,g) \approx 0.2136$（用到 $\mathbb E[x^2e^x] = e-2$），所以 $\beta^* \approx 1.131$，$\rho^2 \approx 0.9981$。残余方差比用 $1+x$ 时小约 9 倍，比普通蒙特卡洛小约 500 倍。
    </details>
 
-2. **光线上的高斯。** 证明 $q(t)$ 是关于 $t$ 的凸二次函数，并且 $q(t^*) = q(0) - \frac{(\mathbf d^\top\Sigma^{-1}(\boldsymbol\mu-\mathbf o))^2}{\mathbf d^\top\Sigma^{-1}\mathbf d}$。然后用代码片段做数值验证。
+2. **光线上的高斯。** 证明 $q(t)$ 是关于 $t$ 的凸二次函数，并且 $q(t^{\ast}) = q(0) - \frac{(\mathbf d^\top\Sigma^{-1}(\boldsymbol\mu-\mathbf o))^2}{\mathbf d^\top\Sigma^{-1}\mathbf d}$。然后用代码片段做数值验证。
 
    <details markdown="1"><summary>提示</summary>
    把 $q(t)$ 写成 $q(t) = a t^2 - 2bt + c$，其中 $a = \mathbf d^\top\Sigma^{-1}\mathbf d > 0$，$b = \mathbf d^\top\Sigma^{-1}(\boldsymbol\mu-\mathbf o)$，$c = q(0)$，然后配方。

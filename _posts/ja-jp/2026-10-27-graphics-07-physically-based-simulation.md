@@ -151,7 +151,13 @@ $$
 
 {% include blog_figure.liquid path="assets/img/blog/graphics/07-cloth-springs.svg" localized="true" caption="5 × 5 格子上の 3 種類のバネとその本数。曲げバネは粒子を 1 つ飛ばして結びます。弧で描いているのは、重なる構造バネを隠さないためだけです。" %}
 
-難しいのは**剛性**（stiffness）です。実際の布はほとんど伸びないので $k_s$ は大きくなければなりません。一方、陽的・シンプレクティック積分の安定な刻み幅はおおよそ $\Delta t \lesssim 2/\omega_{\max} \sim 2\sqrt{m/k_s}$ で、非常に小さくなってしまいます。Baraff と Witkin の "Large Steps in Cloth Simulation"（SIGGRAPH 1998）は、オフライン用途でこれを陰的オイラー法で解決しました。力を線形化し、各ステップで疎な線形系 $\big(\mathbf{M} - \Delta t\,\partial\mathbf{f}/\partial\mathbf{v} - \Delta t^2\,\partial\mathbf{f}/\partial\mathbf{x}\big)\Delta\mathbf{v} = \Delta t\,(\mathbf{f} + \Delta t\, \partial\mathbf{f}/\partial\mathbf{x}\, \mathbf{v})$ を共役勾配法で解きます。頑健ですが、実装とチューニングのコストが高い方法です。位置ベースの手法は別の道を進みます。
+難しいのは**剛性**（stiffness）です。実際の布はほとんど伸びないので $k_s$ は大きくなければなりません。一方、陽的・シンプレクティック積分の安定な刻み幅はおおよそ $\Delta t \lesssim 2/\omega_{\max} \sim 2\sqrt{m/k_s}$ で、非常に小さくなってしまいます。Baraff と Witkin の "Large Steps in Cloth Simulation"（SIGGRAPH 1998）は、オフライン用途でこれを陰的オイラー法で解決しました。力を線形化し、各ステップで次の疎な線形系を共役勾配法で解きます。
+
+$$
+\big(\mathbf{M} - \Delta t\,\partial\mathbf{f}/\partial\mathbf{v} - \Delta t^2\,\partial\mathbf{f}/\partial\mathbf{x}\big)\Delta\mathbf{v} = \Delta t\,(\mathbf{f} + \Delta t\, \partial\mathbf{f}/\partial\mathbf{x}\, \mathbf{v})
+$$
+
+頑健ですが、実装とチューニングのコストが高い方法です。位置ベースの手法は別の道を進みます。
 
 ## 4. Position Based Dynamics（PBD）
 
@@ -171,7 +177,7 @@ $$
 \lambda = \frac{-C(\mathbf{p})}{\nabla C\, \mathbf{M}^{-1} \nabla C^\top} = \frac{-C(\mathbf{p})}{\sum_i w_i \lVert\nabla_{\mathbf{p}_i} C\rVert^2}, \qquad \Delta\mathbf{p}_i = \lambda\, w_i \nabla_{\mathbf{p}_i} C^\top.
 $$
 
-距離拘束では $\nabla_{\mathbf{p}_a}C = \hat{\mathbf{n}}^\top$、$\nabla_{\mathbf{p}_b}C = -\hat{\mathbf{n}}^\top$（$\hat{\mathbf{n}} = (\mathbf{p}_a-\mathbf{p}_b)/\lVert\mathbf{p}_a-\mathbf{p}_b\rVert$）なので
+距離拘束では $\nabla\_{\mathbf{p}\_a}C = \hat{\mathbf{n}}^\top$、$\nabla\_{\mathbf{p}\_b}C = -\hat{\mathbf{n}}^\top$（$\hat{\mathbf{n}} = (\mathbf{p}\_a-\mathbf{p}\_b)/\lVert\mathbf{p}\_a-\mathbf{p}\_b\rVert$）なので
 
 $$
 \Delta\mathbf{p}_a = -\frac{w_a}{w_a + w_b}\big(\lVert\mathbf{p}_a-\mathbf{p}_b\rVert - L_0\big)\hat{\mathbf{n}}, \qquad
@@ -198,13 +204,13 @@ $$
 
 を対応させます。ここで $\boldsymbol{\alpha}$ は対角の**コンプライアンス**（compliance）行列（剛性の逆数。例えば距離拘束では $\alpha = 1/k$、単位は m/N）です。弾性力は $\mathbf{f}_{\text{el}} = -\nabla U^\top = -\nabla\mathbf{C}^\top \boldsymbol{\alpha}^{-1}\mathbf{C}$ です。
 
-**ステップ 1：位置レベルの陰的積分。** $\mathbf{M}\ddot{\mathbf{x}} = \mathbf{f}_{\text{el}}(\mathbf{x}) + \mathbf{f}_{\text{ext}}$ を、弾性力をステップ終了時に評価して離散化します。
+**ステップ 1：位置レベルの陰的積分。** $\mathbf{M}\ddot{\mathbf{x}} = \mathbf{f}\_{\text{el}}(\mathbf{x}) + \mathbf{f}\_{\text{ext}}$ を、弾性力をステップ終了時に評価して離散化します。
 
 $$
 \mathbf{M}\,\frac{\mathbf{x}^{n+1} - 2\mathbf{x}^n + \mathbf{x}^{n-1}}{\Delta t^2} = -\nabla\mathbf{C}(\mathbf{x}^{n+1})^\top \boldsymbol{\alpha}^{-1}\mathbf{C}(\mathbf{x}^{n+1}) + \mathbf{f}_{\text{ext}}.
 $$
 
-**予測位置**（predicted position）$\tilde{\mathbf{x}} = 2\mathbf{x}^n - \mathbf{x}^{n-1} + \Delta t^2\mathbf{M}^{-1}\mathbf{f}_{\text{ext}} = \mathbf{x}^n + \Delta t\,\mathbf{v}^n + \Delta t^2\mathbf{M}^{-1}\mathbf{f}_{\text{ext}}$ と、**時間刻みでスケールしたコンプライアンス**
+**予測位置**（predicted position）$\tilde{\mathbf{x}} = 2\mathbf{x}^n - \mathbf{x}^{n-1} + \Delta t^2\mathbf{M}^{-1}\mathbf{f}\_{\text{ext}}$（言い換えると $\mathbf{x}^n + \Delta t\,\mathbf{v}^n + \Delta t^2\mathbf{M}^{-1}\mathbf{f}\_{\text{ext}}$） と、**時間刻みでスケールしたコンプライアンス**
 
 $$
 \tilde{\boldsymbol{\alpha}} = \frac{\boldsymbol{\alpha}}{\Delta t^2}
@@ -447,7 +453,7 @@ $$
 A(\mathbf{x}_i) \approx \sum_j \frac{m_j}{\rho_j} A_j\, W(\mathbf{x}_i - \mathbf{x}_j, h).
 $$
 
-Müller ら（2003）は SPH をグラフィックスでインタラクティブに動かせるようにしました。状態方程式 $p_i = k(\rho_i - \rho_0)$ から圧力を求め、対称化した圧力項 $\mathbf{f}_i^{p} = -\sum_j m_j \frac{p_i + p_j}{2\rho_j}\nabla W_{ij}$、粘性、表面張力を加えます。密度には Poly6 カーネル、圧力には Spiky カーネルの勾配、粘性には別のカーネルを使います。弱点は布と同じ剛性の問題で、非圧縮性に近づけるには大きな $k$、したがって非常に小さな時間刻みが必要です。
+Müller ら（2003）は SPH をグラフィックスでインタラクティブに動かせるようにしました。状態方程式 $p\_i = k(\rho\_i - \rho\_0)$ から圧力を求め、対称化した圧力項 $\mathbf{f}\_i^{p} = -\sum\_j m\_j \frac{p\_i + p\_j}{2\rho\_j}\nabla W\_{ij}$、粘性、表面張力を加えます。密度には Poly6 カーネル、圧力には Spiky カーネルの勾配、粘性には別のカーネルを使います。弱点は布と同じ剛性の問題で、非圧縮性に近づけるには大きな $k$、したがって非常に小さな時間刻みが必要です。
 
 下図は 3 つのカーネルを比較したものです。
 
@@ -503,4 +509,4 @@ IPC による接触、微分可能な流体、布、髪、MPM に関する 2026 
 4. 引き裂きを実装してください。$\lambda / h^2$（つまり力）がしきい値を超えたら伸び拘束を削除し、ホームページのデモで使われている長さベースの規則と比較します。
 5. 近傍探索に一様格子を使い、上の密度拘束を用いた 2 次元の Position Based Fluids ソルバーを書いてください。箱の中の 2,000 粒子から始めましょう。
 
-これでグラフィックスのトラックは完結です。次のトラックであるニューラルレンダリングでは、カメラと多視点幾何から出発して NeRF と 3D Gaussian Splatting まで進みます。この 7 回で学んだすべて（射影、ラスタライゼーション、放射輝度、サンプリング、さらには微分可能シミュレーション）が、そこで再び登場します。
+これでグラフィックスのトラックの中核部分は完結です。第 08〜13 章では、ジオメトリ処理、アニメーションとキャラクター、ボリュームと関与媒質、リアルタイムレンダリングの技法、微分可能レンダリングと逆レンダリング、そして 2026 年の研究フロンティアへと続きます。最初は[ジオメトリ処理]({{ '/blog/2026/graphics-08-geometry-processing/' | relative_url }})です。先に進みたい方は、次にニューラルレンダリングのトラックへ進んでもかまいません。[カメラと多視点幾何]({{ '/blog/2026/neural-rendering-01-cameras-and-multiview-geometry/' | relative_url }})から出発して NeRF と 3D Gaussian Splatting まで進みます。この 7 回で学んだすべて（射影、ラスタライゼーション、放射輝度、サンプリング、さらには微分可能シミュレーション）が、そこで再び登場します。

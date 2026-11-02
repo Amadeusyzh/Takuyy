@@ -615,7 +615,7 @@ self     one-step error 0.0139   rollout error at t=10: 0.068  t=30: 0.144  t=60
 ## 演習
 
 1. 独立なガウス分布の和がガウス分布であることを用いて、$q(x_t \mid x_0) = \mathcal{N}(\sqrt{\bar\alpha_t}x_0, (1-\bar\alpha_t)I)$ を帰納法で証明してください。
-2. ベイズの定理 $q(x_{t-1} \mid x_t, x_0) \propto q(x_t \mid x_{t-1})\, q(x_{t-1} \mid x_0)$ から、平方完成によって $\tilde\mu_t$ と $\tilde\beta_t$ を導出してください。
+2. ベイズの定理より、事後分布 $q(x_{t-1} \mid x_t, x_0)$ は $q(x_t \mid x_{t-1})\, q(x_{t-1} \mid x_0)$ に比例します。ここから平方完成によって $\tilde\mu_t$ と $\tilde\beta_t$ を導出してください。
 3. DDPM のスクリプトで、DDIM を 10、50、200 ステップ、および $\eta \in \lbrace 0, 1 \rbrace$ で比較してください。ステップ数を減らしたとき、どちらが先に劣化するでしょうか。
 4. クラスラベル（モードのインデックス）を追加し、15% のラベルドロップアウトで訓練してください。classifier-free guidance を実装し、$w \in \lbrace 1, 3, 7 \rbrace$ についてサンプルをプロットしてください。各モードの広がりはどうなるでしょうか。
 5. 線形経路 $x_t = (1-t)x_0 + t x_1$ について、速度予測器 $v_\theta$ とノイズ予測器が $\hat\epsilon = x_t - t\,v_\theta(x_t, t)$ という関係にあることを示してください。

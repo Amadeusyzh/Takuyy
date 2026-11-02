@@ -250,7 +250,7 @@ if __name__ == "__main__":
    w_l(p,q) = \exp\!\left(-\frac{\lvert l_p - l_q\rvert}{\sigma_l\sqrt{g_{3\times3}\!\left(\operatorname{Var}(l_p)\right)} + \epsilon}\right),
    $$
 
-   其中 $g_{3\times3}$ 是对方差的小高斯预滤波，$\sigma_l=4$。由于每一层都在滤波信号，方差也随之用*平方*权重一起滤波（对独立样本，$\operatorname{Var}\big[\sum_q w_q c_q / \sum_q w_q\big] = \sum_q w_q^2\operatorname{Var}[c_q]/(\sum_q w_q)^2$）。于是噪声大的区域被大力平滑，已收敛的区域则保持不动。法线项为 $\max(0,\mathbf n_p\cdot\mathbf n_q)^{\sigma_n}$（$\sigma_n=128$），深度项则用局部深度梯度来归一化深度差：$\lvert z_p - z_q\rvert / (\sigma_z \lvert\nabla z\cdot(p-q)\rvert + \epsilon)$。
+   其中 $g_{3\times3}$ 是对方差的小高斯预滤波，$\sigma_l=4$。由于每一层都在滤波信号，方差也随之用*平方*权重一起滤波（对独立样本，$\sum_q w_q c_q / \sum_q w_q$ 的方差为 $\sum_q w_q^2\operatorname{Var}[c_q]/(\sum_q w_q)^2$）。于是噪声大的区域被大力平滑，已收敛的区域则保持不动。法线项为 $\max(0,\mathbf n_p\cdot\mathbf n_q)^{\sigma_n}$（$\sigma_n=128$），深度项则用局部深度梯度来归一化深度差：$\lvert z_p - z_q\rvert / (\sigma_z \lvert\nabla z\cdot(p-q)\rvert + \epsilon)$。
 
 4. 第一层 à-trous 的输出被回馈为下一帧的颜色历史，最后再用一遍 TAA 去除残余闪烁。
 

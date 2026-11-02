@@ -250,7 +250,7 @@ if __name__ == "__main__":
    w_l(p,q) = \exp\!\left(-\frac{\lvert l_p - l_q\rvert}{\sigma_l\sqrt{g_{3\times3}\!\left(\operatorname{Var}(l_p)\right)} + \epsilon}\right),
    $$
 
-   ここで $g_{3\times3}$ は分散に対する小さなガウスの前置フィルター、$\sigma_l=4$ です。各レベルが信号をフィルタリングするので、分散も*二乗*した重みで一緒にフィルタリングします（独立なサンプルなら $\operatorname{Var}\big[\sum_q w_q c_q / \sum_q w_q\big] = \sum_q w_q^2\operatorname{Var}[c_q]/(\sum_q w_q)^2$）。その結果、ノイズの多い領域は強く平滑化され、収束した領域はそのまま残ります。法線の項は $\max(0,\mathbf n_p\cdot\mathbf n_q)^{\sigma_n}$（$\sigma_n=128$）で、深度の項は深度差を局所的な深度勾配で割ったもの、$\lvert z_p - z_q\rvert / (\sigma_z \lvert\nabla z\cdot(p-q)\rvert + \epsilon)$ です。
+   ここで $g_{3\times3}$ は分散に対する小さなガウスの前置フィルター、$\sigma_l=4$ です。各レベルが信号をフィルタリングするので、分散も*二乗*した重みで一緒にフィルタリングします（独立なサンプルなら、$\sum_q w_q c_q / \sum_q w_q$ の分散は $\sum_q w_q^2\operatorname{Var}[c_q]/(\sum_q w_q)^2$ です）。その結果、ノイズの多い領域は強く平滑化され、収束した領域はそのまま残ります。法線の項は $\max(0,\mathbf n_p\cdot\mathbf n_q)^{\sigma_n}$（$\sigma_n=128$）で、深度の項は深度差を局所的な深度勾配で割ったもの、$\lvert z_p - z_q\rvert / (\sigma_z \lvert\nabla z\cdot(p-q)\rvert + \epsilon)$ です。
 
 4. à-trous の最初のレベルの出力を次フレームの色の履歴としてフィードバックし、最後に TAA パスで残ったちらつきを取り除きます。
 

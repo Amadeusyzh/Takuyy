@@ -615,7 +615,7 @@ Real-time world models need one to four network evaluations per frame. Section 8
 ## Exercises
 
 1. Prove $q(x_t \mid x_0) = \mathcal{N}(\sqrt{\bar\alpha_t}x_0, (1-\bar\alpha_t)I)$ by induction, using that the sum of independent Gaussians is Gaussian.
-2. Derive $\tilde\mu_t$ and $\tilde\beta_t$ from Bayes' rule $q(x_{t-1} \mid x_t, x_0) \propto q(x_t \mid x_{t-1})\, q(x_{t-1} \mid x_0)$ by completing the square.
+2. Derive $\tilde\mu_t$ and $\tilde\beta_t$ by completing the square, starting from Bayes' rule: the posterior $q(x_{t-1} \mid x_t, x_0)$ is proportional to $q(x_t \mid x_{t-1})\, q(x_{t-1} \mid x_0)$.
 3. In the DDPM script, compare DDIM with 10, 50 and 200 steps and $\eta \in \lbrace 0, 1 \rbrace$. Which one degrades first when you reduce steps?
 4. Add a class label (the mode index) and train with 15% label dropout. Implement classifier-free guidance and plot samples for $w \in \lbrace 1, 3, 7 \rbrace$. What happens to the spread of each mode?
 5. Show that for the linear path $x_t = (1-t)x_0 + t x_1$, a velocity predictor $v_\theta$ and a noise predictor are related by $\hat\epsilon = x_t - t\,v_\theta(x_t, t)$.

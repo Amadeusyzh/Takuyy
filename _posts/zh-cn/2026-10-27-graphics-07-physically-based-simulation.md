@@ -151,7 +151,13 @@ $$
 
 {% include blog_figure.liquid path="assets/img/blog/graphics/07-cloth-springs.svg" localized="true" caption="5 × 5 网格上的三类弹簧及其数量。弯曲弹簧跳过一个粒子；画成弧线只是为了不遮住与之重合的结构弹簧。" %}
 
-难点在于**刚度**（stiffness）。真实布料几乎不可拉伸，所以 $k_s$ 必须很大；而显式或辛积分的稳定步长大致满足 $\Delta t \lesssim 2/\omega_{\max} \sim 2\sqrt{m/k_s}$，会变得极小。Baraff 和 Witkin 的 "Large Steps in Cloth Simulation"（SIGGRAPH 1998）用隐式欧拉法在离线场景中解决了这个问题：将力线性化，每步用共轭梯度法求解一个稀疏线性系统 $\big(\mathbf{M} - \Delta t\,\partial\mathbf{f}/\partial\mathbf{v} - \Delta t^2\,\partial\mathbf{f}/\partial\mathbf{x}\big)\Delta\mathbf{v} = \Delta t\,(\mathbf{f} + \Delta t\, \partial\mathbf{f}/\partial\mathbf{x}\, \mathbf{v})$。这种方法鲁棒，但实现和调参代价都很高。基于位置的方法走了另一条路。
+难点在于**刚度**（stiffness）。真实布料几乎不可拉伸，所以 $k_s$ 必须很大；而显式或辛积分的稳定步长大致满足 $\Delta t \lesssim 2/\omega_{\max} \sim 2\sqrt{m/k_s}$，会变得极小。Baraff 和 Witkin 的 "Large Steps in Cloth Simulation"（SIGGRAPH 1998）用隐式欧拉法在离线场景中解决了这个问题：将力线性化，每步用共轭梯度法求解一个稀疏线性系统：
+
+$$
+\big(\mathbf{M} - \Delta t\,\partial\mathbf{f}/\partial\mathbf{v} - \Delta t^2\,\partial\mathbf{f}/\partial\mathbf{x}\big)\Delta\mathbf{v} = \Delta t\,(\mathbf{f} + \Delta t\, \partial\mathbf{f}/\partial\mathbf{x}\, \mathbf{v})
+$$
+
+这种方法鲁棒，但实现和调参代价都很高。基于位置的方法走了另一条路。
 
 ## 4. 基于位置的动力学（PBD）
 
@@ -171,7 +177,7 @@ $$
 \lambda = \frac{-C(\mathbf{p})}{\nabla C\, \mathbf{M}^{-1} \nabla C^\top} = \frac{-C(\mathbf{p})}{\sum_i w_i \lVert\nabla_{\mathbf{p}_i} C\rVert^2}, \qquad \Delta\mathbf{p}_i = \lambda\, w_i \nabla_{\mathbf{p}_i} C^\top.
 $$
 
-对于距离约束，$\nabla_{\mathbf{p}_a}C = \hat{\mathbf{n}}^\top$，$\nabla_{\mathbf{p}_b}C = -\hat{\mathbf{n}}^\top$，其中 $\hat{\mathbf{n}} = (\mathbf{p}_a-\mathbf{p}_b)/\lVert\mathbf{p}_a-\mathbf{p}_b\rVert$，因此
+对于距离约束，$\nabla\_{\mathbf{p}\_a}C = \hat{\mathbf{n}}^\top$，$\nabla\_{\mathbf{p}\_b}C = -\hat{\mathbf{n}}^\top$，其中 $\hat{\mathbf{n}} = (\mathbf{p}\_a-\mathbf{p}\_b)/\lVert\mathbf{p}\_a-\mathbf{p}\_b\rVert$，因此
 
 $$
 \Delta\mathbf{p}_a = -\frac{w_a}{w_a + w_b}\big(\lVert\mathbf{p}_a-\mathbf{p}_b\rVert - L_0\big)\hat{\mathbf{n}}, \qquad
@@ -198,13 +204,13 @@ $$
 
 其中 $\boldsymbol{\alpha}$ 是对角的**柔度**（compliance）矩阵（刚度的倒数，例如对距离约束 $\alpha = 1/k$，单位 m/N）。弹性力为 $\mathbf{f}_{\text{el}} = -\nabla U^\top = -\nabla\mathbf{C}^\top \boldsymbol{\alpha}^{-1}\mathbf{C}$。
 
-**第 1 步：位置层面的隐式积分。** 将 $\mathbf{M}\ddot{\mathbf{x}} = \mathbf{f}_{\text{el}}(\mathbf{x}) + \mathbf{f}_{\text{ext}}$ 离散化，并在时间步末尾计算弹性力：
+**第 1 步：位置层面的隐式积分。** 将 $\mathbf{M}\ddot{\mathbf{x}} = \mathbf{f}\_{\text{el}}(\mathbf{x}) + \mathbf{f}\_{\text{ext}}$ 离散化，并在时间步末尾计算弹性力：
 
 $$
 \mathbf{M}\,\frac{\mathbf{x}^{n+1} - 2\mathbf{x}^n + \mathbf{x}^{n-1}}{\Delta t^2} = -\nabla\mathbf{C}(\mathbf{x}^{n+1})^\top \boldsymbol{\alpha}^{-1}\mathbf{C}(\mathbf{x}^{n+1}) + \mathbf{f}_{\text{ext}}.
 $$
 
-定义**预测位置**（predicted position）$\tilde{\mathbf{x}} = 2\mathbf{x}^n - \mathbf{x}^{n-1} + \Delta t^2\mathbf{M}^{-1}\mathbf{f}_{\text{ext}} = \mathbf{x}^n + \Delta t\,\mathbf{v}^n + \Delta t^2\mathbf{M}^{-1}\mathbf{f}_{\text{ext}}$，以及**按时间步缩放的柔度**
+定义**预测位置**（predicted position）$\tilde{\mathbf{x}} = 2\mathbf{x}^n - \mathbf{x}^{n-1} + \Delta t^2\mathbf{M}^{-1}\mathbf{f}\_{\text{ext}}$（等价地，$\mathbf{x}^n + \Delta t\,\mathbf{v}^n + \Delta t^2\mathbf{M}^{-1}\mathbf{f}\_{\text{ext}}$），以及**按时间步缩放的柔度**
 
 $$
 \tilde{\boldsymbol{\alpha}} = \frac{\boldsymbol{\alpha}}{\Delta t^2}.
@@ -443,7 +449,7 @@ $$
 A(\mathbf{x}_i) \approx \sum_j \frac{m_j}{\rho_j} A_j\, W(\mathbf{x}_i - \mathbf{x}_j, h).
 $$
 
-Müller 等人（2003）让 SPH 在图形学中实现了交互式运行：由状态方程 $p_i = k(\rho_i - \rho_0)$ 得到压强，对称的压力 $\mathbf{f}_i^{p} = -\sum_j m_j \frac{p_i + p_j}{2\rho_j}\nabla W_{ij}$，再加上粘性和表面张力；密度使用 Poly6 核，压力使用 Spiky 核的梯度，粘性使用另一个专门的核。它的弱点是与布料相同的刚度问题：接近不可压缩需要很大的 $k$，因而需要极小的时间步。
+Müller 等人（2003）让 SPH 在图形学中实现了交互式运行：由状态方程 $p\_i = k(\rho\_i - \rho\_0)$ 得到压强，对称的压力 $\mathbf{f}\_i^{p} = -\sum\_j m\_j \frac{p\_i + p\_j}{2\rho\_j}\nabla W\_{ij}$，再加上粘性和表面张力；密度使用 Poly6 核，压力使用 Spiky 核的梯度，粘性使用另一个专门的核。它的弱点是与布料相同的刚度问题：接近不可压缩需要很大的 $k$，因而需要极小的时间步。
 
 下图比较了这三个核。
 
@@ -499,4 +505,4 @@ IPC 接触、可微流体、布料、头发和 MPM 在 2026 年的研究，请�
 4. 实现撕裂：当 $\lambda / h^2$（即力）超过阈值时删除拉伸约束，并与主页演示中基于长度的规则进行比较。
 5. 编写一个二维 Position Based Fluids 求解器，用均匀网格做邻域搜索，并使用上面的密度约束；从盒子里的 2,000 个粒子开始。
 
-图形学系列到此结束。下一个系列——神经渲染——将从相机与多视几何出发，一直讲到 NeRF 和 3D 高斯泼溅（3D Gaussian Splatting）；这七篇中的一切（投影、光栅化、辐射度、采样，乃至可微模拟）都会在那里再次出现。
+图形学系列的核心部分到此结束。第 08-13 章将继续这个系列，依次讲几何处理、动画与角色、体积与参与介质、实时渲染技术、可微渲染与逆向渲染，以及 2026 年的研究前沿，第一篇是[几何处理]({{ '/blog/2026/graphics-08-geometry-processing/' | relative_url }})。如果你想先跳到后面，下一步可以直接进入神经渲染系列：它从[相机与多视几何]({{ '/blog/2026/neural-rendering-01-cameras-and-multiview-geometry/' | relative_url }})出发，一直讲到 NeRF 和 3D 高斯泼溅（3D Gaussian Splatting）；这七篇中的一切（投影、光栅化、辐射度、采样，乃至可微模拟）都会在那里再次出现。

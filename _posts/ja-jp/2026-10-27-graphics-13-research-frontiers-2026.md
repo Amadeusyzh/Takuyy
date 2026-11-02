@@ -90,7 +90,7 @@ $$
 
 で、$\beta$ についての放物線になります。微分をゼロとおくと $\beta^* = \operatorname{Cov}(f,g)/\sigma_g^2$ が得られ、これを代入し戻すと $\operatorname{Var} = \sigma_f^2(1-\rho^2)/N$ となります。ここで $\rho$ は $f(X)$ と $g(X)$ の相関係数です。$g$ が $f$ によく追従するほど $\rho^2$ は 1 に近づき、より多くの分散が消えます。
 
-**具体例。** $[0,1]$ 上の $f(x) = e^x$（$I = e-1 \approx 1.71828$）と $g(x) = 1 + x$（$G = 1.5$）を考えます。すると $\sigma_f^2 = \frac{e^2-1}{2} - (e-1)^2 \approx 0.24204$、$\sigma_g^2 = 1/12$、$\operatorname{Cov}(f,g) = \mathbb E[xe^x] - \tfrac12(e-1) = 1 - 0.85914 = 0.14086$ です。したがって $\beta^* \approx 1.690$、$\rho^2 \approx 0.9837$ になります。サンプル数 $N = 8$ のとき、通常の推定量の標準偏差は $\sqrt{0.24204/8} \approx 0.174$、制御変量推定量は $\sqrt{0.24204 \cdot 0.0163/8} \approx 0.022$ です。同じサンプル数で、分散がおよそ 60 分の 1 になります。
+**具体例。** $[0,1]$ 上の $f(x) = e^x$（$I = e-1 \approx 1.71828$）と $g(x) = 1 + x$（$G = 1.5$）を考えます。すると $\sigma_f^2 = \frac{e^2-1}{2} - (e-1)^2 \approx 0.24204$、$\sigma_g^2 = 1/12$、$\operatorname{Cov}(f,g) = \mathbb E[xe^x] - \tfrac12(e-1)$、すなわち $1 - 0.85914 = 0.14086$ です。したがって $\beta^* \approx 1.690$、$\rho^2 \approx 0.9837$ になります。サンプル数 $N = 8$ のとき、通常の推定量の標準偏差は $\sqrt{0.24204/8} \approx 0.174$、制御変量推定量は $\sqrt{0.24204 \cdot 0.0163/8} \approx 0.022$ です。同じサンプル数で、分散がおよそ 60 分の 1 になります。
 
 同じ数値をシミュレーションで確かめます。レンダラーと同じように、$\beta$ はサンプルから推定します。
 
@@ -162,9 +162,9 @@ t^* = \frac{\mathbf d^\top\Sigma^{-1}(\boldsymbol\mu - \mathbf o)}{\mathbf d^\to
 G_{\max} = \exp\!\left(-\tfrac12\, q(t^*)\right).
 $$
 
-$t^*$ は、通常の距離で $\boldsymbol\mu$ に最も近い光線上の点では*ありません*。ガウシアンの計量、つまり短い軸方向に空間を引き伸ばす計量で、最も近い点です。
+$t^{\ast}$ は、通常の距離で $\boldsymbol\mu$ に最も近い光線上の点では*ありません*。ガウシアンの計量、つまり短い軸方向に空間を引き伸ばす計量で、最も近い点です。
 
-**具体例。** $\boldsymbol\mu = \mathbf 0$、$\Sigma = \operatorname{diag}(4,1,1)$（標準偏差 2, 1, 1）、$\mathbf o = (-4,-1,0)$、$\mathbf d = (1,1,0)/\sqrt2$ とします。すると $\Sigma^{-1} = \operatorname{diag}(0.25,1,1)$、$\mathbf d^\top\Sigma^{-1}(\boldsymbol\mu-\mathbf o) = (0.25\cdot4 + 1)/\sqrt2 = 1.4142$、$\mathbf d^\top\Sigma^{-1}\mathbf d = 0.625$ なので、$t^* = 2.263$ です。その点は $(-2.4, 0.6, 0)$ で、$q = 0.25\cdot5.76 + 0.36 = 1.8$ となり、$G_{\max} = e^{-0.9} = 0.407$ です。ユークリッド距離で最も近い点（$t = \mathbf d\cdot(\boldsymbol\mu-\mathbf o) = 3.536$）では、$G = e^{-1.406} = 0.245$ にとどまります。
+**具体例。** $\boldsymbol\mu = \mathbf 0$、$\Sigma = \operatorname{diag}(4,1,1)$（標準偏差 2, 1, 1）、$\mathbf o = (-4,-1,0)$、$\mathbf d = (1,1,0)/\sqrt2$ とします。すると $\Sigma^{-1} = \operatorname{diag}(0.25,1,1)$、$\mathbf d^\top\Sigma^{-1}(\boldsymbol\mu-\mathbf o) = (0.25\cdot4 + 1)/\sqrt2 = 1.4142$、$\mathbf d^\top\Sigma^{-1}\mathbf d = 0.625$ なので、$t^{\ast} = 2.263$ です。その点は $(-2.4, 0.6, 0)$ で、$q = 0.25\cdot5.76 + 0.36 = 1.8$ となり、$G_{\max} = e^{-0.9} = 0.407$ です。ユークリッド距離で最も近い点（$t = \mathbf d\cdot(\boldsymbol\mu-\mathbf o) = 3.536$）では、$G = e^{-1.406} = 0.245$ にとどまります。
 
 ```python
 import numpy as np
@@ -182,13 +182,13 @@ y = o + t_e * d - mu
 print(t_e, np.exp(-0.5 * y @ Si @ y))          # 3.5355..., 0.2451...
 ```
 
-{% include blog_figure.liquid path="assets/img/blog/graphics/13-gaussian-ray.svg" caption="左：回転した異方的な 3D ガウシアン（その 1 シグマの楕円体）と、オフセットを増やしていく 3 本の平行な光線。四角が各光線の原点、点がそのピーク点 $t^*$ を示します。右：各光線に沿った応答 $G(\mathbf o+t\mathbf d)$ を、数式から計算したもの。各曲線は $t$ についての 1 次元ガウシアンで、その最大値は $t^*$（破線）にあります。ピークに記された値が $G_{\max}$ で、光線が短い軸に沿って通るため、オフセットとともに急速に小さくなります。" %}
+{% include blog_figure.liquid path="assets/img/blog/graphics/13-gaussian-ray.svg" caption="左：回転した異方的な 3D ガウシアン（その 1 シグマの楕円体）と、オフセットを増やしていく 3 本の平行な光線。四角が各光線の原点、点がそのピーク点 $t^{\ast}$ を示します。右：各光線に沿った応答 $G(\mathbf o+t\mathbf d)$ を、数式から計算したもの。各曲線は $t$ についての 1 次元ガウシアンで、その最大値は $t^{\ast}$（破線）にあります。ピークに記された値が $G_{\max}$ で、光線が短い軸に沿って通るため、オフセットとともに急速に小さくなります。" %}
 
-同じ計算を 2 次元で試してみましょう。ウィジェットの初期状態は上の数値例そのもの（$\sigma_x = 2$、$\sigma_y = 1$、$\mathbf o = (-4,-1)$、方向 $(1,1)/\sqrt2$）なので、表示は $t^* = 2.26$、$G = 0.407$、ユークリッド距離での最近点は $t = 3.54$、$G = 0.245$ になります。
+同じ計算を 2 次元で試してみましょう。ウィジェットの初期状態は上の数値例そのもの（$\sigma_x = 2$、$\sigma_y = 1$、$\mathbf o = (-4,-1)$、方向 $(1,1)/\sqrt2$）なので、表示は $t^{\ast} = 2.26$、$G = 0.407$、ユークリッド距離での最近点は $t = 3.54$、$G = 0.245$ になります。
 
 <div id="gr-i18n" hidden data-drag="四角（光線の始点）か丸（方向）をドラッグしてください。スライダーでガウシアンを回転・伸縮できます。" data-rot="回転" data-peak="ピーク" data-eucl="最近点" data-reset="リセット"></div>
 
-{% include widget.liquid name="graphics-gaussian-ray" height="470" caption="紫：ピーク $t^*$ で、光線がガウシアンの等値楕円（紫の破線）に接する点です。灰色：通常の距離での最近点で、光線が平均を中心とする円（灰色の破線）に接する点です。下のグラフは光線に沿った $G$ です。ガウシアンを回転・伸縮させると 2 点が離れていく様子がわかります。一般には 2 点は異なり、一致するのは等方的なガウシアン、主軸に平行な光線、平均を通る光線といった特別な場合だけです。" %}
+{% include widget.liquid name="graphics-gaussian-ray" height="470" caption="紫：ピーク $t^{\ast}$ で、光線がガウシアンの等値楕円（紫の破線）に接する点です。灰色：通常の距離での最近点で、光線が平均を中心とする円（灰色の破線）に接する点です。下のグラフは光線に沿った $G$ です。ガウシアンを回転・伸縮させると 2 点が離れていく様子がわかります。一般には 2 点は異なり、一致するのは等方的なガウシアン、主軸に平行な光線、平均を通る光線といった特別な場合だけです。" %}
 
 ガウシアンのレイトレーサーは、各ガウシアンを BVH 内の境界プロキシ（たとえば引き伸ばした正二十面体）で包み（[第 5 回]({{ '/blog/2026/graphics-05-ray-and-path-tracing/' | relative_url }})）、光線に沿ったヒットを集め、それぞれについて $G_{\max}$ と不透明度を評価し、ボリュームレンダリングとまったく同じように、奥行き順にアルファ合成します。以下の論文は、これを高速にすること、およびその代替手段についてのものです。
 
@@ -490,7 +490,7 @@ for k in (1, 5, 60):
    $G = 1 + \tfrac12 + \tfrac16 = 5/3$、$\sigma_g^2 \approx 0.1889$、$\operatorname{Cov}(f,g) \approx 0.2136$（$\mathbb E[x^2e^x] = e-2$ を使います）なので、$\beta^* \approx 1.131$、$\rho^2 \approx 0.9981$ です。残差の分散は $1+x$ の場合の約 9 分の 1、通常のモンテカルロのおよそ 500 分の 1 になります。
    </details>
 
-2. **光線に沿ったガウシアン。** $q(t)$ が $t$ の下に凸な 2 次式であること、および $q(t^*) = q(0) - \frac{(\mathbf d^\top\Sigma^{-1}(\boldsymbol\mu-\mathbf o))^2}{\mathbf d^\top\Sigma^{-1}\mathbf d}$ であることを証明してください。そのうえで、コード片を使って数値的に確かめてください。
+2. **光線に沿ったガウシアン。** $q(t)$ が $t$ の下に凸な 2 次式であること、および $q(t^{\ast}) = q(0) - \frac{(\mathbf d^\top\Sigma^{-1}(\boldsymbol\mu-\mathbf o))^2}{\mathbf d^\top\Sigma^{-1}\mathbf d}$ であることを証明してください。そのうえで、コード片を使って数値的に確かめてください。
 
    <details markdown="1"><summary>ヒント</summary>
    $q(t) = a t^2 - 2bt + c$ と書きます。ここで $a = \mathbf d^\top\Sigma^{-1}\mathbf d > 0$、$b = \mathbf d^\top\Sigma^{-1}(\boldsymbol\mu-\mathbf o)$、$c = q(0)$ です。平方完成してください。
