@@ -193,5 +193,5 @@
 
 - Zhao, Jakob & Li, *Physics-Based Differentiable Rendering: A Comprehensive Introduction*（SIGGRAPH 2020 课程）：[课程主页](https://courses.shuangz.com/pbdr-course-sg20/)。
 - Kato et al., *Differentiable Rendering: A Survey*：[arXiv 2006.12057](https://arxiv.org/abs/2006.12057)。
-- [mitsuba-renderer/mitsuba3](https://github.com/mitsuba-renderer/mitsuba3)（最新版本 v3.9.0，2026 年 8 月）及其逆向渲染教程；[NVlabs/nvdiffrast](https://github.com/NVlabs/nvdiffrast)；[facebookresearch/pytorch3d](https://github.com/facebookresearch/pytorch3d)；[ShichenLiu/SoftRas](https://github.com/ShichenLiu/SoftRas)。
+- [mitsuba-renderer/mitsuba3](https://github.com/mitsuba-renderer/mitsuba3)（最新版本 v3.9.1，2026 年 8 月）及其逆向渲染教程；[NVlabs/nvdiffrast](https://github.com/NVlabs/nvdiffrast)；[facebookresearch/pytorch3d](https://github.com/facebookresearch/pytorch3d)；[ShichenLiu/SoftRas](https://github.com/ShichenLiu/SoftRas)。
 - 本文配套脚本 `bin/figures/graphics/graphics_12.py`（软光栅化、边缘采样、球体 BRDF 拟合三个 PyTorch 实验）。

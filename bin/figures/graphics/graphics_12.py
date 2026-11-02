@@ -47,24 +47,23 @@ def fig_pipeline():
                 arrowstyle="-|>", lw=2.2, color=col, ls=ls, mutation_scale=18,
                 connectionstyle=f"arc3,rad={rad}"))
 
-        box(1.15, 3.3, label(lang, en="scene $\\theta$\nshape, material\nlight, camera",
-                             zh="场景参数 $\\theta$\n形状、材质\n光照、相机",
-                             ja="シーン $\\theta$\n形状・材質\n照明・カメラ"), C["fill"])
-        box(3.9, 3.3, label(lang, en="differentiable\nrenderer $R(\\theta)$", zh="可微渲染器\n$R(\\theta)$",
-                            ja="微分可能\nレンダラ $R(\\theta)$"), "#dbeaf7")
-        box(6.35, 3.3, label(lang, en="image $I$", zh="渲染图像 $I$", ja="画像 $I$"), "#fde9d4")
-        box(8.75, 3.3, label(lang, en="loss\n$\\mathcal{L}(I, I^*)$", zh="损失\n$\\mathcal{L}(I, I^*)$",
-                             ja="損失\n$\\mathcal{L}(I, I^*)$"), "#f9d7d7")
-        box(8.75, 1.15, label(lang, en="photos $I^*$", zh="照片 $I^*$", ja="写真 $I^*$"), "#e3f2e1")
+        # Plain Unicode instead of mathtext: mathtext would render the CJK parts of a mixed
+        # string with the Computer Modern font, which has no CJK glyphs.
+        box(1.15, 3.3, label(lang, en="scene θ\nshape, material\nlight, camera",
+                             zh="场景参数 θ\n形状、材质\n光照、相机",
+                             ja="シーン θ\n形状・材質\n照明・カメラ"), C["fill"])
+        box(3.9, 3.3, label(lang, en="differentiable\nrenderer R(θ)", zh="可微渲染器\nR(θ)",
+                            ja="微分可能\nレンダラ R(θ)"), "#dbeaf7")
+        box(6.35, 3.3, label(lang, en="image I", zh="渲染图像 I", ja="画像 I"), "#fde9d4")
+        box(8.75, 3.3, label(lang, en="loss\nL(I, I*)", zh="损失\nL(I, I*)",
+                             ja="損失\nL(I, I*)"), "#f9d7d7")
+        box(8.75, 1.15, label(lang, en="photos I*", zh="照片 I*", ja="写真 I*"), "#e3f2e1")
         arr((2.25, 3.3), (2.85, 3.3)); arr((4.95, 3.3), (5.6, 3.3)); arr((7.1, 3.3), (7.9, 3.3))
         arr((8.75, 1.65), (8.75, 2.75))
         arr((8.0, 2.75), (1.6, 2.55), col=C["x"], rad=-0.32, ls="--")
-        ax.text(4.6, 1.05, label(lang, en="backward: $\\partial\\mathcal{L}/\\partial\\theta$, then "
-                                          "$\\theta \\leftarrow \\theta - \\eta\\,\\partial\\mathcal{L}/\\partial\\theta$",
-                                 zh="反向：$\\partial\\mathcal{L}/\\partial\\theta$，再更新 "
-                                    "$\\theta \\leftarrow \\theta - \\eta\\,\\partial\\mathcal{L}/\\partial\\theta$",
-                                 ja="逆伝播：$\\partial\\mathcal{L}/\\partial\\theta$ を求めて "
-                                    "$\\theta \\leftarrow \\theta - \\eta\\,\\partial\\mathcal{L}/\\partial\\theta$"),
+        ax.text(4.6, 1.05, label(lang, en="backward: ∂L/∂θ, then θ ← θ − η ∂L/∂θ",
+                                 zh="反向：∂L/∂θ，再更新 θ ← θ − η ∂L/∂θ",
+                                 ja="逆伝播：∂L/∂θ を求めて θ ← θ − η ∂L/∂θ"),
                 ha="center", va="center", color=C["x"], fontsize=14)
         ax.text(4.0, 4.15, label(lang, en="forward (rendering)", zh="前向（渲染）", ja="順方向（レンダリング）"),
                 ha="center", fontsize=13, color=C["gray"])
@@ -100,9 +99,9 @@ def fig_edge_coverage():
     ax.plot(th, np.zeros_like(th), color=C["gray"], lw=2.4, ls=":", label="autodiff of 1 or 4 spp")
     ax.annotate("", xy=(0.5, 2.9), xytext=(0.5, 0.0),
                 arrowprops=dict(arrowstyle="-|>", lw=2.6, color=C["c"], mutation_scale=18))
-    ax.text(0.53, 2.6, r"$\delta(\theta-0.5)$", color=C["c"], fontsize=15)
+    ax.text(0.27, 2.95, r"$\delta(\theta-0.5)$", color=C["c"], fontsize=15, ha="center")
     ax.set_xlabel(r"edge position $\theta$"); ax.set_ylabel("derivative")
-    ax.set_ylim(-0.2, 3.2); ax.legend(loc="upper right", fontsize=12.5, frameon=False)
+    ax.set_ylim(-0.2, 4.6); ax.legend(loc="upper right", fontsize=12, frameon=False)
     ax.set_title("derivative")
     fig.tight_layout()
     save(fig, out("edge-coverage"))
@@ -443,12 +442,12 @@ def fig_landscape():
     fig, axs = plt.subplots(1, 2, figsize=(13, 5.2))
     ax = axs[0]
     for key, col, nm in (("hard", C["dark"], "hard"), ("soft1", C["a"], r"soft $\sigma=1$"),
-                         ("soft4", C["c"], r"soft $\sigma=4$"), ("blur", C["b"], "hard, both images blurred")):
+                         ("soft4", C["c"], r"soft $\sigma=4$"), ("blur", C["b"], "hard, both blurred")):
         v = np.array(curves[key])
         ax.plot(cs, v / v.max(), color=col, lw=2.4, label=nm)
     ax.axvspan(32 - 12, 32 + 12, color=C["fill"], alpha=0.5, lw=0)
     ax.set_xlabel(r"disc centre $c_x$ (pixels); target at 32"); ax.set_ylabel("loss / max")
-    ax.legend(fontsize=12, frameon=False, loc="lower left")
+    ax.legend(fontsize=11.5, frameon=False, loc="lower left", bbox_to_anchor=(0.0, 0.08))
 
     # 2D: target has a big and a small disc; the model is one disc of fixed radius
     T2 = torch.clamp(coverage(20.0, 32.0, 8.0) + coverage(46.0, 32.0, 5.0), 0, 1)

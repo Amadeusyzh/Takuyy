@@ -153,7 +153,7 @@ $$
 
 我们来测量一下两种方法。一幅 $32\times 32$ 的图像中，在目标圆盘之上有一个半径为 $r$ 的硬边圆盘，每像素用 16 个抖动采样渲染，我们用每种方法各估计 300 次 $\partial\mathcal{L}/\partial r$。参考值是用 400,000 个求积点计算的边界积分。
 
-{% include blog_figure.liquid path="assets/img/blog/graphics/12-fd-vs-edge.svg" caption="圆盘实验中 $\partial\mathcal{L}/\partial r$ 的估计值（对称对数坐标轴；红色虚线为参考值；黑色短条为均值）。有限差分（橙色）两次渲染使用相同的随机采样：$h$ 大时平滑但有偏，$h$ 小时大多为零而偶尔出现极大的值。边缘采样（紫色）在圆周上取 $M$ 个点，其分布以参考值为中心，离散程度按 $1/\sqrt{M}$ 缩小。右：相对 RMSE。" %}
+{% include blog_figure.liquid path="assets/img/blog/graphics/12-fd-vs-edge.svg" caption="圆盘实验中 $\partial\mathcal{L}/\partial r$ 的估计值（对称对数坐标轴；红色虚线为参考值；黑色短条为均值）。有限差分（橙色）两次渲染使用相同的随机采样：$h$ 大时平滑但有偏，$h$ 小时无偏但噪声很大，因为两次渲染之间只有少数采样点发生变化（$h=0.01$ 时有些估计值甚至符号相反）。边缘采样（紫色）在圆周上取 $M$ 个点，其分布以参考值为中心，离散程度大致按 $1/\sqrt{M}$ 缩小。右：相对 RMSE（有限差分在 $h=1, 0.1, 0.01$ 时为 0.80、0.26、0.96；边缘采样在 $M=16, 64, 256$ 时为 0.67、0.32、0.18）。注意代价：有限差分每个参数需要渲染两次，而边缘采样一次就得到所有参数的梯度。" %}
 
 ## 3. 可微光栅化
 
@@ -205,7 +205,7 @@ $$
 
 ### Mitsuba 3 与 Dr.Jit
 
-**Mitsuba 3**（由 EPFL 的 Realistic Graphics Lab 于 2022 年发布；最新版本为 2026 年 8 月的 v3.9.0）是一个构建在 **Dr.Jit**（Jakob、Speierer、Roussel 和 Vicini，SIGGRAPH 2022）之上的研究型渲染器。Dr.Jit 是一个即时编译器（just-in-time compiler），它把渲染器的 Python/C++ 代码追踪成大型融合内核，运行于 CPU（LLVM）或 GPU（CUDA/OptiX），并为这些内核实现前向与反向模式的微分。一个完整的逆向渲染循环只需寥寥几行；下面这段代码沿用官方教程的结构，恢复康奈尔盒（Cornell box）中一面墙的颜色：
+**Mitsuba 3**（由 EPFL 的 Realistic Graphics Lab 于 2022 年发布；最新版本为 2026 年 8 月的 v3.9.1）是一个构建在 **Dr.Jit**（Jakob、Speierer、Roussel 和 Vicini，SIGGRAPH 2022）之上的研究型渲染器。Dr.Jit 是一个即时编译器（just-in-time compiler），它把渲染器的 Python/C++ 代码追踪成大型融合内核，运行于 CPU（LLVM）或 GPU（CUDA/OptiX），并为这些内核实现前向与反向模式的微分。一个完整的逆向渲染循环只需寥寥几行；下面这段代码沿用官方教程的结构，恢复康奈尔盒（Cornell box）中一面墙的颜色：
 
 ```python
 import drjit as dr
@@ -230,7 +230,7 @@ for it in range(50):
     opt.step()
     opt[key] = dr.clip(opt[key], 0.0, 1.0)
     params.update(opt)
-print(params[key])
+print(params[key])     # about [0.60, 0.041, 0.017]; true wall: [0.570, 0.043, 0.044]
 ```
 
 它的前身 Mitsuba 2（Nimier-David、Vicini、Zeltner 和 Jakob，SIGGRAPH Asia 2019）引入了可重定向（retargetable）的设计；Mitsuba 3 增加了快得多的 Dr.Jit 后端，以及用于 PRB、重参数化可见性和可微符号距离函数的积分器（Vicini、Speierer 和 Jakob，SIGGRAPH 2022）。
@@ -255,7 +255,7 @@ $$
 
 在 $\mathbf{L}$ 的特征基下（特征值 $\mu_k \ge 0$；小的 $\mu_k$ 对应光滑的低频形状），第 $k$ 个模态上的步长被缩放为 $1/(1+\lambda\mu_k)^2$：光滑的形变几乎原样通过，而高频噪声被强烈抑制。这是一种 Sobolev 风格的预条件子（preconditioner），它让你可以迈出*很大*的步子而不破坏网格。（论文还修改了 Adam，使其逐参数的缩放不会抵消这种平滑。）下面的玩具实验把这个想法应用到一条有 100 个顶点的二维闭合曲线上，让它长成五瓣花形，每一步的梯度只触及随机 30% 的顶点并带有噪声，很像真实的轮廓梯度。
 
-{% include blog_figure.liquid path="assets/img/blog/graphics/12-large-steps.svg" caption="玩具形状优化（100 个顶点的闭合曲线，起点：点线圆，目标：虚线花形，300 步，步长 $\eta=0.3$，使用相同的带噪声稀疏梯度）。左：朴素梯度下降使噪声沿曲线累积，顶点挤在一起，多边形纠缠。中：$\lambda=5$ 的 Large Steps 更新 $(\mathbf{I}+\lambda\mathbf{L})^{-2}g$ 保持曲线光滑。右：两者每次迭代的平均径向误差。" %}
+{% include blog_figure.liquid path="assets/img/blog/graphics/12-large-steps.svg" caption="玩具形状优化（100 个顶点的闭合曲线，起点：点线圆，目标：虚线花形，300 步，步长 $\eta=0.3$，使用相同的带噪声稀疏梯度）。左：朴素梯度下降使噪声沿曲线累积，顶点沿曲线漂移并挤在一起：100 个顶点中有 32 个的角度顺序被打乱，即多边形自身折叠。中：$\lambda=5$ 的 Large Steps 更新 $(\mathbf{I}+\lambda\mathbf{L})^{-2}g$ 保持曲线光滑。右：每次迭代的平均径向误差；在最后 50 步中，朴素更新停滞在约 0.016，Large Steps 达到约 0.008。" %}
 
 **由粗到细与局部极小值。** 损失作为几何的函数，到处是平坦的高原和局部极小值。如果渲染出的物体与目标完全不重叠，硬渲染器的梯度为零（稍微移动一下什么也不会改变）。如果目标中有两个相似的物体，模型可能锁定到错误的那一个。上图为一个圆盘计算了这两种效应。标准的应对办法有：
 
@@ -328,7 +328,7 @@ for it in range(iters):
     opt.zero_grad(); loss.backward(); opt.step()
     with torch.no_grad():
         p[2].clamp_(min=0.5)
-print(p.detach())                                   # should approach (40, 26, 12)
+print(p.detach())                                   # tensor([39.9993, 26.0007, 11.9902]); target (40, 26, 12)
 ```
 
 ### 7.2 带边缘采样梯度的硬光栅化器
@@ -368,7 +368,7 @@ opt = torch.optim.Adam([p], lr=0.5)
 for it in range(150):
     loss = ((HardDiscEdgeSampled.apply(p, 256) - T) ** 2).mean()
     opt.zero_grad(); loss.backward(); opt.step()
-print(p.detach())
+print(p.detach())                    # e.g. tensor([40.0112, 26.0081, 12.0141]); varies with the seed
 ```
 
 第三次运行对硬渲染器做朴素求导，即 `(torch.sign(p[2] - d) + 1) / 2`，得到的梯度恰好为零，所以 Adam 始终不会移动。
@@ -423,6 +423,7 @@ for it in range(200):
     loss = ((shade(n, mask, albedo, rough) - target) ** 2).mean()
     opt.zero_grad(); loss.backward(); opt.step()
 print(torch.sigmoid(a_raw).detach(), (0.05 + 0.95 * torch.sigmoid(r_raw)).item())
+# tensor([0.8000, 0.3500, 0.2000]) 0.35000815987586975
 ```
 
 {% include blog_figure.liquid path="assets/img/blog/graphics/12-brdf-fit.svg" caption="在已知光照下拟合球体的反照率和粗糙度。上：第 0、25 和 200 次迭代的渲染结果以及目标（显示 gamma 2.2）。下：三个反照率通道和粗糙度随 Adam 迭代的变化（实线）及其真实值（虚线），以及损失。反照率由大片漫反射区域确定；粗糙度仅由高光的形状和大小决定。" %}

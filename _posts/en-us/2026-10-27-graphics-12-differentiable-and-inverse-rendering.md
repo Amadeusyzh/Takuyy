@@ -153,7 +153,7 @@ Finite differences need one extra render per parameter, so they do not scale to 
 
 Let us measure both. A $32\times 32$ image contains a hard disc of radius $r$ over a target disc, rendered with 16 jittered samples per pixel, and we estimate $\partial\mathcal{L}/\partial r$ 300 times with each method. The reference is the boundary integral evaluated with 400,000 quadrature points.
 
-{% include blog_figure.liquid path="assets/img/blog/graphics/12-fd-vs-edge.svg" caption="Estimates of $\partial\mathcal{L}/\partial r$ for the disc experiment (symmetric-log axis; the red dashed line is the reference; the black bars are the means). Finite differences (orange) with the same random samples for both renders: a large $h$ is smooth but biased, a small $h$ is mostly zero with rare huge values. Edge sampling (purple) with $M$ points on the circle is centered on the reference, and its spread shrinks like $1/\sqrt{M}$. Right: relative RMSE." %}
+{% include blog_figure.liquid path="assets/img/blog/graphics/12-fd-vs-edge.svg" caption="Estimates of $\partial\mathcal{L}/\partial r$ for the disc experiment (symmetric-log axis; the red dashed line is the reference; the black bars are the means). Finite differences (orange) with the same random samples for both renders: a large $h$ is smooth but biased, a small $h$ is unbiased but very noisy, because only a handful of samples change between the two renders (with $h=0.01$ some estimates even have the wrong sign). Edge sampling (purple) with $M$ points on the circle is centered on the reference, and its spread shrinks roughly like $1/\sqrt{M}$. Right: relative RMSE (FD: 0.80, 0.26, 0.96 for $h=1, 0.1, 0.01$; edge sampling: 0.67, 0.32, 0.18 for $M=16, 64, 256$). Note the cost: FD needs two renders per parameter, edge sampling gives all parameters from one pass." %}
 
 ## 3. Differentiable rasterization
 
@@ -205,7 +205,7 @@ Reverse-mode autodiff records every operation of the forward pass on a "tape", w
 
 ### Mitsuba 3 and Dr.Jit
 
-**Mitsuba 3** (released in 2022 by the Realistic Graphics Lab at EPFL; latest release v3.9.0, August 2026) is a research renderer built on **Dr.Jit** (Jakob, Speierer, Roussel and Vicini, SIGGRAPH 2022). Dr.Jit is a just-in-time compiler that traces the renderer's Python/C++ code into large fused kernels for CPU (LLVM) or GPU (CUDA/OptiX), and it implements forward- and reverse-mode differentiation of those kernels. A complete inverse-rendering loop fits in a few lines; this one, following the structure of the official tutorials, recovers the color of a wall in the Cornell box:
+**Mitsuba 3** (released in 2022 by the Realistic Graphics Lab at EPFL; latest release v3.9.1, August 2026) is a research renderer built on **Dr.Jit** (Jakob, Speierer, Roussel and Vicini, SIGGRAPH 2022). Dr.Jit is a just-in-time compiler that traces the renderer's Python/C++ code into large fused kernels for CPU (LLVM) or GPU (CUDA/OptiX), and it implements forward- and reverse-mode differentiation of those kernels. A complete inverse-rendering loop fits in a few lines; this one, following the structure of the official tutorials, recovers the color of a wall in the Cornell box:
 
 ```python
 import drjit as dr
@@ -230,7 +230,7 @@ for it in range(50):
     opt.step()
     opt[key] = dr.clip(opt[key], 0.0, 1.0)
     params.update(opt)
-print(params[key])
+print(params[key])     # about [0.60, 0.041, 0.017]; true wall: [0.570, 0.043, 0.044]
 ```
 
 Its predecessor Mitsuba 2 (Nimier-David, Vicini, Zeltner and Jakob, SIGGRAPH Asia 2019) introduced the retargetable design; Mitsuba 3 adds the much faster Dr.Jit backend and integrators for PRB, reparameterized visibility and differentiable signed distance functions (Vicini, Speierer and Jakob, SIGGRAPH 2022).
@@ -255,7 +255,7 @@ $$
 
 In the eigenbasis of $\mathbf{L}$ (eigenvalues $\mu_k \ge 0$; small $\mu_k$ are smooth, low-frequency shapes) the step in mode $k$ is scaled by $1/(1+\lambda\mu_k)^2$: smooth deformations pass almost unchanged, while high-frequency noise is strongly damped. This is a Sobolev-style preconditioner, and it lets you take *large* steps without destroying the mesh. (The paper also modifies Adam so its per-parameter scaling does not undo the smoothing.) The toy below applies the idea to a closed 2D curve of 100 vertices that should grow into a five-lobed flower, with a gradient that reaches only a random 30 % of the vertices per step and carries noise, much like real silhouette gradients.
 
-{% include blog_figure.liquid path="assets/img/blog/graphics/12-large-steps.svg" caption="Toy shape optimization (100-vertex closed curve, start: dotted circle, target: dashed flower, 300 steps of size $\eta=0.3$ with the same noisy, sparse gradients). Left: plain gradient descent lets the noise accumulate along the curve, so the vertices bunch up and the polygon tangles. Middle: the Large Steps update $(\mathbf{I}+\lambda\mathbf{L})^{-2}g$ with $\lambda=5$ keeps the curve smooth. Right: mean radial error per iteration for both." %}
+{% include blog_figure.liquid path="assets/img/blog/graphics/12-large-steps.svg" caption="Toy shape optimization (100-vertex closed curve, start: dotted circle, target: dashed flower, 300 steps of size $\eta=0.3$ with the same noisy, sparse gradients). Left: plain gradient descent lets the noise accumulate along the curve, so the vertices drift along it and bunch up: 32 of the 100 vertices end up out of angular order, i.e. the polygon folds over itself. Middle: the Large Steps update $(\mathbf{I}+\lambda\mathbf{L})^{-2}g$ with $\lambda=5$ keeps the curve smooth. Right: mean radial error per iteration; over the last 50 steps it stalls near 0.016 for the naive update and reaches about 0.008 for Large Steps." %}
 
 **Coarse to fine, and local minima.** The loss as a function of geometry is full of flat plateaus and local minima. If the rendered object does not overlap its target at all, a hard renderer has zero gradient (moving it a little changes nothing). If the target has two similar objects, the model can lock onto the wrong one. The figure computes both effects for a disc. The standard defenses:
 
@@ -328,7 +328,7 @@ for it in range(iters):
     opt.zero_grad(); loss.backward(); opt.step()
     with torch.no_grad():
         p[2].clamp_(min=0.5)
-print(p.detach())                                   # should approach (40, 26, 12)
+print(p.detach())                                   # tensor([39.9993, 26.0007, 11.9902]); target (40, 26, 12)
 ```
 
 ### 7.2 A hard rasterizer with an edge-sampling gradient
@@ -368,7 +368,7 @@ opt = torch.optim.Adam([p], lr=0.5)
 for it in range(150):
     loss = ((HardDiscEdgeSampled.apply(p, 256) - T) ** 2).mean()
     opt.zero_grad(); loss.backward(); opt.step()
-print(p.detach())
+print(p.detach())                    # e.g. tensor([40.0112, 26.0081, 12.0141]); varies with the seed
 ```
 
 A third run differentiates the hard renderer naively, `(torch.sign(p[2] - d) + 1) / 2`, and gets exactly zero gradient, so Adam never moves.
@@ -423,6 +423,7 @@ for it in range(200):
     loss = ((shade(n, mask, albedo, rough) - target) ** 2).mean()
     opt.zero_grad(); loss.backward(); opt.step()
 print(torch.sigmoid(a_raw).detach(), (0.05 + 0.95 * torch.sigmoid(r_raw)).item())
+# tensor([0.8000, 0.3500, 0.2000]) 0.35000815987586975
 ```
 
 {% include blog_figure.liquid path="assets/img/blog/graphics/12-brdf-fit.svg" caption="Fitting albedo and roughness of a sphere with known light. Top: renderings at iterations 0, 25 and 200 next to the target (display gamma 2.2). Bottom: the three albedo channels and the roughness per Adam iteration (solid) against their true values (dashed), and the loss. The albedo is pinned down by the large diffuse region; the roughness is determined only by the shape and size of the highlight." %}

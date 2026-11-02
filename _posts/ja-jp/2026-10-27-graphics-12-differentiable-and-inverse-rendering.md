@@ -153,7 +153,7 @@ $$
 
 両方を測ってみましょう。$32\times 32$ の画像に、目標の円板に重ねた半径 $r$ のハードな円板があり、ピクセルあたり 16 個のジッタ付きサンプルでレンダリングします。各手法で $\partial\mathcal{L}/\partial r$ を 300 回推定します。基準値は、400,000 個の求積点で評価した境界積分です。
 
-{% include blog_figure.liquid path="assets/img/blog/graphics/12-fd-vs-edge.svg" caption="円板の実験における $\partial\mathcal{L}/\partial r$ の推定値（対称対数軸。赤の破線は基準値、黒いバーは平均）。有限差分（オレンジ）は 2 回のレンダリングで同じランダムサンプルを使っており、$h$ が大きいと滑らかですが偏りがあり、$h$ が小さいとほとんどが 0 で、まれに非常に大きな値が出ます。円周上の $M$ 点によるエッジサンプリング（紫）は基準値を中心とし、そのばらつきは $1/\sqrt{M}$ のように縮みます。右：相対 RMSE。" %}
+{% include blog_figure.liquid path="assets/img/blog/graphics/12-fd-vs-edge.svg" caption="円板の実験における $\partial\mathcal{L}/\partial r$ の推定値（対称対数軸。赤の破線は基準値、黒いバーは平均）。有限差分（オレンジ）は 2 回のレンダリングで同じランダムサンプルを使っており、$h$ が大きいと滑らかですが偏りがあり、$h$ が小さいと偏りはありませんがノイズが非常に大きくなります。2 回のレンダリングの間で変化するサンプルがごくわずかだからです（$h=0.01$ では符号が逆の推定値さえ出ます）。円周上の $M$ 点によるエッジサンプリング（紫）は基準値を中心とし、そのばらつきはおおよそ $1/\sqrt{M}$ のように縮みます。右：相対 RMSE（有限差分は $h=1, 0.1, 0.01$ で 0.80、0.26、0.96、エッジサンプリングは $M=16, 64, 256$ で 0.67、0.32、0.18）。コストにも注意してください。有限差分はパラメータごとに 2 回のレンダリングが必要ですが、エッジサンプリングは 1 回ですべてのパラメータの勾配が得られます。" %}
 
 ## 3. 微分可能ラスタライゼーション
 
@@ -205,7 +205,7 @@ $$
 
 ### Mitsuba 3 と Dr.Jit
 
-**Mitsuba 3**（EPFL の Realistic Graphics Lab により 2022 年に公開。最新リリースは 2026 年 8 月の v3.9.0）は、**Dr.Jit**（Jakob, Speierer, Roussel and Vicini, SIGGRAPH 2022）の上に構築された研究用レンダラーです。Dr.Jit は、レンダラーの Python/C++ コードを CPU（LLVM）または GPU（CUDA/OptiX）向けの大きな融合カーネルにトレースする JIT コンパイラで、それらのカーネルのフォワードモードおよびリバースモード微分を実装しています。完全な逆レンダリングのループは数行に収まります。公式チュートリアルの構成に倣った次の例は、コーネルボックスの壁の色を復元します。
+**Mitsuba 3**（EPFL の Realistic Graphics Lab により 2022 年に公開。最新リリースは 2026 年 8 月の v3.9.1）は、**Dr.Jit**（Jakob, Speierer, Roussel and Vicini, SIGGRAPH 2022）の上に構築された研究用レンダラーです。Dr.Jit は、レンダラーの Python/C++ コードを CPU（LLVM）または GPU（CUDA/OptiX）向けの大きな融合カーネルにトレースする JIT コンパイラで、それらのカーネルのフォワードモードおよびリバースモード微分を実装しています。完全な逆レンダリングのループは数行に収まります。公式チュートリアルの構成に倣った次の例は、コーネルボックスの壁の色を復元します。
 
 ```python
 import drjit as dr
@@ -230,7 +230,7 @@ for it in range(50):
     opt.step()
     opt[key] = dr.clip(opt[key], 0.0, 1.0)
     params.update(opt)
-print(params[key])
+print(params[key])     # about [0.60, 0.041, 0.017]; true wall: [0.570, 0.043, 0.044]
 ```
 
 その前身である Mitsuba 2（Nimier-David, Vicini, Zeltner and Jakob, SIGGRAPH Asia 2019）がリターゲット可能な設計を導入し、Mitsuba 3 は、はるかに高速な Dr.Jit バックエンドと、PRB、再パラメータ化された可視性、微分可能な符号付き距離関数（Vicini, Speierer and Jakob, SIGGRAPH 2022）のためのインテグレーターを加えました。
@@ -255,7 +255,7 @@ $$
 
 $\mathbf{L}$ の固有基底（固有値 $\mu_k \ge 0$。小さい $\mu_k$ は滑らかな低周波の形状）では、モード $k$ のステップは $1/(1+\lambda\mu_k)^2$ 倍されます。滑らかな変形はほとんどそのまま通り、高周波のノイズは強く減衰されます。これはソボレフ流の前処理（preconditioner）であり、メッシュを壊さずに*大きな*ステップを取れるようにします。（論文では、パラメータごとのスケーリングが平滑化を打ち消さないように Adam も修正しています。）下のおもちゃの例では、この考え方を、100 個の頂点からなる閉じた 2 次元曲線に適用します。この曲線は 5 枚の花びらを持つ花に成長すべきもので、勾配はステップごとにランダムな 30 % の頂点にしか届かず、ノイズも含みます。これは実際のシルエット勾配とよく似ています。
 
-{% include blog_figure.liquid path="assets/img/blog/graphics/12-large-steps.svg" caption="形状最適化のおもちゃの例（100 頂点の閉曲線。開始：点線の円、目標：破線の花、同じノイズ入りでまばらな勾配でステップ幅 $\eta=0.3$ の 300 ステップ）。左：素朴な勾配降下法ではノイズが曲線に沿って蓄積し、頂点が密集して多角形が絡まります。中：$\lambda=5$ の Large Steps の更新 $(\mathbf{I}+\lambda\mathbf{L})^{-2}g$ は曲線を滑らかに保ちます。右：両者の反復ごとの平均半径誤差。" %}
+{% include blog_figure.liquid path="assets/img/blog/graphics/12-large-steps.svg" caption="形状最適化のおもちゃの例（100 頂点の閉曲線。開始：点線の円、目標：破線の花、同じノイズ入りでまばらな勾配でステップ幅 $\eta=0.3$ の 300 ステップ）。左：素朴な勾配降下法ではノイズが曲線に沿って蓄積し、頂点が曲線に沿って流れて密集します。100 頂点のうち 32 個の角度の順序が入れ替わり、多角形が自分自身の上に折れ重なります。中：$\lambda=5$ の Large Steps の更新 $(\mathbf{I}+\lambda\mathbf{L})^{-2}g$ は曲線を滑らかに保ちます。右：反復ごとの平均半径誤差。最後の 50 ステップでは、素朴な更新は約 0.016 で止まり、Large Steps は約 0.008 に達します。" %}
 
 **粗から密へ、そして局所最小値。** ジオメトリの関数としての損失は、平坦な高原（プラトー）と局所最小値に満ちています。レンダリングされた物体が目標とまったく重ならないと、ハードなレンダラーの勾配はゼロです（少し動かしても何も変わりません）。目標に似た物体が 2 つあると、モデルは間違ったほうに固定されることがあります。図は円板について、この両方の効果を計算しています。標準的な対策は次のとおりです。
 
@@ -328,7 +328,7 @@ for it in range(iters):
     opt.zero_grad(); loss.backward(); opt.step()
     with torch.no_grad():
         p[2].clamp_(min=0.5)
-print(p.detach())                                   # should approach (40, 26, 12)
+print(p.detach())                                   # tensor([39.9993, 26.0007, 11.9902]); target (40, 26, 12)
 ```
 
 ### 7.2 エッジサンプリング勾配を持つハードラスタライザ
@@ -368,7 +368,7 @@ opt = torch.optim.Adam([p], lr=0.5)
 for it in range(150):
     loss = ((HardDiscEdgeSampled.apply(p, 256) - T) ** 2).mean()
     opt.zero_grad(); loss.backward(); opt.step()
-print(p.detach())
+print(p.detach())                    # e.g. tensor([40.0112, 26.0081, 12.0141]); varies with the seed
 ```
 
 3 つ目の実行では、ハードなレンダラーを `(torch.sign(p[2] - d) + 1) / 2` で素朴に微分します。すると勾配はちょうどゼロになり、Adam はまったく動きません。
@@ -423,6 +423,7 @@ for it in range(200):
     loss = ((shade(n, mask, albedo, rough) - target) ** 2).mean()
     opt.zero_grad(); loss.backward(); opt.step()
 print(torch.sigmoid(a_raw).detach(), (0.05 + 0.95 * torch.sigmoid(r_raw)).item())
+# tensor([0.8000, 0.3500, 0.2000]) 0.35000815987586975
 ```
 
 {% include blog_figure.liquid path="assets/img/blog/graphics/12-brdf-fit.svg" caption="既知の光源の下での球のアルベドと粗さのフィッティング。上：反復 0、25、200 でのレンダリングと目標（表示ガンマ 2.2）。下：Adam の反復ごとの 3 つのアルベドチャンネルと粗さ（実線）を真値（破線）と比べたもの、および損失。アルベドは広い拡散領域によって決まり、粗さはハイライトの形と大きさだけで決まります。" %}
