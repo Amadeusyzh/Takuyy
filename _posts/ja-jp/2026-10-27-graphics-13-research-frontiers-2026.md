@@ -92,6 +92,26 @@ $$
 
 **具体例。** $[0,1]$ 上の $f(x) = e^x$（$I = e-1 \approx 1.71828$）と $g(x) = 1 + x$（$G = 1.5$）を考えます。すると $\sigma_f^2 = \frac{e^2-1}{2} - (e-1)^2 \approx 0.24204$、$\sigma_g^2 = 1/12$、$\operatorname{Cov}(f,g) = \mathbb E[xe^x] - \tfrac12(e-1) = 1 - 0.85914 = 0.14086$ です。したがって $\beta^* \approx 1.690$、$\rho^2 \approx 0.9837$ になります。サンプル数 $N = 8$ のとき、通常の推定量の標準偏差は $\sqrt{0.24204/8} \approx 0.174$、制御変量推定量は $\sqrt{0.24204 \cdot 0.0163/8} \approx 0.022$ です。同じサンプル数で、分散がおよそ 60 分の 1 になります。
 
+同じ数値をシミュレーションで確かめます。レンダラーと同じように、$\beta$ はサンプルから推定します。
+
+```python
+import numpy as np
+
+rng = np.random.default_rng(0)
+f = np.exp                      # integrand on [0, 1]
+g = lambda x: 1 + x             # control variate with known integral G
+I, G = np.e - 1, 1.5
+
+x = rng.random(1_000_000)       # pilot samples to fit beta
+beta = np.cov(f(x), g(x))[0, 1] / np.var(g(x), ddof=1)
+
+X = rng.random((100_000, 8))    # 100k independent estimates, N = 8 samples each
+mc = f(X).mean(axis=1)
+cv = (f(X) - beta * (g(X) - G)).mean(axis=1)
+print(round(beta, 3), round(mc.std(), 3), round(cv.std(), 4))   # about 1.69 0.174 0.022
+print(round(mc.mean(), 3), round(cv.mean(), 3), round(I, 3))     # 1.718 1.718 1.718: both unbiased
+```
+
 {% include blog_figure.liquid path="assets/img/blog/graphics/13-control-variate.svg" caption="左：被積分関数 $f(x)=e^x$ と、フィットした $\beta\approx1.69$ でスケールした制御変量 $\beta g(x)$。モンテカルロに残されるのは、両者の間の細い灰色の隙間だけです。右：各 $N=8$ サンプルによる独立な推定 4000 回のヒストグラム。通常の推定（紫）は破線の真値のまわりに大きく広がり、制御変量による推定（オレンジ）は細いスパイクになります。凡例の標準偏差は、上の具体例と一致します。" %}
 
 レンダリングでは、$g$ がおもちゃの多項式であることはありません。隣接ピクセルや前フレームで見えている色（下の ReSTCV）、フィットした照明モデル、あるいはニューラルネットワークの予測（ニューラル制御変量の研究系統）になりえます。推定量も、それが効く理由も、上で見たものとまったく同じです。
@@ -326,6 +346,16 @@ def gerchberg_saxton(A, iters, seed=0):
         R = np.fft.fft2(np.exp(1j * phi))                    # what the viewer sees
         psi = np.angle(R)
     return phi, np.abs(R) ** 2
+yy, xx = np.mgrid[0:128, 0:128] - 63.5                       # target: ring plus cross
+r = np.hypot(xx, yy)
+A = ((r > 30) & (r < 38)).astype(float)
+A[(abs(xx) < 4) & (abs(yy) < 22)] = 1.0
+A[(abs(yy) < 4) & (abs(xx) < 22)] = 1.0
+for k in (1, 5, 60):
+    amp = np.sqrt(gerchberg_saxton(A, k)[1])
+    s = (amp * A).sum() / (amp ** 2).sum()                   # best brightness scale
+    print(k, round(np.sqrt(((s * amp - A) ** 2).mean() / (A ** 2).mean()), 3))
+# 1 0.444 / 5 0.366 / 60 0.288: the relative error plotted in the figure below
 ```
 
 {% include blog_figure.liquid path="assets/img/blog/graphics/13-hologram-gs.svg" caption="128 × 128 のターゲット（リングと十字）に対する、実際の Gerchberg-Saxton の実行結果。上段：ターゲットの強度 $\lvert A\rvert^2$、最終的な位相のみの SLM パターン $\varphi$（$-\pi$ から $\pi$ までの周期的なカラーマップ）、そして反復ごとの相対誤差（対数スケール）。下段：1 回、5 回、60 回の反復後に再構成された強度。形は 1 回の反復で現れますが、スペックルだらけです。誤差は最初の数回の反復で急速に下がり、その後は横ばいになって、スペックルが残ります。そのスペックルを取り除き、人が見るのと同じ形で評価することが、以下のホログラフィー論文の主題です。" %}

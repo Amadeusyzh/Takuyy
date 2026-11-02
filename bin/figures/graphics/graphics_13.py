@@ -22,7 +22,7 @@ from style import *  # noqa: E402,F401,F403
 import numpy as np  # noqa: E402
 from mpl_toolkits.mplot3d import Axes3D  # noqa: E402,F401
 
-OUT = HERE.parents[1] / "assets/img/blog/graphics"
+OUT = HERE.parents[2] / "assets/img/blog/graphics"
 DATA = json.loads((HERE / "data/13-frontiers.json").read_text(encoding="utf-8"))
 TODAY = "2026-11-02"
 
@@ -206,7 +206,7 @@ def t_star(o, d, mu, Si):
 
 def fig_gaussian_ray():
     mu = np.zeros(3)
-    s = np.array([1.2, 0.5, 0.35])
+    s = np.array([1.5, 0.6, 0.45])
     a, b = np.deg2rad(35), np.deg2rad(20)
     Rz = np.array([[np.cos(a), -np.sin(a), 0], [np.sin(a), np.cos(a), 0], [0, 0, 1]])
     Rx = np.array([[1, 0, 0], [0, np.cos(b), -np.sin(b)], [0, np.sin(b), np.cos(b)]])
@@ -217,7 +217,7 @@ def fig_gaussian_ray():
     d /= np.linalg.norm(d)
     e = np.cross(d, [0, 0, 1.0])
     e /= np.linalg.norm(e)
-    offsets = (0.0, 0.4, 0.9)
+    offsets = (0.0, 0.5, 1.0)
     cols = (C["x"], C["b"], C["z"])
     T = 6.4
     t = np.linspace(0, T, 400)
@@ -231,13 +231,13 @@ def fig_gaussian_ray():
     ax.plot_wireframe(P[..., 0], P[..., 1], P[..., 2], color=C["a"], lw=0.4, alpha=0.5, rstride=2, cstride=4)
     for off, c in zip(offsets, cols):
         o = mu - 3.2 * d + off * e
-        line = o[None, :] + t[:, None] * d[None, :]
+        line = o[None, :] + t[t <= 5.6, None] * d[None, :]
         ax.plot(line[:, 0], line[:, 1], line[:, 2], color=c, lw=2.4)
         ts = t_star(o, d, mu, Si)
         p = o + ts * d
         ax.scatter([p[0]], [p[1]], [p[2]], color=c, s=50, depthshade=False)
         ax.scatter([o[0]], [o[1]], [o[2]], color=c, s=25, marker="s", depthshade=False)
-    lim = 2.6
+    lim = 2.4
     ax.set_xlim(-lim, lim); ax.set_ylim(-lim, lim); ax.set_zlim(-lim, lim)
     ax.set_box_aspect((1, 1, 1))
     ax.set_xticklabels([]); ax.set_yticklabels([]); ax.set_zticklabels([])
@@ -253,7 +253,9 @@ def fig_gaussian_ray():
         ax2.plot(t, g, color=c, lw=2.4, label=f"offset {off:.1f}")
         ax2.plot([ts, ts], [0, gs], color=c, ls="--", lw=1.6)
         ax2.scatter([ts], [gs], color=c, s=50, zorder=3)
-        ax2.text(ts + 0.12, gs + 0.03, f"{gs:.2f}", color=c, fontsize=14)
+        ax2.annotate(f"{gs:.2f}", (ts, gs), xytext=(4.6, gs), color=c, fontsize=14, va="center",
+                     arrowprops=dict(arrowstyle="-", color=c, lw=0.8, ls=":"))
+    ax2.legend(frameon=False, loc="upper left", fontsize=12)
     ax2.set_xlabel(r"$t$")
     ax2.set_ylabel(r"$G(\mathbf{o}+t\,\mathbf{d})$")
     ax2.set_ylim(0, 1.12)

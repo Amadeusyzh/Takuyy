@@ -92,6 +92,26 @@ $$
 
 **算例。** 取 $[0,1]$ 上的 $f(x) = e^x$（$I = e-1 \approx 1.71828$）和 $g(x) = 1 + x$（$G = 1.5$）。于是 $\sigma_f^2 = \frac{e^2-1}{2} - (e-1)^2 \approx 0.24204$，$\sigma_g^2 = 1/12$，$\operatorname{Cov}(f,g) = \mathbb E[xe^x] - \tfrac12(e-1) = 1 - 0.85914 = 0.14086$。因此 $\beta^* \approx 1.690$，$\rho^2 \approx 0.9837$。取 $N = 8$ 个样本时，普通估计器的标准差为 $\sqrt{0.24204/8} \approx 0.174$，而控制变量估计器为 $\sqrt{0.24204 \cdot 0.0163/8} \approx 0.022$：在样本数相同的情况下，方差降低约 60 倍。
 
+用模拟得到同样的数字，并像渲染器那样从样本中拟合 $\beta$：
+
+```python
+import numpy as np
+
+rng = np.random.default_rng(0)
+f = np.exp                      # integrand on [0, 1]
+g = lambda x: 1 + x             # control variate with known integral G
+I, G = np.e - 1, 1.5
+
+x = rng.random(1_000_000)       # pilot samples to fit beta
+beta = np.cov(f(x), g(x))[0, 1] / np.var(g(x), ddof=1)
+
+X = rng.random((100_000, 8))    # 100k independent estimates, N = 8 samples each
+mc = f(X).mean(axis=1)
+cv = (f(X) - beta * (g(X) - G)).mean(axis=1)
+print(round(beta, 3), round(mc.std(), 3), round(cv.std(), 4))   # about 1.69 0.174 0.022
+print(round(mc.mean(), 3), round(cv.mean(), 3), round(I, 3))     # 1.718 1.718 1.718: both unbiased
+```
+
 {% include blog_figure.liquid path="assets/img/blog/graphics/13-control-variate.svg" caption="左：被积函数 $f(x)=e^x$ 与缩放后的控制变量 $\beta g(x)$，其中拟合得到 $\beta\approx1.69$。两者之间只剩下那条细细的灰色间隙留给蒙特卡洛。右：4000 次独立估计的直方图，每次使用 $N=8$ 个样本；普通估计（紫色）围绕虚线所示的真值分布很宽，而控制变量估计（橙色）是一个窄尖峰。图例中的标准差与算例一致。" %}
 
 在渲染中，$g$ 绝不会是一个玩具多项式。它可以是相邻像素或上一帧中看到的颜色（下面的 ReSTCV），可以是一个拟合出来的光照模型，也可以是神经网络的预测（神经控制变量这一系列工作）。估计器本身和它之所以有效的原因，与上面完全一样。
@@ -326,6 +346,16 @@ def gerchberg_saxton(A, iters, seed=0):
         R = np.fft.fft2(np.exp(1j * phi))                    # what the viewer sees
         psi = np.angle(R)
     return phi, np.abs(R) ** 2
+yy, xx = np.mgrid[0:128, 0:128] - 63.5                       # target: ring plus cross
+r = np.hypot(xx, yy)
+A = ((r > 30) & (r < 38)).astype(float)
+A[(abs(xx) < 4) & (abs(yy) < 22)] = 1.0
+A[(abs(yy) < 4) & (abs(xx) < 22)] = 1.0
+for k in (1, 5, 60):
+    amp = np.sqrt(gerchberg_saxton(A, k)[1])
+    s = (amp * A).sum() / (amp ** 2).sum()                   # best brightness scale
+    print(k, round(np.sqrt(((s * amp - A) ** 2).mean() / (A ** 2).mean()), 3))
+# 1 0.444 / 5 0.366 / 60 0.288: the relative error plotted in the figure below
 ```
 
 {% include blog_figure.liquid path="assets/img/blog/graphics/13-hologram-gs.svg" caption="在 128 × 128 目标（圆环与十字）上的一次真实 Gerchberg-Saxton 运行。上排：目标强度 $\lvert A\rvert^2$、最终的纯相位 SLM 图案 $\varphi$（从 $-\pi$ 到 $\pi$ 的循环色图），以及每次迭代的相对误差（对数坐标）。下排：迭代 1、5 和 60 次之后重建的强度。形状在一次迭代后就出现了，但布满散斑；误差在最初几次迭代中迅速下降，然后趋于平缓，留下残余的散斑。如何去除这种散斑，并以人所感知的方式来评判它，正是下面这些全息论文要解决的问题。" %}

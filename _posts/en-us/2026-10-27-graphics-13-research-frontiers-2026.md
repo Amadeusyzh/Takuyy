@@ -92,6 +92,26 @@ a parabola in $\beta$. Setting the derivative to zero gives $\beta^* = \operator
 
 **Worked example.** Take $f(x) = e^x$ on $[0,1]$ ($I = e-1 \approx 1.71828$) and $g(x) = 1 + x$ ($G = 1.5$). Then $\sigma_f^2 = \frac{e^2-1}{2} - (e-1)^2 \approx 0.24204$, $\sigma_g^2 = 1/12$, and $\operatorname{Cov}(f,g) = \mathbb E[xe^x] - \tfrac12(e-1) = 1 - 0.85914 = 0.14086$. So $\beta^* \approx 1.690$ and $\rho^2 \approx 0.9837$. With $N = 8$ samples, the plain estimator has standard deviation $\sqrt{0.24204/8} \approx 0.174$, and the control-variate estimator $\sqrt{0.24204 \cdot 0.0163/8} \approx 0.022$: about 60 times less variance for the same samples.
 
+The same numbers from a simulation, with $\beta$ fitted from samples as a renderer would do:
+
+```python
+import numpy as np
+
+rng = np.random.default_rng(0)
+f = np.exp                      # integrand on [0, 1]
+g = lambda x: 1 + x             # control variate with known integral G
+I, G = np.e - 1, 1.5
+
+x = rng.random(1_000_000)       # pilot samples to fit beta
+beta = np.cov(f(x), g(x))[0, 1] / np.var(g(x), ddof=1)
+
+X = rng.random((100_000, 8))    # 100k independent estimates, N = 8 samples each
+mc = f(X).mean(axis=1)
+cv = (f(X) - beta * (g(X) - G)).mean(axis=1)
+print(round(beta, 3), round(mc.std(), 3), round(cv.std(), 4))   # about 1.69 0.174 0.022
+print(round(mc.mean(), 3), round(cv.mean(), 3), round(I, 3))     # 1.718 1.718 1.718: both unbiased
+```
+
 {% include blog_figure.liquid path="assets/img/blog/graphics/13-control-variate.svg" caption="Left: the integrand $f(x)=e^x$ and the scaled control variate $\beta g(x)$ with the fitted $\beta\approx1.69$. Only the thin grey gap between them is left for Monte Carlo. Right: histograms of 4000 independent estimates with $N=8$ samples each; the plain estimate (purple) spreads widely around the dashed true value, while the control-variate estimate (orange) is a narrow spike. The standard deviations in the legend match the worked example." %}
 
 In rendering, $g$ is never a toy polynomial. It can be the colour seen at neighbouring pixels or in the previous frame (ReSTCV below), a fitted lighting model, or a neural network's prediction (the neural control variates line of work). The estimator and the reason it helps are exactly the ones above.
@@ -326,6 +346,16 @@ def gerchberg_saxton(A, iters, seed=0):
         R = np.fft.fft2(np.exp(1j * phi))                    # what the viewer sees
         psi = np.angle(R)
     return phi, np.abs(R) ** 2
+yy, xx = np.mgrid[0:128, 0:128] - 63.5                       # target: ring plus cross
+r = np.hypot(xx, yy)
+A = ((r > 30) & (r < 38)).astype(float)
+A[(abs(xx) < 4) & (abs(yy) < 22)] = 1.0
+A[(abs(yy) < 4) & (abs(xx) < 22)] = 1.0
+for k in (1, 5, 60):
+    amp = np.sqrt(gerchberg_saxton(A, k)[1])
+    s = (amp * A).sum() / (amp ** 2).sum()                   # best brightness scale
+    print(k, round(np.sqrt(((s * amp - A) ** 2).mean() / (A ** 2).mean()), 3))
+# 1 0.444 / 5 0.366 / 60 0.288: the relative error plotted in the figure below
 ```
 
 {% include blog_figure.liquid path="assets/img/blog/graphics/13-hologram-gs.svg" caption="A real Gerchberg-Saxton run on a 128 × 128 target (ring and cross). Top: the target intensity $\lvert A\rvert^2$, the final phase-only SLM pattern $\varphi$ (cyclic colour map from $-\pi$ to $\pi$), and the relative error per iteration on a log scale. Bottom: the reconstructed intensity after 1, 5 and 60 iterations. The shape appears after one iteration but full of speckle; the error drops fast during the first iterations and then levels off, leaving residual speckle. Removing that speckle, and judging it the way people see it, is what the holography papers below are about." %}
