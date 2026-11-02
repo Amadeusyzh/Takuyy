@@ -11,12 +11,12 @@ assets/img/blog/paper-digest/01-*.svg:
   01-form-factor.svg           the radiosity form factor behind RADIANT (entry 19), computed with NumPy
   01-engine-vs-generator.svg   schematic: end-to-end world model vs engine + generative renderer (23, 26)
   01-latent-gaussian-memory.svg  schematic: latent 3D Gaussian memory of L3G-World (28)
+  01-real2sim2real_{en,zh,ja}.svg  schematic: Splat2Act's scan -> splat twin -> VLA pipeline (29),
+                                 with the success rates the authors report
 
 The schematics are my own drawings of the ideas, not copies of paper figures. Numbers in the
-data-driven figures are counts of this issue's entries, nothing else.
-
-Note: the SVGs committed with issue 01 were hand-written to the same layout because Python was not
-available in the authoring session; running this script replaces them with matplotlib output.
+data-driven figures are counts of this issue's entries; the only other numbers are the three
+success rates reported in the Splat2Act abstract, labelled as such.
 """
 import datetime as dt
 import json
@@ -260,8 +260,58 @@ def fig_latent_memory():
     save(fig, OUT / "01-latent-gaussian-memory.svg")
 
 
+# ---------------------------------------------------------------- 7. real-to-sim-to-real (entry 29, localized)
+def fig_real2sim2real():
+    steps = [
+        ("phone scan", "手机扫描", "スマホで\nスキャン", "#eef5fb", C["gray"]),
+        ("3DGS twin\n(splats)", "3DGS 数字孪生", "3DGS\nデジタルツイン", "#e8f1fa", C["z"]),
+        ("tasks + oracle\ndemos in sim", "仿真中生成任务\n与示范", "シミュ上で\nタスク・実演\nを生成", "#fff3e6", C["b"]),
+        ("fine-tune VLA\n(2 stages)", "两阶段微调\nVLA", "VLA を\n2 段階で微調整", C["fill"], C["a"]),
+        ("real robot", "真实机器人", "実機ロボット", "#fdecec", C["x"]),
+    ]
+    rates = [("before (sim)", "微调前（仿真）", "微調整前（シミュ）", 0.0), ("after (sim)", "微调后（仿真）", "微調整後（シミュ）", 62.5),
+             ("same 12 tasks, sim", "同 12 个任务（仿真）", "同じ 12 タスク（シミュ）", 66.7),
+             ("same 12 tasks, real", "同 12 个任务（真机）", "同じ 12 タスク（実機）", 63.9)]
+    for lang in LANGS:
+        fig = plt.figure(figsize=(10, 5.9))
+        ax = fig.add_axes([0, 0.4, 1, 0.6])
+        ax.set_xlim(0, 10)
+        ax.set_ylim(0, 2.6)
+        ax.axis("off")
+        w, gap = 1.62, 0.37
+        for k, s in enumerate(steps):
+            x = 0.15 + k * (w + gap)
+            box(ax, x, 0.75, w, 1.15, label(lang, s[0], s[1], s[2]), s[3], s[4], 12.5)
+            if k:
+                arrow(ax, (x - gap + 0.03, 1.32), (x - 0.03, 1.32))
+        # the splat renderer is the simulator's camera: render from robot cameras
+        arrow(ax, (1.0 + w + gap, 1.95), (0.95 + 2 * (w + gap), 1.95), color=C["z"], rad=-0.45)
+        ax.text(0.15 + 1.5 * (w + gap) + w / 2, 2.4,
+                label(lang, "render from the robot's cameras", "从机器人相机视角渲染", "ロボットのカメラ視点でレンダリング"),
+                ha="center", color=C["z"], fontsize=12)
+        ax.text(0.15 + 3 * (w + gap) + w / 2 - 0.4, 0.38,
+                label(lang, "stage 1: public assets, stage 2: the user's objects",
+                      "阶段 1：公开资产；阶段 2：用户自己的物体", "第 1 段：公開アセット、第 2 段：ユーザー自身の物体"),
+                ha="center", color=C["a"], fontsize=11.5)
+        # reported numbers (authors' report, Splat2Act arXiv 2610.13945)
+        b = fig.add_axes([0.24, 0.09, 0.6, 0.3])
+        names = [label(lang, r[0], r[1], r[2]) for r in rates]
+        vals = [r[3] for r in rates]
+        b.barh(np.arange(4)[::-1], vals, color=["#cdbfe3", C["a"], "#b9a3d9", C["x"]], height=0.6)
+        for yi, v in zip(np.arange(4)[::-1], vals):
+            b.text(v + 1.2, yi, f"{v:.1f}%", va="center", fontsize=12)
+        b.set_yticks(np.arange(4)[::-1])
+        b.set_yticklabels(names, fontsize=11.5)
+        b.set_xlim(0, 100)
+        b.grid(axis="y", visible=False)
+        b.set_xlabel(label(lang, "pickup success reported by the authors (%)", "作者报告的抓取成功率（%）",
+                           "著者報告の把持成功率（%）"), fontsize=11.5)
+        save(fig, OUT / f"01-real2sim2real_{lang}.svg")
+
+
 if __name__ == "__main__":
     OUT.mkdir(parents=True, exist_ok=True)
+    fig_real2sim2real()
     fig_overview()
     fig_matrix()
     fig_timeline()
