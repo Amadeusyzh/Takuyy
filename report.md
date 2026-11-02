@@ -1,0 +1,1 @@
+The background web server I started for the page checks has stopped after hitting its time limit. Nothing still needs it: the page checks and the widget test finished before it stopped, and both posts are committed. I'm not restarting it, so the report above is final.
