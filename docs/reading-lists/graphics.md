@@ -130,3 +130,81 @@
 - [NVIDIA-RTX/NRD](https://github.com/NVIDIA-RTX/NRD)（实时降噪器）、[NVIDIA-RTX/RTXDI](https://github.com/NVIDIA-RTX/RTXDI)（生产级 ReSTIR）。
 - [InteractiveComputerGraphics/PositionBasedDynamics](https://github.com/InteractiveComputerGraphics/PositionBasedDynamics)、[NVIDIA/warp](https://github.com/NVIDIA/warp)、[taichi-dev/taichi](https://github.com/taichi-dev/taichi)、[google-deepmind/mujoco](https://github.com/google-deepmind/mujoco)。
 - 本站首页实验室（Lab）：GPU 路径追踪器（GGX、NEE+MIS、à-trous 降噪）与 XPBD 布料，源码见 `assets/js/lab-pathtracer.js`、`assets/js/lab.js`。
+
+## Chapters 08-09（第 08 篇几何处理、第 09 篇动画与角色）
+
+### 第 08 篇：几何处理
+
+| 论文 | 出处 | 年份 | 链接 | 说明 |
+| --- | --- | --- | --- | --- |
+| Tutte, *How to draw a graph* | Proc. London Math. Soc. | 1963 | [DOI](https://doi.org/10.1112/plms/s3-13.1.743) | 凸组合嵌入不翻转，Tutte 参数化的基础 |
+| Catmull & Clark, *Recursively generated B-spline surfaces on arbitrary topological meshes* | Computer-Aided Design | 1978 | [DOI](https://doi.org/10.1016/0010-4485(78)90110-0) | 四边形细分 |
+| Loop, *Smooth Subdivision Surfaces Based on Triangles* | 硕士论文，犹他大学 | 1987 | [MSR](https://www.microsoft.com/en-us/research/publication/smooth-subdivision-surfaces-based-on-triangles/) | 三角形细分 |
+| Lorensen & Cline, *Marching cubes: A high resolution 3D surface construction algorithm* | SIGGRAPH | 1987 | [DOI](https://doi.org/10.1145/37401.37422) | 等值面提取 |
+| Hoppe et al., *Surface reconstruction from unorganized points* | SIGGRAPH | 1992 | [DOI](https://doi.org/10.1145/133994.134011) | PCA 法线与 MST 定向 |
+| Pinkall & Polthier, *Computing discrete minimal surfaces and their conjugates* | Experimental Mathematics | 1993 | [DOI](https://doi.org/10.1080/10586458.1993.10504266) | 余切公式 |
+| Taubin, *A signal processing approach to fair surface design* | SIGGRAPH | 1995 | [DOI](https://doi.org/10.1145/218380.218473) | λ\|μ 无收缩平滑 |
+| Hart, *Sphere tracing* | The Visual Computer | 1996 | [DOI](https://doi.org/10.1007/s003710050084) | SDF 光线步进 |
+| Garland & Heckbert, *Surface simplification using quadric error metrics* | SIGGRAPH | 1997 | [DOI](https://doi.org/10.1145/258734.258849) | QEM 边坍缩 |
+| Desbrun et al., *Implicit fairing of irregular meshes using diffusion and curvature flow* | SIGGRAPH | 1999 | [DOI](https://doi.org/10.1145/311535.311576) | 隐式光顺 + 余切拉普拉斯 |
+| Lévy et al., *Least squares conformal maps for automatic texture atlas generation* | ACM TOG (SIGGRAPH) | 2002 | [DOI](https://doi.org/10.1145/566654.566590) | LSCM |
+| Ju et al., *Dual contouring of Hermite data* | ACM TOG (SIGGRAPH) | 2002 | [DOI](https://doi.org/10.1145/566654.566586) | 对偶轮廓，保留尖锐特征 |
+| Meyer et al., *Discrete differential-geometry operators for triangulated 2-manifolds* | VisMath (Springer) | 2003 | [DOI](https://doi.org/10.1007/978-3-662-05105-4_2) | 混合 Voronoi 面积与曲率算子 |
+| Kazhdan, Bolitho & Hoppe, *Poisson surface reconstruction* | SGP | 2006 | [DOI](https://doi.org/10.2312/SGP/SGP06/061-070) | 泊松重建 |
+| Sorkine & Alexa, *As-Rigid-As-Possible Surface Modeling* | SGP | 2007 | [DOI](https://doi.org/10.2312/SGP/SGP07/109-116) | ARAP 局部/全局 |
+| Liu et al., *A local/global approach to mesh parameterization* | Computer Graphics Forum | 2008 | [DOI](https://doi.org/10.1111/j.1467-8659.2008.01290.x) | ARAP 参数化 |
+| Kazhdan & Hoppe, *Screened Poisson surface reconstruction* | ACM TOG | 2013 | [DOI](https://doi.org/10.1145/2487228.2487237) | 屏蔽泊松 |
+| Wang et al., *NeuS* | NeurIPS | 2021 | [arXiv](https://arxiv.org/abs/2106.10689) | SDF + 体渲染 |
+| Chen et al., *Neural Dual Contouring* | ACM TOG (SIGGRAPH) | 2022 | [arXiv](https://arxiv.org/abs/2202.01999) | 学习型对偶轮廓 |
+| Li et al., *Neuralangelo* | CVPR | 2023 | [arXiv](https://arxiv.org/abs/2306.03092) | 哈希网格神经表面 |
+| Siddiqui et al., *MeshGPT* | CVPR | 2024 | [DOI](https://doi.org/10.1109/CVPR52733.2024.01855) | 网格 token 序列生成 |
+| Huang et al., *2D Gaussian Splatting* | SIGGRAPH | 2024 | [DOI](https://doi.org/10.1145/3641519.3657428) | 面元高斯、精确网格 |
+| Yu, Sattler & Geiger, *Gaussian Opacity Fields* | ACM TOG (SIGGRAPH Asia) | 2024 | [DOI](https://doi.org/10.1145/3687937) | 从高斯提取网格 |
+| Chen et al., *MeshAnything* | ICLR | 2025 | [arXiv](https://arxiv.org/abs/2406.10163) | 类美术网格生成 |
+| Tang et al., *EdgeRunner* | ICLR | 2025 | [arXiv](https://arxiv.org/abs/2409.18114) | 紧凑网格 token 化 |
+| Hao et al., *Meshtron* | arXiv 预印本（2024-12） | 2024 | [arXiv](https://arxiv.org/abs/2412.09548) | 大规模网格生成 |
+
+书籍与课程：Botsch et al., *Polygon Mesh Processing*（[DOI](https://doi.org/10.1201/b10688)）；Keenan Crane, [Discrete Differential Geometry](https://www.cs.cmu.edu/~kmcrane/Projects/DDG/)；GAMES102（刘利刚）；[libigl 教程](https://libigl.github.io/tutorial/)。
+
+### 第 09 篇：动画与角色
+
+| 论文 | 出处 | 年份 | 链接 | 说明 |
+| --- | --- | --- | --- | --- |
+| Catmull & Rom, *A class of local interpolating splines* | Computer Aided Geometric Design (Academic Press) | 1974 | 书籍章节 | Catmull–Rom 样条 |
+| Shoemake, *Animating rotation with quaternion curves* | SIGGRAPH | 1985 | [DOI](https://doi.org/10.1145/325165.325242) | slerp 与 squad |
+| Magnenat-Thalmann et al., *Joint-dependent local deformations for hand animation and object grasping* | Graphics Interface | 1988 | [DOI](https://doi.org/10.20380/GI1988.04) | 早期骨架驱动蒙皮 |
+| Wang & Chen, *A combined optimization method for solving the inverse kinematics problems of mechanical manipulators* | IEEE T-RA | 1991 | [DOI](https://doi.org/10.1109/70.86079) | CCD |
+| Lewis, Cordner & Fong, *Pose space deformation* | SIGGRAPH | 2000 | [DOI](https://doi.org/10.1145/344779.344862) | 姿态驱动修正形状 |
+| Kovar, Gleicher & Pighin, *Motion graphs* | ACM TOG (SIGGRAPH) | 2002 | [DOI](https://doi.org/10.1145/566654.566605) | 运动图 |
+| Kavan et al., *Geometric skinning with approximate dual quaternion blending* | ACM TOG | 2008 | [DOI](https://doi.org/10.1145/1409625.1409627) | DQS |
+| Aristidou & Lasenby, *FABRIK* | Graphical Models | 2011 | [DOI](https://doi.org/10.1016/j.gmod.2011.05.003) | 基于位置的 IK |
+| Lewis et al., *Practice and theory of blendshape facial models* | Eurographics STAR | 2014 | [DOI](https://doi.org/10.2312/egst.20141042) | 混合形状综述 |
+| Loper et al., *SMPL* | ACM TOG | 2015 | [DOI](https://doi.org/10.1145/2816795.2818013) | 参数化人体模型 |
+| Clavet, *Motion Matching and The Road to Next-Gen Animation* | GDC | 2016 | [GDC Vault](https://gdcvault.com/play/1023280/Motion-Matching-and-The-Road) | 运动匹配 |
+| Holden et al., *Phase-functioned neural networks for character control* | ACM TOG | 2017 | [DOI](https://doi.org/10.1145/3072959.3073663) | PFNN |
+| Peng et al., *DeepMimic* | ACM TOG (SIGGRAPH) | 2018 | [arXiv](https://arxiv.org/abs/1804.02717) | 强化学习模仿动捕 |
+| Holden et al., *Learned motion matching* | ACM TOG | 2020 | [DOI](https://doi.org/10.1145/3386569.3392440) | 学习型运动匹配 |
+| Peng et al., *AMP* | ACM TOG (SIGGRAPH) | 2021 | [arXiv](https://arxiv.org/abs/2104.02180) | 对抗运动先验 |
+| Peng et al., *ASE* | ACM TOG (SIGGRAPH) | 2022 | [arXiv](https://arxiv.org/abs/2205.01906) | 技能嵌入 |
+| Guo et al., *Generating Diverse and Natural 3D Human Motions from Text* | CVPR | 2022 | [CVF](https://openaccess.thecvf.com/content/CVPR2022/html/Guo_Generating_Diverse_and_Natural_3D_Human_Motions_From_Text_CVPR_2022_paper.html) | HumanML3D |
+| Tevet et al., *Human Motion Diffusion Model* | ICLR | 2023 | [arXiv](https://arxiv.org/abs/2209.14916) | MDM |
+| Luo et al., *Perpetual Humanoid Control* | ICCV | 2023 | [arXiv](https://arxiv.org/abs/2305.06456) | PHC |
+| Guo et al., *MoMask* | CVPR | 2024 | [arXiv](https://arxiv.org/abs/2312.00063) | 残差 VQ |
+| He et al., *H2O* | IROS | 2024 | [arXiv](https://arxiv.org/abs/2403.04436) | 人形机器人遥操作 |
+| Fu et al., *HumanPlus* | CoRL | 2024 | [arXiv](https://arxiv.org/abs/2406.10454) | 影子跟随 |
+| Tessler et al., *MaskedMimic* | ACM TOG (SIGGRAPH Asia) | 2024 | [arXiv](https://arxiv.org/abs/2409.14393) | 运动补全式控制 |
+| He et al., *ASAP* | RSS | 2025 | [arXiv](https://arxiv.org/abs/2502.01143) | 仿真到现实对齐 |
+| Xu et al., *PARC* | SIGGRAPH | 2025 | [arXiv](https://arxiv.org/abs/2505.04002) | 生成器 + 物理跟踪器 |
+| Ze et al., *TWIST* | CoRL | 2025 | [PMLR](https://proceedings.mlr.press/v305/ze25a.html) | 全身遥操作 |
+| Allshire et al., *VideoMimic* | CoRL | 2025 | [arXiv](https://arxiv.org/abs/2505.03729) | 从视频学人形技能 |
+| Xie et al., *KungfuBot* | NeurIPS | 2025 | [arXiv](https://arxiv.org/abs/2506.12851) | 高动态动作跟踪 |
+| Xiao et al., *MotionStreamer* | ICCV | 2025 | [arXiv](https://arxiv.org/abs/2503.15451) | 流式文本到运动 |
+| Tessler et al., *MaskedManipulator* | SIGGRAPH Asia | 2025 | [arXiv](https://arxiv.org/abs/2505.19086) | 全身操作 |
+| Liao et al., *BeyondMimic* | arXiv 预印本（2025-08） | 2025 | [arXiv](https://arxiv.org/abs/2508.08241) | 跟踪 + 引导扩散 |
+| Araújo et al., *Retargeting Matters (GMR)* | arXiv 预印本（2025-10） | 2025 | [arXiv](https://arxiv.org/abs/2510.02252) | 人形重定向 |
+| Tencent Hunyuan, *HY-Motion 1.0* | arXiv 预印本（2025-12） | 2025 | [arXiv](https://arxiv.org/abs/2512.23464) | 流匹配文本到运动 |
+| Luo et al., *SONIC* | Science Robotics | 2026 | [arXiv](https://arxiv.org/abs/2511.07820) | 大规模动作跟踪 |
+| Rempe et al., *Kimodo* | arXiv 预印本（2026-03） | 2026 | [arXiv](https://arxiv.org/abs/2603.15546) | 可控运动扩散 |
+| Liao et al., *SuperMimic* | CoRL 2026（已接收），arXiv 2026-10 | 2026 | [arXiv](https://arxiv.org/abs/2610.28480) | 可微世界模型训练跟踪 |
+
+书籍与课程：Rick Parent, *Computer Animation*；GAMES105（刘利斌）；Daniel Holden 博客 [theorangeduck.com](https://theorangeduck.com/)；代码 [ProtoMotions](https://github.com/NVlabs/ProtoMotions)、[MDM](https://github.com/GuyTevet/motion-diffusion-model)。
