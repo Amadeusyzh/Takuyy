@@ -250,7 +250,7 @@ The weakness of plain à-trous is the fixed color tolerance $\sigma_{\text{rt}}$
    w_l(p,q) = \exp\!\left(-\frac{\lvert l_p - l_q\rvert}{\sigma_l\sqrt{g_{3\times3}\!\left(\operatorname{Var}(l_p)\right)} + \epsilon}\right),
    $$
 
-   with $g_{3\times3}$ a small Gaussian prefilter of the variance and $\sigma_l=4$. Because each level filters the signal, the variance is filtered too, with *squared* weights ($\operatorname{Var}\big[\sum_q w_q c_q / \sum_q w_q\big] = \sum_q w_q^2\operatorname{Var}[c_q]/(\sum_q w_q)^2$ for independent samples). Noisy regions are therefore smoothed aggressively and converged regions are left alone. The normal term is $\max(0,\mathbf n_p\cdot\mathbf n_q)^{\sigma_n}$ ($\sigma_n=128$), and the depth term divides the depth difference by the local depth gradient, $\lvert z_p - z_q\rvert / (\sigma_z \lvert\nabla z\cdot(p-q)\rvert + \epsilon)$.
+   with $g_{3\times3}$ a small Gaussian prefilter of the variance and $\sigma_l=4$. Because each level filters the signal, the variance is filtered too, with *squared* weights (for independent samples, the variance of $\sum_q w_q c_q / \sum_q w_q$ is $\sum_q w_q^2\operatorname{Var}[c_q]/(\sum_q w_q)^2$). Noisy regions are therefore smoothed aggressively and converged regions are left alone. The normal term is $\max(0,\mathbf n_p\cdot\mathbf n_q)^{\sigma_n}$ ($\sigma_n=128$), and the depth term divides the depth difference by the local depth gradient, $\lvert z_p - z_q\rvert / (\sigma_z \lvert\nabla z\cdot(p-q)\rvert + \epsilon)$.
 
 4. The output of the first à-trous level is fed back as the next frame's color history, and a final TAA pass removes remaining flicker.
 

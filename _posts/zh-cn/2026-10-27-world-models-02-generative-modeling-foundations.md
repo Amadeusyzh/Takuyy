@@ -615,7 +615,7 @@ self     one-step error 0.0139   rollout error at t=10: 0.068  t=30: 0.144  t=60
 ## 练习
 
 1. 利用独立高斯变量之和仍为高斯这一事实，用归纳法证明 $q(x_t \mid x_0) = \mathcal{N}(\sqrt{\bar\alpha_t}x_0, (1-\bar\alpha_t)I)$。
-2. 从贝叶斯公式 $q(x_{t-1} \mid x_t, x_0) \propto q(x_t \mid x_{t-1})\, q(x_{t-1} \mid x_0)$ 出发，通过配方推导 $\tilde\mu_t$ 和 $\tilde\beta_t$。
+2. 从贝叶斯公式出发：后验 $q(x_{t-1} \mid x_t, x_0)$ 正比于 $q(x_t \mid x_{t-1})\, q(x_{t-1} \mid x_0)$。通过配方推导 $\tilde\mu_t$ 和 $\tilde\beta_t$。
 3. 在 DDPM 脚本中，比较步数为 10、50、200 以及 $\eta \in \lbrace 0, 1 \rbrace$ 时的 DDIM。减少步数时，哪一种先退化？
 4. 加入类别标签（模态的索引），并以 15% 的标签丢弃率进行训练。实现无分类器引导，并画出 $w \in \lbrace 1, 3, 7 \rbrace$ 时的样本。每个模态的分散程度会发生什么变化？
 5. 证明对于线性路径 $x_t = (1-t)x_0 + t x_1$，速度预测器 $v_\theta$ 与噪声预测器之间满足 $\hat\epsilon = x_t - t\,v_\theta(x_t, t)$。

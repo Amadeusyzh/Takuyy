@@ -416,7 +416,7 @@ The figure shows the weights and what they buy on a 1D toy problem.
 
 ### Progressive accumulation
 
-A path tracer is naturally **progressive**: render one sample per pixel per frame and keep a running mean, $\bar{I}_s = \bar{I}_{s-1} + (I_s - \bar{I}_{s-1})/s$. The image starts noisy and converges as $1/\sqrt{s}$. When the camera or the scene changes, the accumulation restarts (or, in real time, is reprojected and blended, see the next post).
+A path tracer is naturally **progressive**: render one sample per pixel per frame and keep a running mean, $\bar{I}\_s = \bar{I}\_{s-1} + (I\_s - \bar{I}\_{s-1})/s$. The image starts noisy and converges as $1/\sqrt{s}$. When the camera or the scene changes, the accumulation restarts (or, in real time, is reprojected and blended, see the next post).
 
 The figure shows this convergence with the NumPy renderer of the next section.
 

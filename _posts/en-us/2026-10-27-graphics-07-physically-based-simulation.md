@@ -151,7 +151,13 @@ The figure shows the three families on a small grid.
 
 {% include blog_figure.liquid path="assets/img/blog/graphics/07-cloth-springs.svg" localized="true" caption="The three spring families on a 5 × 5 grid, with the number of springs in each. Bending springs skip one particle; they are drawn as arcs only so that they do not hide the structural edges they run along." %}
 
-The difficulty is **stiffness**. Real cloth barely stretches, so $k_s$ must be large; the stable step for explicit or symplectic integration scales like $\Delta t \lesssim 2/\omega_{\max} \sim 2\sqrt{m/k_s}$, which becomes tiny. Baraff and Witkin's "Large Steps in Cloth Simulation" (SIGGRAPH 1998) solved this offline with implicit Euler: linearize the forces, solve one sparse linear system $\big(\mathbf{M} - \Delta t\,\partial\mathbf{f}/\partial\mathbf{v} - \Delta t^2\,\partial\mathbf{f}/\partial\mathbf{x}\big)\Delta\mathbf{v} = \Delta t\,(\mathbf{f} + \Delta t\, \partial\mathbf{f}/\partial\mathbf{x}\, \mathbf{v})$ per step with conjugate gradients. That is robust but costly to implement and tune. Position based methods take a different route.
+The difficulty is **stiffness**. Real cloth barely stretches, so $k_s$ must be large; the stable step for explicit or symplectic integration scales like $\Delta t \lesssim 2/\omega_{\max} \sim 2\sqrt{m/k_s}$, which becomes tiny. Baraff and Witkin's "Large Steps in Cloth Simulation" (SIGGRAPH 1998) solved this offline with implicit Euler: linearize the forces, solve one sparse linear system per step with conjugate gradients,
+
+$$
+\big(\mathbf{M} - \Delta t\,\partial\mathbf{f}/\partial\mathbf{v} - \Delta t^2\,\partial\mathbf{f}/\partial\mathbf{x}\big)\Delta\mathbf{v} = \Delta t\,(\mathbf{f} + \Delta t\, \partial\mathbf{f}/\partial\mathbf{x}\, \mathbf{v}).
+$$
+
+That is robust but costly to implement and tune. Position based methods take a different route.
 
 ## 4. Position Based Dynamics (PBD)
 
@@ -171,7 +177,7 @@ $$
 \lambda = \frac{-C(\mathbf{p})}{\nabla C\, \mathbf{M}^{-1} \nabla C^\top} = \frac{-C(\mathbf{p})}{\sum_i w_i \lVert\nabla_{\mathbf{p}_i} C\rVert^2}, \qquad \Delta\mathbf{p}_i = \lambda\, w_i \nabla_{\mathbf{p}_i} C^\top.
 $$
 
-For the distance constraint, $\nabla_{\mathbf{p}_a}C = \hat{\mathbf{n}}^\top$, $\nabla_{\mathbf{p}_b}C = -\hat{\mathbf{n}}^\top$ with $\hat{\mathbf{n}} = (\mathbf{p}_a-\mathbf{p}_b)/\lVert\mathbf{p}_a-\mathbf{p}_b\rVert$, hence
+For the distance constraint, $\nabla\_{\mathbf{p}\_a}C = \hat{\mathbf{n}}^\top$, $\nabla\_{\mathbf{p}\_b}C = -\hat{\mathbf{n}}^\top$ with $\hat{\mathbf{n}} = (\mathbf{p}\_a-\mathbf{p}\_b)/\lVert\mathbf{p}\_a-\mathbf{p}\_b\rVert$, hence
 
 $$
 \Delta\mathbf{p}_a = -\frac{w_a}{w_a + w_b}\big(\lVert\mathbf{p}_a-\mathbf{p}_b\rVert - L_0\big)\hat{\mathbf{n}}, \qquad
@@ -198,13 +204,13 @@ $$
 
 where $\boldsymbol{\alpha}$ is a diagonal **compliance** matrix (inverse stiffness, e.g. $\alpha = 1/k$ in m/N for a distance constraint). The elastic force is $\mathbf{f}_{\text{el}} = -\nabla U^\top = -\nabla\mathbf{C}^\top \boldsymbol{\alpha}^{-1}\mathbf{C}$.
 
-**Step 1: implicit position-level integration.** Discretize $\mathbf{M}\ddot{\mathbf{x}} = \mathbf{f}_{\text{el}}(\mathbf{x}) + \mathbf{f}_{\text{ext}}$ with the elastic force evaluated at the end of the step:
+**Step 1: implicit position-level integration.** Discretize $\mathbf{M}\ddot{\mathbf{x}} = \mathbf{f}\_{\text{el}}(\mathbf{x}) + \mathbf{f}\_{\text{ext}}$ with the elastic force evaluated at the end of the step:
 
 $$
 \mathbf{M}\,\frac{\mathbf{x}^{n+1} - 2\mathbf{x}^n + \mathbf{x}^{n-1}}{\Delta t^2} = -\nabla\mathbf{C}(\mathbf{x}^{n+1})^\top \boldsymbol{\alpha}^{-1}\mathbf{C}(\mathbf{x}^{n+1}) + \mathbf{f}_{\text{ext}}.
 $$
 
-Define the **predicted position** $\tilde{\mathbf{x}} = 2\mathbf{x}^n - \mathbf{x}^{n-1} + \Delta t^2\mathbf{M}^{-1}\mathbf{f}_{\text{ext}} = \mathbf{x}^n + \Delta t\,\mathbf{v}^n + \Delta t^2\mathbf{M}^{-1}\mathbf{f}_{\text{ext}}$ and the **time-step-scaled compliance**
+Define the **predicted position** $\tilde{\mathbf{x}} = 2\mathbf{x}^n - \mathbf{x}^{n-1} + \Delta t^2\mathbf{M}^{-1}\mathbf{f}\_{\text{ext}}$ (equivalently, $\mathbf{x}^n + \Delta t\,\mathbf{v}^n + \Delta t^2\mathbf{M}^{-1}\mathbf{f}\_{\text{ext}}$) and the **time-step-scaled compliance**
 
 $$
 \tilde{\boldsymbol{\alpha}} = \frac{\boldsymbol{\alpha}}{\Delta t^2}.
@@ -443,7 +449,7 @@ $$
 A(\mathbf{x}_i) \approx \sum_j \frac{m_j}{\rho_j} A_j\, W(\mathbf{x}_i - \mathbf{x}_j, h).
 $$
 
-Müller et al. (2003) made SPH interactive in graphics: pressure from a state equation $p_i = k(\rho_i - \rho_0)$, symmetric pressure forces $\mathbf{f}_i^{p} = -\sum_j m_j \frac{p_i + p_j}{2\rho_j}\nabla W_{ij}$, viscosity and surface tension, with the Poly6 kernel for density, the Spiky kernel's gradient for pressure, and a separate kernel for viscosity. The weakness is the same stiffness problem as cloth: near-incompressibility requires a large $k$ and therefore a tiny time step.
+Müller et al. (2003) made SPH interactive in graphics: pressure from a state equation $p\_i = k(\rho\_i - \rho\_0)$, symmetric pressure forces $\mathbf{f}\_i^{p} = -\sum\_j m\_j \frac{p\_i + p\_j}{2\rho\_j}\nabla W\_{ij}$, viscosity and surface tension, with the Poly6 kernel for density, the Spiky kernel's gradient for pressure, and a separate kernel for viscosity. The weakness is the same stiffness problem as cloth: near-incompressibility requires a large $k$ and therefore a tiny time step.
 
 The figure compares the three kernels.
 
@@ -499,4 +505,4 @@ For 2026 research on IPC contact, differentiable fluids, cloth, hair and MPM, se
 4. Implement tearing: delete a stretch constraint when $\lambda / h^2$ (the force) exceeds a threshold, and compare with the length-based rule used in the home-page demo.
 5. Write a 2D Position Based Fluids solver with a uniform grid for neighbor search and the density constraint above; start with 2,000 particles in a box.
 
-This completes the graphics track. The next track, neural rendering, starts from cameras and multi-view geometry and builds up to NeRF and 3D Gaussian Splatting, where everything from these seven posts (projection, rasterization, radiance, sampling, and even differentiable simulation) comes back.
+This completes the core of the graphics track. Chapters 08-13 continue it with geometry processing, animation and characters, volumes and participating media, real-time rendering techniques, differentiable and inverse rendering, and the 2026 research frontier, starting with [geometry processing]({{ '/blog/2026/graphics-08-geometry-processing/' | relative_url }}). If you would rather jump ahead, go to the neural rendering track next: it starts from [cameras and multi-view geometry]({{ '/blog/2026/neural-rendering-01-cameras-and-multiview-geometry/' | relative_url }}) and builds up to NeRF and 3D Gaussian Splatting, where everything from these seven posts (projection, rasterization, radiance, sampling, and even differentiable simulation) comes back.

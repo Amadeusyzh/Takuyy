@@ -90,7 +90,7 @@ $$
 
 a parabola in $\beta$. Setting the derivative to zero gives $\beta^* = \operatorname{Cov}(f,g)/\sigma_g^2$, and substituting back gives $\operatorname{Var} = \sigma_f^2(1-\rho^2)/N$, where $\rho$ is the correlation between $f(X)$ and $g(X)$. The better $g$ tracks $f$, the closer $\rho^2$ is to 1 and the more variance disappears.
 
-**Worked example.** Take $f(x) = e^x$ on $[0,1]$ ($I = e-1 \approx 1.71828$) and $g(x) = 1 + x$ ($G = 1.5$). Then $\sigma_f^2 = \frac{e^2-1}{2} - (e-1)^2 \approx 0.24204$, $\sigma_g^2 = 1/12$, and $\operatorname{Cov}(f,g) = \mathbb E[xe^x] - \tfrac12(e-1) = 1 - 0.85914 = 0.14086$. So $\beta^* \approx 1.690$ and $\rho^2 \approx 0.9837$. With $N = 8$ samples, the plain estimator has standard deviation $\sqrt{0.24204/8} \approx 0.174$, and the control-variate estimator $\sqrt{0.24204 \cdot 0.0163/8} \approx 0.022$: about 60 times less variance for the same samples.
+**Worked example.** Take $f(x) = e^x$ on $[0,1]$ ($I = e-1 \approx 1.71828$) and $g(x) = 1 + x$ ($G = 1.5$). Then $\sigma_f^2 = \frac{e^2-1}{2} - (e-1)^2 \approx 0.24204$, $\sigma_g^2 = 1/12$, and $\operatorname{Cov}(f,g) = \mathbb E[xe^x] - \tfrac12(e-1)$, which is $1 - 0.85914 = 0.14086$. So $\beta^* \approx 1.690$ and $\rho^2 \approx 0.9837$. With $N = 8$ samples, the plain estimator has standard deviation $\sqrt{0.24204/8} \approx 0.174$, and the control-variate estimator $\sqrt{0.24204 \cdot 0.0163/8} \approx 0.022$: about 60 times less variance for the same samples.
 
 The same numbers from a simulation, with $\beta$ fitted from samples as a renderer would do:
 
@@ -162,9 +162,9 @@ t^* = \frac{\mathbf d^\top\Sigma^{-1}(\boldsymbol\mu - \mathbf o)}{\mathbf d^\to
 G_{\max} = \exp\!\left(-\tfrac12\, q(t^*)\right).
 $$
 
-$t^*$ is *not* the point of the ray closest to $\boldsymbol\mu$ in ordinary distance. It is the closest point in the metric of the Gaussian, which stretches space along the short axes.
+$t^{\ast}$ is *not* the point of the ray closest to $\boldsymbol\mu$ in ordinary distance. It is the closest point in the metric of the Gaussian, which stretches space along the short axes.
 
-**Worked example.** Let $\boldsymbol\mu = \mathbf 0$, $\Sigma = \operatorname{diag}(4,1,1)$ (standard deviations 2, 1, 1), $\mathbf o = (-4,-1,0)$ and $\mathbf d = (1,1,0)/\sqrt2$. Then $\Sigma^{-1} = \operatorname{diag}(0.25,1,1)$, $\mathbf d^\top\Sigma^{-1}(\boldsymbol\mu-\mathbf o) = (0.25\cdot4 + 1)/\sqrt2 = 1.4142$ and $\mathbf d^\top\Sigma^{-1}\mathbf d = 0.625$, so $t^* = 2.263$. The point is $(-2.4, 0.6, 0)$ with $q = 0.25\cdot5.76 + 0.36 = 1.8$, hence $G_{\max} = e^{-0.9} = 0.407$. The Euclidean closest point, at $t = \mathbf d\cdot(\boldsymbol\mu-\mathbf o) = 3.536$, has only $G = e^{-1.406} = 0.245$.
+**Worked example.** Let $\boldsymbol\mu = \mathbf 0$, $\Sigma = \operatorname{diag}(4,1,1)$ (standard deviations 2, 1, 1), $\mathbf o = (-4,-1,0)$ and $\mathbf d = (1,1,0)/\sqrt2$. Then $\Sigma^{-1} = \operatorname{diag}(0.25,1,1)$, $\mathbf d^\top\Sigma^{-1}(\boldsymbol\mu-\mathbf o) = (0.25\cdot4 + 1)/\sqrt2 = 1.4142$ and $\mathbf d^\top\Sigma^{-1}\mathbf d = 0.625$, so $t^{\ast} = 2.263$. The point is $(-2.4, 0.6, 0)$ with $q = 0.25\cdot5.76 + 0.36 = 1.8$, hence $G_{\max} = e^{-0.9} = 0.407$. The Euclidean closest point, at $t = \mathbf d\cdot(\boldsymbol\mu-\mathbf o) = 3.536$, has only $G = e^{-1.406} = 0.245$.
 
 ```python
 import numpy as np
@@ -182,13 +182,13 @@ y = o + t_e * d - mu
 print(t_e, np.exp(-0.5 * y @ Si @ y))          # 3.5355..., 0.2451...
 ```
 
-{% include blog_figure.liquid path="assets/img/blog/graphics/13-gaussian-ray.svg" caption="Left: a rotated anisotropic 3D Gaussian (its 1-sigma ellipsoid) and three parallel rays with increasing offset; the square marks each ray origin and the dot its peak point $t^*$. Right: the response $G(\mathbf o+t\mathbf d)$ along each ray, computed from the formula. Each curve is a 1D Gaussian in $t$ whose maximum sits at $t^*$ (dashed). The value printed at the peak is $G_{\max}$, and it falls quickly with the offset because the ray passes along a short axis." %}
+{% include blog_figure.liquid path="assets/img/blog/graphics/13-gaussian-ray.svg" caption="Left: a rotated anisotropic 3D Gaussian (its 1-sigma ellipsoid) and three parallel rays with increasing offset; the square marks each ray origin and the dot its peak point $t^{\ast}$. Right: the response $G(\mathbf o+t\mathbf d)$ along each ray, computed from the formula. Each curve is a 1D Gaussian in $t$ whose maximum sits at $t^{\ast}$ (dashed). The value printed at the peak is $G_{\max}$, and it falls quickly with the offset because the ray passes along a short axis." %}
 
-Try the same computation in 2D. The widget starts with exactly the worked example ($\sigma_x = 2$, $\sigma_y = 1$, $\mathbf o = (-4,-1)$, direction $(1,1)/\sqrt2$), so its readout shows $t^* = 2.26$, $G = 0.407$ and, for the Euclidean point, $t = 3.54$, $G = 0.245$.
+Try the same computation in 2D. The widget starts with exactly the worked example ($\sigma_x = 2$, $\sigma_y = 1$, $\mathbf o = (-4,-1)$, direction $(1,1)/\sqrt2$), so its readout shows $t^{\ast} = 2.26$, $G = 0.407$ and, for the Euclidean point, $t = 3.54$, $G = 0.245$.
 
 <div id="gr-i18n" hidden data-drag="Drag the square (ray origin) or the circle (direction); the sliders rotate and stretch the Gaussian." data-rot="Rotation" data-peak="peak" data-eucl="closest point" data-reset="Reset"></div>
 
-{% include widget.liquid name="graphics-gaussian-ray" height="470" caption="Purple: the peak $t^*$, where the ray touches a level ellipse of the Gaussian (dashed purple). Grey: the closest point in ordinary distance, where the ray touches a circle around the mean (dashed grey). The plot below shows $G$ along the ray. Rotate or stretch the Gaussian and watch the two points separate: in general they differ, and they coincide only in special cases such as an isotropic Gaussian, a ray parallel to a principal axis, or a ray through the mean." %}
+{% include widget.liquid name="graphics-gaussian-ray" height="470" caption="Purple: the peak $t^{\ast}$, where the ray touches a level ellipse of the Gaussian (dashed purple). Grey: the closest point in ordinary distance, where the ray touches a circle around the mean (dashed grey). The plot below shows $G$ along the ray. Rotate or stretch the Gaussian and watch the two points separate: in general they differ, and they coincide only in special cases such as an isotropic Gaussian, a ray parallel to a principal axis, or a ray through the mean." %}
 
 A Gaussian ray tracer wraps each Gaussian in a bounding proxy (for example a stretched icosahedron) inside a BVH ([chapter 5]({{ '/blog/2026/graphics-05-ray-and-path-tracing/' | relative_url }})), collects the hits along the ray, evaluates $G_{\max}$ and the opacity for each, and alpha-composites them in depth order exactly as volume rendering does. The papers below are about making this fast and about alternatives to it.
 
@@ -490,7 +490,7 @@ A cross-section of this chapter, one or two per topic. All entries are listed wi
    $G = 1 + \tfrac12 + \tfrac16 = 5/3$, $\sigma_g^2 \approx 0.1889$ and $\operatorname{Cov}(f,g) \approx 0.2136$ (use $\mathbb E[x^2e^x] = e-2$), so $\beta^* \approx 1.131$ and $\rho^2 \approx 0.9981$. The residual variance is about 9 times smaller than with $1+x$, and roughly 500 times smaller than plain Monte Carlo.
    </details>
 
-2. **Gaussian along a ray.** Prove that $q(t)$ is a convex quadratic in $t$ and that $q(t^*) = q(0) - \frac{(\mathbf d^\top\Sigma^{-1}(\boldsymbol\mu-\mathbf o))^2}{\mathbf d^\top\Sigma^{-1}\mathbf d}$. Then check it numerically with the snippet.
+2. **Gaussian along a ray.** Prove that $q(t)$ is a convex quadratic in $t$ and that $q(t^{\ast}) = q(0) - \frac{(\mathbf d^\top\Sigma^{-1}(\boldsymbol\mu-\mathbf o))^2}{\mathbf d^\top\Sigma^{-1}\mathbf d}$. Then check it numerically with the snippet.
 
    <details markdown="1"><summary>Hint</summary>
    Write $q(t) = a t^2 - 2bt + c$ with $a = \mathbf d^\top\Sigma^{-1}\mathbf d > 0$, $b = \mathbf d^\top\Sigma^{-1}(\boldsymbol\mu-\mathbf o)$ and $c = q(0)$, and complete the square.
