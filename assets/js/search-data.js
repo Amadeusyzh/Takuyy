@@ -56,7 +56,7 @@ ninja.data = [{
         
           title: "Learning roadmap: from computer graphics to 3D Gaussian Splatting, world models and embodied...",
         
-        description: "The map of this blog: four series, in order, with what to learn at each stage.",
+        description: "The map of this blog: five series plus a dated paper-digest column, in order, with what to learn at each stage.",
         section: "Posts",
         handler: () => {
           
