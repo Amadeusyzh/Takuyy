@@ -41,7 +41,18 @@ ninja.data = [{
           handler: () => {
             window.location.href = "/Takuyy/cv/";
           },
-        },{id: "post-learning-roadmap-from-computer-graphics-to-3d-gaussian-splatting-world-models-and-embodied-ai",
+        },{id: "post-paper-digest-october-november-2026-graphics-engines-neural-rendering-world-models-embodied-ai-and-xr",
+        
+          title: "Paper Digest | October-November 2026: graphics, engines, neural rendering, world models, embodied AI...",
+        
+        description: "Issue 01 of the dated paper digest: 42 verified papers first posted between 1 October and 2 November 2026, in six categories, each with what it does, how it works, what is new and how it connects to computer graphics.",
+        section: "Posts",
+        handler: () => {
+          
+            window.location.href = "/Takuyy/blog/2026/paper-digest-01-2026-oct-nov/";
+          
+        },
+      },{id: "post-learning-roadmap-from-computer-graphics-to-3d-gaussian-splatting-world-models-and-embodied-ai",
         
           title: "Learning roadmap: from computer graphics to 3D Gaussian Splatting, world models and embodied...",
         
@@ -173,6 +184,72 @@ ninja.data = [{
             window.location.href = "/Takuyy/blog/2026/world-models-01-what-is-a-world-model/";
           
         },
+      },{id: "post-ai-meets-graphics-engines-neural-rendering-generative-content-and-neural-game-engines",
+        
+          title: "AI meets graphics engines: neural rendering, generative content and neural game engines",
+        
+        description: "Which parts of a game engine networks now assist or replace (as of November 2026): DLSS/FSR/XeSS upscaling and frame generation, neural materials and texture compression, Gaussian splats in engines, generative 3D assets, LLM agents in editors, neural game engines such as GameNGen and Genie, and engines as data factories for world models and robots.",
+        section: "Posts",
+        handler: () => {
+          
+            window.location.href = "/Takuyy/blog/2026/graphics-engine-06-ai-meets-graphics-engines/";
+          
+        },
+      },{id: "post-physics-and-simulation-engines-from-game-physics-to-robot-simulators",
+        
+          title: "Physics and simulation engines: from game physics to robot simulators",
+        
+        description: "Inside a physics engine step: broad phase, GJK and EPA, contact manifolds, PGS/TGS/soft-step/XPBD solvers, articulated bodies, then how Isaac, MuJoCo, Newton and Genesis turn engines into robot simulators, with OpenUSD and domain randomization.",
+        section: "Posts",
+        handler: () => {
+          
+            window.location.href = "/Takuyy/blog/2026/graphics-engine-05-physics-and-simulation-engines/";
+          
+        },
+      },{id: "post-inside-production-engines-unreal-engine-5-unity-6-godot-4-bevy-and-others",
+        
+          title: "Inside production engines: Unreal Engine 5, Unity 6, Godot 4, Bevy and others...",
+        
+        description: "How modern engines solve the hard problems: Nanite&#39;s cluster hierarchy and LOD cut, Lumen&#39;s surface cache and distance-field tracing, virtual shadow maps, temporal upscaling, Unity&#39;s render graph and GPU Resident Drawer, Godot&#39;s RenderingDevice, Bevy&#39;s extract phase, and how to read their source.",
+        section: "Posts",
+        handler: () => {
+          
+            window.location.href = "/Takuyy/blog/2026/graphics-engine-04-inside-production-engines/";
+          
+        },
+      },{id: "post-build-a-mini-engine-webgpu-gltf-pbr-shadows-and-an-ecs-in-the-browser",
+        
+          title: "Build a mini engine: WebGPU, glTF, PBR, shadows and an ECS in the...",
+        
+        description: "A hands-on tutorial: a small but real engine in JavaScript and WGSL with a fixed-timestep loop, resource manager, glTF 2.0 loader, orbit camera, PBR shader, shadow map, minimal ECS, pass list, GPU timestamps and debug UI, with notes on Vulkan/C++ and Rust/wgpu.",
+        section: "Posts",
+        handler: () => {
+          
+            window.location.href = "/Takuyy/blog/2026/graphics-engine-03-build-a-mini-engine/";
+          
+        },
+      },{id: "post-modern-gpu-apis-and-render-graphs",
+        
+          title: "Modern GPU APIs and render graphs",
+        
+        description: "How engines talk to the GPU: explicit APIs (Vulkan, D3D12, Metal, WebGPU), memory and synchronization, a minimal WebGPU program, render graphs with a working toy compiler, forward/deferred/clustered lighting, the visibility buffer, GPU-driven rendering with HZB culling and meshlets, and GPU debugging.",
+        section: "Posts",
+        handler: () => {
+          
+            window.location.href = "/Takuyy/blog/2026/graphics-engine-02-gpu-apis-and-render-graphs/";
+          
+        },
+      },{id: "post-anatomy-of-a-game-engine-loops-data-ecs-jobs-and-tools",
+        
+          title: "Anatomy of a game engine: loops, data, ECS, jobs and tools",
+        
+        description: "What a game engine is made of: the layered architecture, the game loop and fixed timestep, frame budgets, data-oriented design, ECS, scene graphs and spatial structures, job systems, and the asset pipeline, with runnable code and measured figures.",
+        section: "Posts",
+        handler: () => {
+          
+            window.location.href = "/Takuyy/blog/2026/graphics-engine-01-anatomy-of-an-engine/";
+          
+        },
       },{id: "post-from-phone-capture-to-vr-a-hands-on-3d-gaussian-splatting-tutorial",
         
           title: "From phone capture to VR: a hands-on 3D Gaussian Splatting tutorial",
@@ -237,6 +314,72 @@ ninja.data = [{
         handler: () => {
           
             window.location.href = "/Takuyy/blog/2026/neural-rendering-01-cameras-and-multiview-geometry/";
+          
+        },
+      },{id: "post-graphics-research-frontiers-2026-what-siggraph-siggraph-asia-and-the-latest-preprints-are-doing",
+        
+          title: "Graphics research frontiers 2026: what SIGGRAPH, SIGGRAPH Asia and the latest preprints are...",
+        
+        description: "A verified, topic-by-topic map of 2026 graphics research (SIGGRAPH 2026, SIGGRAPH Asia 2026, EGSR, I3D, SCA and arXiv preprints), with the math behind four recurring ideas and an interactive explorer.",
+        section: "Posts",
+        handler: () => {
+          
+            window.location.href = "/Takuyy/blog/2026/graphics-13-research-frontiers-2026/";
+          
+        },
+      },{id: "post-differentiable-and-inverse-rendering-gradients-through-pixels",
+        
+          title: "Differentiable and inverse rendering: gradients through pixels",
+        
+        description: "Why gradients of images are hard (visibility makes Dirac deltas), how soft rasterizers, nvdiffrast, edge sampling, reparameterization and path-space methods fix it, Mitsuba 3, inverse rendering in practice, and three PyTorch experiments you can run.",
+        section: "Posts",
+        handler: () => {
+          
+            window.location.href = "/Takuyy/blog/2026/graphics-12-differentiable-and-inverse-rendering/";
+          
+        },
+      },{id: "post-real-time-rendering-techniques-g-buffers-soft-shadows-ao-reflections-real-time-gi-and-tone-mapping",
+        
+          title: "Real-time rendering techniques: G-buffers, soft shadows, AO, reflections, real-time GI and tone mapping...",
+        
+        description: "The algorithms behind a 16 ms frame: deferred shading and octahedral normals, clustered light culling, cascaded and soft shadows (PCSS, VSM, EVSM), SSAO/HBAO/GTAO with the horizon integral, Hi-Z screen-space reflections, light maps, SH irradiance probes, DDGI and voxel cone tracing, temporal rectification, HDR tone mapping and the sRGB curve, and how to think about GPU performance.",
+        section: "Posts",
+        handler: () => {
+          
+            window.location.href = "/Takuyy/blog/2026/graphics-11-real-time-rendering-techniques/";
+          
+        },
+      },{id: "post-volumes-and-participating-media-fog-smoke-clouds-sky-and-skin",
+        
+          title: "Volumes and participating media: fog, smoke, clouds, sky and skin",
+        
+        description: "Extinction and albedo, Beer-Lambert transmittance, the radiative transfer equation, phase functions with sampling code, ray marching, delta and ratio tracking, volumetric path tracing, OpenVDB, real-time fog, sky and clouds, subsurface scattering, and why NeRF&#39;s alpha compositing is a quadrature of the same integral.",
+        section: "Posts",
+        handler: () => {
+          
+            window.location.href = "/Takuyy/blog/2026/graphics-10-volumes-and-participating-media/";
+          
+        },
+      },{id: "post-animation-and-characters-splines-rotations-skinning-ik-motion-matching-and-learned-motion",
+        
+          title: "Animation and characters: splines, rotations, skinning, IK, motion matching and learned motion",
+        
+        description: "Keyframe splines and arc length, slerp and squad, skeletons and forward kinematics, linear blend vs dual quaternion skinning, blendshapes, CCD and FABRIK, motion capture and SMPL, motion matching, physics-based characters trained with RL, and generative motion, with NumPy code.",
+        section: "Posts",
+        handler: () => {
+          
+            window.location.href = "/Takuyy/blog/2026/graphics-09-animation-and-characters/";
+          
+        },
+      },{id: "post-geometry-processing-meshes-curvature-smoothing-subdivision-and-reconstruction",
+        
+          title: "Geometry processing: meshes, curvature, smoothing, subdivision and reconstruction",
+        
+        description: "Mesh representations and the half-edge structure, discrete curvature with the cotangent Laplacian, smoothing, Loop subdivision, QEM simplification, Tutte parameterization, marching squares and cubes, and Poisson reconstruction, all in NumPy.",
+        section: "Posts",
+        handler: () => {
+          
+            window.location.href = "/Takuyy/blog/2026/graphics-08-geometry-processing/";
           
         },
       },{id: "post-physically-based-simulation-particles-cloth-pbd-and-xpbd",

@@ -41,7 +41,18 @@ ninja.data = [{
           handler: () => {
             window.location.href = "/Takuyy/ja-jp/cv/";
           },
-        },{id: "post-学習ロードマップ-コンピュータグラフィックスから-3d-ガウシアンスプラッティング-世界モデル-身体性-ai-まで",
+        },{id: "post-論文速報-2026-年-10-11-月-グラフィックス-エンジン-ニューラルレンダリング-世界モデル-身体性-ai-xr",
+        
+          title: "論文速報｜2026 年 10–11 月：グラフィックス、エンジン、ニューラルレンダリング、世界モデル、身体性 AI、XR",
+        
+        description: "論文速報 第 01 号：2026 年 10 月 1 日から 11 月 2 日に初めて公開された、検証済みの 42 本の論文を 6 つのカテゴリで紹介します。各論文について、何をするか、どう動くか、何が新しいか、コンピュータグラフィックスとどうつながるかを説明します。",
+        section: "記事",
+        handler: () => {
+          
+            window.location.href = "/Takuyy/ja-jp/blog/2026/paper-digest-01-2026-oct-nov/";
+          
+        },
+      },{id: "post-学習ロードマップ-コンピュータグラフィックスから-3d-ガウシアンスプラッティング-世界モデル-身体性-ai-まで",
         
           title: "学習ロードマップ：コンピュータグラフィックスから 3D ガウシアンスプラッティング、世界モデル、身体性 AI まで",
         
@@ -173,6 +184,72 @@ ninja.data = [{
             window.location.href = "/Takuyy/ja-jp/blog/2026/world-models-01-what-is-a-world-model/";
           
         },
+      },{id: "post-ai-とグラフィックスエンジン-ニューラルレンダリング-生成コンテンツ-ニューラルゲームエンジン",
+        
+          title: "AI とグラフィックスエンジン：ニューラルレンダリング、生成コンテンツ、ニューラルゲームエンジン",
+        
+        description: "2026 年 11 月時点で、ゲームエンジンのどの部分をネットワークが補助・置換しているか。DLSS/FSR/XeSS のアップスケーリングとフレーム生成、ニューラルマテリアルとテクスチャ圧縮、エンジン内のガウシアンスプラット、生成 3D アセット、エディタの中の LLM エージェント、GameNGen や Genie などのニューラルゲームエンジン、そして世界モデルとロボットのためのデータ工場としてのエンジンを扱います。",
+        section: "記事",
+        handler: () => {
+          
+            window.location.href = "/Takuyy/ja-jp/blog/2026/graphics-engine-06-ai-meets-graphics-engines/";
+          
+        },
+      },{id: "post-物理-シミュレーションエンジン-ゲーム物理からロボットシミュレータへ",
+        
+          title: "物理・シミュレーションエンジン：ゲーム物理からロボットシミュレータへ",
+        
+        description: "物理エンジンの 1 ステップの中身（ブロードフェーズ、GJK と EPA、接触マニフォールド、PGS/TGS/soft step/XPBD ソルバ、多関節体）を見たうえで、Isaac・MuJoCo・Newton・Genesis がエンジンをロボットシミュレータに変える方法、OpenUSD、ドメインランダム化を解説します。",
+        section: "記事",
+        handler: () => {
+          
+            window.location.href = "/Takuyy/ja-jp/blog/2026/graphics-engine-05-physics-and-simulation-engines/";
+          
+        },
+      },{id: "post-プロダクションエンジンの内部-unreal-engine-5-unity-6-godot-4-bevy-ほか",
+        
+          title: "プロダクションエンジンの内部：Unreal Engine 5、Unity 6、Godot 4、Bevy ほか",
+        
+        description: "現代のエンジンは難題をどう解いているのか。Nanite のクラスタ階層と LOD カット、Lumen のサーフェスキャッシュと距離場トレーシング、Virtual Shadow Maps、時間的アップスケーリング、Unity の Render Graph と GPU Resident Drawer、Godot の RenderingDevice、Bevy の抽出フェーズ、そしてそれらのソースコードの読み方を解説します。",
+        section: "記事",
+        handler: () => {
+          
+            window.location.href = "/Takuyy/ja-jp/blog/2026/graphics-engine-04-inside-production-engines/";
+          
+        },
+      },{id: "post-ミニエンジンを作る-ブラウザ上の-webgpu-gltf-pbr-シャドウ-ecs",
+        
+          title: "ミニエンジンを作る: ブラウザ上の WebGPU、glTF、PBR、シャドウ、ECS",
+        
+        description: "実践チュートリアル: JavaScript と WGSL で書く小さくても本物のエンジン。固定タイムステップのループ、リソースマネージャ、glTF 2.0 ローダ、オービットカメラ、PBR シェーダ、シャドウマップ、最小限の ECS、パスリスト、GPU タイムスタンプ、デバッグ UI を扱い、Vulkan/C++ および Rust/wgpu での対応にも触れます。",
+        section: "記事",
+        handler: () => {
+          
+            window.location.href = "/Takuyy/ja-jp/blog/2026/graphics-engine-03-build-a-mini-engine/";
+          
+        },
+      },{id: "post-現代の-gpu-api-とレンダーグラフ",
+        
+          title: "現代の GPU API とレンダーグラフ",
+        
+        description: "エンジンは GPU とどう話すか：明示的 API（Vulkan、D3D12、Metal、WebGPU）、メモリと同期、最小の WebGPU プログラム、動くおもちゃのコンパイラ付きのレンダーグラフ、フォワード/ディファード/クラスタードライティング、ビジビリティバッファ、HZB カリングとメッシュレットによる GPU 駆動レンダリング、そして GPU のデバッグ。",
+        section: "記事",
+        handler: () => {
+          
+            window.location.href = "/Takuyy/ja-jp/blog/2026/graphics-engine-02-gpu-apis-and-render-graphs/";
+          
+        },
+      },{id: "post-ゲームエンジンの解剖-ループ-データ-ecs-ジョブ-ツール",
+        
+          title: "ゲームエンジンの解剖：ループ、データ、ECS、ジョブ、ツール",
+        
+        description: "ゲームエンジンは何でできているか：レイヤー構造、ゲームループと固定タイムステップ、フレーム予算、データ指向設計、ECS、シーングラフと空間構造、ジョブシステム、アセットパイプラインを、実行できるコードと実測した図で解説します。",
+        section: "記事",
+        handler: () => {
+          
+            window.location.href = "/Takuyy/ja-jp/blog/2026/graphics-engine-01-anatomy-of-an-engine/";
+          
+        },
       },{id: "post-スマホ撮影から-vr-まで-3d-gaussian-splatting-ハンズオンチュートリアル",
         
           title: "スマホ撮影から VR まで：3D Gaussian Splatting ハンズオンチュートリアル",
@@ -237,6 +314,72 @@ ninja.data = [{
         handler: () => {
           
             window.location.href = "/Takuyy/ja-jp/blog/2026/neural-rendering-01-cameras-and-multiview-geometry/";
+          
+        },
+      },{id: "post-グラフィックス研究のフロンティア-2026-siggraph-siggraph-asia-と最新プレプリントの動向",
+        
+          title: "グラフィックス研究のフロンティア 2026：SIGGRAPH、SIGGRAPH Asia と最新プレプリントの動向",
+        
+        description: "2026 年のグラフィックス研究（SIGGRAPH 2026、SIGGRAPH Asia 2026、EGSR、I3D、SCA、arXiv プレプリント）を、一次情報で確認しながらトピック別にまとめた地図です。繰り返し現れる 4 つのアイデアの数学と、インタラクティブなエクスプローラーも収録しています。",
+        section: "記事",
+        handler: () => {
+          
+            window.location.href = "/Takuyy/ja-jp/blog/2026/graphics-13-research-frontiers-2026/";
+          
+        },
+      },{id: "post-微分可能レンダリングと逆レンダリング-ピクセルを通る勾配",
+        
+          title: "微分可能レンダリングと逆レンダリング：ピクセルを通る勾配",
+        
+        description: "画像の勾配が難しい理由（可視性がディラックのデルタを生む）、ソフトラスタライザ、nvdiffrast、エッジサンプリング、再パラメータ化、パス空間の手法がそれをどう解決するか、Mitsuba 3、逆レンダリングの実際、そして実行できる 3 つの PyTorch 実験を解説します。",
+        section: "記事",
+        handler: () => {
+          
+            window.location.href = "/Takuyy/ja-jp/blog/2026/graphics-12-differentiable-and-inverse-rendering/";
+          
+        },
+      },{id: "post-リアルタイムレンダリングの技法-g-buffer-ソフトシャドウ-ao-反射-リアルタイム-gi-トーンマッピング",
+        
+          title: "リアルタイムレンダリングの技法：G-buffer、ソフトシャドウ、AO、反射、リアルタイム GI、トーンマッピング",
+        
+        description: "16 ms の 1 フレームを支えるアルゴリズム：遅延シェーディングと八面体法線エンコード、クラスター化ライトカリング、カスケードとソフトシャドウ（PCSS、VSM、EVSM）、SSAO/HBAO/GTAO と地平線積分、Hi-Z スクリーン空間反射、ライトマップ、SH 放射照度プローブ、DDGI とボクセルコーントレーシング、時間方向の履歴補正、HDR トーンマッピングと sRGB カーブ、そして GPU 性能の考え方。",
+        section: "記事",
+        handler: () => {
+          
+            window.location.href = "/Takuyy/ja-jp/blog/2026/graphics-11-real-time-rendering-techniques/";
+          
+        },
+      },{id: "post-ボリュームと関与媒質-霧-煙-雲-空-肌",
+        
+          title: "ボリュームと関与媒質：霧・煙・雲・空・肌",
+        
+        description: "消散係数とアルベド、Beer-Lambert 透過率、放射伝達方程式、位相関数とそのサンプリングコード、レイマーチング、delta / ratio tracking、ボリュームパストレーシング、OpenVDB、リアルタイムの霧・空・雲、表面下散乱、そして NeRF のアルファ合成が同じ積分の数値求積である理由。",
+        section: "記事",
+        handler: () => {
+          
+            window.location.href = "/Takuyy/ja-jp/blog/2026/graphics-10-volumes-and-participating-media/";
+          
+        },
+      },{id: "post-アニメーションとキャラクター-スプライン-回転-スキニング-ik-モーションマッチング-学習ベースのモーション",
+        
+          title: "アニメーションとキャラクター：スプライン、回転、スキニング、IK、モーションマッチング、学習ベースのモーション",
+        
+        description: "キーフレームのスプラインと弧長、slerp と squad、骨格と順運動学、線形ブレンドスキニングとデュアルクォータニオン・スキニング、ブレンドシェイプ、CCD と FABRIK、モーションキャプチャと SMPL、モーションマッチング、強化学習で訓練する物理ベースのキャラクター、生成的モーションを NumPy のコードとともに解説します。",
+        section: "記事",
+        handler: () => {
+          
+            window.location.href = "/Takuyy/ja-jp/blog/2026/graphics-09-animation-and-characters/";
+          
+        },
+      },{id: "post-ジオメトリ処理-メッシュ-曲率-平滑化-細分割-再構成",
+        
+          title: "ジオメトリ処理：メッシュ、曲率、平滑化、細分割、再構成",
+        
+        description: "メッシュ表現とハーフエッジ構造、コタンジェント・ラプラシアンによる離散曲率、平滑化、Loop 細分割、QEM 簡略化、Tutte パラメータ化、Marching Squares と Marching Cubes、ポアソン再構成を、すべて NumPy で実装します。",
+        section: "記事",
+        handler: () => {
+          
+            window.location.href = "/Takuyy/ja-jp/blog/2026/graphics-08-geometry-processing/";
           
         },
       },{id: "post-物理ベースシミュレーション-粒子-布-pbd-と-xpbd",
