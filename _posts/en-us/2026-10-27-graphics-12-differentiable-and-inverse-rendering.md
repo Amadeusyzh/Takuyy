@@ -129,7 +129,7 @@ FD of sampled pixel, h = 0.1: 1.500
 
 The figure below shows the same functions over the whole range of $\theta$. On the left, the exact ramp, the one-sample step (a classic rasterizer that samples the pixel center) and the four-sample staircase. On the right, their derivatives: the exact box, the Dirac delta of the one-sample pixel, the zero line that autodiff returns, and the spiky FD.
 
-{% include blog_figure.liquid path="assets/img/blog/graphics/12-edge-coverage.svg" caption="The 1D pixel $[0,1]$ (shaded) with an edge at $\theta$ ($f_{\rm in}=1$, $f_{\rm out}=0$ here). Left: the area integral is a ramp, while point sampling gives steps. Right: the exact derivative is a box of height 1 over the pixel; a one-sample pixel has a Dirac delta at its sample (arrow); autodiff of any sampled version gives the dotted zero line; finite differences of the 4-sample staircase give boxes of height $0.25/h$ wherever an edge crosses a sample." %}
+{% include blog_figure.liquid path="assets/img/blog/graphics/12-edge-coverage.svg" caption="The 1D pixel $[0,1]$ (shaded) with an edge at $\theta$ ($f_{\rm in}=1$, $f_{\rm out}=0$ here). Left: the area integral is a ramp, while point sampling gives steps. Right: the exact derivative is a box of height 1 over the pixel; a one-sample pixel has a Dirac delta at its sample (arrow); autodiff of any sampled version gives the dotted zero line; finite differences of the 4-sample staircase (here $h=0.1$) give boxes of width $h$ and height $0.25/h=2.5$ wherever an edge crosses a sample." %}
 
 ### The general rule: interior term plus boundary term
 
@@ -151,7 +151,7 @@ The widget below lets you check this pixel by pixel. Drag the edge across an $8\
 
 Finite differences need one extra render per parameter, so they do not scale to millions of parameters, and they are noisy, as the 1D example shows. The boundary term suggests a better estimator, **edge sampling**: pick random points $\mathbf{x}_k$ on the silhouette with density $p(\mathbf{x}_k)$ (uniform along the edge: $p = 1/\text{length}$), look up the two sides, and average $(f^{-}-f^{+})(\mathbf{v}\cdot\mathbf{n})/p$. For a loss over the whole image, each edge sample contributes to the pixel it lands in, weighted by $\partial\mathcal{L}/\partial I$ of that pixel.
 
-Let us measure both. A $32\times 32$ image contains a hard disc of radius $r$ over a target disc, rendered with 16 jittered samples per pixel, and we estimate $\partial\mathcal{L}/\partial r$ 300 times with each method. The reference is the boundary integral evaluated with 400,000 quadrature points.
+Let us measure both. A $32\times 32$ image contains a hard disc of radius $r$ over a target disc, rendered with 16 jittered samples per pixel, and we estimate $\partial\mathcal{L}/\partial r$ 300 times with each method. The reference is the boundary integral evaluated with 400,000 quadrature points. In the figure below, compare how widely the orange and purple point clouds scatter around the red dashed line.
 
 {% include blog_figure.liquid path="assets/img/blog/graphics/12-fd-vs-edge.svg" caption="Estimates of $\partial\mathcal{L}/\partial r$ for the disc experiment (symmetric-log axis; the red dashed line is the reference; the black bars are the means). Finite differences (orange) with the same random samples for both renders: a large $h$ is smooth but biased, a small $h$ is unbiased but very noisy, because only a handful of samples change between the two renders (with $h=0.01$ some estimates even have the wrong sign). Edge sampling (purple) with $M$ points on the circle is centered on the reference, and its spread shrinks roughly like $1/\sqrt{M}$. Right: relative RMSE (FD: 0.80, 0.26, 0.96 for $h=1, 0.1, 0.01$; edge sampling: 0.67, 0.32, 0.18 for $M=16, 64, 256$). Note the cost: FD needs two renders per parameter, edge sampling gives all parameters from one pass." %}
 
@@ -187,7 +187,7 @@ $$
 I = \int_{\Omega} f(\bar{x};\theta)\,d\mu(\bar{x}),
 $$
 
-the path integral of [post 5]({{ '/blog/2026/graphics-05-ray-and-path-tracing/' | relative_url }}). Visibility appears at *every* bounce, in shadows, reflections and indirect light, not only at primary silhouettes, so the boundary term now lives on many kinds of discontinuities. Physically based differentiable rendering (PBDR) estimates both terms of the Reynolds formula in this setting. Four ideas define the field.
+the path integral of [post 5]({{ '/blog/2026/graphics-05-ray-and-path-tracing/' | relative_url }}), where $\Omega$ is the set of all light paths and $\mu$ is the measure on it. Visibility appears at *every* bounce, in shadows, reflections and indirect light, not only at primary silhouettes, so the boundary term now lives on many kinds of discontinuities. Physically based differentiable rendering (PBDR) estimates both terms of the Reynolds formula in this setting. Four ideas define the field.
 
 **Edge sampling** (Li, Aittala, Durand and Lehtinen, SIGGRAPH Asia 2018) estimates the boundary term directly, as in Section 2. For primary visibility it samples points on silhouette edges in screen space; for secondary visibility (shadows, indirect) it samples silhouette edges as seen from a shading point, using a hierarchy over triangle edges to find the relevant ones. It is unbiased, but finding silhouettes is expensive and does not extend to implicit surfaces.
 
@@ -247,15 +247,15 @@ $$
 \mathbf{u} = (\mathbf{I} + \lambda \mathbf{L})\,\mathbf{x},
 $$
 
-where $\mathbf{L}$ is the mesh Laplacian and $\lambda$ a smoothing weight, and optimize $\mathbf{u}$ instead of $\mathbf{x}$. With $\mathbf{M} = \mathbf{I}+\lambda\mathbf{L}$ (symmetric), the chain rule gives $\nabla_{\mathbf{u}} = \mathbf{M}^{-1}\nabla_{\mathbf{x}}$, so a gradient step on $\mathbf{u}$ moves the vertices by
+where $\mathbf{L}$ is the mesh Laplacian and $\lambda$ a smoothing weight, and optimize $\mathbf{u}$ instead of $\mathbf{x}$. With $\mathbf{M} = \mathbf{I}+\lambda\mathbf{L}$ (symmetric), the chain rule gives $\nabla_{\mathbf{u}} = \mathbf{M}^{-1}\nabla_{\mathbf{x}}$, so a gradient step $\Delta\mathbf{u} = -\eta\,\nabla_{\mathbf{u}}\mathcal{L}$ on $\mathbf{u}$ (with step size $\eta$) moves the vertices by
 
 $$
 \Delta\mathbf{x} = \mathbf{M}^{-1}\Delta\mathbf{u} = -\eta\,(\mathbf{I}+\lambda\mathbf{L})^{-2}\,\nabla_{\mathbf{x}}\mathcal{L}.
 $$
 
-In the eigenbasis of $\mathbf{L}$ (eigenvalues $\mu_k \ge 0$; small $\mu_k$ are smooth, low-frequency shapes) the step in mode $k$ is scaled by $1/(1+\lambda\mu_k)^2$: smooth deformations pass almost unchanged, while high-frequency noise is strongly damped. This is a Sobolev-style preconditioner, and it lets you take *large* steps without destroying the mesh. (The paper also modifies Adam so its per-parameter scaling does not undo the smoothing.) The toy below applies the idea to a closed 2D curve of 100 vertices that should grow into a five-lobed flower, with a gradient that reaches only a random 30 % of the vertices per step and carries noise, much like real silhouette gradients.
+In the eigenbasis of $\mathbf{L}$ (eigenvalues $\mu_k \ge 0$; small $\mu_k$ are smooth, low-frequency shapes) the step in mode $k$ is scaled by $1/(1+\lambda\mu_k)^2$: smooth deformations pass almost unchanged, while high-frequency noise is strongly damped. This is a Sobolev-style preconditioner, and it lets you take *large* steps without destroying the mesh. (The paper also modifies Adam so its per-parameter scaling does not undo the smoothing.) The toy below applies the idea to a closed 2D curve of 100 vertices that should grow into a five-lobed flower, with a gradient that reaches only a random 30 % of the vertices per step and carries noise, much like real silhouette gradients; the figure below shows the result.
 
-{% include blog_figure.liquid path="assets/img/blog/graphics/12-large-steps.svg" caption="Toy shape optimization (100-vertex closed curve, start: dotted circle, target: dashed flower, 300 steps of size $\eta=0.3$ with the same noisy, sparse gradients). Left: plain gradient descent lets the noise accumulate along the curve, so the vertices drift along it and bunch up: 32 of the 100 vertices end up out of angular order, i.e. the polygon folds over itself. Middle: the Large Steps update $(\mathbf{I}+\lambda\mathbf{L})^{-2}g$ with $\lambda=5$ keeps the curve smooth. Right: mean radial error per iteration; over the last 50 steps it stalls near 0.016 for the naive update and reaches about 0.008 for Large Steps." %}
+{% include blog_figure.liquid path="assets/img/blog/graphics/12-large-steps.svg" caption="Toy shape optimization (100-vertex closed curve, start: dotted circle, target: dashed flower, 300 steps of size $\eta=0.3$ with the same noisy, sparse gradients). Left: plain gradient descent lets the noise accumulate along the curve, so the vertices drift along it and bunch up: 32 of the 100 edges end up running backwards in angle (adjacent vertices in reversed angular order), i.e. the polygon folds over itself. Middle: the Large Steps update $(\mathbf{I}+\lambda\mathbf{L})^{-2}g$ with $\lambda=5$ keeps the curve smooth. Right: mean radial error per iteration; over the last 50 steps it stalls near 0.016 for the naive update and reaches about 0.008 for Large Steps." %}
 
 **Coarse to fine, and local minima.** The loss as a function of geometry is full of flat plateaus and local minima. If the rendered object does not overlap its target at all, a hard renderer has zero gradient (moving it a little changes nothing). If the target has two similar objects, the model can lock onto the wrong one. The figure computes both effects for a disc. The standard defenses:
 
@@ -265,7 +265,7 @@ In the eigenbasis of $\mathbf{L}$ (eigenvalues $\mu_k \ge 0$; small $\mu_k$ are 
 - regularize: Laplacian smoothness, normal consistency, edge-length terms, or the Large Steps parameterization;
 - use many views, which removes many ambiguities and local minima at once.
 
-{% include blog_figure.liquid path="assets/img/blog/graphics/12-loss-landscape.svg" caption="Left: loss versus the horizontal position of a disc (radius 6 px; target centered at 32 px), each curve scaled to its maximum. The hard loss is flat outside the shaded band where the two discs overlap, a plateau with no gradient; soft rendering with a larger $\sigma$, or blurring both images, widens the basin. Right: soft loss over the 2D position of a disc of radius 6.5 when the target contains a big and a small disc (dotted). Two Adam runs (dots: starts; stars: ends) settle in different basins, and the one near the small disc is a local minimum." %}
+{% include blog_figure.liquid path="assets/img/blog/graphics/12-loss-landscape.svg" caption="Left: loss versus the horizontal position of a disc (radius 6 px; target centered at 32 px), each curve scaled to its maximum. The hard loss is flat outside the shaded band where the two discs overlap, a plateau with no gradient; soft rendering with a larger $\sigma$, or blurring both images, widens the basin. Right: soft loss ($\sigma=1.5$; darker is lower) over the 2D position $(c_x,c_y)$ of a disc of radius 6.5 when the target contains a big disc on the left and a small disc on the right (dotted). Two Adam runs (dots: starts; stars: ends; white and orange) settle in different basins, and the orange one, which stops at the small disc on the right, is a local minimum." %}
 
 ## 6. Volumes and splats: side-stepping visibility
 
@@ -289,7 +289,7 @@ In [3D Gaussian Splatting]({{ '/blog/2026/neural-rendering-04-3d-gaussian-splatt
 
 StopThePop (Radl et al., SIGGRAPH 2024) sorts per pixel hierarchically to reduce popping; 3D Gaussian ray tracing and EVER (Section 8) evaluate the volume along each ray in the correct order, or exactly.
 
-{% include blog_figure.liquid path="assets/img/blog/graphics/12-volume-vs-splat.svg" caption="Left: pixel value as an occluder slides across the ray. An opaque box gives a step (a delta-function derivative); a Gaussian density blob gives the smooth curve $e^{-\tau(p)}$ with a well-defined derivative (dashed). Right: a ray through two overlapping Gaussians (red and black, each with $\alpha=0.7$) whose depth order swaps as the camera rotates. Compositing sorted by center depth jumps at $\beta=0$ (popping); integrating the volume exactly along the ray changes continuously." %}
+{% include blog_figure.liquid path="assets/img/blog/graphics/12-volume-vs-splat.svg" caption="Left: pixel value as an occluder slides across the ray. Black: an opaque box gives a step (a delta-function derivative); purple solid: a Gaussian density blob gives the smooth curve $e^{-\tau(p)}$ with a well-defined derivative (purple dashed, scaled). Right: the vertical axis is the red channel of the pixel. A ray passes through two overlapping Gaussians (colored red and black, each with $\alpha=0.7$) whose depth order swaps as the camera rotates. Red line: compositing sorted by center depth jumps from 0.21 to 0.70 at $\beta=0$ (popping); blue line: integrating the volume exactly along the ray changes continuously." %}
 
 ## 7. Hands-on: three experiments in PyTorch
 
@@ -371,7 +371,7 @@ for it in range(150):
 print(p.detach())                    # e.g. tensor([40.0112, 26.0081, 12.0141]); varies with the seed
 ```
 
-A third run differentiates the hard renderer naively, `(torch.sign(p[2] - d) + 1) / 2`, and gets exactly zero gradient, so Adam never moves.
+A third run differentiates the hard renderer naively, `(torch.sign(p[2] - d) + 1) / 2`, and gets exactly zero gradient, so Adam never moves (the gray line in the right panel of the figure below).
 
 {% include blog_figure.liquid path="assets/img/blog/graphics/12-silhouette-fit.svg" caption="The two optimizations of Section 7, from the same start (black dot) to the target disc (gray). Left: soft rasterizer with $\sigma$ annealed from 3 to 0.5 px; circles show iterations 0, 10, 25, 50 and 150 (darker = later), and the black line is the path of the center. Middle: hard rasterizer with the edge-sampling gradient ($M=256$). Right: the *true* image loss (hard disc, 64 samples per pixel) per iteration for both, plus the naive hard + autodiff run, which stays flat because its gradient is zero." %}
 
@@ -387,7 +387,7 @@ $$
 f_r = \frac{\boldsymbol{\rho}}{\pi} + \frac{D(\mathbf{h})\,G(\mathbf{l},\mathbf{v})\,F(\mathbf{v},\mathbf{h})}{4\,(\mathbf{n}\cdot\mathbf{l})(\mathbf{n}\cdot\mathbf{v})}, \qquad L_o = f_r\,E\,\max(0,\mathbf{n}\cdot\mathbf{l}) + 0.05\,\boldsymbol{\rho},
 $$
 
-with GGX distribution $D$ ($\alpha = $ roughness$^2$), Smith masking $G = G_1(\mathbf{l})G_1(\mathbf{v})$, Schlick Fresnel with $F_0 = 0.04$, and a small ambient term. The unknowns are the RGB albedo $\boldsymbol{\rho}$ and the roughness, kept in range by sigmoids.
+with GGX distribution $D$ ($\alpha = $ roughness$^2$), Smith masking $G = G_1(\mathbf{l})G_1(\mathbf{v})$, Schlick Fresnel with $F_0 = 0.04$, and a small ambient term. The unknowns are the RGB albedo $\boldsymbol{\rho}$ and the roughness, kept in range by sigmoids. The code below is the complete fit; the figure after it shows how it converges.
 
 ```python
 import torch
@@ -426,7 +426,7 @@ print(torch.sigmoid(a_raw).detach(), (0.05 + 0.95 * torch.sigmoid(r_raw)).item()
 # tensor([0.8000, 0.3500, 0.2000]) 0.35000815987586975
 ```
 
-{% include blog_figure.liquid path="assets/img/blog/graphics/12-brdf-fit.svg" caption="Fitting albedo and roughness of a sphere with known light. Top: renderings at iterations 0, 25 and 200 next to the target (display gamma 2.2). Bottom: the three albedo channels and the roughness per Adam iteration (solid) against their true values (dashed), and the loss. The albedo is pinned down by the large diffuse region; the roughness is determined only by the shape and size of the highlight." %}
+{% include blog_figure.liquid path="assets/img/blog/graphics/12-brdf-fit.svg" caption="Fitting albedo and roughness of a sphere with known light. Top: renderings at iterations 0, 25 and 200 next to the target (display gamma 2.2). Bottom: the three albedo channels and the roughness per Adam iteration (solid) against their true values (dashed), and the loss (note that the $\rho$ in the legend denotes the purple roughness curve, not the albedo of the text). The albedo is pinned down by the large diffuse region; the roughness is determined only by the shape and size of the highlight." %}
 
 Note what made this easy: one known light, a known shape, and a material model with the right form. Make the light intensity a free parameter too, and you will meet the first ambiguity of Section 1 (try it: the product of light and albedo is recovered, the factors are not).
 
@@ -491,7 +491,7 @@ As of November 2026, three directions are especially active. Statuses below were
 2. **Bias of finite differences.** In the 1D example with $N$ stratified samples, show that the forward difference, averaged over a uniformly random edge position $\theta$ (ignore the ends of the pixel), equals the true derivative, yet for a fixed $\theta$ it takes only the values $0$ and multiples of $(f_{\rm in}-f_{\rm out})/(Nh)$. What does this say about using FD gradients inside SGD?
 
    <details markdown="1"><summary>Hint</summary>
-   Each sample contributes a jump of $(f_{\rm in}-f_{\rm out})/N$ exactly when it lies in $(\theta, \theta+h]$, which has probability $h$ for a uniformly random $\theta$. The estimator is unbiased on average over $\theta$, but its variance grows like $1/(Nh)$.
+   Each sample contributes a jump of $(f_{\rm in}-f_{\rm out})/N$ exactly when it lies in $(\theta, \theta+h]$, and the difference quotient is then $(f_{\rm in}-f_{\rm out})/(Nh)$. The $N$ stratified samples are $1/N$ apart, so for a uniformly random $\theta$ (and $h \le 1/N$) this has probability $Nh$ (not $h$). The mean is therefore $f_{\rm in}-f_{\rm out}$, i.e. the estimator is unbiased on average over $\theta$, but its second moment is $(f_{\rm in}-f_{\rm out})^2/(Nh)$, so its variance grows like $1/(Nh)$.
    </details>
 
 3. **Edge sampling for a triangle.** Extend `HardDiscEdgeSampled` to a triangle with vertices $\mathbf{p}_0,\mathbf{p}_1,\mathbf{p}_2$. For a point $\mathbf{x} = (1-t)\mathbf{p}_a + t\,\mathbf{p}_b$ on edge $ab$, what is $\mathbf{v}\cdot\mathbf{n}$ with respect to each coordinate of $\mathbf{p}_a$?
