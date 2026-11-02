@@ -475,6 +475,81 @@ An interactive world model must generate frame $t$ from frames $\lt t$ and the a
 - Successors fix the remaining weaknesses. **Self-Forcing++** (Cui et al., preprint, [arXiv:2510.02283](https://arxiv.org/abs/2510.02283)) reduces drift over long rollouts without long-video teachers and reaches videos of up to 4 min 15 s. **LongLive** (preprint, [arXiv:2509.22622](https://arxiv.org/abs/2509.22622)) adds prompt switching during generation. **Causal Forcing** (Zhu et al., ICML 2026, [arXiv:2602.02214](https://arxiv.org/abs/2602.02214)) observes that distilling from a *bidirectional* teacher leaves an architectural gap. It initializes the student with an *autoregressive* teacher before DMD and reports clear gains over Self Forcing in motion dynamics. **Causal Forcing++** (preprint, [arXiv:2605.15141](https://arxiv.org/abs/2605.15141)) and **Causal-rCM** (Zheng et al., preprint, [arXiv:2606.25473](https://arxiv.org/abs/2606.25473)) push to 2 sampling steps per frame. Causal-rCM combines teacher-forcing consistency distillation with self-forcing DMD.
 - Two related ideas. **History-Guided Video Diffusion** (Song et al., ICML 2025, [arXiv:2502.06764](https://arxiv.org/abs/2502.06764)) trains a Diffusion Forcing Transformer that accepts a variable-length history. It applies classifier-free guidance (section 7) *to the history*, comparing predictions with and without past frames to strengthen long-range consistency. **MAGI-1** (Sand AI, preprint, [arXiv:2505.13211](https://arxiv.org/abs/2505.13211)) scales autoregressive, chunk-by-chunk video diffusion to a large open model.
 
+### A toy run: teacher forcing vs training on your own rollouts
+
+The train-test gap is easy to reproduce without any video. The script below learns a damped pendulum, with state $x = (\theta, \dot\theta)$ and the true one-step map $x_{t+1} = F(x_t)$ (Euler integration of $\ddot\theta = -\sin\theta - 0.1\,\dot\theta$ with $\Delta t = 0.1$). The model is deliberately too small to fit $F$ exactly: $\hat x_{t+1} = \hat x_t + f_\phi(\hat x_t)$ with an MLP $f_\phi$ of 8 hidden units, so some error is unavoidable. We train it in two ways:
+
+- **teacher forcing (TF):** minimize the one-step loss $\frac{1}{N}\sum_t \Vert x_t + f_\phi(x_t) - x_{t+1} \Vert^2$, always starting from the *real* state;
+- **self forcing (SF):** start from a real state $x_s$, roll the model out for $H = 20$ steps *on its own predictions*, and minimize $\frac{1}{H+1}\sum_{k=0}^{H} \Vert \hat x_{s+k} - x_{s+k} \Vert^2$, back-propagating through the whole rollout.
+
+Both models see the same 256 training trajectories. We then test on 256 new starting states and roll out 60 steps.
+
+```python
+import torch
+
+torch.manual_seed(0)
+dt = 0.1
+
+
+def true_step(x):                       # damped pendulum, state = (angle, angular velocity)
+    th, om = x[..., 0], x[..., 1]
+    return torch.stack([th + dt * om, om + dt * (-torch.sin(th) - 0.1 * om)], -1)
+
+
+def rollout(step, x0, T):
+    xs = [x0]
+    for _ in range(T):
+        xs.append(step(xs[-1]))
+    return torch.stack(xs, 1)            # (batch, T+1, 2)
+
+
+x0_train = (torch.rand(256, 2) - 0.5) * torch.tensor([5.0, 3.0])
+x0_test = (torch.rand(256, 2) - 0.5) * torch.tensor([5.0, 3.0])
+X = rollout(true_step, x0_train, 40)
+
+
+def make_model():                        # a small model that cannot fit the dynamics exactly
+    return torch.nn.Sequential(torch.nn.Linear(2, 8), torch.nn.Tanh(), torch.nn.Linear(8, 2))
+
+
+def train(mode, H=20, iters=1500):
+    torch.manual_seed(1)
+    f = make_model()
+    step = lambda x: x + f(x)
+    opt = torch.optim.Adam(f.parameters(), lr=3e-3)
+    for _ in range(iters):
+        if mode == "teacher":            # context = real previous state, one-step target
+            loss = ((step(X[:, :-1]) - X[:, 1:]) ** 2).mean()
+        else:                            # context = the model's own rollout, loss on the whole clip
+            s = torch.randint(0, 40 - H, (1,)).item()
+            loss = ((rollout(step, X[:, s], H) - X[:, s:s + H + 1]) ** 2).mean()
+        opt.zero_grad()
+        loss.backward()
+        opt.step()
+    return step
+
+
+with torch.no_grad():
+    Y = rollout(true_step, x0_test, 60)
+models = {m: train(m) for m in ("teacher", "self")}
+for m, step in models.items():
+    with torch.no_grad():
+        one = ((step(Y[:, :-1]) - Y[:, 1:]) ** 2).sum(-1).sqrt().mean().item()
+        err = (rollout(step, x0_test, 60) - Y).pow(2).sum(-1).sqrt().mean(0)
+    print(f"{m:8s} one-step error {one:.4f}   rollout error at t=10: {err[10]:.3f}  t=30: {err[30]:.3f}  t=60: {err[60]:.3f}")
+```
+
+Output (CPU, a few seconds):
+
+```text
+teacher  one-step error 0.0131   rollout error at t=10: 0.086  t=30: 0.302  t=60: 0.863
+self     one-step error 0.0139   rollout error at t=10: 0.068  t=30: 0.144  t=60: 0.644
+```
+
+The numbers show the whole story in miniature. TF is slightly *better* at the task it was trained on (one-step error 0.0131 vs 0.0139). But once the model feeds on its own outputs, SF's error is half of TF's after 30 steps (0.144 vs 0.302) and still 25% lower after 60. SF has learned to stay in states from which its own small errors do not grow. It sacrifices a little one-step accuracy to do so. Self Forcing applies exactly this trade, with a video diffusion model in place of $f_\phi$ and a distribution-matching loss in place of the squared error (a single sample cannot be matched pixel by pixel to one "true" future video).
+
+{% include blog_figure.liquid path="assets/img/blog/world-models/02-update-exposure.svg" width="95%" caption="Left: mean rollout error $\Vert \hat x_t - x_t \Vert$ over 256 test trajectories for the teacher-forced (TF, blue) and self-forced (SF, orange) models of the script. Both start at zero error. TF's error grows faster even though its one-step error is lower. Right: phase portrait ($\theta$, $\dot\theta$) of the test trajectory where the two models differ most. The true pendulum (black) swings over the top ($\theta$ passes $\pi$). The SF model follows it; the TF model's small errors push it to the wrong side of the hilltop and it swings back. SF has the lower error at $t = 60$ on 79% of the test trajectories." %}
+
 ### Few-step samplers: shortcut models and MeanFlow
 
 Real-time world models need one to four network evaluations per frame. Section 8 met reflow. Two newer ideas train few-step samplers directly.

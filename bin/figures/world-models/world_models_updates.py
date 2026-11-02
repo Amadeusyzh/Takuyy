@@ -108,6 +108,91 @@ def fig_forcing():
     save(fig, OUT / "02-update-forcing.svg")
 
 
+def fig_exposure_toy():
+    """Real toy run: teacher forcing vs training on the model's own rollouts (the snippet in post 2's update)."""
+    import torch
+
+    torch.manual_seed(0)
+    dt = 0.1
+
+
+    def true_step(x):                       # damped pendulum, state = (angle, angular velocity)
+        th, om = x[..., 0], x[..., 1]
+        return torch.stack([th + dt * om, om + dt * (-torch.sin(th) - 0.1 * om)], -1)
+
+
+    def rollout(step, x0, T):
+        xs = [x0]
+        for _ in range(T):
+            xs.append(step(xs[-1]))
+        return torch.stack(xs, 1)            # (batch, T+1, 2)
+
+
+    x0_train = (torch.rand(256, 2) - 0.5) * torch.tensor([5.0, 3.0])
+    x0_test = (torch.rand(256, 2) - 0.5) * torch.tensor([5.0, 3.0])
+    X = rollout(true_step, x0_train, 40)
+
+
+    def make_model():                        # a small model that cannot fit the dynamics exactly
+        return torch.nn.Sequential(torch.nn.Linear(2, 8), torch.nn.Tanh(), torch.nn.Linear(8, 2))
+
+
+    def train(mode, H=20, iters=1500):
+        torch.manual_seed(1)
+        f = make_model()
+        step = lambda x: x + f(x)
+        opt = torch.optim.Adam(f.parameters(), lr=3e-3)
+        for _ in range(iters):
+            if mode == "teacher":            # context = real previous state, one-step target
+                loss = ((step(X[:, :-1]) - X[:, 1:]) ** 2).mean()
+            else:                            # context = the model's own rollout, loss on the whole clip
+                s = torch.randint(0, 40 - H, (1,)).item()
+                loss = ((rollout(step, X[:, s], H) - X[:, s:s + H + 1]) ** 2).mean()
+            opt.zero_grad()
+            loss.backward()
+            opt.step()
+        return step
+
+
+
+    with torch.no_grad():
+        Y = rollout(true_step, x0_test, 60)
+    models = {m: train(m) for m in ("teacher", "self")}
+    errs, trajs = {}, {}
+    for m, step in models.items():
+        with torch.no_grad():
+            R = rollout(step, x0_test, 60)
+            errs[m] = (R - Y).pow(2).sum(-1).sqrt().mean(0).numpy()
+            one = ((step(Y[:, :-1]) - Y[:, 1:]) ** 2).sum(-1).sqrt().mean().item()
+            print(f"{m}: one-step {one:.4f}, rollout t=10 {errs[m][10]:.3f} t=30 {errs[m][30]:.3f} t=60 {errs[m][60]:.3f}")
+            trajs[m] = R.numpy()
+    fig, (a1, a2) = plt.subplots(1, 2, figsize=(11, 4.6))
+    t = np.arange(61)
+    a1.plot(t, errs["teacher"], color=C["z"], lw=3, label="TF")
+    a1.plot(t, errs["self"], color="#d35400", lw=3, label="SF")
+    a1.set_xlabel(r"$t$  (steps)")
+    a1.set_ylabel(r"$\Vert \hat x_t - x_t \Vert$")
+    a1.set_xlim(0, 60)
+    a1.set_ylim(0, None)
+    a1.legend(loc="upper left")
+    gap = np.linalg.norm(trajs["teacher"][:, 60] - Y[:, 60].numpy(), axis=-1) - \
+        np.linalg.norm(trajs["self"][:, 60] - Y[:, 60].numpy(), axis=-1)
+    i = int(np.argmax(gap))  # the test trajectory where the two models differ most (stated in the caption)
+    print("shown trajectory", i, "x0", Y[i, 0].numpy().round(2), "gap at t=60", gap[i].round(3),
+          "SF better on", (gap > 0).mean().round(3), "of test trajectories")
+    trajs = {m: v[i] for m, v in trajs.items()}
+    y = Y[i].numpy()
+    a2.plot(y[:, 0], y[:, 1], color="#222222", lw=3, label=r"$x_t$")
+    a2.plot(trajs["teacher"][:, 0], trajs["teacher"][:, 1], color=C["z"], lw=2.5, ls="--", label="TF")
+    a2.plot(trajs["self"][:, 0], trajs["self"][:, 1], color="#d35400", lw=2.5, ls="--", label="SF")
+    a2.scatter([y[0, 0]], [y[0, 1]], s=80, color="#222222", zorder=5)
+    a2.set_xlabel(r"$\theta$")
+    a2.set_ylabel(r"$\dot\theta$")
+    a2.legend(loc="best", fontsize=13)
+    fig.tight_layout()
+    save(fig, OUT / "02-update-exposure.svg")
+
+
 def fig_memory():
     t = np.linspace(0.2, 120, 600)
     fps_latent, W, K = 6.0, 30, 16
@@ -201,6 +286,7 @@ def fig_benchmarks():
 if __name__ == "__main__":
     fig_dreamer4()
     fig_forcing()
+    fig_exposure_toy()
     fig_memory()
     fig_memory_growth()
     fig_benchmarks()

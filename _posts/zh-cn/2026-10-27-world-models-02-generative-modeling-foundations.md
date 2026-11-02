@@ -475,6 +475,81 @@ print(f"Flow matching 50 Euler steps: {100 * frac:.1f}% near a mode, {modes}/8 m
 - 后续工作修补了剩余的弱点。**Self-Forcing++**（Cui et al.，预印本，[arXiv:2510.02283](https://arxiv.org/abs/2510.02283)）在不需要长视频教师的情况下减少长推演中的漂移，视频长度可达 4 分 15 秒。**LongLive**（预印本，[arXiv:2509.22622](https://arxiv.org/abs/2509.22622)）支持在生成过程中切换提示。**Causal Forcing**（Zhu et al.，ICML 2026，[arXiv:2602.02214](https://arxiv.org/abs/2602.02214)）指出，从*双向*教师蒸馏会留下架构上的差距，因此在 DMD 之前用*自回归*教师初始化学生，并报告其在运动动态上明显优于 Self Forcing。**Causal Forcing++**（预印本，[arXiv:2605.15141](https://arxiv.org/abs/2605.15141)）和 **Causal-rCM**（Zheng et al.，预印本，[arXiv:2606.25473](https://arxiv.org/abs/2606.25473)）把每帧的采样步数推到 2 步；Causal-rCM 把教师强制的一致性蒸馏与 Self Forcing 式的 DMD 结合起来。
 - 两个相关思想。**History-Guided Video Diffusion**（Song et al.，ICML 2025，[arXiv:2502.06764](https://arxiv.org/abs/2502.06764)）训练一个可接受可变长度历史的 Diffusion Forcing Transformer，并把无分类器引导（第 7 节）用在*历史*上：比较有无过去帧时的预测，以增强长程一致性。**MAGI-1**（Sand AI，预印本，[arXiv:2505.13211](https://arxiv.org/abs/2505.13211)）把逐块（chunk-by-chunk）的自回归视频扩散扩展为一个大型开放模型。
 
+### 一个玩具实验：teacher forcing 与在自己的 rollout 上训练
+
+训练-测试差距不需要视频也能复现。下面的脚本学习一个带阻尼的单摆，状态为 $x = (\theta, \dot\theta)$，真实的一步映射为 $x_{t+1} = F(x_t)$（对 $\ddot\theta = -\sin\theta - 0.1\,\dot\theta$ 以 $\Delta t = 0.1$ 做欧拉积分）。模型故意做得太小，无法精确拟合 $F$：$\hat x_{t+1} = \hat x_t + f_\phi(\hat x_t)$，其中 $f_\phi$ 是只有 8 个隐藏单元的 MLP，所以误差不可避免。我们用两种方式训练它：
+
+- **teacher forcing（TF）：** 最小化一步损失 $\frac{1}{N}\sum_t \Vert x_t + f_\phi(x_t) - x_{t+1} \Vert^2$，每一步都从*真实*状态出发；
+- **self forcing（SF）：** 从真实状态 $x_s$ 出发，让模型*基于自己的预测*展开 $H = 20$ 步，最小化 $\frac{1}{H+1}\sum_{k=0}^{H} \Vert \hat x_{s+k} - x_{s+k} \Vert^2$，并通过整个 rollout 反向传播。
+
+两个模型使用相同的 256 条训练轨迹。随后在 256 个新的初始状态上测试，展开 60 步。
+
+```python
+import torch
+
+torch.manual_seed(0)
+dt = 0.1
+
+
+def true_step(x):                       # damped pendulum, state = (angle, angular velocity)
+    th, om = x[..., 0], x[..., 1]
+    return torch.stack([th + dt * om, om + dt * (-torch.sin(th) - 0.1 * om)], -1)
+
+
+def rollout(step, x0, T):
+    xs = [x0]
+    for _ in range(T):
+        xs.append(step(xs[-1]))
+    return torch.stack(xs, 1)            # (batch, T+1, 2)
+
+
+x0_train = (torch.rand(256, 2) - 0.5) * torch.tensor([5.0, 3.0])
+x0_test = (torch.rand(256, 2) - 0.5) * torch.tensor([5.0, 3.0])
+X = rollout(true_step, x0_train, 40)
+
+
+def make_model():                        # a small model that cannot fit the dynamics exactly
+    return torch.nn.Sequential(torch.nn.Linear(2, 8), torch.nn.Tanh(), torch.nn.Linear(8, 2))
+
+
+def train(mode, H=20, iters=1500):
+    torch.manual_seed(1)
+    f = make_model()
+    step = lambda x: x + f(x)
+    opt = torch.optim.Adam(f.parameters(), lr=3e-3)
+    for _ in range(iters):
+        if mode == "teacher":            # context = real previous state, one-step target
+            loss = ((step(X[:, :-1]) - X[:, 1:]) ** 2).mean()
+        else:                            # context = the model's own rollout, loss on the whole clip
+            s = torch.randint(0, 40 - H, (1,)).item()
+            loss = ((rollout(step, X[:, s], H) - X[:, s:s + H + 1]) ** 2).mean()
+        opt.zero_grad()
+        loss.backward()
+        opt.step()
+    return step
+
+
+with torch.no_grad():
+    Y = rollout(true_step, x0_test, 60)
+models = {m: train(m) for m in ("teacher", "self")}
+for m, step in models.items():
+    with torch.no_grad():
+        one = ((step(Y[:, :-1]) - Y[:, 1:]) ** 2).sum(-1).sqrt().mean().item()
+        err = (rollout(step, x0_test, 60) - Y).pow(2).sum(-1).sqrt().mean(0)
+    print(f"{m:8s} one-step error {one:.4f}   rollout error at t=10: {err[10]:.3f}  t=30: {err[30]:.3f}  t=60: {err[60]:.3f}")
+```
+
+输出（CPU，几秒钟）：
+
+```text
+teacher  one-step error 0.0131   rollout error at t=10: 0.086  t=30: 0.302  t=60: 0.863
+self     one-step error 0.0139   rollout error at t=10: 0.068  t=30: 0.144  t=60: 0.644
+```
+
+这些数字是整个问题的缩影。TF 在它被训练的任务上略*好*（一步误差 0.0131 对 0.0139）。但一旦模型以自己的输出为输入，30 步后 SF 的误差只有 TF 的一半（0.144 对 0.302），60 步后仍低 25%。SF 学会了停留在"自身小误差不会放大"的状态附近，为此牺牲了一点一步精度。Self Forcing 做的正是同样的权衡：把 $f_\phi$ 换成视频扩散模型，把平方误差换成分布匹配损失（单个样本无法与唯一的"真实"未来视频逐像素对齐）。
+
+{% include blog_figure.liquid path="assets/img/blog/world-models/02-update-exposure.svg" width="95%" caption="左：脚本中 teacher forcing 模型（TF，蓝）与 self forcing 模型（SF，橙）在 256 条测试轨迹上的平均 rollout 误差 $\Vert \hat x_t - x_t \Vert$。两者都从零误差开始。尽管 TF 的一步误差更低，它的误差增长得更快。右：两种模型差异最大的那条测试轨迹的相图（$\theta$, $\dot\theta$）。真实的单摆（黑）越过了顶点（$\theta$ 超过 $\pi$）。SF 模型跟上了它；TF 模型的小误差把它推到了坡顶的另一侧，于是它摆了回去。在 79% 的测试轨迹上，SF 在 $t = 60$ 时误差更低。" %}
+
 ### 少步采样器：shortcut 模型与 MeanFlow
 
 实时世界模型每帧只能负担一到四次网络计算。第 8 节介绍了 reflow，另有两种较新的思想直接训练少步采样器。

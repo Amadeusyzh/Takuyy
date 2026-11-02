@@ -475,6 +475,81 @@ print(f"Flow matching 50 Euler steps: {100 * frac:.1f}% near a mode, {modes}/8 m
 - 後続の研究が残りの弱点を補っています。**Self-Forcing++**（Cui et al.、プレプリント、[arXiv:2510.02283](https://arxiv.org/abs/2510.02283)）は、長い動画の教師なしで長いロールアウトのずれを減らし、最長 4 分 15 秒の動画に達しました。**LongLive**（プレプリント、[arXiv:2509.22622](https://arxiv.org/abs/2509.22622)）は生成中のプロンプト切り替えを加えます。**Causal Forcing**（Zhu et al.、ICML 2026、[arXiv:2602.02214](https://arxiv.org/abs/2602.02214)）は、*双方向*の教師からの蒸留では構造上のギャップが残ると指摘し、DMD の前に*自己回帰型*の教師で生徒を初期化します。動きのダイナミクスで Self Forcing を明確に上回ったと報告しています。**Causal Forcing++**（プレプリント、[arXiv:2605.15141](https://arxiv.org/abs/2605.15141)）と **Causal-rCM**（Zheng et al.、プレプリント、[arXiv:2606.25473](https://arxiv.org/abs/2606.25473)）は、フレームあたり 2 ステップのサンプリングまで進めました。Causal-rCM は、教師強制による一貫性蒸留と Self Forcing 型の DMD を組み合わせています。
 - 関連する 2 つのアイデアがあります。**History-Guided Video Diffusion**（Song et al.、ICML 2025、[arXiv:2502.06764](https://arxiv.org/abs/2502.06764)）は、可変長の履歴を受け取る Diffusion Forcing Transformer を訓練し、分類器なしガイダンス（第 7 節）を*履歴*にかけます。過去のフレームがある場合とない場合の予測を比べ、長距離の一貫性を強めるのです。**MAGI-1**（Sand AI、プレプリント、[arXiv:2505.13211](https://arxiv.org/abs/2505.13211)）は、チャンクごとの自己回帰的な動画拡散を大規模なオープンモデルにまで拡大しました。
 
+### トイ実験：teacher forcing と自分の rollout での訓練
+
+訓練・テストのギャップは、動画がなくても再現できます。次のスクリプトは減衰のある振り子を学習します。状態は $x = (\theta, \dot\theta)$、真の 1 ステップ写像は $x_{t+1} = F(x_t)$ です（$\ddot\theta = -\sin\theta - 0.1\,\dot\theta$ を $\Delta t = 0.1$ でオイラー積分）。モデルはわざと小さくしてあり、$F$ を正確には表せません。$\hat x_{t+1} = \hat x_t + f_\phi(\hat x_t)$ で、$f_\phi$ は隠れユニット 8 個の MLP なので、誤差は避けられません。これを 2 通りに訓練します。
+
+- **teacher forcing（TF）：** 常に*本物の*状態から出発し、1 ステップ損失 $\frac{1}{N}\sum_t \Vert x_t + f_\phi(x_t) - x_{t+1} \Vert^2$ を最小化します。
+- **self forcing（SF）：** 本物の状態 $x_s$ から出発してモデルを*自分の予測の上で* $H = 20$ ステップ展開し、$\frac{1}{H+1}\sum_{k=0}^{H} \Vert \hat x_{s+k} - x_{s+k} \Vert^2$ を最小化します。勾配は rollout 全体を通して逆伝播します。
+
+どちらのモデルも同じ 256 本の訓練軌道を使います。その後、256 個の新しい初期状態から 60 ステップ展開してテストします。
+
+```python
+import torch
+
+torch.manual_seed(0)
+dt = 0.1
+
+
+def true_step(x):                       # damped pendulum, state = (angle, angular velocity)
+    th, om = x[..., 0], x[..., 1]
+    return torch.stack([th + dt * om, om + dt * (-torch.sin(th) - 0.1 * om)], -1)
+
+
+def rollout(step, x0, T):
+    xs = [x0]
+    for _ in range(T):
+        xs.append(step(xs[-1]))
+    return torch.stack(xs, 1)            # (batch, T+1, 2)
+
+
+x0_train = (torch.rand(256, 2) - 0.5) * torch.tensor([5.0, 3.0])
+x0_test = (torch.rand(256, 2) - 0.5) * torch.tensor([5.0, 3.0])
+X = rollout(true_step, x0_train, 40)
+
+
+def make_model():                        # a small model that cannot fit the dynamics exactly
+    return torch.nn.Sequential(torch.nn.Linear(2, 8), torch.nn.Tanh(), torch.nn.Linear(8, 2))
+
+
+def train(mode, H=20, iters=1500):
+    torch.manual_seed(1)
+    f = make_model()
+    step = lambda x: x + f(x)
+    opt = torch.optim.Adam(f.parameters(), lr=3e-3)
+    for _ in range(iters):
+        if mode == "teacher":            # context = real previous state, one-step target
+            loss = ((step(X[:, :-1]) - X[:, 1:]) ** 2).mean()
+        else:                            # context = the model's own rollout, loss on the whole clip
+            s = torch.randint(0, 40 - H, (1,)).item()
+            loss = ((rollout(step, X[:, s], H) - X[:, s:s + H + 1]) ** 2).mean()
+        opt.zero_grad()
+        loss.backward()
+        opt.step()
+    return step
+
+
+with torch.no_grad():
+    Y = rollout(true_step, x0_test, 60)
+models = {m: train(m) for m in ("teacher", "self")}
+for m, step in models.items():
+    with torch.no_grad():
+        one = ((step(Y[:, :-1]) - Y[:, 1:]) ** 2).sum(-1).sqrt().mean().item()
+        err = (rollout(step, x0_test, 60) - Y).pow(2).sum(-1).sqrt().mean(0)
+    print(f"{m:8s} one-step error {one:.4f}   rollout error at t=10: {err[10]:.3f}  t=30: {err[30]:.3f}  t=60: {err[60]:.3f}")
+```
+
+出力（CPU で数秒）：
+
+```text
+teacher  one-step error 0.0131   rollout error at t=10: 0.086  t=30: 0.302  t=60: 0.863
+self     one-step error 0.0139   rollout error at t=10: 0.068  t=30: 0.144  t=60: 0.644
+```
+
+この数字に問題の全体が縮図として表れています。TF は訓練されたタスクではわずかに*優れて*います（1 ステップ誤差 0.0131 対 0.0139）。しかしモデルが自分の出力を入力にし始めると、30 ステップ後の SF の誤差は TF の半分（0.144 対 0.302）で、60 ステップ後も 25% 低いままです。SF は、自分の小さな誤差が増幅しない状態にとどまることを学び、そのために 1 ステップ精度を少し犠牲にしています。Self Forcing が行うのはまさにこのトレードオフで、$f_\phi$ を動画拡散モデルに、二乗誤差を分布マッチング損失に置き換えたものです（1 つのサンプルを唯一の「正解」の未来動画とピクセル単位で一致させることはできないためです）。
+
+{% include blog_figure.liquid path="assets/img/blog/world-models/02-update-exposure.svg" width="95%" caption="左：スクリプトの teacher forcing モデル（TF、青）と self forcing モデル（SF、橙）の、256 本のテスト軌道での平均 rollout 誤差 $\Vert \hat x_t - x_t \Vert$ です。どちらも誤差ゼロから始まります。TF は 1 ステップ誤差が小さいにもかかわらず、誤差が速く増えます。右：2 つのモデルの差が最も大きいテスト軌道の相図（$\theta$, $\dot\theta$）です。本物の振り子（黒）は頂点を越えます（$\theta$ が $\pi$ を超える）。SF モデルはそれについていきますが、TF モデルは小さな誤差で頂点の反対側に押し戻され、振り戻ってしまいます。テスト軌道の 79% で、$t = 60$ での誤差は SF のほうが小さくなります。" %}
+
 ### 少ステップのサンプラー：shortcut モデルと MeanFlow
 
 リアルタイムの世界モデルでは、フレームあたりのネットワーク評価を 1〜4 回に抑える必要があります。第 8 節では reflow を紹介しましたが、少ステップのサンプラーを直接訓練する新しいアイデアが 2 つあります。
