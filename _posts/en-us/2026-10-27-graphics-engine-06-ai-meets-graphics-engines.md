@@ -210,7 +210,7 @@ As of November 2026 (numbers only where the source states them):
 | **Dreamer 4** | Hafner, Yan, Lillicrap (Google DeepMind) | [arXiv 2509.24527](https://arxiv.org/abs/2509.24527) (Sep 2025) | Minecraft offline data; agent trained *inside* the model | real-time inference on one GPU |
 | **RTFM** | World Labs | [research preview, Oct 2025](https://www.worldlabs.ai/blog/rtfm) | posed frames as spatial memory; camera | interactive on one H100 |
 | **Marble** | World Labs | [product, Nov 2025](https://www.worldlabs.ai/blog/marble-world-model) | text, images, video, layouts | exports persistent 3D worlds (splats, meshes), not frames |
-| **Odyssey-2 Pro / Max** | Odyssey | [Odyssey-2 Max, Apr 2026](https://odyssey.systems/introducing-odyssey-2-max) | general video + interaction data | 2 Pro: 720p, 22 fps |
+| **Odyssey-2 Pro / Max** | Odyssey | [Odyssey-2 Max, Apr 2026](https://odyssey.systems/introducing-odyssey-2-max) | general video + interaction data | real time; 120+ s of generation (resolution and fps not stated) |
 | **Runway GWM-1 / Worlds 2** | Runway | [GWM-1, Dec 2025](https://runway.com/research/introducing-runway-gwm-1); [Worlds 2, Sep 2026](https://runway.com/research/introducing-gwm-worlds-2) | camera motion, text actions | 720p, 24 fps (Worlds 2), up to 2 min (GWM-1) |
 | **Genie 4** | Google DeepMind | [research preview, 27 Oct 2026](https://deepmind.google/blog/genie-4-a-new-generation-of-world-simulation/) | keyboard and camera, text steering via Gemini, native audio | not stated |
 

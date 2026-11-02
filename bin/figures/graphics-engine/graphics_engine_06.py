@@ -236,7 +236,7 @@ TIMELINE = [
 
 # (name, vertical resolution, fps) where the source states both
 RES_FPS = [("Genie 3", 720, 24), ("Matrix-Game 3.0 (5B, up to)", 720, 40), ("Yan", 1080, 60),
-           ("HY-World 1.5", 720, 24), ("Odyssey-2 Pro", 720, 22), ("GWM Worlds 2", 720, 24)]
+           ("HY-World 1.5", 720, 24), ("GWM Worlds 2", 720, 24)]
 FPS_ONLY = [("GameNGen", 20), ("Oasis", 20), ("Matrix-Game 2.0", 25), ("DIAMOND CS:GO", 10)]
 # (name, stated horizon in seconds, what the source says)
 HORIZON = [("Oasis", 3, "~3 s memory"), ("Genie 2", 60, "up to a minute"), ("Genie 3 (visual memory)", 60, "~1 min back"),

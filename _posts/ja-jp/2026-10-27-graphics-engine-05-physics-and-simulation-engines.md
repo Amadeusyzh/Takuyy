@@ -348,7 +348,7 @@ $$
 
 | エンジン | 言語 | ライセンス | 備考 |
 | --- | --- | --- | --- |
-| **NVIDIA PhysX 5**（5.x） | C++ | BSD-3-Clause | PGS と TGS のソルバ、GPU 剛体、縮約座標の多関節体、粒子/PBD。Omniverse と Isaac Sim の物理 |
+| **NVIDIA PhysX 5**（5.9.1、2026 年 10 月） | C++ | BSD-3-Clause | PGS と TGS のソルバ、GPU 剛体、縮約座標の多関節体、粒子/PBD。Omniverse と Isaac Sim の物理 |
 | **Havok Physics** | C++ | 商用（2015 年から Microsoft が所有） | 長い実績のある AAA 向けミドルウェア。Unreal 用プラグインもあります |
 | **Jolt Physics**（5.6.0、2026 年 7 月） | C++17 | MIT | マルチスレッド、決定的。『Horizon Forbidden West』や『DEATH STRANDING 2』で使用。Godot 4.4 以降はオプションとして組み込み |
 | **Chaos** | C++ | Unreal Engine の一部（Epic EULA） | Unreal Engine 5 の標準物理。剛体、破壊、布、車両、ネットワーク物理 |

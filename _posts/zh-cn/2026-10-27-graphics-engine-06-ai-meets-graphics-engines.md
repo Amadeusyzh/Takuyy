@@ -210,7 +210,7 @@ $$
 | **Dreamer 4** | Hafner、Yan、Lillicrap（Google DeepMind） | [arXiv 2509.24527](https://arxiv.org/abs/2509.24527)（2025 年 9 月） | Minecraft 离线数据；智能体完全在模型*内部*训练 | 单 GPU 实时推理 |
 | **RTFM** | World Labs | [研究预览，2025 年 10 月](https://www.worldlabs.ai/blog/rtfm) | 以带位姿的帧作为空间记忆；相机 | 单个 H100 上可交互 |
 | **Marble** | World Labs | [产品，2025 年 11 月](https://www.worldlabs.ai/blog/marble-world-model) | 文本、图像、视频、布局 | 导出持久的 3D 世界（泼溅、网格），而非逐帧画面 |
-| **Odyssey-2 Pro / Max** | Odyssey | [Odyssey-2 Max，2026 年 4 月](https://odyssey.systems/introducing-odyssey-2-max) | 通用视频 + 交互数据 | 2 Pro：720p、22 fps |
+| **Odyssey-2 Pro / Max** | Odyssey | [Odyssey-2 Max，2026 年 4 月](https://odyssey.systems/introducing-odyssey-2-max) | 通用视频 + 交互数据 | 实时；可生成 120 秒以上（未说明分辨率和帧率） |
 | **Runway GWM-1 / Worlds 2** | Runway | [GWM-1，2025 年 12 月](https://runway.com/research/introducing-runway-gwm-1)；[Worlds 2，2026 年 9 月](https://runway.com/research/introducing-gwm-worlds-2) | 相机运动、文本动作 | 720p、24 fps（Worlds 2），最长 2 分钟（GWM-1） |
 | **Genie 4** | Google DeepMind | [研究预览，2026 年 10 月 27 日](https://deepmind.google/blog/genie-4-a-new-generation-of-world-simulation/) | 键盘和相机，通过 Gemini 进行文本引导，原生音频 | 未说明 |
 

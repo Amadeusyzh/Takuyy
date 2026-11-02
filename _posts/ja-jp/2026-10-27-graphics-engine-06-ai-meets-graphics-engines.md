@@ -210,7 +210,7 @@ $$
 | **Dreamer 4** | Hafner、Yan、Lillicrap（Google DeepMind） | [arXiv 2509.24527](https://arxiv.org/abs/2509.24527)（2025 年 9 月） | Minecraft のオフラインデータ。エージェントはモデルの*中で*学習 | GPU 1 基でリアルタイム推論 |
 | **RTFM** | World Labs | [リサーチプレビュー、2025 年 10 月](https://www.worldlabs.ai/blog/rtfm) | 姿勢付きフレームを空間メモリとして使用。カメラ | H100 1 基で対話的 |
 | **Marble** | World Labs | [製品、2025 年 11 月](https://www.worldlabs.ai/blog/marble-world-model) | テキスト、画像、動画、レイアウト | フレームではなく永続的な 3D 世界（スプラット、メッシュ）を出力 |
-| **Odyssey-2 Pro / Max** | Odyssey | [Odyssey-2 Max、2026 年 4 月](https://odyssey.systems/introducing-odyssey-2-max) | 一般的な動画と対話データ | 2 Pro：720p、22 fps |
+| **Odyssey-2 Pro / Max** | Odyssey | [Odyssey-2 Max、2026 年 4 月](https://odyssey.systems/introducing-odyssey-2-max) | 一般的な動画と対話データ | リアルタイム、120 秒以上の生成（解像度と fps は記載なし） |
 | **Runway GWM-1 / Worlds 2** | Runway | [GWM-1、2025 年 12 月](https://runway.com/research/introducing-runway-gwm-1)、[Worlds 2、2026 年 9 月](https://runway.com/research/introducing-gwm-worlds-2) | カメラの動き、テキストによる行動 | 720p、24 fps（Worlds 2）、最大 2 分（GWM-1） |
 | **Genie 4** | Google DeepMind | [リサーチプレビュー、2026 年 10 月 27 日](https://deepmind.google/blog/genie-4-a-new-generation-of-world-simulation/) | キーボードとカメラ、Gemini によるテキストでの誘導、ネイティブな音声 | 記載なし |
 

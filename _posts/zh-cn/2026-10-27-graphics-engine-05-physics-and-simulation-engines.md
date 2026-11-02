@@ -348,7 +348,7 @@ $$
 
 | 引擎 | 语言 | 许可证 | 说明 |
 | --- | --- | --- | --- |
-| **NVIDIA PhysX 5**（5.x） | C++ | BSD-3-Clause | PGS 与 TGS 求解器、GPU 刚体、降维坐标关节体、粒子/PBD；Omniverse 和 Isaac Sim 的物理引擎 |
+| **NVIDIA PhysX 5**（5.9.1，2026 年 10 月） | C++ | BSD-3-Clause | PGS 与 TGS 求解器、GPU 刚体、降维坐标关节体、粒子/PBD；Omniverse 和 Isaac Sim 的物理引擎 |
 | **Havok Physics** | C++ | 商业许可（自 2015 年起归微软所有） | 老牌 AAA 中间件，也提供 Unreal 插件 |
 | **Jolt Physics**（5.6.0，2026 年 7 月） | C++17 | MIT | 多线程、确定性；用于《地平线 西之绝境》和《死亡搁浅 2》；自 Godot 4.4 起作为可选项内置 |
 | **Chaos** | C++ | Unreal Engine 的一部分（Epic EULA） | Unreal Engine 5 的默认物理：刚体、破坏、布料、载具、网络物理 |

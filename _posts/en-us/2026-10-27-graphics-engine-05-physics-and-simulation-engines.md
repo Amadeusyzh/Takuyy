@@ -348,7 +348,7 @@ As of November 2026 (versions from the projects' release pages):
 
 | Engine | Language | License | Notes |
 | --- | --- | --- | --- |
-| **NVIDIA PhysX 5** (5.x) | C++ | BSD-3-Clause | PGS and TGS solvers, GPU rigid bodies, reduced-coordinate articulations, particles/PBD; the physics of Omniverse and Isaac Sim |
+| **NVIDIA PhysX 5** (5.9.1, Oct 2026) | C++ | BSD-3-Clause | PGS and TGS solvers, GPU rigid bodies, reduced-coordinate articulations, particles/PBD; the physics of Omniverse and Isaac Sim |
 | **Havok Physics** | C++ | commercial (owned by Microsoft since 2015) | long-standing AAA middleware; also offered as a plugin for Unreal |
 | **Jolt Physics** (5.6.0, Jul 2026) | C++17 | MIT | multithreaded, deterministic; used in *Horizon Forbidden West* and *Death Stranding 2*; built into Godot since 4.4 as an option |
 | **Chaos** | C++ | part of Unreal Engine (Epic EULA) | default physics of Unreal Engine 5: rigid bodies, destruction, cloth, vehicles, networked physics |
