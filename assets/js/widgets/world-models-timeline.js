@@ -11,26 +11,23 @@
 
   var TXT = {
     en: { all: "All", iv: "interactive video", g3: "3D/4D generation", rl: "latent RL / agents", je: "JEPA", ev: "evaluation",
-      hint: "Tap a dot (or use ~25c0 ~25b6) to read an entry; the buttons filter by type.",
+      hint: "Tap a dot (or use \u25c0 \u25b6) to read an entry; the buttons filter by type.",
       pre: "preprint", pub: "published", acc: "accepted / to appear", ann: "announcement / product (company claims)",
       open: "open link", count: "entries shown", note: "" },
-    zh: { all: "~5168~90e8", iv: "~4ea4~4e92~5f0f~89c6~9891", g3: "3D/4D ~751f~6210",
-      rl: "~6f5c~5728~7a7a~95f4 RL / ~667a~80fd~4f53", je: "JEPA", ev: "~8bc4~6d4b",
-      hint: "~70b9~51fb~5706~70b9~ff08~6216~7528 ~25c0 ~25b6~ff09~67e5~770b~6761~76ee~ff1b~6309~94ae~6309~7c7b~578b~7b5b~9009~3002",
-      pre: "~9884~5370~672c", pub: "~5df2~53d1~8868", acc: "~5df2~63a5~6536",
-      ann: "~516c~544a / ~4ea7~54c1~ff08~516c~53f8~81ea~8ff0~ff09",
-      open: "~6253~5f00~94fe~63a5", count: "~663e~793a~6761~76ee~6570", note: "~ff08~6458~8981~4e3a~82f1~6587~ff09" },
-    ja: { all: "~3059~3079~3066", iv: "~5bfe~8a71~578b~52d5~753b", g3: "3D/4D ~751f~6210",
-      rl: "~6f5c~5728~7a7a~9593 RL / ~30a8~30fc~30b8~30a7~30f3~30c8", je: "JEPA", ev: "~8a55~4fa1",
-      hint: "~70b9~3092~30bf~30c3~30d7~ff08~307e~305f~306f ~25c0 ~25b6~ff09~3059~308b~3068~9805~76ee~3092~8868~793a~3057~307e~3059~3002" +
-        "~30dc~30bf~30f3~3067~7a2e~985e~3092~7d5e~308a~8fbc~3081~307e~3059~3002",
-      pre: "~30d7~30ec~30d7~30ea~30f3~30c8", pub: "~767a~8868~6e08~307f", acc: "~63a1~629e~6e08~307f",
-      ann: "~767a~8868~30fb~88fd~54c1~ff08~4f01~696d~306e~4e3b~5f35~ff09",
-      open: "~30ea~30f3~30af~3092~958b~304f", count: "~8868~793a~4e2d~306e~9805~76ee", note: "~ff08~8981~7d04~306f~82f1~8a9e~ff09" }
+    zh: { all: "\u5168\u90e8", iv: "\u4ea4\u4e92\u5f0f\u89c6\u9891", g3: "3D/4D \u751f\u6210",
+      rl: "\u6f5c\u5728\u7a7a\u95f4 RL / \u667a\u80fd\u4f53", je: "JEPA", ev: "\u8bc4\u6d4b",
+      hint: "\u70b9\u51fb\u5706\u70b9\uff08\u6216\u7528 \u25c0 \u25b6\uff09\u67e5\u770b\u6761\u76ee\uff1b\u6309\u94ae\u6309\u7c7b\u578b\u7b5b\u9009\u3002",
+      pre: "\u9884\u5370\u672c", pub: "\u5df2\u53d1\u8868", acc: "\u5df2\u63a5\u6536",
+      ann: "\u516c\u544a / \u4ea7\u54c1\uff08\u516c\u53f8\u81ea\u8ff0\uff09",
+      open: "\u6253\u5f00\u94fe\u63a5", count: "\u663e\u793a\u6761\u76ee\u6570", note: "\uff08\u6458\u8981\u4e3a\u82f1\u6587\uff09" },
+    ja: { all: "\u3059\u3079\u3066", iv: "\u5bfe\u8a71\u578b\u52d5\u753b", g3: "3D/4D \u751f\u6210",
+      rl: "\u6f5c\u5728\u7a7a\u9593 RL / \u30a8\u30fc\u30b8\u30a7\u30f3\u30c8", je: "JEPA", ev: "\u8a55\u4fa1",
+      hint: "\u70b9\u3092\u30bf\u30c3\u30d7\uff08\u307e\u305f\u306f \u25c0 \u25b6\uff09\u3059\u308b\u3068\u9805\u76ee\u3092\u8868\u793a\u3057\u307e\u3059\u3002" +
+        "\u30dc\u30bf\u30f3\u3067\u7a2e\u985e\u3092\u7d5e\u308a\u8fbc\u3081\u307e\u3059\u3002",
+      pre: "\u30d7\u30ec\u30d7\u30ea\u30f3\u30c8", pub: "\u767a\u8868\u6e08\u307f", acc: "\u63a1\u629e\u6e08\u307f",
+      ann: "\u767a\u8868\u30fb\u88fd\u54c1\uff08\u4f01\u696d\u306e\u4e3b\u5f35\uff09",
+      open: "\u30ea\u30f3\u30af\u3092\u958b\u304f", count: "\u8868\u793a\u4e2d\u306e\u9805\u76ee", note: "\uff08\u8981\u7d04\u306f\u82f1\u8a9e\uff09" }
   };
-  // Non-ASCII UI text is written as ~XXXX (hex code point) to keep this file ASCII-only; decode once here.
-  function T(s) { return s.replace(/~([0-9a-f]{4})/g, function (m, h) { return String.fromCharCode(parseInt(h, 16)); }); }
-  Object.keys(TXT).forEach(function (lg) { Object.keys(TXT[lg]).forEach(function (k) { TXT[lg][k] = T(TXT[lg][k]); }); });
 
   var AX = "https://arxiv.org/abs/";
   // [year, month, type, name, status kind, status text, url, two-line summary]
@@ -209,7 +206,7 @@
       b.addEventListener("click", function () { step(dir); });
       nav.appendChild(b);
     }
-    mkNav(T("~25c0"), -1); mkNav(T("~25b6"), 1);
+    mkNav("\u25c0", -1); mkNav("\u25b6", 1);
     var cnt = document.createElement("span"); nav.appendChild(cnt);
 
     function visible() { return D.filter(function (d) { return filter === "all" || d[2] === filter; }); }
@@ -269,14 +266,14 @@
         ctx.lineWidth = s ? 3 : 1.8; ctx.strokeStyle = s ? "#111" : c; ctx.stroke();
       });
       var vis = visible();
-      cnt.textContent = L.count + ": " + vis.length + T("   ~25cf ") + L.pre + "/" + L.pub + T("   ~25cb ") + L.ann.split(" ")[0];
+      cnt.textContent = L.count + ": " + vis.length + "   \u25cf " + L.pre + "/" + L.pub + "   \u25cb " + L.ann.split(" ")[0];
       if (sel < 0) { info.innerHTML = '<span style="color:#666">' + L.hint + "</span>"; return; }
       var d = D[sel], kind = L[d[4]];
       info.innerHTML = '<b style="color:' + COL[d[2]] + '">' + d[3] + "</b> &nbsp;<span style=\"color:#666\">" +
-        d[0] + "-" + (d[1] < 10 ? "0" : "") + d[1] + T(" ~00b7 ") + L[d[2]] + "</span><br>" +
+        d[0] + "-" + (d[1] < 10 ? "0" : "") + d[1] + " \u00b7 " + L[d[2]] + "</span><br>" +
         "<span style=\"font-size:13px\">" + kind + ": " + d[5] + "</span><br>" + d[7] +
         (L.note ? ' <span style="color:#888;font-size:12px">' + L.note + "</span>" : "") +
-        '<br><a href="' + d[6] + '" target="_blank" rel="noopener">' + L.open + T(" ~2197</a>");
+        '<br><a href="' + d[6] + '" target="_blank" rel="noopener">' + L.open + " \u2197</a>";
     }
 
     function step(dir) {

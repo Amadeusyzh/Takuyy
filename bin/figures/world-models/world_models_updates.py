@@ -27,8 +27,9 @@ OUT = pathlib.Path(__file__).resolve().parents[3] / "assets" / "img" / "blog" / 
 
 
 def box(ax, x, y, w, h, text, ec, fc="white", fs=15):
-    ax.add_patch(FancyBboxPatch((x, y), w, h, boxstyle="round,pad=0.02,rounding_size=0.08", ec=ec, fc=fc, lw=2.5))
-    ax.text(x + w / 2, y + h / 2, text, ha="center", va="center", fontsize=fs)
+    ax.add_patch(FancyBboxPatch((x, y), w, h, boxstyle="round,pad=0.02,rounding_size=0.08", ec=ec, fc=fc, lw=2.5,
+                                zorder=4))
+    ax.text(x + w / 2, y + h / 2, text, ha="center", va="center", fontsize=fs, zorder=5)
 
 
 def arrow(ax, x0, y0, x1, y1, color="#444444"):
