@@ -97,7 +97,7 @@ def bezier(c, t):
     t = np.atleast_1d(t)[:, None]
     return (1 - t)**3 * c[0] + 3 * (1 - t)**2 * t * c[1] + 3 * (1 - t) * t**2 * c[2] + t**3 * c[3]
 
-c = np.array([[0, 0], [0.3, 2.4], [3.4, 2.4], [4, 0]], float)
+c = np.array([[0, 0], [0.1, 0.5], [2.2, 3.2], [4, 0]], float)       # short first handle: slow start
 t_tab = np.linspace(0, 1, 2000)
 pts = bezier(c, t_tab)
 s_tab = np.r_[0, np.cumsum(np.linalg.norm(np.diff(pts, axis=0), axis=1))]   # s(t) table
@@ -108,10 +108,10 @@ def point_at_distance(s):
 
 even = point_at_distance(np.linspace(0, L, 17))
 gaps = np.linalg.norm(np.diff(even, axis=0), axis=1)
-print(f"length {L:.3f}, gap spread {gaps.min():.3f}..{gaps.max():.3f}")   # nearly equal gaps
+print(f"length {L:.3f}, gap spread {gaps.min():.3f}..{gaps.max():.3f}")   # length 5.304, gap spread 0.330..0.331
 ```
 
-{% include blog_figure.liquid path="assets/img/blog/graphics/09-arc-length.svg" caption="Left: 17 points at uniform $t$ (orange circles) bunch up where the curve is slow, near the ends; 17 points at uniform arc length (purple squares, drawn slightly lower so both rows are visible) are evenly spaced. Right: the arc-length table $s(t)/L$; the thin lines show how each evenly spaced value of $s$ is mapped back to its $t$." %}
+{% include blog_figure.liquid path="assets/img/blog/graphics/09-arc-length.svg" caption="Left: 17 points at uniform $t$ (orange circles) bunch up near the start, where the short first handle makes the curve slow, and spread out near the end, where it is fast (gaps from 0.13 to 0.63); 17 points at uniform arc length (purple squares, drawn slightly lower so both rows are visible) are evenly spaced (every gap 0.33). Right: the arc-length table $s(t)/L$; the thin lines show how each evenly spaced value of $s$ is mapped back to its $t$." %}
 
 ## 2. Rotations over time
 
@@ -186,7 +186,7 @@ S = squad_controls(Q)
 print(squad(Q[1], Q[2], S[1], S[2], 0.0), Q[1])                       # squad hits the keys
 ```
 
-{% include blog_figure.liquid path="assets/img/blog/graphics/09-squad.svg" caption="Six key orientations $q_0..q_5$, shown by where each rotates the $z$ axis (black dots on the unit sphere). Left: piecewise slerp (orange) follows great-circle arcs with a corner at every key; squad (purple) passes through the same keys smoothly. Right: angular speed measured from the samples. Slerp's is constant within each interval and jumps at each key (dotted lines); squad's varies continuously through the keys." %}
+{% include blog_figure.liquid path="assets/img/blog/graphics/09-squad.svg" caption="Six key orientations $q_0..q_5$, shown by where each rotates the $z$ axis (black dots on the unit sphere). Left: piecewise slerp (orange) follows great-circle arcs with a corner at every key; squad (purple) passes through the same keys smoothly. Right: angular speed measured from the samples. Slerp's is constant within each interval and jumps at each key (dotted lines); here the jumps in magnitude are small, and the larger break is the sudden change of rotation axis, visible as the corners on the left. Squad's speed varies more, but continuously, and its axis turns smoothly." %}
 
 In production, animation curves are often stored per channel. Euler angles are interpolated separately, which is simple but can gimbal-lock. Quaternion curves are usually resampled at every frame, and the engine nlerps between neighboring frames.
 
@@ -398,6 +398,7 @@ lengths = np.array([1.0, 0.8, 0.6, 0.4])
 P0 = np.c_[np.r_[0, np.cumsum(lengths)], np.zeros(5)]      # straight chain along x
 P = fabrik(P0, lengths, np.array([0.6, 1.9]))
 print(np.linalg.norm(P[-1] - [0.6, 1.9]), np.linalg.norm(np.diff(P, axis=0), axis=1))
+# 5.5e-10 [1.  0.8 0.6 0.4]: on target, bone lengths kept
 ```
 
 {% include blog_figure.liquid path="assets/img/blog/graphics/09-ik-ccd-fabrik.svg" caption="The same four-bone chain (bone lengths 1, 0.8, 0.6, 0.4) reaching for the red star from the same start, after 1, 2, 3 and 20 iterations. CCD (left) swings the outer joints first; FABRIK (middle) distributes the motion along the whole chain. Right: end-effector error per iteration for both on a log scale. Both solvers converge here; how fast depends on the chain and the target." %}
@@ -448,7 +449,7 @@ def match(F, q, sigma, weights=None):
     return int(np.argmin(cost)), cost
 ```
 
-{% include blog_figure.liquid path="assets/img/blog/graphics/09-motion-matching.svg" caption="A toy motion-matching search over a synthetic 50 s locomotion database (random turning, walk and run speeds, 30 fps). Features: root positions 1/3, 2/3 and 1 s ahead in the local frame plus current speed. The query asks to run while turning left. Left: the database path (gray), the best-matching frame and its next second of motion (purple), and the desired future placed at that frame (orange): they line up. Middle: the cost of every frame, with the minimum marked. Right: all feature vectors projected on their first two principal components, colored by cost, with the query (star)." %}
+{% include blog_figure.liquid path="assets/img/blog/graphics/09-motion-matching.svg" caption="A toy motion-matching search over a synthetic 50 s locomotion database (random turning, walk and run speeds, 30 fps). Features: root positions 1/3, 2/3 and 1 s ahead in the local frame plus current speed. The query asks to run while turning left. Left: the database path (gray), the best-matching frame and its next second of motion (purple), and the desired future placed at that frame (orange): they line up (zoomed to 12 m around the frame). Middle: the cost of every frame, with the minimum marked. Right: all feature vectors projected on their first two principal components, colored by cost, with the query (star) right next to the best match (circle)." %}
 
 **Learned motion matching** (Holden et al. 2020) keeps the behavior of motion matching but replaces the large database with small neural networks. A *decompressor* reconstructs poses from features plus a latent code, a *stepper* advances them in time, and a *projector* replaces the nearest-neighbor search. The memory footprint drops from hundreds of megabytes to a few, which matters on consoles. The **phase-functioned neural network** (PFNN, Holden et al. 2017) is an earlier neural controller: an MLP whose weights are a cyclic spline function of the gait phase. It is trained on terrain-annotated locomotion and maps user control plus terrain heights directly to the next pose.
 
@@ -475,7 +476,16 @@ def pd_step(q, dq, q_ref, dq_ref, kp, kd):
 
 {% include blog_figure.liquid path="assets/img/blog/graphics/09-pd-tracking.svg" caption="A simulated two-link pendulum (1 kg point masses on 0.5 m links, under gravity) tracking a sinusoidal reference with joint PD control, critically damped-style gains $k_d = 2\sqrt{0.3\,k_p}$. Left: the elbow angle. With $k_p=20$ the arm sags and lags far behind; $k_p=500$ follows closely. Right: tracking error on a log scale. Adding the reference motion's inverse-dynamics torques as feedforward (green, only $k_p=100$) gives a smaller error than the stiffest pure PD." %}
 
-**Learning the policy.** **DeepMimic** (Peng et al. 2018) trains a neural policy with RL (PPO) that outputs PD targets at 30 Hz. The reward is for imitating one reference clip: $r = w_p e^{-k_p\sum\lVert q - \hat q\rVert^2} + w_v e^{-k_v\sum\lVert\dot q - \dot{\hat q}\rVert^2} + w_e e^{-k_e\sum\lVert p_e - \hat p_e\rVert^2} + w_c e^{-k_c\lVert c - \hat c\rVert^2}$ (joint rotations, velocities, end effectors, center of mass). Two tricks made it work: reference state initialization (start episodes at random frames of the clip) and early termination (stop when the character falls). **AMP** (Peng et al. 2021) replaces the hand-made tracking reward with a GAN-style discriminator that tells the character's transitions apart from a motion dataset, so a task reward (go there) can be combined with "move like the data" without choosing clips. **ASE** (Peng et al. 2022) pre-trains a large latent skill space with adversarial and diversity objectives, so that high-level controllers only choose latents. **PHC** (Luo et al. 2023) is a single policy that tracks almost all of AMASS, recovers from falls, and drives avatars from video or VR input. **MaskedMimic** (Tessler et al. 2024) treats control as motion inpainting: one policy, trained by distilling a full-body tracker, accepts any subset of constraints (joint targets, VR head and hands, text, object goals). Follow-ups include **PARC** (Xu et al., SIGGRAPH 2025), which iterates a kinematic motion generator and a physics tracker to expand parkour data, and **MaskedManipulator** (Tessler et al., SIGGRAPH Asia 2025), which extends MaskedMimic to whole-body object manipulation.
+**Learning the policy.** **DeepMimic** (Peng et al. 2018) trains a neural policy with RL (PPO) that outputs PD targets at 30 Hz. The reward is for imitating one reference clip:
+
+$$
+\begin{aligned}
+r ={}& w_p e^{-k_p\sum\lVert q - \hat q\rVert^2} + w_v e^{-k_v\sum\lVert\dot q - \dot{\hat q}\rVert^2}\\
+&+ w_e e^{-k_e\sum\lVert p_e - \hat p_e\rVert^2} + w_c e^{-k_c\lVert c - \hat c\rVert^2}
+\end{aligned}
+$$
+
+The four terms reward matching the joint rotations, joint velocities, end-effector positions and center of mass of the clip. Two tricks made it work: reference state initialization (start episodes at random frames of the clip) and early termination (stop when the character falls). **AMP** (Peng et al. 2021) replaces the hand-made tracking reward with a GAN-style discriminator that tells the character's transitions apart from a motion dataset, so a task reward (go there) can be combined with "move like the data" without choosing clips. **ASE** (Peng et al. 2022) pre-trains a large latent skill space with adversarial and diversity objectives, so that high-level controllers only choose latents. **PHC** (Luo et al. 2023) is a single policy that tracks almost all of AMASS, recovers from falls, and drives avatars from video or VR input. **MaskedMimic** (Tessler et al. 2024) treats control as motion inpainting: one policy, trained by distilling a full-body tracker, accepts any subset of constraints (joint targets, VR head and hands, text, object goals). Follow-ups include **PARC** (Xu et al., SIGGRAPH 2025), which iterates a kinematic motion generator and a physics tracker to expand parkour data, and **MaskedManipulator** (Tessler et al., SIGGRAPH Asia 2025), which extends MaskedMimic to whole-body object manipulation.
 
 **The bridge to humanoid robots (as of November 2026).** The same recipe moved to real hardware in 2024-2026: retarget human motion to the robot (Section 7), train a tracking policy in a massively parallel simulator ([embodied AI 3]({{ '/blog/2026/embodied-ai-03-simulation-platforms/' | relative_url }})) with domain randomization, and deploy it zero-shot.
 

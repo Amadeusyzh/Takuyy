@@ -97,7 +97,7 @@ def bezier(c, t):
     t = np.atleast_1d(t)[:, None]
     return (1 - t)**3 * c[0] + 3 * (1 - t)**2 * t * c[1] + 3 * (1 - t) * t**2 * c[2] + t**3 * c[3]
 
-c = np.array([[0, 0], [0.3, 2.4], [3.4, 2.4], [4, 0]], float)
+c = np.array([[0, 0], [0.1, 0.5], [2.2, 3.2], [4, 0]], float)       # short first handle: slow start
 t_tab = np.linspace(0, 1, 2000)
 pts = bezier(c, t_tab)
 s_tab = np.r_[0, np.cumsum(np.linalg.norm(np.diff(pts, axis=0), axis=1))]   # s(t) table
@@ -108,10 +108,10 @@ def point_at_distance(s):
 
 even = point_at_distance(np.linspace(0, L, 17))
 gaps = np.linalg.norm(np.diff(even, axis=0), axis=1)
-print(f"length {L:.3f}, gap spread {gaps.min():.3f}..{gaps.max():.3f}")   # nearly equal gaps
+print(f"length {L:.3f}, gap spread {gaps.min():.3f}..{gaps.max():.3f}")   # length 5.304, gap spread 0.330..0.331
 ```
 
-{% include blog_figure.liquid path="assets/img/blog/graphics/09-arc-length.svg" caption="左：一様な $t$ でとった 17 点（オレンジの丸）は、曲線の動きが遅い両端付近で密集します。一様な弧長でとった 17 点（紫の四角。両方が見えるよう少し下にずらしています）は等間隔です。右：弧長の表 $s(t)/L$。細い線は、等間隔の各 $s$ がどの $t$ に戻されるかを示します。" %}
+{% include blog_figure.liquid path="assets/img/blog/graphics/09-arc-length.svg" caption="左：一様な $t$ でとった 17 点（オレンジの丸）は、最初の制御ハンドルが短く曲線の動きが遅い始点付近で密集し、動きが速い終点付近でまばらになります（間隔は 0.13 から 0.63）。一様な弧長でとった 17 点（紫の四角。両方が見えるよう少し下にずらしています）は等間隔です（どれも 0.33）。右：弧長の表 $s(t)/L$。細い線は、等間隔の各 $s$ がどの $t$ に戻されるかを示します。" %}
 
 ## 2. 時間とともに変わる回転
 
@@ -186,7 +186,7 @@ S = squad_controls(Q)
 print(squad(Q[1], Q[2], S[1], S[2], 0.0), Q[1])                       # squad hits the keys
 ```
 
-{% include blog_figure.liquid path="assets/img/blog/graphics/09-squad.svg" caption="6 つのキー姿勢 $q_0..q_5$ を、それぞれが $z$ 軸を回す先（単位球上の黒点）で表しています。左：区分的 slerp（オレンジ）は大円弧をたどり、キーごとに角があります。squad（紫）は同じキーを滑らかに通ります。右：サンプルから測った角速さ。slerp の角速さは各区間で一定で、キー（点線）ごとに跳びます。squad の角速さはキーを連続的に通過します。" %}
+{% include blog_figure.liquid path="assets/img/blog/graphics/09-squad.svg" caption="6 つのキー姿勢 $q_0..q_5$ を、それぞれが $z$ 軸を回す先（単位球上の黒点）で表しています。左：区分的 slerp（オレンジ）は大円弧をたどり、キーごとに角があります。squad（紫）は同じキーを滑らかに通ります。右：サンプルから測った角速さ。slerp の角速さは各区間で一定で、キー（点線）ごとに跳びます。ここでは大きさの跳びは小さく、より大きな断絶は回転軸の急な変化で、左図の角として見えます。squad の角速さは変動が大きいものの連続で、回転軸も滑らかに向きを変えます。" %}
 
 実務では、アニメーションカーブはチャンネルごとに保存されることがよくあります。オイラー角は別々に補間され、単純ですがジンバルロックが起こりえます。クォータニオンのカーブは通常フレームごとに再サンプリングされ、エンジンは隣接フレーム間を nlerp します。
 
@@ -398,6 +398,7 @@ lengths = np.array([1.0, 0.8, 0.6, 0.4])
 P0 = np.c_[np.r_[0, np.cumsum(lengths)], np.zeros(5)]      # straight chain along x
 P = fabrik(P0, lengths, np.array([0.6, 1.9]))
 print(np.linalg.norm(P[-1] - [0.6, 1.9]), np.linalg.norm(np.diff(P, axis=0), axis=1))
+# 5.5e-10 [1.  0.8 0.6 0.4]: on target, bone lengths kept
 ```
 
 {% include blog_figure.liquid path="assets/img/blog/graphics/09-ik-ccd-fabrik.svg" caption="同じ 4 本の骨の連鎖（骨の長さ 1、0.8、0.6、0.4）が、同じ初期姿勢から赤い星に手を伸ばす様子。反復 1、2、3、20 回後を示しています。CCD（左）は外側の関節から先に振ります。FABRIK（中）は動きを連鎖全体に分散させます。右：両者の反復ごとのエンドエフェクタ誤差（対数目盛）。ここではどちらも収束しますが、速さは連鎖と目標によって変わります。" %}
@@ -448,7 +449,7 @@ def match(F, q, sigma, weights=None):
     return int(np.argmin(cost)), cost
 ```
 
-{% include blog_figure.liquid path="assets/img/blog/graphics/09-motion-matching.svg" caption="合成した 50 秒の移動データベース（ランダムな旋回、歩きと走りの速さ、30 fps）でのおもちゃのモーションマッチング探索。特徴は局所座標系での 1/3、2/3、1 秒後のルート位置と現在の速さです。クエリは「左に曲がりながら走る」です。左：データベースの経路（灰色）、最もよく一致したフレームとその後 1 秒の動き（紫）、そのフレームに置いた望む未来（オレンジ）。両者は重なっています。中：全フレームのコストと、最小値の印。右：全特徴ベクトルを第 1・第 2 主成分に射影し、コストで色付けしたもの。星がクエリです。" %}
+{% include blog_figure.liquid path="assets/img/blog/graphics/09-motion-matching.svg" caption="合成した 50 秒の移動データベース（ランダムな旋回、歩きと走りの速さ、30 fps）でのおもちゃのモーションマッチング探索。特徴は局所座標系での 1/3、2/3、1 秒後のルート位置と現在の速さです。クエリは「左に曲がりながら走る」です。左：データベースの経路（灰色）、最もよく一致したフレームとその後 1 秒の動き（紫）、そのフレームに置いた望む未来（オレンジ）。両者は重なっています（そのフレームの周囲 12 m を拡大）。中：全フレームのコストと、最小値の印。右：全特徴ベクトルを第 1・第 2 主成分に射影し、コストで色付けしたもの。星がクエリで、最良一致（丸）のすぐ隣にあります。" %}
 
 **学習型モーションマッチング（learned motion matching）**（Holden ら 2020）は、モーションマッチングの振る舞いを保ちつつ、大きなデータベースを小さなニューラルネットワークで置き換えます。*デコンプレッサ（decompressor）*が特徴と潜在コードからポーズを復元し、*ステッパ（stepper）*が時間方向に進め、*プロジェクタ（projector）*が最近傍探索を置き換えます。メモリ使用量は数百 MB から数 MB に減り、これはゲーム機では重要です。**位相関数ニューラルネットワーク（phase-functioned neural network, PFNN）**（Holden ら 2017）はそれ以前のニューラルコントローラです。重みが歩行位相の周期的なスプライン関数になっている MLP で、地形の注釈付きの移動データで訓練され、ユーザー入力と地形の高さから次のポーズを直接出力します。
 
@@ -475,7 +476,16 @@ def pd_step(q, dq, q_ref, dq_ref, kp, kd):
 
 {% include blog_figure.liquid path="assets/img/blog/graphics/09-pd-tracking.svg" caption="シミュレートした 2 リンク振り子（0.5 m のリンクの先に 1 kg の質点、重力あり）が、関節 PD 制御で正弦波の参照を追従する様子。ゲインは臨界減衰に近い $k_d = 2\sqrt{0.3\,k_p}$ です。左：肘の角度。$k_p=20$ では腕が垂れて大きく遅れ、$k_p=500$ ではよく追従します。右：追従誤差（対数目盛）。参照モーションの逆動力学トルクをフィードフォワードとして加えると（緑、$k_p=100$ のみ）、最も硬い純粋な PD より誤差が小さくなります。" %}
 
-**方策の学習。** **DeepMimic**（Peng ら 2018）は、30 Hz で PD 目標を出力するニューラル方策を強化学習（PPO）で訓練します。報酬は一つの参照クリップの模倣に対して与えます：$r = w_p e^{-k_p\sum\lVert q - \hat q\rVert^2} + w_v e^{-k_v\sum\lVert\dot q - \dot{\hat q}\rVert^2} + w_e e^{-k_e\sum\lVert p_e - \hat p_e\rVert^2} + w_c e^{-k_c\lVert c - \hat c\rVert^2}$（関節回転、速度、エンドエフェクタ、重心）。うまくいった鍵は二つの工夫です。参照状態初期化（エピソードをクリップのランダムなフレームから始める）と早期終了（キャラクターが転んだら止める）です。**AMP**（Peng ら 2021）は手作りの追従報酬を GAN 型の識別器に置き換えます。識別器はキャラクターの状態遷移とモーションデータセットの遷移を見分けます。これで、クリップを選ばなくても、タスク報酬（あそこへ行け）と「データのように動け」を組み合わせられます。**ASE**（Peng ら 2022）は、敵対的な目的と多様性の目的で大きな潜在スキル空間を事前学習し、上位のコントローラは潜在変数を選ぶだけで済むようにします。**PHC**（Luo ら 2023）は単一の方策で AMASS のほぼすべてを追従し、転倒から回復し、映像や VR の入力からアバターを動かします。**MaskedMimic**（Tessler ら 2024）は制御をモーションのインペインティングとして扱います。全身トラッカーを蒸留して訓練した一つの方策が、任意の制約の部分集合（関節目標、VR の頭と両手、テキスト、物体の目標）を受け付けます。後続研究には、運動学的なモーション生成器と物理トラッカーを交互に回してパルクールのデータを増やす **PARC**（Xu ら、SIGGRAPH 2025）や、MaskedMimic を全身での物体操作に広げた **MaskedManipulator**（Tessler ら、SIGGRAPH Asia 2025）があります。
+**方策の学習。** **DeepMimic**（Peng ら 2018）は、30 Hz で PD 目標を出力するニューラル方策を強化学習（PPO）で訓練します。報酬は一つの参照クリップの模倣に対して与えます：
+
+$$
+\begin{aligned}
+r ={}& w_p e^{-k_p\sum\lVert q - \hat q\rVert^2} + w_v e^{-k_v\sum\lVert\dot q - \dot{\hat q}\rVert^2}\\
+&+ w_e e^{-k_e\sum\lVert p_e - \hat p_e\rVert^2} + w_c e^{-k_c\lVert c - \hat c\rVert^2}
+\end{aligned}
+$$
+
+4 つの項は、クリップの関節回転、関節速度、エンドエフェクタ位置、重心に一致することへの報酬です。うまくいった鍵は二つの工夫です。参照状態初期化（エピソードをクリップのランダムなフレームから始める）と早期終了（キャラクターが転んだら止める）です。**AMP**（Peng ら 2021）は手作りの追従報酬を GAN 型の識別器に置き換えます。識別器はキャラクターの状態遷移とモーションデータセットの遷移を見分けます。これで、クリップを選ばなくても、タスク報酬（あそこへ行け）と「データのように動け」を組み合わせられます。**ASE**（Peng ら 2022）は、敵対的な目的と多様性の目的で大きな潜在スキル空間を事前学習し、上位のコントローラは潜在変数を選ぶだけで済むようにします。**PHC**（Luo ら 2023）は単一の方策で AMASS のほぼすべてを追従し、転倒から回復し、映像や VR の入力からアバターを動かします。**MaskedMimic**（Tessler ら 2024）は制御をモーションのインペインティングとして扱います。全身トラッカーを蒸留して訓練した一つの方策が、任意の制約の部分集合（関節目標、VR の頭と両手、テキスト、物体の目標）を受け付けます。後続研究には、運動学的なモーション生成器と物理トラッカーを交互に回してパルクールのデータを増やす **PARC**（Xu ら、SIGGRAPH 2025）や、MaskedMimic を全身での物体操作に広げた **MaskedManipulator**（Tessler ら、SIGGRAPH Asia 2025）があります。
 
 **ヒューマノイドロボットへの橋（2026 年 11 月時点）。** 同じレシピが 2024〜2026 年に実機へ移りました。人間の動きをロボットにリターゲットし（第 7 節）、大規模並列シミュレータ（[エンボディード AI 第 3 回]({{ '/blog/2026/embodied-ai-03-simulation-platforms/' | relative_url }})）でドメインランダム化を使って追従方策を訓練し、ゼロショットで実機に載せます。
 

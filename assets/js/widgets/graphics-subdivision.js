@@ -218,7 +218,9 @@
     canvas.addEventListener("pointermove", function (e) {
       if (drag < 0) return;
       var rc = canvas.getBoundingClientRect();
-      P[drag] = fromPx(e.clientX - rc.left, e.clientY - rc.top);
+      // clamp to the canvas so a control point cannot be lost off-screen
+      P[drag] = fromPx(Math.max(8, Math.min(W - 8, e.clientX - rc.left)),
+                       Math.max(8, Math.min(H - 8, e.clientY - rc.top)));
       draw();
     });
     function end() { if (drag >= 0) { drag = -1; draw(); } }

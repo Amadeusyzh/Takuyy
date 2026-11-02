@@ -116,7 +116,7 @@ def fig_continuity():
 
 
 def fig_arc_length():
-    c = np.array([[0, 0], [0.3, 2.4], [3.4, 2.4], [4, 0]], float)
+    c = np.array([[0, 0], [0.1, 0.5], [2.2, 3.2], [4, 0]], float)  # short start handle: slow start
     curve = lambda t: bezier(c, np.atleast_1d(t))  # noqa: E731
     t_tab = np.linspace(0, 1, 2000)
     p = curve(t_tab)
@@ -130,7 +130,7 @@ def fig_arc_length():
     axs[0].plot(*pu.T, "o", color=C["b"], ms=9, label="uniform $t$")
     axs[0].plot(pa[:, 0], pa[:, 1] - 0.25, "s", color=C["a"], ms=8, label="uniform $s$ (shifted down)")
     axs[0].plot(*c.T, "--", color=C["gray"], lw=1)
-    axs[0].set_aspect("equal"); axs[0].legend(fontsize=12, loc="lower center")
+    axs[0].set_aspect("equal"); axs[0].legend(fontsize=12, loc="upper left")
     axs[0].set_title(f"{n} samples on a cubic Bézier")
     axs[1].plot(t_tab, s_tab / s_tab[-1], color=C["a"], label=r"$s(t)/L$")
     axs[1].plot(t_tab, t_tab, ":", color=C["gray"])
@@ -405,7 +405,8 @@ def fig_lbs_dqs():
             color=C["dark"], lw=1.5, label=r"$\sqrt{w_0^2+w_1^2+2w_0w_1\cos\theta}$")
     ax.axhline(1, color=C["gray"], ls="--", lw=1)
     ax.set_xlabel("$x$ along the limb"); ax.set_ylabel("radius / rest radius")
-    ax.set_ylim(0, 1.15); ax.legend(fontsize=11, loc="lower left")
+    ax.set_ylim(0, 1.55); ax.set_yticks([0, 0.2, 0.4, 0.6, 0.8, 1.0])
+    ax.legend(fontsize=11, loc="upper center", ncol=1, frameon=False)
     save(fig, out("lbs-dqs"))
 
 
@@ -517,9 +518,9 @@ def fig_ik():
         ax.plot(*TARGET, "*", color=C["x"], ms=18)
         ax.plot(0, 0, "ks", ms=9)
         ax.set_aspect("equal"); ax.set_xlim(-0.6, 3.0); ax.set_ylim(-1.0, 2.4)
-        ax.legend(fontsize=11, loc="lower right"); ax.set_title(title)
-    err_c = [np.linalg.norm(P[-1] - TARGET) for P in hc]
-    err_f = [np.linalg.norm(P[-1] - TARGET) for P in hf]
+        ax.legend(fontsize=11, loc="lower left"); ax.set_title(title)
+    err_c = [max(np.linalg.norm(P[-1] - TARGET), 1e-16) for P in hc]  # clip exact zeros for the log axis
+    err_f = [max(np.linalg.norm(P[-1] - TARGET), 1e-16) for P in hf]
     axs[2].semilogy(err_c, "o-", color=C["a"], label="CCD")
     axs[2].semilogy(err_f, "s-", color=C["b"], label="FABRIK")
     axs[2].set_xlabel("iteration"); axs[2].set_ylabel("end-effector error")
@@ -555,13 +556,15 @@ def fig_motion_matching():
     pos, heading, speed = make_database()
     F = features(pos, heading, speed)
     mu, sd = F.mean(0), F.std(0) + 1e-9
-    # query: currently at 1.5 m/s, stick asks to run (3 m/s) while turning left at 1.0 rad/s
-    v, wr = 3.0, 1.0
+    # query: currently at 3 m/s, stick asks to run (3.5 m/s) while turning left at 0.4 rad/s
+    v, wr = 3.5, 0.4
     q = []
     for h in (10, 20, 30):
         T = h / 30
         q += [v / wr * np.sin(wr * T), v / wr * (1 - np.cos(wr * T))]
-    q = np.r_[q, 1.5]
+    q = np.r_[q, 3.0]
+    print("motion matching: best frame", int(np.argmin((((F - q) / sd) ** 2).sum(1))),
+          "min cost %.2f" % (((F - q) / sd) ** 2).sum(1).min())
     cost = (((F - q) / sd) ** 2).sum(1)
     best = int(np.argmin(cost))
     fig, axs = plt.subplots(1, 3, figsize=(17, 5.2), gridspec_kw=dict(width_ratios=[1.2, 1.2, 1]))
@@ -573,7 +576,9 @@ def fig_motion_matching():
     qq = np.array([Rw @ q[2 * k:2 * k + 2] + pos[best] for k in range(3)])
     ax.plot(*np.vstack([pos[best], qq]).T, "o--", color=C["b"], ms=7, lw=2, label="desired future")
     ax.plot(*pos[best], "ko", ms=7)
-    ax.set_aspect("equal"); ax.legend(fontsize=11, loc="best"); ax.set_title("database (top view, m)")
+    ax.set_aspect("equal"); ax.legend(fontsize=11, loc="lower right")
+    ax.set_xlim(pos[best, 0] - 6, pos[best, 0] + 6); ax.set_ylim(pos[best, 1] - 6, pos[best, 1] + 6)
+    ax.set_title("database near the best frame (top view, m)", fontsize=13)
     ax = axs[1]
     ax.semilogy(cost, color=C["dark"], lw=0.8)
     ax.semilogy(best, cost[best], "o", color=C["a"], ms=10)
@@ -650,7 +655,8 @@ def fig_pd():
         axs[1].semilogy(t, np.linalg.norm(q - r, axis=1) + 1e-6, color=col, label=lab)
     axs[0].plot(t, r[:, 1], "--", color=C["dark"], lw=1.5, label="reference")
     axs[0].set_xlabel("time (s)"); axs[0].set_ylabel(r"elbow angle $q_2$ (rad)")
-    axs[0].legend(fontsize=10, loc="lower left", ncol=2)
+    axs[0].set_ylim(-0.05, 1.5); axs[0].set_yticks([0, 0.2, 0.4, 0.6, 0.8, 1.0])
+    axs[0].legend(fontsize=10, loc="upper center", ncol=3, frameon=False)
     axs[1].set_xlabel("time (s)"); axs[1].set_ylabel(r"tracking error $\Vert q - q_{ref}\Vert$ (rad)")
     axs[1].legend(fontsize=10, loc="lower right")
     save(fig, out("pd-tracking"))

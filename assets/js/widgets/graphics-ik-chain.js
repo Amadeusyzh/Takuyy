@@ -9,9 +9,9 @@
 
   var TEXT = {
     en: { iters: "Iterations", both: "both", err: "error", hint: "Drag the red target." },
-    zh: { iters: "迭代次数", both: "两者", err: "误差", hint: "拖动红色目标。" },
-    ja: { iters: "反復回数", both: "両方", err: "誤差",
-      hint: "赤い目標をドラッグしてください。" },
+    zh: { iters: "\u8fed\u4ee3\u6b21\u6570", both: "\u4e24\u8005", err: "\u8bef\u5dee", hint: "\u62d6\u52a8\u7ea2\u8272\u76ee\u6807\u3002" },
+    ja: { iters: "\u53cd\u5fa9\u56de\u6570", both: "\u4e21\u65b9", err: "\u8aa4\u5dee",
+      hint: "\u8d64\u3044\u76ee\u6a19\u3092\u30c9\u30e9\u30c3\u30b0\u3057\u3066\u304f\u3060\u3055\u3044\u3002" },
   };
   var LEN = [1.0, 0.8, 0.6, 0.4];
   var REST = [0.25, -0.3, -0.3, -0.25];
@@ -147,7 +147,10 @@
 
     function setTarget(e) {
       var rc = canvas.getBoundingClientRect();
-      target = [(e.clientX - rc.left - ox) / S, (oy - (e.clientY - rc.top)) / S];
+      // clamp to the canvas so the target stays visible when the pointer leaves it during a drag
+      var x = Math.max(10, Math.min(W - 10, e.clientX - rc.left));
+      var y = Math.max(10, Math.min(H - 10, e.clientY - rc.top));
+      target = [(x - ox) / S, (oy - y) / S];
       draw();
     }
     canvas.addEventListener("pointerdown", function (e) {

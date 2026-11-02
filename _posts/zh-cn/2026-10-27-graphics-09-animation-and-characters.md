@@ -97,7 +97,7 @@ def bezier(c, t):
     t = np.atleast_1d(t)[:, None]
     return (1 - t)**3 * c[0] + 3 * (1 - t)**2 * t * c[1] + 3 * (1 - t) * t**2 * c[2] + t**3 * c[3]
 
-c = np.array([[0, 0], [0.3, 2.4], [3.4, 2.4], [4, 0]], float)
+c = np.array([[0, 0], [0.1, 0.5], [2.2, 3.2], [4, 0]], float)       # short first handle: slow start
 t_tab = np.linspace(0, 1, 2000)
 pts = bezier(c, t_tab)
 s_tab = np.r_[0, np.cumsum(np.linalg.norm(np.diff(pts, axis=0), axis=1))]   # s(t) table
@@ -108,10 +108,10 @@ def point_at_distance(s):
 
 even = point_at_distance(np.linspace(0, L, 17))
 gaps = np.linalg.norm(np.diff(even, axis=0), axis=1)
-print(f"length {L:.3f}, gap spread {gaps.min():.3f}..{gaps.max():.3f}")   # nearly equal gaps
+print(f"length {L:.3f}, gap spread {gaps.min():.3f}..{gaps.max():.3f}")   # length 5.304, gap spread 0.330..0.331
 ```
 
-{% include blog_figure.liquid path="assets/img/blog/graphics/09-arc-length.svg" caption="左：均匀 $t$ 取的 17 个点（橙色圆）在曲线运动慢的两端附近挤在一起；按均匀弧长取的 17 个点（紫色方块，略微下移以便两行都可见）间距均匀。右：弧长表 $s(t)/L$；细线显示每个等间距的 $s$ 值如何映射回对应的 $t$。" %}
+{% include blog_figure.liquid path="assets/img/blog/graphics/09-arc-length.svg" caption="左：均匀 $t$ 取的 17 个点（橙色圆）在起点附近挤在一起（第一个控制柄很短，曲线在那里运动慢），在终点附近散开（那里运动快），间距从 0.13 到 0.63；按均匀弧长取的 17 个点（紫色方块，略微下移以便两行都可见）间距均匀（每段都是 0.33）。右：弧长表 $s(t)/L$；细线显示每个等间距的 $s$ 值如何映射回对应的 $t$。" %}
 
 ## 2. 随时间变化的旋转
 
@@ -186,7 +186,7 @@ S = squad_controls(Q)
 print(squad(Q[1], Q[2], S[1], S[2], 0.0), Q[1])                       # squad hits the keys
 ```
 
-{% include blog_figure.liquid path="assets/img/blog/graphics/09-squad.svg" caption="六个关键朝向 $q_0..q_5$，用它们把 $z$ 轴转到的位置表示（单位球上的黑点）。左：分段 slerp（橙色）沿大圆弧前进，在每个关键帧处有拐角；squad（紫色）平滑地经过相同的关键帧。右：从采样测得的角速率。slerp 的角速率在每个区间内恒定，并在每个关键帧处（虚线）跳变；squad 的角速率连续地经过关键帧。" %}
+{% include blog_figure.liquid path="assets/img/blog/graphics/09-squad.svg" caption="六个关键朝向 $q_0..q_5$，用它们把 $z$ 轴转到的位置表示（单位球上的黑点）。左：分段 slerp（橙色）沿大圆弧前进，在每个关键帧处有拐角；squad（紫色）平滑地经过相同的关键帧。右：从采样测得的角速率。slerp 的角速率在每个区间内恒定，并在每个关键帧处（虚线）跳变；这里大小的跳变很小，更大的断裂是旋转轴的突变，即左图中的拐角。squad 的角速率变化更大，但它是连续的，旋转轴也平滑地转动。" %}
 
 在生产中，动画曲线常按通道存储。欧拉角分别插值，简单但可能出现万向节锁。四元数曲线通常被重采样到每一帧，引擎在相邻帧之间做 nlerp。
 
@@ -398,6 +398,7 @@ lengths = np.array([1.0, 0.8, 0.6, 0.4])
 P0 = np.c_[np.r_[0, np.cumsum(lengths)], np.zeros(5)]      # straight chain along x
 P = fabrik(P0, lengths, np.array([0.6, 1.9]))
 print(np.linalg.norm(P[-1] - [0.6, 1.9]), np.linalg.norm(np.diff(P, axis=0), axis=1))
+# 5.5e-10 [1.  0.8 0.6 0.4]: on target, bone lengths kept
 ```
 
 {% include blog_figure.liquid path="assets/img/blog/graphics/09-ik-ccd-fabrik.svg" caption="同一条四骨骼链（骨长 1、0.8、0.6、0.4）从同一初始姿态伸向红色星形，分别在 1、2、3 和 20 次迭代之后。CCD（左）先甩动外侧关节；FABRIK（中）把运动分布到整条链上。右：两者每次迭代的末端误差（对数坐标）。这里两种求解器都收敛；收敛快慢取决于链和目标。" %}
@@ -448,7 +449,7 @@ def match(F, q, sigma, weights=None):
     return int(np.argmin(cost)), cost
 ```
 
-{% include blog_figure.liquid path="assets/img/blog/graphics/09-motion-matching.svg" caption="在一个合成的 50 秒运动数据库（随机转向、步行与跑步速度、30 fps）上做的玩具运动匹配搜索。特征：局部坐标系中 1/3、2/3 和 1 秒之后的根位置，加上当前速度。查询要求边跑边左转。左：数据库路径（灰色）、最佳匹配帧及其之后一秒的运动（紫色），以及放在该帧处的期望未来（橙色）：两者吻合。中：每一帧的代价，最小值已标出。右：所有特征向量投影到前两个主成分上，按代价着色，星形为查询。" %}
+{% include blog_figure.liquid path="assets/img/blog/graphics/09-motion-matching.svg" caption="在一个合成的 50 秒运动数据库（随机转向、步行与跑步速度、30 fps）上做的玩具运动匹配搜索。特征：局部坐标系中 1/3、2/3 和 1 秒之后的根位置，加上当前速度。查询要求边跑边左转。左：数据库路径（灰色）、最佳匹配帧及其之后一秒的运动（紫色），以及放在该帧处的期望未来（橙色）：两者吻合（放大到该帧周围 12 米）。中：每一帧的代价，最小值已标出。右：所有特征向量投影到前两个主成分上，按代价着色，星形为查询，紧挨着最佳匹配（圆圈）。" %}
 
 **学习型运动匹配（learned motion matching）**（Holden 等 2020）保留运动匹配的行为，但用小型神经网络替代大型数据库。*解压器（decompressor）*从特征加潜码重建姿态，*步进器（stepper）*在时间上推进它们，*投影器（projector）*替代最近邻搜索。内存占用从数百 MB 降到几 MB，这在主机上很重要。**相位函数神经网络（phase-functioned neural network, PFNN**，Holden 等 2017）是更早的神经控制器：一个权重是步态相位的循环样条函数的 MLP。它在标注了地形的运动数据上训练，直接把用户控制和地形高度映射到下一帧姿态。
 
@@ -475,7 +476,16 @@ def pd_step(q, dq, q_ref, dq_ref, kp, kd):
 
 {% include blog_figure.liquid path="assets/img/blog/graphics/09-pd-tracking.svg" caption="一个模拟的双连杆摆（0.5 m 连杆末端各有 1 kg 质点，受重力作用）用关节 PD 控制跟踪正弦参考，增益取近似临界阻尼的 $k_d = 2\sqrt{0.3\,k_p}$。左：肘部角度。$k_p=20$ 时手臂下垂并严重滞后；$k_p=500$ 时跟得很紧。右：对数坐标下的跟踪误差。把参考运动的逆动力学力矩作为前馈加入（绿色，仅 $k_p=100$），误差比最硬的纯 PD 还小。" %}
 
-**学习策略。** **DeepMimic**（Peng 等 2018）用强化学习（PPO）训练一个以 30 Hz 输出 PD 目标的神经策略。奖励针对模仿一个参考片段：$r = w_p e^{-k_p\sum\lVert q - \hat q\rVert^2} + w_v e^{-k_v\sum\lVert\dot q - \dot{\hat q}\rVert^2} + w_e e^{-k_e\sum\lVert p_e - \hat p_e\rVert^2} + w_c e^{-k_c\lVert c - \hat c\rVert^2}$（关节旋转、速度、末端执行器、质心）。让它奏效的两个技巧是：参考状态初始化（从片段的随机帧开始一个回合）和提前终止（角色摔倒就停止）。**AMP**（Peng 等 2021）用 GAN 式判别器替代手工设计的跟踪奖励，判别器区分角色的状态转移和运动数据集中的转移。这样就能把任务奖励（去那里）与"像数据一样运动"结合，而无需挑选片段。**ASE**（Peng 等 2022）用对抗和多样性目标预训练一个大型潜在技能空间，高层控制器只需选择潜变量。**PHC**（Luo 等 2023）是单个策略，能跟踪几乎整个 AMASS，能从摔倒中恢复，并能根据视频或 VR 输入驱动虚拟形象。**MaskedMimic**（Tessler 等 2024）把控制看作运动补全（inpainting）：一个通过蒸馏全身跟踪器训练出的策略，接受任意子集的约束（关节目标、VR 头部和双手、文本、物体目标）。后续工作包括 **PARC**（Xu 等，SIGGRAPH 2025），它迭代运动学运动生成器和物理跟踪器来扩充跑酷数据；以及 **MaskedManipulator**（Tessler 等，SIGGRAPH Asia 2025），它把 MaskedMimic 扩展到全身物体操作。
+**学习策略。** **DeepMimic**（Peng 等 2018）用强化学习（PPO）训练一个以 30 Hz 输出 PD 目标的神经策略。奖励针对模仿一个参考片段：
+
+$$
+\begin{aligned}
+r ={}& w_p e^{-k_p\sum\lVert q - \hat q\rVert^2} + w_v e^{-k_v\sum\lVert\dot q - \dot{\hat q}\rVert^2}\\
+&+ w_e e^{-k_e\sum\lVert p_e - \hat p_e\rVert^2} + w_c e^{-k_c\lVert c - \hat c\rVert^2}
+\end{aligned}
+$$
+
+四项分别奖励与片段的关节旋转、关节速度、末端执行器位置和质心相一致。让它奏效的两个技巧是：参考状态初始化（从片段的随机帧开始一个回合）和提前终止（角色摔倒就停止）。**AMP**（Peng 等 2021）用 GAN 式判别器替代手工设计的跟踪奖励，判别器区分角色的状态转移和运动数据集中的转移。这样就能把任务奖励（去那里）与"像数据一样运动"结合，而无需挑选片段。**ASE**（Peng 等 2022）用对抗和多样性目标预训练一个大型潜在技能空间，高层控制器只需选择潜变量。**PHC**（Luo 等 2023）是单个策略，能跟踪几乎整个 AMASS，能从摔倒中恢复，并能根据视频或 VR 输入驱动虚拟形象。**MaskedMimic**（Tessler 等 2024）把控制看作运动补全（inpainting）：一个通过蒸馏全身跟踪器训练出的策略，接受任意子集的约束（关节目标、VR 头部和双手、文本、物体目标）。后续工作包括 **PARC**（Xu 等，SIGGRAPH 2025），它迭代运动学运动生成器和物理跟踪器来扩充跑酷数据；以及 **MaskedManipulator**（Tessler 等，SIGGRAPH Asia 2025），它把 MaskedMimic 扩展到全身物体操作。
 
 **通往人形机器人的桥梁（截至 2026 年 11 月）。** 同样的配方在 2024-2026 年移植到了真实硬件上：把人类运动重定向到机器人（第 7 节），在大规模并行模拟器（[具身智能第 3 篇]({{ '/blog/2026/embodied-ai-03-simulation-platforms/' | relative_url }})）中配合域随机化训练跟踪策略，再零样本部署。
 

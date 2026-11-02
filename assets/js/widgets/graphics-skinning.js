@@ -12,12 +12,12 @@
   var TEXT = {
     en: { bend: "Bend", twist: "Twist", both: "both", angle: "Angle", width: "min width / rest",
       hint: "Drag on the limb or use the slider." },
-    zh: { bend: "弯曲", twist: "扭转", both: "两者", angle: "角度",
-      width: "最小宽度 / 静止宽度",
-      hint: "在肢体上拖动或使用滑块。" },
-    ja: { bend: "曲げ", twist: "ねじり", both: "両方", angle: "角度",
-      width: "最小幅 / 静止時の幅",
-      hint: "肢をドラッグするかスライダーを使ってください。" },
+    zh: { bend: "\u5f2f\u66f2", twist: "\u626d\u8f6c", both: "\u4e24\u8005", angle: "\u89d2\u5ea6",
+      width: "\u6700\u5c0f\u5bbd\u5ea6 / \u9759\u6b62\u5bbd\u5ea6",
+      hint: "\u5728\u80a2\u4f53\u4e0a\u62d6\u52a8\u6216\u4f7f\u7528\u6ed1\u5757\u3002" },
+    ja: { bend: "\u66f2\u3052", twist: "\u306d\u3058\u308a", both: "\u4e21\u65b9", angle: "\u89d2\u5ea6",
+      width: "\u6700\u5c0f\u5e45 / \u9759\u6b62\u6642\u306e\u5e45",
+      hint: "\u80a2\u3092\u30c9\u30e9\u30c3\u30b0\u3059\u308b\u304b\u30b9\u30e9\u30a4\u30c0\u30fc\u3092\u4f7f\u3063\u3066\u304f\u3060\u3055\u3044\u3002" },
   };
   var COL = { lbs: "#ff7f0e", dqs: "#9467bd" };
   var NX = 41, NY = 7, HALF = 0.2; // grid along the limb (x in [0, 2]) and across (half width)
@@ -167,7 +167,7 @@
         var c = i === 0 ? COL.lbs : i === 1 ? COL.dqs : "#555";
         b.style.borderColor = c; b.style.background = i === method ? c : "#fff"; b.style.color = i === method ? "#fff" : c;
       });
-      angTxt.textContent = T.angle + " " + angDeg + "°";
+      angTxt.textContent = T.angle + " " + angDeg + "\u00b0";
       var ang = angDeg * Math.PI / 180, R = deform(mode, ang);
       ctx.clearRect(0, 0, W, H); ctx.fillStyle = "#fff"; ctx.fillRect(0, 0, W, H);
       // rest outline
