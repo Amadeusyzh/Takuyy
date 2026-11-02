@@ -87,7 +87,7 @@ def gbuffer(W=192, H=128):
     # ground plane y = 0
     tp = np.where(d[..., 1] < -1e-6, -cam[1] / np.minimum(d[..., 1], -1e-6), np.inf)
     hitp = tp < t_best
-    P = cam + tp[..., None] * d
+    P = cam + np.where(np.isfinite(tp), tp, 0.0)[..., None] * d
     checker = ((np.floor(P[..., 0] * 2) + np.floor(P[..., 2] * 2)) % 2 == 0)
     t_best = np.where(hitp, tp, t_best)
     alb[hitp] = np.where(checker[hitp][:, None], [0.75, 0.75, 0.72], [0.35, 0.35, 0.33])
@@ -145,7 +145,8 @@ def fig_gbuffer():
     alb = np.where(vm, srgb_encode(g["alb"]), bg)
     nrm = np.where(vm, g["nrm"] * 0.5 + 0.5, bg)
     dep = g["depth"]
-    dn = (dep - np.nanmin(dep)) / (np.nanmax(dep) - np.nanmin(dep))
+    z0, z1 = np.nanmin(dep), np.nanpercentile(dep, 97)      # far ground would dominate a linear range
+    dn = np.clip(np.log(dep / z0) / np.log(z1 / z0), 0, 1)  # log scale: near = dark, far = bright
     dimg = np.where(vm, np.repeat(dn[..., None], 3, -1), bg)
     enc = oct_encode(np.where(vm, g["nrm"], [0.0, 0.0, 1.0]))
     octimg = np.where(vm, np.stack([enc[..., 0] * 0.5 + 0.5, enc[..., 1] * 0.5 + 0.5,
@@ -270,7 +271,7 @@ def fig_clusters():
     ax.view_init(elev=22, azim=-58)
     ax.set_box_aspect((1.4, 2.0, 0.9))
     ax.set_title(r"(a) $z_k = n\,(f/n)^{k/S}$")
-    fig.colorbar(sc, ax=ax, shrink=0.6, pad=0.02, label=r"$N_\ell$")
+    fig.colorbar(sc, ax=ax, shrink=0.6, pad=0.08, label=r"$N_\ell$")
 
     ax2 = fig.add_subplot(1, 2, 2)
     top = count.max(axis=1)              # max over the y tiles: a top-down view (TX, S)
@@ -313,13 +314,14 @@ def fig_csm():
     for row, lam in enumerate(lams):
         z = csm_splits(n, f, N, lam)
         for i in range(N):
-            axs[0].barh(row, z[i + 1] - z[i], left=z[i], height=0.6,
+            axs[0].barh(1.6 * row, z[i + 1] - z[i], left=z[i], height=0.6,
                         color=plt.get_cmap("Blues")(0.35 + 0.15 * i), edgecolor="white")
-        for zi in z[1:-1]:
-            axs[0].text(zi, row + 0.42, f"{zi:.3g}", ha="center", fontsize=11)
+        for i, zi in enumerate(z[1:-1]):
+            axs[0].text(zi, 1.6 * row + (0.36 if i % 2 == 0 else 0.78), f"{zi:.3g}", ha="center", fontsize=10)
         print("  lambda=%.2f splits:" % lam, np.round(z, 3))
     axs[0].set_xscale("log")
-    axs[0].set_yticks(range(len(lams)))
+    axs[0].set_yticks([1.6 * r for r in range(len(lams))])
+    axs[0].set_ylim(-0.5, 1.6 * (len(lams) - 1) + 1.15)
     axs[0].set_yticklabels([fr"$\lambda={l:g}$" for l in lams])
     axs[0].set_xlim(n, f)
     axs[0].set_xlabel(r"$z$")
@@ -368,7 +370,7 @@ def fig_pcss():
         axs[1].plot(x, pcf, color=c, ls="--", lw=1.6, label="PCF")
     axs[1].set_xlabel(r"$x$")
     axs[1].set_ylabel(r"$V$")
-    axs[1].legend(frameon=False, fontsize=10, ncol=2, loc="upper left")
+    axs[1].legend(frameon=False, fontsize=10, ncol=2, loc="lower right")
     axs[1].set_title("(b)")
     fig.tight_layout()
     save(fig, out("pcss"))
@@ -524,7 +526,7 @@ def fig_ao():
                 best, bx = ang, (px + sgn * r, p0 + dh)
         L = 0.16
         ax.plot([px, px + sgn * L * np.cos(best)], [p0, p0 + L * np.sin(best)], color=col, lw=2.2)
-        ax.text(px + sgn * 0.075, p0 + 0.012 + 0.5 * L * np.sin(best),
+        ax.text(px + sgn * 0.095, p0 - 0.04 + 0.6 * L * np.sin(best),
                 r"$e_%d=%.0f^\circ$" % (1 if sgn < 0 else 2, np.degrees(best)), color=col,
                 ha="center", fontsize=13)
         for j in range(1, AO_STEPS + 1):
@@ -636,7 +638,7 @@ def fig_ssr():
         axs[1].plot([xh], [Z0 + (xh - X0) * SLOPE], "*", color=C["x"], ms=16)
     for lvl in range(len(pyr)):
         axs[1].plot([], [], color=cols[lvl], lw=4, label=f"L{lvl}")
-    axs[1].legend(frameon=False, fontsize=10, ncol=4, loc="lower left")
+    axs[1].legend(frameon=False, fontsize=10, ncol=4, loc="upper right")
     axs[1].set_title(fr"(b) Hi-Z, {len(path)} it.")
     fig.tight_layout()
     save(fig, out("ssr-march"))
@@ -770,8 +772,8 @@ def fig_tonemap():
               (reinhard_ext, C["c"], r"Reinhard ext., $L_w=4$", "--"), (hable, C["y"], "Hable filmic", "-"),
               (aces_fit, C["x"], "ACES fit", "-"), (pbr_neutral, C["a"], "PBR Neutral", "-.")]
     for f, c, lab, ls in curves:
-        axs[0].plot(xl, f(xl), color=c, ls=ls, label=lab)
-        axs[1].plot(xg, srgb_encode(f(xg)), color=c, ls=ls)
+        axs[0].plot(xl, np.clip(f(xl), 0, 1), color=c, ls=ls, label=lab)   # the display clamps at 1
+        axs[1].plot(xg, srgb_encode(np.clip(f(xg), 0, 1)), color=c, ls=ls)
     axs[0].set_xlabel(r"$x$ (scene)")
     axs[0].set_ylabel(r"$y$ (display)")
     axs[0].set_ylim(0, 1.05)

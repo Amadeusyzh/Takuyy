@@ -85,7 +85,7 @@ err = np.degrees(np.arccos(np.clip(oct_decode(q) @ n, -1, 1)))
 print(e, err)                                 # error well below 0.01 degrees
 ```
 
-{% include blog_figure.liquid path="assets/img/blog/graphics/11-octahedral.svg" caption="(a) The octahedral map: each point of the square decodes to a unit normal (shown as colour). The inner diamond holds the upper hemisphere z > 0; the four corners are the folded lower hemisphere. (b) Maximum angular error over 200,000 random normals after quantization, versus the total number of bits: octahedral (u, v) beats spherical angles at equal bits, and three quantized xyz channels need 50% more bits for a comparable error." %}
+{% include blog_figure.liquid path="assets/img/blog/graphics/11-octahedral.svg" caption="(a) The octahedral map: each point of the square decodes to a unit normal (shown as colour). The inner diamond holds the upper hemisphere z > 0; the four corners are the folded lower hemisphere. (b) Maximum angular error over 200,000 random normals after quantization, versus the total number of bits: octahedral (u, v) is about as accurate as spherical angles at equal bits (angles are even slightly better) but needs no trigonometry to encode or decode, and three quantized xyz channels need about 50% more bits for a comparable error." %}
 
 ### 1.3 Tiled and clustered light culling
 
@@ -217,7 +217,7 @@ Remedies:
 - **Exponential VSM** (EVSM, from Lauritzen's work on layered and warped VSMs) applies Chebyshev to the warped moments $e^{cz}$ and $-e^{-cz}$ and keeps the smaller bound. The warp compresses the occluders' depths relative to the receiver, which makes the bound much tighter.
 - **Moment shadow maps** (Peters and Klein 2015) store four moments and reconstruct the tightest distribution consistent with them (a Hamburger moment problem), which almost eliminates bleeding.
 
-{% include blog_figure.liquid path="assets/img/blog/graphics/11-vsm-chebyshev.svg" caption="(a) For a filter region with half its depths at 0.3 and half at 0.7, the true fraction P(z ≥ t) (black steps) versus the VSM Chebyshev bound (orange) and EVSM with c = 10 (green): the bound touches the truth at t = 0.7 but stays high behind it. (b) Light bleeding on a strip: blocker A (z = 0.2, shaded) partly covers blocker B (z = 0.5), and the receiver is at t = 0.6. True PCF visibility (black) is 0 left of x = 0.75, but VSM lets light leak where the filter straddles both blockers; EVSM suppresses most of it." %}
+{% include blog_figure.liquid path="assets/img/blog/graphics/11-vsm-chebyshev.svg" caption="(a) For a filter region with half its depths at 0.3 and half at 0.7, the true fraction P(z ≥ t) (black steps) versus the VSM Chebyshev bound (orange) and EVSM with c = 10 (green): the bound touches the truth at t = 0.7 but stays high behind it. (b) Light bleeding on a strip: blocker A (z = 0.2, shaded) partly covers blocker B (z = 0.5), and the receiver is at t = 0.6. True PCF visibility (black) is 0 everywhere under the blockers and only ramps up where the filter reaches B's edge at x ≈ 0.75, but VSM lets light leak where the filter straddles both blockers; EVSM suppresses most of it." %}
 
 ### 2.4 Contact shadows and virtual shadow maps
 
@@ -289,7 +289,7 @@ def horizon_ao(h, R=0.08, steps=12, slices=4, rng=None):
 xx, yy = np.meshgrid(np.linspace(0, 1, 128), np.linspace(0, 1, 128))
 hill = 0.2 * np.exp(-((xx - 0.5) ** 2 + (yy - 0.5) ** 2) / 0.02)
 ao = horizon_ao(hill)
-print(ao.min().round(3), ao.max().round(3))           # dark ring at the hill's foot, 1.0 on flat ground
+print(ao.min().round(3), ao.max().round(3))           # 0.753 1.0: dark ring at the hill's foot, 1.0 on flat ground
 ```
 
 {% include blog_figure.liquid path="assets/img/blog/graphics/11-ao-horizon.svg" caption="Ambient occlusion on a height field (hills, a box and a pit). (a) One slice through the point p: the marcher samples the height field on both sides (dots) and keeps the highest elevation, the horizons e₁ and e₂; the slice's visible fraction is ½(cos²e₁ + cos²e₂). (b) Monte Carlo with 8 cosine-weighted rays per pixel is very noisy. (c) 64 rays is better but still grainy. (d) The horizon form with only 4 slices (8 marches) and a random rotation per pixel already has a lower error than (c). RMSE is measured against the horizon method with 64 slices." %}
@@ -336,7 +336,7 @@ def hiz_trace(x0, z0, slope, pyr, thickness=0.05, max_iter=64):
                 lvl -= 1                               # refine
     return None, max_iter
 
-print(hiz_trace(4.0, 0.3, 0.009, pyr))   # hits the front of the box at x ~ 40
+print(hiz_trace(4.0, 0.3, 0.009, pyr))   # (40, 12): hits the front of the box at x = 40 after 12 iterations
 ```
 
 {% include blog_figure.liquid path="assets/img/blog/graphics/11-ssr-march.svg" caption="Screen-space ray marching through a 1D depth buffer (gray: the scene behind the stored depth; camera at the top). (a) A linear march with steps of 7 pixels (dots) jumps over the pillar, overshoots behind the box, and needs a bisection refinement to find the hit (star). (b) Hierarchical-Z: coloured bars show the min-depth cells visited at each pyramid level; the ray skips large empty cells at coarse levels and refines only near the box." %}
@@ -450,8 +450,8 @@ Two further families power current engines:
 
 Post 06 introduced TAA and temporal accumulation. Almost every effect in this chapter (SSAO, SSR, PCSS, volumetric fog, probes) is now rendered *noisy* at low sample counts and cleaned up by reusing the previous frames, so it is worth stating the machinery precisely.
 
-1. **Reprojection.** For a pixel with world position $\mathbf{x}$ (from depth), its position in the previous frame is $\mathbf{p}_{t-1} = P_{t-1}V_{t-1}\mathbf{x}$, using the previous view-projection matrices. For moving objects, a **motion-vector** target written in the geometry pass stores the screen-space displacement per pixel instead.
-2. **Disocclusion.** If the previous frame's depth or normal at $\mathbf{p}_{t-1}$ does not match (or $\mathbf{p}_{t-1}$ is off screen), the history belongs to another surface and must be discarded. The pixel then restarts accumulation with a higher blend weight.
+1. **Reprojection.** For a pixel with world position $\mathbf{x}$ (from depth), its position in the previous frame is $$\mathbf{p}_{t-1} = P_{t-1}V_{t-1}\mathbf{x}$$, using the previous view-projection matrices. For moving objects, a **motion-vector** target written in the geometry pass stores the screen-space displacement per pixel instead.
+2. **Disocclusion.** If the previous frame's depth or normal at $$\mathbf{p}_{t-1}$$ does not match (or $$\mathbf{p}_{t-1}$$ is off screen), the history belongs to another surface and must be discarded. The pixel then restarts accumulation with a higher blend weight.
 3. **Accumulation.** $c_t = \alpha\,x_t + (1-\alpha)\,c_{t-1}$, an exponential moving average. Its weights decay over roughly $1/\alpha$ frames, and at equilibrium its noise variance equals that of a plain mean of $(2-\alpha)/\alpha$ frames: 19 frames for $\alpha = 0.1$.
 4. **History rectification.** Lighting changes and imperfect reprojection still leave stale history, which shows up as ghosting. Neighbourhood **clamping** (post 06) limits the history to the min-max box of the current 3 × 3 neighbourhood. **Variance clipping** (Salvi 2016) instead builds the box from the neighbourhood's mean and standard deviation, $\mu \pm \gamma\sigma$, usually in the YCoCg colour space where luma and chroma are decorrelated. It then *clips* the history along the line toward $\mu$ instead of clamping each channel independently, which avoids colour shifts. The statistical box is tighter than min-max when the neighbourhood is noisy.
 
@@ -512,7 +512,7 @@ for f in (reinhard, hable, aces_fit):
 print(round(float(srgb_encode(0.18)) * 255))   # 118: middle grey in 8-bit sRGB
 ```
 
-{% include blog_figure.liquid path="assets/img/blog/graphics/11-tonemap-curves.svg" caption="Tone-mapping curves for grey input. (a) Linear axes: clamping (dotted) clips everything above 1, Reinhard approaches 1 slowly, the extended Reinhard reaches 1 at L_w = 4, Hable and the ACES fit have a toe and a steeper midtone, and PBR Neutral is the identity up to about 0.76 before its shoulder. (b) The same curves after sRGB encoding on a log axis spanning five decades of scene luminance; the dotted line marks middle grey 0.18. The ACES fit has the most contrast around middle grey; Reinhard keeps the most highlight detail." %}
+{% include blog_figure.liquid path="assets/img/blog/graphics/11-tonemap-curves.svg" caption="Tone-mapping curves for grey input. (a) Linear axes: clamping (dotted) clips everything above 1, Reinhard approaches 1 slowly, the extended Reinhard reaches 1 at L_w = 4, Hable and the ACES fit have a toe and a steeper midtone, and PBR Neutral follows the identity (minus a small 0.04 offset) up to about 0.8 before its shoulder. (b) The same curves after sRGB encoding on a log axis spanning five decades of scene luminance; the dotted line marks middle grey 0.18. The ACES fit has the most contrast around middle grey; Reinhard keeps the most highlight detail." %}
 
 The widget below applies these operators to an HDR test chart of six hues, each ramping over 12 stops. Watch what happens to saturated colours as they get brighter.
 

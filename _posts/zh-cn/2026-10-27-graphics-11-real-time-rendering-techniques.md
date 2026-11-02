@@ -85,7 +85,7 @@ err = np.degrees(np.arccos(np.clip(oct_decode(q) @ n, -1, 1)))
 print(e, err)                                 # error well below 0.01 degrees
 ```
 
-{% include blog_figure.liquid path="assets/img/blog/graphics/11-octahedral.svg" caption="(a) 八面体映射：正方形中的每一点都解码为一个单位法线（以颜色显示）。内部菱形对应上半球 z > 0，四个角是翻折过来的下半球。(b) 对 200,000 个随机法线量化后的最大角度误差随总比特数的变化：相同比特数下，八面体 (u, v) 优于球面角；三个量化的 xyz 通道要多用 50% 的比特才能达到相近的误差。" %}
+{% include blog_figure.liquid path="assets/img/blog/graphics/11-octahedral.svg" caption="(a) 八面体映射：正方形中的每一点都解码为一个单位法线（以颜色显示）。内部菱形对应上半球 z > 0，四个角是翻折过来的下半球。(b) 对 200,000 个随机法线量化后的最大角度误差随总比特数的变化：相同比特数下，八面体 (u, v) 与球面角精度相当（球面角甚至略好），但编码和解码都不需要三角函数；三个量化的 xyz 通道要多用约 50% 的比特才能达到相近的误差。" %}
 
 ### 1.3 分块与分簇光源剔除
 
@@ -217,7 +217,7 @@ for t in [0.7, 0.9]:
 - **指数方差阴影贴图**（EVSM，出自 Lauritzen 关于分层和扭曲 VSM 的工作）：对扭曲后的矩 $e^{cz}$ 和 $-e^{-cz}$ 分别应用切比雪夫不等式，取较小的上界。这种扭曲压缩了遮挡物相对接收点的深度，使上界紧得多。
 - **矩阴影贴图**（moment shadow maps，Peters 与 Klein 2015）：存储四阶矩，并重建与之相容的最紧分布（一个 Hamburger 矩问题），几乎消除了漏光。
 
-{% include blog_figure.liquid path="assets/img/blog/graphics/11-vsm-chebyshev.svg" caption="(a) 滤波区域内一半深度为 0.3、一半为 0.7 时，真实比例 P(z ≥ t)（黑色阶梯）、VSM 切比雪夫上界（橙色）和 c = 10 的 EVSM（绿色）：上界在 t = 0.7 处与真实值相切，但在其后仍然偏高。(b) 一条带上的漏光：遮挡物 A（z = 0.2，阴影区）部分覆盖遮挡物 B（z = 0.5），接收面在 t = 0.6。真实的 PCF 可见度（黑色）在 x = 0.75 左侧为 0，但 VSM 在滤波核跨越两个遮挡物的地方漏光；EVSM 抑制了大部分漏光。" %}
+{% include blog_figure.liquid path="assets/img/blog/graphics/11-vsm-chebyshev.svg" caption="(a) 滤波区域内一半深度为 0.3、一半为 0.7 时，真实比例 P(z ≥ t)（黑色阶梯）、VSM 切比雪夫上界（橙色）和 c = 10 的 EVSM（绿色）：上界在 t = 0.7 处与真实值相切，但在其后仍然偏高。(b) 一条带上的漏光：遮挡物 A（z = 0.2，阴影区）部分覆盖遮挡物 B（z = 0.5），接收面在 t = 0.6。真实的 PCF 可见度（黑色）在遮挡物下方处处为 0，只有当滤波核到达 B 的边缘 x ≈ 0.75 时才开始上升，但 VSM 在滤波核跨越两个遮挡物的地方漏光；EVSM 抑制了大部分漏光。" %}
 
 ### 2.4 接触阴影与虚拟阴影贴图
 
@@ -289,7 +289,7 @@ def horizon_ao(h, R=0.08, steps=12, slices=4, rng=None):
 xx, yy = np.meshgrid(np.linspace(0, 1, 128), np.linspace(0, 1, 128))
 hill = 0.2 * np.exp(-((xx - 0.5) ** 2 + (yy - 0.5) ** 2) / 0.02)
 ao = horizon_ao(hill)
-print(ao.min().round(3), ao.max().round(3))           # dark ring at the hill's foot, 1.0 on flat ground
+print(ao.min().round(3), ao.max().round(3))           # 0.753 1.0: dark ring at the hill's foot, 1.0 on flat ground
 ```
 
 {% include blog_figure.liquid path="assets/img/blog/graphics/11-ao-horizon.svg" caption="高度场（小丘、一个盒子和一个坑）上的环境光遮蔽。(a) 经过点 p 的一个切片：步进器在两侧采样高度场（圆点），保留最大仰角，即地平线 e₁ 和 e₂；该切片的可见比例为 ½(cos²e₁ + cos²e₂)。(b) 每像素 8 条余弦加权光线的蒙特卡洛估计噪声很大。(c) 64 条光线好一些，但仍有颗粒感。(d) 只用 4 个切片（8 次步进）、逐像素随机旋转的地平线形式，误差已经低于 (c)。RMSE 以 64 个切片的地平线方法为参考计算。" %}
@@ -336,7 +336,7 @@ def hiz_trace(x0, z0, slope, pyr, thickness=0.05, max_iter=64):
                 lvl -= 1                               # refine
     return None, max_iter
 
-print(hiz_trace(4.0, 0.3, 0.009, pyr))   # hits the front of the box at x ~ 40
+print(hiz_trace(4.0, 0.3, 0.009, pyr))   # (40, 12): hits the front of the box at x = 40 after 12 iterations
 ```
 
 {% include blog_figure.liquid path="assets/img/blog/graphics/11-ssr-march.svg" caption="在一维深度缓冲中做屏幕空间光线步进（灰色：存储深度之后的场景；相机在上方）。(a) 步长 7 像素的线性步进（圆点）跳过了柱子，越过了盒子的背后，需要二分细化才能找到命中点（星号）。(b) 层次 Z：彩色条表示每一层金字塔上访问过的最小深度格子；光线在粗糙层级跳过大片空格子，只在盒子附近细化。" %}
@@ -450,8 +450,8 @@ for nz in [1.0, 0.0, -1.0]:
 
 第 06 篇介绍了 TAA 和时间累积。本章几乎所有效果（SSAO、SSR、PCSS、体积雾、探针）如今都以低采样数*带噪*渲染，再靠复用前几帧来清理。所以值得把这套机制说清楚。
 
-1. **重投影。** 对世界坐标为 $\mathbf{x}$（由深度得到）的像素，它在上一帧的位置是 $\mathbf{p}_{t-1} = P_{t-1}V_{t-1}\mathbf{x}$，使用上一帧的视图-投影矩阵。对运动物体，则在几何 pass 中写入**运动矢量**（motion vector）目标，存储每个像素的屏幕空间位移。
-2. **去遮挡**（disocclusion）。若上一帧在 $\mathbf{p}_{t-1}$ 处的深度或法线对不上（或 $\mathbf{p}_{t-1}$ 在屏幕外），说明历史属于另一个表面，必须丢弃。像素随即用更高的混合权重重新开始累积。
+1. **重投影。** 对世界坐标为 $\mathbf{x}$（由深度得到）的像素，它在上一帧的位置是 $$\mathbf{p}_{t-1} = P_{t-1}V_{t-1}\mathbf{x}$$，使用上一帧的视图-投影矩阵。对运动物体，则在几何 pass 中写入**运动矢量**（motion vector）目标，存储每个像素的屏幕空间位移。
+2. **去遮挡**（disocclusion）。若上一帧在 $$\mathbf{p}_{t-1}$$ 处的深度或法线对不上（或 $$\mathbf{p}_{t-1}$$ 在屏幕外），说明历史属于另一个表面，必须丢弃。像素随即用更高的混合权重重新开始累积。
 3. **累积。** $c_t = \alpha\,x_t + (1-\alpha)\,c_{t-1}$，即指数滑动平均。它的权重大约在 $1/\alpha$ 帧内衰减；达到平衡时，其噪声方差等于 $(2-\alpha)/\alpha$ 帧简单平均的方差：$\alpha = 0.1$ 时为 19 帧。
 4. **历史校正。** 光照变化和不完美的重投影仍会留下陈旧的历史，表现为拖影（ghosting）。邻域**截断**（clamping，第 06 篇）把历史限制在当前 3 × 3 邻域的最小-最大包围盒内。**方差裁剪**（variance clipping，Salvi 2016）则用邻域的均值和标准差构造包围盒 $\mu \pm \gamma\sigma$，通常在亮度和色度去相关的 YCoCg 颜色空间中进行。然后它沿指向 $\mu$ 的直线*裁剪*历史，而不是逐通道独立截断，从而避免颜色偏移。邻域有噪声时，这个统计包围盒比最小-最大盒更紧。
 
@@ -512,7 +512,7 @@ for f in (reinhard, hable, aces_fit):
 print(round(float(srgb_encode(0.18)) * 255))   # 118: middle grey in 8-bit sRGB
 ```
 
-{% include blog_figure.liquid path="assets/img/blog/graphics/11-tonemap-curves.svg" caption="灰色输入下的色调映射曲线。(a) 线性坐标：截断（点线）把 1 以上全部削掉；Reinhard 缓慢逼近 1；扩展 Reinhard 在 L_w = 4 处到达 1；Hable 和 ACES 拟合有趾部和更陡的中间调；PBR Neutral 在约 0.76 以下是恒等映射，之后进入肩部。(b) 同样的曲线经 sRGB 编码后画在跨越五个数量级场景亮度的对数轴上；点线标出中灰 0.18。ACES 拟合在中灰附近对比度最强，Reinhard 保留的高光细节最多。" %}
+{% include blog_figure.liquid path="assets/img/blog/graphics/11-tonemap-curves.svg" caption="灰色输入下的色调映射曲线。(a) 线性坐标：截断（点线）把 1 以上全部削掉；Reinhard 缓慢逼近 1；扩展 Reinhard 在 L_w = 4 处到达 1；Hable 和 ACES 拟合有趾部和更陡的中间调；PBR Neutral 在约 0.8 以下沿恒等映射走（减去一个 0.04 的小偏移），之后进入肩部。(b) 同样的曲线经 sRGB 编码后画在跨越五个数量级场景亮度的对数轴上；点线标出中灰 0.18。ACES 拟合在中灰附近对比度最强，Reinhard 保留的高光细节最多。" %}
 
 下面的小部件把这些算子应用到一张 HDR 测试图上：六种色相，每种跨越 12 档亮度。注意观察饱和色变亮时会发生什么。
 
