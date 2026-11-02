@@ -288,7 +288,7 @@ flowchart LR
 | Agarwal et al., *Cosmos World Foundation Model Platform for Physical AI* | arXiv | 2025 | [arXiv](https://arxiv.org/abs/2501.03575) | ロボットと自動運転のためのオープンな世界基盤モデル |
 | He et al., *Matrix-Game 2.0* | arXiv | 2025 | [arXiv](https://arxiv.org/abs/2508.13009) | オープンなリアルタイム対話型世界モデル |
 | Hafner, Yan & Lillicrap, *Training Agents Inside of Scalable World Models*（Dreamer 4） | arXiv | 2025 | [arXiv](https://arxiv.org/abs/2509.24527) | 世界モデルの中だけで学習したエージェント |
-| Sun et al., *WorldPlay*（HY-World 1.5） | arXiv | 2025 | [arXiv](https://arxiv.org/abs/2512.14614) | 長期記憶を持つリアルタイム世界モデル |
+| Sun et al., *WorldPlay: Towards Long-Term Geometric Consistency for Real-Time Interactive World Modeling*（HY-World 1.5） | arXiv | 2025 | [arXiv](https://arxiv.org/abs/2512.14614) | 長期記憶を持つリアルタイム世界モデル |
 | Kim et al., *Cosmos Policy* | arXiv | 2026 | [arXiv](https://arxiv.org/abs/2601.16163) | ロボットの方策にファインチューニングした動画世界モデル |
 
 ## 学習リソース
@@ -303,7 +303,7 @@ flowchart LR
 ## 演習
 
 1. `frame_model` を使い、$t_n = 30$ ms のときに $k = 1$ で 60 fps に届く内部解像度スケールを求め、その遅延を $s = 1$、$k = 2$ の遅延と比べてください。
-2. モデルにディスプレイのリフレッシュ上限と「フレームペーシング」の規則を加えてください。生成フレームが役に立つのは $k \cdot \text{fps}_{\text{rendered}} \le f_{\text{refresh}}$ のときだけです。描画が 70 fps のとき、144 Hz で最良の $k$ はいくつでしょうか。
+2. モデルにディスプレイのリフレッシュ上限と「フレームペーシング」の規則を加えてください。生成フレームが役に立つのは $k \cdot F \le R$（$F$ は描画フレームレート、$R$ はリフレッシュレート）のときだけです。描画が 70 fps のとき、144 Hz で最良の $k$ はいくつでしょうか。
 3. 2048² で 9 チャンネルの異なるマテリアル 300 個を持つシーンのテクスチャメモリを、4 BPPC と 0.5 BPPC で計算してください。節約したメモリに追加でいくつのマテリアルが入るでしょうか。
 4. 「指定位置にプレハブを生成する」と「マテリアルのパラメータを設定する」の擬似 MCP ツールスキーマ（名前、説明、JSON パラメータ）を書いてください。LLM の呼び出しを実行する前に、エディタはどんな検証をすべきでしょうか。
 5. 表から世界モデルを 1 つ選び、永続性を試す実験を 3 つ挙げてください（たとえば、目をそらして戻す、ドアを開けて部屋を出る、出発点に戻る）。それぞれの場合に、従来のエンジンなら何が保証されるでしょうか。

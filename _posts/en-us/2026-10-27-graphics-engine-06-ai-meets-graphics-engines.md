@@ -288,7 +288,7 @@ flowchart LR
 | Agarwal et al., *Cosmos World Foundation Model Platform for Physical AI* | arXiv | 2025 | [arXiv](https://arxiv.org/abs/2501.03575) | Open world foundation models for robots and AVs |
 | He et al., *Matrix-Game 2.0* | arXiv | 2025 | [arXiv](https://arxiv.org/abs/2508.13009) | Open real-time interactive world model |
 | Hafner, Yan & Lillicrap, *Training Agents Inside of Scalable World Models* (Dreamer 4) | arXiv | 2025 | [arXiv](https://arxiv.org/abs/2509.24527) | Agents trained purely inside a world model |
-| Sun et al., *WorldPlay* (HY-World 1.5) | arXiv | 2025 | [arXiv](https://arxiv.org/abs/2512.14614) | Real-time world model with long-horizon memory |
+| Sun et al., *WorldPlay: Towards Long-Term Geometric Consistency for Real-Time Interactive World Modeling* (HY-World 1.5) | arXiv | 2025 | [arXiv](https://arxiv.org/abs/2512.14614) | Real-time world model with long-horizon memory |
 | Kim et al., *Cosmos Policy* | arXiv | 2026 | [arXiv](https://arxiv.org/abs/2601.16163) | Video world model fine-tuned into a robot policy |
 
 ## Learning resources
@@ -303,7 +303,7 @@ flowchart LR
 ## Exercises
 
 1. Using `frame_model`, find for $t_n = 30$ ms the internal resolution scale at which $k = 1$ reaches 60 fps, and compare its latency with that of $s = 1$, $k = 2$.
-2. Extend the model with a display refresh cap and a "frame pacing" rule: generated frames are only useful if $k \cdot \text{fps}_{\text{rendered}} \le f_{\text{refresh}}$. What is the best $k$ for 144 Hz when the rendered frame rate is 70 fps?
+2. Extend the model with a display refresh cap and a "frame pacing" rule: generated frames are only useful if $k \cdot F \le R$, where $F$ is the rendered frame rate and $R$ the refresh rate. What is the best $k$ for 144 Hz when the rendered frame rate is 70 fps?
 3. Compute the texture memory of a scene with 300 unique 2048² materials of 9 channels at 4 BPPC and at 0.5 BPPC. How many additional materials fit into the saved memory?
 4. Write a pseudo-MCP tool schema (name, description, JSON parameters) for "spawn prefab at position" and "set material parameter". Which validation should the editor perform before executing an LLM's call?
 5. Pick one world model from the table and list three experiments that would test persistence (for example, look away and back, open a door and leave the room, return to a start position). What would a classical engine guarantee in each case?

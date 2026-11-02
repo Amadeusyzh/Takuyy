@@ -63,9 +63,10 @@ def fig_spectrum():
         ax.xaxis.tick_top(); ax.set_yticks([]); ax.grid(False)
         for s in ("left", "bottom"):
             ax.spines[s].set_visible(False)
-        for x in range(4):
-            ax.axvline(x, color=C["gray"], lw=0.6, alpha=0.4)
-        ax.text(3.55, -0.62, label(lang, en="solid: shipping in games/engines   dashed: research / demos",
+        for x in range(5):   # cell boundaries: a bar fills every column up to its level
+            ax.axvline(x - 0.5, color=C["gray"], lw=0.6, alpha=0.4)
+        ax.set_ylim(-1.15, n - 0.3)
+        ax.text(3.55, -0.98, label(lang, en="solid: shipping in games/engines   dashed: research / demos",
                                    zh="实色：已在游戏/引擎中发布   虚线：研究 / 演示",
                                    ja="塗り：ゲーム/エンジンで出荷済み   破線：研究 / デモ"),
                 ha="right", fontsize=11.5, color=C["gray"])
@@ -84,22 +85,27 @@ def fig_pipeline():
         ax.text(t0 + 7.5, 2.95, f"R{f}", ha="center", va="center", color="white", fontsize=13)
         ax.add_patch(Rectangle((t0 + 15, 2.6), 2.5, 0.7, fc=C["b"], alpha=0.9))  # upscaler
         ax.add_patch(Rectangle((t0 + 17.5, 2.6), 4.5, 0.7, fc=C["y"], alpha=0.8))  # frame generation
-        for j in range(k):                                                       # display slots
-            td = t0 + T + j * T / k
+        if f == 2:      # R2's in-between frames would need R3, which is off the chart
+            continue
+        for j in range(k):  # display slots: interpolating R_f -> R_f+1 must wait until R_f+1 is done
+            td = t0 + T + 22.0 + j * T / k
             col = C["z"] if j == 0 else C["y"]
             ax.add_patch(Rectangle((td, 1.0), T / k - 0.5, 0.7, fc=col, alpha=0.8 if j == 0 else 0.45))
             ax.text(td + T / k / 2, 1.35, f"{f}" if j == 0 else f"{f}+{j}/{k}", ha="center", va="center",
                     fontsize=9)
-    ax.annotate("", xy=(T + 25, 0.55), xytext=(0, 0.55),
+    ax.annotate("", xy=(T + 22, 0.55), xytext=(0, 0.55),
                 arrowprops=dict(arrowstyle="<->", color=C["x"], lw=2))
-    ax.text((T + 25) / 2, 0.15, "input of R0  ->  R0 shown: latency grows by ~one rendered frame (hold for R1)",
-            ha="center", fontsize=11.5, color=C["x"])
+    ax.annotate("", xy=(22, 0.0), xytext=(0, 0.0),
+                arrowprops=dict(arrowstyle="<->", color=C["gray"], lw=1.5))
+    ax.text(T + 25, 0.55, "with frame gen: R0 waits until R1 is done (+1 rendered frame)",
+            va="center", fontsize=11, color=C["x"])
+    ax.text(25, 0.0, "without: R0 shown right after upscaling", va="center", fontsize=11, color=C["gray"])
     ax.text(-1, 2.95, "GPU", ha="right", va="center", fontsize=13)
     ax.text(-1, 1.35, "display", ha="right", va="center", fontsize=13)
     for x, txt, col in [(0, "render (internal res)", C["z"]), (32, "upscale", C["b"]),
                         (52, "generate k-1 frames", C["y"])]:
         ax.add_patch(Rectangle((x, 3.75), 2.5, 0.35, fc=col)); ax.text(x + 3.2, 3.92, txt, va="center", fontsize=12)
-    ax.set_xlim(-12, 102); ax.set_ylim(-0.1, 4.3); ax.set_yticks([])
+    ax.set_xlim(-12, 102); ax.set_ylim(-0.45, 4.3); ax.set_yticks([])
     ax.set_xlabel("time (ms)"); ax.grid(False)
     ax.spines["left"].set_visible(False)
     save(fig, out("upscale-framegen"))
@@ -241,8 +247,13 @@ HORIZON = [("Oasis", 3, "~3 s memory"), ("Genie 2", 60, "up to a minute"), ("Gen
 def fig_timeline():
     fig, ax = plt.subplots(figsize=(17, 6.4))
     ax.axhline(0, color=C["dark"], lw=1.5)
-    for i, (name, t, kind) in enumerate(TIMELINE):
-        y = (1 + (i % 6) // 2) * (1 if i % 2 == 0 else -1) * 0.75   # 3 heights per side
+    levels = [1, -1, 2, -2, 3, -3, 4, -4]       # label heights (x 0.6), tried in this order
+    right_end = {lv: -1e9 for lv in levels}
+    for i, (name, t, kind) in enumerate(sorted(TIMELINE, key=lambda r: r[1])):
+        half = 0.0085 * len(name) + 0.02            # half label width in years (fontsize 11, 17 in wide)
+        lv = next((l for l in levels if right_end[l] < t - half), levels[-1])
+        right_end[lv] = t + half
+        y = lv * 0.6
         col = C["z"] if kind == "p" else C["b"]
         ax.plot([t, t], [0, y], color=col, lw=1.2)
         ax.plot(t, 0, "o", color=col, ms=7)
@@ -250,29 +261,28 @@ def fig_timeline():
                 fontsize=11, color=col)
     for yr in (2024, 2025, 2026):
         ax.axvline(yr, color=C["gray"], lw=0.8, ls=":")
-    ax.set_xlim(2024.2, 2027.0); ax.set_ylim(-2.75, 2.75); ax.set_yticks([])
+    ax.set_xlim(2024.2, 2027.0); ax.set_ylim(-2.95, 2.95); ax.set_yticks([])
     ax.set_xticks([2024.5, 2025, 2025.5, 2026, 2026.5])
     ax.set_xticklabels(["2024-07", "2025-01", "2025-07", "2026-01", "2026-07"])
     ax.plot([], [], "o", color=C["z"], label="paper / preprint"); ax.plot([], [], "o", color=C["b"], label="product / blog")
-    ax.legend(loc="upper left", fontsize=11, ncol=2); ax.grid(False)
+    ax.legend(loc="lower left", bbox_to_anchor=(0.0, 1.0), fontsize=11, ncol=2, frameon=False); ax.grid(False)
     ax.spines["left"].set_visible(False)
     save(fig, out("neural-engines-timeline"))
 
 
 def fig_world_models():
     fig, (a1, a2) = plt.subplots(1, 2, figsize=(13, 5.4), gridspec_kw=dict(width_ratios=[1, 1.15]))
-    seen = {}
-    for name, res, fps in RES_FPS:                     # stack labels of coincident / nearby points
-        key = (res, round(fps / 4))
-        n = seen.get(key, 0); seen[key] = n + 1
-        a1.plot(res, fps, "o", color=C["a"], ms=10)
-        a1.annotate(name, (res, fps), textcoords="offset points", xytext=(10, 4 + 14 * n), fontsize=10.5,
-                    arrowprops=dict(arrowstyle="-", color=C["gray"], lw=0.6) if n else None)
+    groups = {}                                         # one label per identical (res, fps) point
+    for name, res, fps in RES_FPS:
+        groups.setdefault((res, fps), []).append(name)
     for name, fps in FPS_ONLY:
-        key = (300, round(fps / 4))
-        n = seen.get(key, 0); seen[key] = n + 1
-        a1.plot(300, fps, "s", color=C["gray"], ms=8)
-        a1.annotate(name, (300, fps), textcoords="offset points", xytext=(10, -4 - 14 * n), fontsize=10)
+        groups.setdefault((300, fps), []).append(name)
+    for (res, fps), names in groups.items():
+        a1.plot(res, fps, "o" if res > 300 else "s", color=C["a"] if res > 300 else C["gray"],
+                ms=10 if res > 300 else 8)
+        dy = -6 if fps in (20, 22) else 6                     # Odyssey (22 fps) below the 24 fps cluster
+        a1.annotate("\n".join(names) + f"  ({fps} fps)", (res, fps), textcoords="offset points",
+                    xytext=(10, dy), fontsize=10, va="top" if dy < 0 else "bottom")
     a1.axvline(400, color=C["gray"], lw=0.8, ls=":")
     a1.text(300, 66, "res. not stated", ha="center", fontsize=10, color=C["gray"])
     a1.set_xlim(250, 1250); a1.set_ylim(0, 70)
@@ -311,9 +321,10 @@ def fig_data_factory():
     for a, b in [((2.5, 3.3), (3.0, 3.3)), ((4.2, 2.6), (4.2, 1.8)), ((5.4, 3.3), (6.0, 3.3)), ((5.4, 1.1), (6.0, 1.1)),
                  ((5.4, 3.0), (6.0, 1.4)), ((7.2, 2.6), (7.2, 1.8)), ((8.4, 1.1), (8.75, 1.9))]:
         ax.add_patch(FancyArrowPatch(a, b, **kw))
-    ax.add_patch(FancyArrowPatch((9.95, 2.9), (1.3, 4.15), connectionstyle="arc3,rad=0.12", arrowstyle="-|>",
-                                 mutation_scale=16, lw=1.4, color=C["gray"], ls="--"))
-    ax.text(5.6, 4.6, "real-to-sim: scans, splats, system identification", ha="center", fontsize=11, color=C["gray"])
+    ax.plot([9.95, 9.95, 1.3], [2.92, 4.3, 4.3], color=C["gray"], lw=1.4, ls="--")
+    ax.add_patch(FancyArrowPatch((1.3, 4.3), (1.3, 4.03), arrowstyle="-|>", mutation_scale=16, lw=1.4,
+                                 color=C["gray"]))
+    ax.text(5.6, 4.45, "real-to-sim: scans, splats, system identification", ha="center", fontsize=11, color=C["gray"])
     save(fig, out("data-factory"))
 
 

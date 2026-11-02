@@ -288,7 +288,7 @@ flowchart LR
 | Agarwal et al., *Cosmos World Foundation Model Platform for Physical AI* | arXiv | 2025 | [arXiv](https://arxiv.org/abs/2501.03575) | 面向机器人和自动驾驶的开放世界基础模型 |
 | He et al., *Matrix-Game 2.0* | arXiv | 2025 | [arXiv](https://arxiv.org/abs/2508.13009) | 开放的实时交互世界模型 |
 | Hafner, Yan & Lillicrap, *Training Agents Inside of Scalable World Models*（Dreamer 4） | arXiv | 2025 | [arXiv](https://arxiv.org/abs/2509.24527) | 完全在世界模型内部训练的智能体 |
-| Sun et al., *WorldPlay*（HY-World 1.5） | arXiv | 2025 | [arXiv](https://arxiv.org/abs/2512.14614) | 带长时程记忆的实时世界模型 |
+| Sun et al., *WorldPlay: Towards Long-Term Geometric Consistency for Real-Time Interactive World Modeling*（HY-World 1.5） | arXiv | 2025 | [arXiv](https://arxiv.org/abs/2512.14614) | 带长时程记忆的实时世界模型 |
 | Kim et al., *Cosmos Policy* | arXiv | 2026 | [arXiv](https://arxiv.org/abs/2601.16163) | 微调为机器人策略的视频世界模型 |
 
 ## 学习资源
@@ -303,7 +303,7 @@ flowchart LR
 ## 练习
 
 1. 用 `frame_model`，对 $t_n = 30$ ms 求出 $k = 1$ 达到 60 fps 时的内部分辨率缩放，并把它的延迟与 $s = 1$、$k = 2$ 的延迟比较。
-2. 给模型加上显示刷新率上限和"帧节奏"规则：只有当 $k \cdot \text{fps}_{\text{rendered}} \le f_{\text{refresh}}$ 时生成帧才有用。渲染帧率为 70 fps 时，144 Hz 下最好的 $k$ 是多少？
+2. 给模型加上显示刷新率上限和"帧节奏"规则：只有当 $k \cdot F \le R$（$F$ 为渲染帧率，$R$ 为刷新率）时生成帧才有用。渲染帧率为 70 fps 时，144 Hz 下最好的 $k$ 是多少？
 3. 计算一个场景的纹理内存：300 种互不相同的 2048² 材质，每种 9 个通道，分别按 4 BPPC 和 0.5 BPPC 计算。节省下来的内存能多装多少种材质？
 4. 为"在某位置生成预制体"和"设置材质参数"写一个伪 MCP 工具模式（名称、描述、JSON 参数）。在执行 LLM 的调用之前，编辑器应当做哪些校验？
 5. 从表中选一个世界模型，列出三个检验持久性的实验（例如：移开视线再看回来；打开一扇门并离开房间；回到起始位置）。在每种情况下，经典引擎能保证什么？
