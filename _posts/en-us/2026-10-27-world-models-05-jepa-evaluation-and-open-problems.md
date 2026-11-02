@@ -111,6 +111,8 @@ $$
 
 The paper reports zero-shot pick-and-place with Franka arms in two labs that were not in the training data, using only image goals. This is the JEPA program in its most complete form so far: a world model learned mostly from passive video, adapted to control with a small amount of interaction data, and used for planning in latent space.
 
+*Update (November 2026):* V-JEPA 2.1 (March 2026) adds dense features and reports a 20-point gain in real-robot grasping over V-JEPA 2-AC. LeWorldModel (March 2026) trains a JEPA world model end to end from pixels. See the 2025-2026 update section near the end of this post.
+
 The figure runs the same procedure on a toy 2D latent space, where the L1 objective has diamond-shaped level sets.
 
 {% include blog_figure.liquid path="assets/img/blog/world-models/05-latent-planning.svg" caption="Toy latent planning with the objective above. The predictor is $\hat s_k = \hat s_{k-1} + a_k$ (each action component clipped to $\pm 0.45$), and states cannot enter the grey disc; grey diamonds are level sets of the L1 distance to the goal (star). Left: CEM over $H = 8$ actions (200 samples, 20 elites, 8 iterations) ends at L1 distance 0.23 from the goal. Right: MPC executes only the first action and re-plans; after 25 steps it is 0.15 from the goal." %}
@@ -300,6 +302,57 @@ For a researcher at the intersection of graphics, XR/HCI and embodied AI, items 
 
 World models matter most where actions have consequences in the physical world. The next series on this blog, [Embodied AI]({{ '/blog/category/embodied-ai/' | relative_url }}), starts from robotics basics and simulation, and then returns to the ideas of this series from the robot's side: world models as simulators for sim-to-real transfer, as policy evaluators, as planners (as in V-JEPA 2-AC and DINO-WM), and as the "imagination" inside vision-language-action models.
 
+## 2025-2026 update (as of November 2026)
+
+This section adds JEPA and evaluation work from mid-2025 to early November 2026, plus a short, clearly labelled list of public claims. All works were checked against their arXiv pages or official posts in November 2026. "Preprint" means not yet published at a venue. The timeline widget (filters "JEPA" and "evaluation") lists every entry.
+
+{% include widget.liquid name="world-models-timeline" height="560" caption="Try it: use the 'JEPA' and 'evaluation' buttons to see this post's entries; tap a dot for its summary, status and link. Notice the burst of evaluation papers in 2026: benchmarks arrive about a year after the systems they measure." %}
+
+### The JEPA line after V-JEPA 2
+
+- **V-JEPA 2.1** (Mur-Labadia et al., preprint, [arXiv:2603.14482](https://arxiv.org/abs/2603.14482), March 2026) answers a known weakness of V-JEPA 2: its features were strong for global understanding but weak for *dense*, per-location tasks. The fix is to add dense prediction losses and to train jointly on images and video. The paper reports better dense features and scaling from 1B to 2B parameters. Relevant to section 3.2, it also reports a 20-point gain in real-robot grasping success over V-JEPA 2-AC. Dense features matter for planning because manipulation depends on *where* things are, not only on what is in the scene.
+- **LeJEPA** (Balestriero and LeCun, preprint, [arXiv:2511.08544](https://arxiv.org/abs/2511.08544), November 2025) attacks the collapse problem of section 4.1 from theory. The paper argues that the embedding distribution which minimizes downstream prediction risk is an **isotropic Gaussian**. It then enforces that distribution with **SIGReg** (Sketched Isotropic Gaussian Regularization): project the batch of embeddings onto random directions $u$ and penalize how far each one-dimensional projection $u^\top z$ is from a standard normal, using a univariate statistical test. Because a distribution is determined by all its one-dimensional projections (the Cramér-Wold theorem), matching enough random projections pushes the whole distribution toward the target. This removes the heuristics that the collapse toy needed: no EMA teacher, no stop-gradient, and a single trade-off hyperparameter. Compare it with VICReg (section 4.1), which matches only the first two moments (variance and covariance), while SIGReg matches the whole distribution along each sampled direction.
+- **LeWorldModel** (Maes et al., preprint, [arXiv:2603.19312](https://arxiv.org/abs/2603.19312), March 2026) applies the same idea to a *world model*. It is a JEPA trained end to end from raw pixels, with only two loss terms, so the number of loss hyperparameters drops from six to one. With about 15M parameters it trains on one GPU in a few hours, and the authors report planning up to 48x faster than world models built on large pretrained encoders. Earlier latent planners (DINO-WM, section 3.3) relied on a frozen foundation encoder because end-to-end JEPA training was unstable. LeWorldModel claims that this crutch is no longer needed.
+- **VL-JEPA** (Chen et al., preprint, [arXiv:2512.10942](https://arxiv.org/abs/2512.10942), December 2025) carries the JEPA principle over to vision-language. The model predicts continuous *embeddings* of the target text instead of generating tokens, and decodes to text only when needed. In a controlled comparison it beats a token-space baseline with 50% fewer trainable parameters.
+- **DINO-world** (Baldassarre et al., preprint, [arXiv:2507.19468](https://arxiv.org/abs/2507.19468), July 2025) sits between the two camps of section 4. It is a generalist video world model that predicts future frames in the feature space of a frozen DINOv2 encoder, an "in-between" target that is neither pixels nor learned-from-scratch latents.
+
+The **predictive-vs-generative debate** (section 4) did not end, but its terms shifted. Latent-space prediction gained stable, simpler training recipes (LeJEPA, LeWorldModel) and dense features (V-JEPA 2.1). Meanwhile, generative video models became real-time and controllable (post 3's update), and the largest industrial models, such as Cosmos 3, now combine a reasoning model and a generator in one system.
+
+### Evaluation: from "does it look right" to "is it useful"
+
+Section 5 split evaluation into five questions. The 2025-2026 benchmarks mostly target questions 5.2 (physics), 5.3 (control) and 5.4 (memory), and the first closed-loop benchmarks target 5.5. The figure maps each benchmark to the questions it explicitly measures.
+
+{% include blog_figure.liquid path="assets/img/blog/world-models/05-update-benchmarks.svg" width="85%" caption="Which of the five questions of Section 5 (columns 5.1 quality, 5.2 physics, 5.3 control, 5.4 memory, 5.5 usefulness) each benchmark explicitly scores, according to its abstract. Filled dots are named evaluation dimensions; hollow dots are partial (text-instruction following in WorldModelBench, 'dynamics' in WorldScore). Benchmarks above the dashed line are from 2024-2025, below it from 2026. Physics (column 5.2) is crowded; memory and usefulness have only two benchmarks each." %}
+
+**Physics (5.2).** *WorldModelBench* (Li et al., preprint, [arXiv:2502.20694](https://arxiv.org/abs/2502.20694)) judges video generators as world models on instruction following and physics adherence, using a fine-tuned vision-language judge. *VideoPhy-2* (Bansal et al., preprint, [arXiv:2503.06800](https://arxiv.org/abs/2503.06800)) focuses on action-centric physical commonsense. *IntPhys 2* (Bordes et al., preprint, [arXiv:2506.09849](https://arxiv.org/abs/2506.09849)) brings violation-of-expectation tests (section 5.2) to complex synthetic scenes, and reports models performing close to chance. *World Models' Last Exam in Physics* (Gao et al., preprint, [arXiv:2610.08791](https://arxiv.org/abs/2610.08791), October 2026) uses 40 measurement-based tasks across mechanics, optics, fluids, thermal effects, electromagnetism and surface tension. Each task pairs a start image and prompt with physical criteria, so no reference video is needed. Across eight video generators and 1,280 videos, the best scored 57.76 out of 100.
+
+**Control (5.3).** *WorldScore* (Duan et al., ICCV 2025, [arXiv:2504.00983](https://arxiv.org/abs/2504.00983)) treats world generation as a sequence of next-scene generations along a specified camera path and scores controllability, quality and dynamics. *WorldMark* (Xu et al., preprint, [arXiv:2604.21686](https://arxiv.org/abs/2604.21686), April 2026) solves the "no shared action interface" problem of section 6 for evaluation. Per-model adapters translate the same WASD-style inputs for ten interactive models across 500 cases. It adds control-systems metrics (direction accuracy, response latency, motion stability) and finds that the fastest responders are often the least stable.
+
+**Memory and persistent state (5.4).** *WBench* (Ying et al., preprint, [arXiv:2605.25874](https://arxiv.org/abs/2605.25874), May 2026) is multi-turn: 289 cases, 1,058 interaction turns and 22 automatic sub-metrics across quality, setting and interaction adherence, consistency and physics. Among 20 models, no single one leads on every dimension. *WRBench* ("Current World Models Lack a Persistent State Core", Lu et al., preprint, [arXiv:2606.20545](https://arxiv.org/abs/2606.20545), June 2026) uses camera motion to *hide* an ongoing event and checks whether it kept evolving while unseen. Across 9,600 videos from 23 models, models typically resume the event in the state it was left in. This is a sharper version of the revisit test in section 5.4: remembering appearance is not the same as simulating state.
+
+**Usefulness (5.5).** *World-in-World* (Zhang et al., ICLR 2026 oral, [arXiv:2510.18135](https://arxiv.org/abs/2510.18135)) places world models in a closed loop with an embodied agent and scores them by task success rather than visual quality. *WorldArena 2.0* (Li et al., preprint, [arXiv:2605.17912](https://arxiv.org/abs/2605.17912), May 2026) extends embodied world-model benchmarking to visuotactile inputs, to world models used as reinforcement-learning environments, and to several simulated and real robots. Closed-loop scores are what section 6, item 6 asked for: evaluation that predicts usefulness.
+
+A complementary probe: *Video models are zero-shot learners and reasoners* (Wiedemer et al., preprint, [arXiv:2509.20328](https://arxiv.org/abs/2509.20328)) tests Veo 3 on perception, modeling, manipulation and reasoning tasks it was never trained for. It argues that video models may become general vision foundation models, much as LLMs did for language.
+
+### Public claims by labs and startups (company statements, not peer-reviewed)
+
+The following are claims from official announcements. They are listed so you can recognise them, not because they have been independently verified.
+
+- **Google DeepMind, Genie 4** ([27 October 2026](https://deepmind.google/blog/genie-4-a-new-generation-of-world-simulation/)): better physics and human characters than Genie 3, native audio, real-time language steering. No benchmark table, resolution or frame rate was published.
+- **NVIDIA, Cosmos 3** ([1 June 2026](https://investor.nvidia.com/news/press-release-details/2026/NVIDIA-Launches-Cosmos-3-the-Open-Frontier-Foundation-Model-for-Physical-AI/default.aspx)): first place among open models on several world-generation leaderboards (including Physics-IQ), action-policy leaderboards and vision-understanding leaderboards.
+- **World Labs, Atlas** ([1 September 2026](https://worldlabs.ai/blog/atlas)): human raters preferred Atlas over five video models in 75% to 94% of comparisons, and its 3D reconstruction error was lower than the baselines in the post's chart.
+- **Wayve, GAIA-4** ([3 August 2026](https://wayve.ai/thinking/gaia-4/)): training GAIA for scene reconstruction improved how faithfully it preserves the recorded world by 2.5x.
+- **AMI Labs.** In December 2025 Yann LeCun confirmed a new world-model startup, Advanced Machine Intelligence (AMI Labs), with himself as executive chairman ([TechCrunch, 19 December 2025](https://techcrunch.com/2025/12/19/yann-lecun-confirms-his-new-world-model-startup-reportedly-seeks-5b-valuation)). Its stated goal is world models as an alternative to LLMs, in line with the position paper of section 1. No technical results were public as of November 2026.
+
+### What changed in sections 5 and 6
+
+- Open problem 1 (memory) became the main research front of video world models (post 3's update), and WRBench showed that *dynamic* persistence is still missing.
+- Open problem 3 (shared action interface) is partly bypassed for evaluation by adapters (WorldMark). For robots it is being addressed by joint video-action models (post 1's update).
+- Open problem 6 (evaluation that predicts usefulness) now has its first closed-loop benchmarks (World-in-World, WorldArena 2.0). Whether their scores correlate across tasks and robots is the next question.
+- Surveys and position papers to orient yourself: *A Definition and Roadmap for World Models* (Chen et al., [arXiv:2607.06401](https://arxiv.org/abs/2607.06401)) and *A Tutorial on World Models and Physical AI* (Oh, [arXiv:2606.12783](https://arxiv.org/abs/2606.12783)), both 2026 preprints.
+
+For how JEPA-style and generative world models are used inside robots, continue with the [embodied-AI series]({{ '/blog/category/embodied-ai/' | relative_url }}). For how engines and simulators serve as the ground truth that these benchmarks rely on, see [graphics-engine post 5]({{ '/blog/2026/graphics-engine-05-physics-and-simulation-engines/' | relative_url }}).
+
 ## Representative papers
 
 | Paper | Venue | Year | Link | Why it matters |
@@ -317,6 +370,22 @@ World models matter most where actions have consequences in the physical world. 
 | Physion: Evaluating Physical Prediction from Vision in Humans and Machines (Bear et al.) | NeurIPS Datasets and Benchmarks | 2021 | [arXiv:2106.08261](https://arxiv.org/abs/2106.08261) | Physical prediction benchmark with human data |
 | VBench: Comprehensive Benchmark Suite for Video Generative Models (Huang et al.) | CVPR | 2024 | [arXiv:2311.17982](https://arxiv.org/abs/2311.17982) | Multi-dimensional video quality evaluation |
 | Do generative video models understand physical principles? (Physics-IQ, Motamed et al.) | WACV | 2026 | [arXiv:2501.09038](https://arxiv.org/abs/2501.09038) | Visual realism does not imply physical understanding |
+| WorldModelBench: Judging Video Generation Models As World Models (Li et al.) | preprint | 2025 | [arXiv:2502.20694](https://arxiv.org/abs/2502.20694) | Instruction following and physics adherence |
+| VideoPhy-2: A Challenging Action-Centric Physical Commonsense Evaluation in Video Generation (Bansal et al.) | preprint | 2025 | [arXiv:2503.06800](https://arxiv.org/abs/2503.06800) | Action-centric physical commonsense |
+| WorldScore: A Unified Evaluation Benchmark for World Generation (Duan et al.) | ICCV | 2025 | [arXiv:2504.00983](https://arxiv.org/abs/2504.00983) | Camera-specified next-scene generation |
+| IntPhys 2: Benchmarking Intuitive Physics Understanding In Complex Synthetic Environments (Bordes et al.) | preprint | 2025 | [arXiv:2506.09849](https://arxiv.org/abs/2506.09849) | Violation of expectation in complex scenes |
+| Back to the Features: DINO as a Foundation for Video World Models (Baldassarre et al.) | preprint | 2025 | [arXiv:2507.19468](https://arxiv.org/abs/2507.19468) | Prediction in frozen DINOv2 feature space |
+| Video models are zero-shot learners and reasoners (Wiedemer et al.) | preprint | 2025 | [arXiv:2509.20328](https://arxiv.org/abs/2509.20328) | Veo 3 probed on untrained vision tasks |
+| World-in-World: World Models in a Closed-Loop World (Zhang et al.) | ICLR (oral) | 2026 | [arXiv:2510.18135](https://arxiv.org/abs/2510.18135) | Closed-loop, task-success evaluation |
+| LeJEPA: Provable and Scalable Self-Supervised Learning Without the Heuristics (Balestriero, LeCun) | preprint | 2025 | [arXiv:2511.08544](https://arxiv.org/abs/2511.08544) | SIGReg replaces EMA and stop-gradient |
+| VL-JEPA: Joint Embedding Predictive Architecture for Vision-language (Chen et al.) | preprint | 2025 | [arXiv:2512.10942](https://arxiv.org/abs/2512.10942) | Predicting text embeddings instead of tokens |
+| LeWorldModel: Stable End-to-End Joint-Embedding Predictive Architecture from Pixels (Maes et al.) | preprint | 2026 | [arXiv:2603.19312](https://arxiv.org/abs/2603.19312) | End-to-end JEPA world model, two losses |
+| V-JEPA 2.1: Unlocking Dense Features in Video Self-Supervised Learning (Mur-Labadia et al.) | preprint | 2026 | [arXiv:2603.14482](https://arxiv.org/abs/2603.14482) | Dense features; better robot grasping |
+| WorldMark: A Unified Benchmark Suite for Interactive Video World Models (Xu et al.) | preprint | 2026 | [arXiv:2604.21686](https://arxiv.org/abs/2604.21686) | Shared controls via adapters; control metrics |
+| WorldArena 2.0 (Li et al.) | preprint | 2026 | [arXiv:2605.17912](https://arxiv.org/abs/2605.17912) | Embodied, multi-platform world-model benchmark |
+| WBench: A Comprehensive Multi-turn Benchmark for Interactive Video World Model Evaluation (Ying et al.) | preprint | 2026 | [arXiv:2605.25874](https://arxiv.org/abs/2605.25874) | Multi-turn interactive evaluation |
+| Current World Models Lack a Persistent State Core (WRBench, Lu et al.) | preprint | 2026 | [arXiv:2606.20545](https://arxiv.org/abs/2606.20545) | Off-screen dynamics are not simulated |
+| World Models' Last Exam in Physics (Gao et al.) | preprint | 2026 | [arXiv:2610.08791](https://arxiv.org/abs/2610.08791) | Measurement-based physics tasks |
 
 ## Learning resources
 
@@ -332,5 +401,12 @@ World models matter most where actions have consequences in the physical world. 
 3. Write the V-JEPA 2-AC planning objective as a CEM loop (sample, roll out the predictor, score by L1 distance to the goal embedding, refit). Reuse the CEM description from post 1.
 4. Design a revisit-consistency metric for a video world model: specify the camera path, the comparison metric and a baseline that would score perfectly by cheating. How do you rule out the cheat?
 5. Pick one open problem from Section 6 and write a half-page research proposal: hypothesis, minimal experiment, and how you would evaluate it.
+6. (2025-2026 update) In the collapse toy of Section 4.1, a fully collapsed encoder maps every input to the same vector $c$. Explain what every one-dimensional projection $u^\top z$ looks like in that case, and why a SIGReg-style penalty (compare each projection with $\mathcal{N}(0, 1)$) is large. Then consider a "dimensional collapse" where embeddings vary only along one direction $e_1$. Which random directions $u$ detect it, and why do enough random directions always catch it?
+
+<details markdown="1"><summary>Hint</summary>
+
+Under full collapse every projection is the constant $u^\top c$, a point mass with zero variance, which is far from a unit Gaussian for every $u$. Under dimensional collapse, $u^\top z = (u^\top e_1)\, z_1$ has variance $(u^\top e_1)^2 \operatorname{Var}(z_1)$. In high dimension this is close to zero for most random $u$, so most directions see a near-constant projection and are penalized. By Cramér-Wold, if all one-dimensional projections matched $\mathcal{N}(0,1)$, the distribution would be exactly $\mathcal{N}(0, I)$.
+
+</details>
 
 **Next:** this is the last post of the World Models series. Continue with the [Embodied AI]({{ '/blog/category/embodied-ai/' | relative_url }}) series, or go back to [post 1]({{ '/blog/2026/world-models-01-what-is-a-world-model/' | relative_url }}) for the foundations.

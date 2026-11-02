@@ -458,7 +458,44 @@ print(f"Flow matching 50 Euler steps: {100 * frac:.1f}% near a mode, {modes}/8 m
 | Sora (2024) | 動画圧縮ネットワーク | 時空間パッチ上の拡散トランスフォーマー | テキスト、画像、動画 |
 | Cosmos (2025) | Cosmos トークナイザ | 拡散型および自己回帰型の世界基盤モデル | テキスト、動画、（事後訓練による）行動 |
 
-第 3 回では、これらの動画世界シミュレータの中身を見ていきます。
+第 3 回では、これらの動画世界シミュレータの中身を見ていきます。（*更新、2026 年 11 月：* 後述の 2025〜2026 年の進展の節で、因果的で少ステップの動画拡散モデルをこの表に追加しています。）
+
+## 2025〜2026 年の進展（2026 年 11 月時点）
+
+この節では、2025 年から 2026 年 11 月初めまでの生成モデリングの進展のうち、世界モデルに関係するものを補足します。動画生成全体のサーベイではありません。その分野は進みが速すぎて、ここでは扱いきれません。世界モデルにとって最大の変化は、**因果的で少ステップの動画拡散が対話型シミュレータの標準的なバックボーンになった**ことです。その鍵となる問題であり、最も重要な新しいアイデアでもあるのが、*訓練時にモデルがコンテキストとして何を見るか*です。「プレプリント」はまだ学会や論文誌で発表されていない arXiv 論文を指します。
+
+### 因果的な動画拡散と訓練・テストのギャップ
+
+対話型の世界モデルは、フレーム $\lt t$ と行動からフレーム $t$ を生成し、次に*自分の*出力を条件としてフレーム $t+1$ を生成しなければなりません（第 3 回の第 4 節の分解）。実フレームを $x_{\lt t}$、生成したフレームを $\hat x_{\lt t}$ と書きます。標準的な**教師強制**（teacher forcing、TF）は実際のコンテキストで $p_\theta(x_t \mid x_{\lt t})$ を訓練しますが、テスト時にモデルが受け取るのは $\hat x_{\lt t}$ です。$\hat x$ の誤差は見たことのない入力なので、積み重なっていきます。これは第 1 回の誤差蓄積の問題の「露出バイアス」（exposure bias）版です。図は、訓練時のコンテキストの選び方を 3 通り比べたものです。
+
+{% include blog_figure.liquid path="assets/img/blog/world-models/02-update-forcing.svg" width="90%" caption="因果的な動画モデルが訓練時に何を条件とするかを示します。TF（教師強制）：きれいな実際の過去 $x_{1:5}$ で、学習対象のフレームだけにノイズが加わります。DF（Diffusion Forcing、第 3 回）：各フレームに独立したノイズレベル $\sigma$（灰色の濃さ）が与えられ、モデルは不確かなコンテキストの扱いを学びます。SF（Self Forcing）：コンテキストはモデル自身の自己回帰的なロールアウト $\hat x_{1:5}$ で（矢印。テスト時とまったく同じく KV キャッシュで生成）、損失は分布マッチング（DMD）や敵対的な目的関数によって生成したクリップ全体にかけられます。デプロイ時に見るのと同じ入力で訓練するのは SF だけです。" %}
+
+- **CausVid**（Yin et al., "From Slow Bidirectional to Fast Autoregressive Video Diffusion Models"、CVPR 2025、[arXiv:2412.07772](https://arxiv.org/abs/2412.07772)）は、高品質な*双方向*の動画拡散の教師を、少ないデノイズステップで済む*因果的*な生徒に蒸留します。生成は KV キャッシュを使ったストリーミングになります。蒸留には分布マッチング蒸留（distribution matching distillation、DMD）を使います。個々のサンプルを写すのではなく、生徒の出力分布が教師の分布に一致するように訓練するのです。
+- **Self Forcing**（Huang et al.、NeurIPS 2025、[arXiv:2506.08009](https://arxiv.org/abs/2506.08009)）は、訓練・テストのギャップを直接埋めます。訓練中、モデルは推論時とまったく同じように、KV キャッシュを使ってフレームごとに自己回帰的にクリップを生成します。そのうえで、自分の出力に動画全体を見る損失（DMD、score identity、GAN）をかけます。訓練中にロールアウトを展開できるのは、各フレームのデノイズが数ステップで済むからです。結果は GPU 1 枚でリアルタイムに動作し、Matrix-Game 2.0 などのオープンな対話型世界モデルの標準レシピになりました（第 3 回の更新）。
+- 後続の研究が残りの弱点を補っています。**Self-Forcing++**（Cui et al.、プレプリント、[arXiv:2510.02283](https://arxiv.org/abs/2510.02283)）は、長い動画の教師なしで長いロールアウトのずれを減らし、最長 4 分 15 秒の動画に達しました。**LongLive**（プレプリント、[arXiv:2509.22622](https://arxiv.org/abs/2509.22622)）は生成中のプロンプト切り替えを加えます。**Causal Forcing**（Zhu et al.、ICML 2026、[arXiv:2602.02214](https://arxiv.org/abs/2602.02214)）は、*双方向*の教師からの蒸留では構造上のギャップが残ると指摘し、DMD の前に*自己回帰型*の教師で生徒を初期化します。動きのダイナミクスで Self Forcing を明確に上回ったと報告しています。**Causal Forcing++**（プレプリント、[arXiv:2605.15141](https://arxiv.org/abs/2605.15141)）と **Causal-rCM**（Zheng et al.、プレプリント、[arXiv:2606.25473](https://arxiv.org/abs/2606.25473)）は、フレームあたり 2 ステップのサンプリングまで進めました。Causal-rCM は、教師強制による一貫性蒸留と Self Forcing 型の DMD を組み合わせています。
+- 関連する 2 つのアイデアがあります。**History-Guided Video Diffusion**（Song et al.、ICML 2025、[arXiv:2502.06764](https://arxiv.org/abs/2502.06764)）は、可変長の履歴を受け取る Diffusion Forcing Transformer を訓練し、分類器なしガイダンス（第 7 節）を*履歴*にかけます。過去のフレームがある場合とない場合の予測を比べ、長距離の一貫性を強めるのです。**MAGI-1**（Sand AI、プレプリント、[arXiv:2505.13211](https://arxiv.org/abs/2505.13211)）は、チャンクごとの自己回帰的な動画拡散を大規模なオープンモデルにまで拡大しました。
+
+### 少ステップのサンプラー：shortcut モデルと MeanFlow
+
+リアルタイムの世界モデルでは、フレームあたりのネットワーク評価を 1〜4 回に抑える必要があります。第 8 節では reflow を紹介しましたが、少ステップのサンプラーを直接訓練する新しいアイデアが 2 つあります。
+
+- **Shortcut モデル**（Frans et al., "One Step Diffusion via Shortcut Models"、[arXiv:2410.12557](https://arxiv.org/abs/2410.12557)、2024）は、ノイズレベルに加えて望みの*ステップ幅* $d$ でもネットワークを条件付けます。そして、幅 $2d$ の 1 ステップが幅 $d$ の連続した 2 ステップに等しくなるという自己整合性の目標で訓練します。これで 1 つのモデルが 1、2、4……ステップでサンプリングできます。Dreamer 4 の *shortcut forcing*（第 1 回の更新）は、これを Diffusion Forcing と組み合わせたものです。
+- **MeanFlow**（Geng et al., "Mean Flows for One-step Generative Modeling"、プレプリント、[arXiv:2505.13447](https://arxiv.org/abs/2505.13447)）は、フローマッチングの瞬間的な速度 $v$ ではなく、区間にわたる*平均*速度 $u(x_t, r, t) = \frac{1}{t - r}\int_r^t v(x_\tau, \tau)\, d\tau$ を学習します。すると 1 回の評価でノイズからデータへ跳べます：$x_r = x_t - (t - r)\, u(x_t, r, t)$。（ここでは論文の慣例どおり、データを $t = 0$、ノイズを $t = 1$ とします。第 8 節とは逆です。）上のフロー経路のウィジェットにある曲がった厳密な経路と比べてみてください。大きな Euler ステップが行き過ぎるのは、瞬間的な速度を使っているからです。
+
+### オープンなバックボーンとトークナイザ
+
+- **Wan**（Team Wan、プレプリント、[arXiv:2503.20314](https://arxiv.org/abs/2503.20314)、2025 年 3 月）は、大規模な動画拡散 Transformer（フローマッチング、因果的な 3D VAE）のオープンなファミリーです。2025〜2026 年の多くの世界モデルがここから出発しています。第 3 回の更新で扱ったいくつかのモデルや、Wan2.1/2.2 の上に構築されたモデルがその例です。
+- **表現オートエンコーダ**（representation autoencoders。Zheng et al., "Diffusion Transformers with Representation Autoencoders"、技術レポート、[arXiv:2510.11690](https://arxiv.org/abs/2510.11690)）は、潜在拡散（第 6 節）の VAE を、凍結した*事前学習済みの表現エンコーダ*（DINOv2 など）と訓練したデコーダに置き換えます。こうして拡散モデルは意味的な特徴空間で動作します。JEPA や DINO-world が行う「特徴空間で予測する」という選択（第 5 回）と同じものを、生成に使っているわけです。
+- **Cosmos トークナイザ**（第 11 節の表）は、動画で今もよく使われるオープンな選択肢です。NVIDIA のその後の Cosmos のリリースは第 3 回の更新で扱います。
+
+### 第 11 節の表の拡張
+
+| システム | 圧縮器 | ダイナミクス / 生成器 | 条件 |
+| --- | --- | --- | --- |
+| Self Forcing / CausVid の生徒モデル（2025） | 動画 VAE（Wan） | KV キャッシュ付きの因果的・少ステップの動画拡散 | テキスト（微調整すれば行動も） |
+| Matrix-Game 2.0（2025） | 動画 VAE | 因果的・少ステップの拡散（Self Forcing 型） | キーボードとマウス |
+| Dreamer 4（2025） | 学習した動画トークナイザ | shortcut forcing を使う Transformer | 行動（少数のラベル） |
+| Cosmos 3（2026） | 発表では詳細不明 | mixture of transformers：推論 + 生成 | テキスト、画像、動画、音、行動 |
 
 ## 代表的な論文
 
@@ -481,6 +518,17 @@ print(f"Flow matching 50 Euler steps: {100 * frac:.1f}% near a mode, {modes}/8 m
 | Scalable Diffusion Models with Transformers (DiT, Peebles, Xie) | ICCV | 2023 | [arXiv:2212.09748](https://arxiv.org/abs/2212.09748) | トランスフォーマーによるデノイザ、adaLN-Zero、スケーリング |
 | Scaling Rectified Flow Transformers for High-Resolution Image Synthesis (Esser et al.) | ICML | 2024 | [arXiv:2403.03206](https://arxiv.org/abs/2403.03206) | Rectified Flow + トランスフォーマーの大規模化（SD3） |
 | Language Model Beats Diffusion: Tokenizer is Key to Visual Generation (MAGVIT-v2, Yu et al.) | ICLR | 2024 | [arXiv:2310.05737](https://arxiv.org/abs/2310.05737) | ルックアップフリー量子化による動画トークナイザ |
+| One Step Diffusion via Shortcut Models (Frans et al.) | arXiv | 2024 | [arXiv:2410.12557](https://arxiv.org/abs/2410.12557) | ステップ幅で条件付けた少ステップのサンプリング |
+| From Slow Bidirectional to Fast Autoregressive Video Diffusion Models (CausVid, Yin et al.) | CVPR | 2025 | [arXiv:2412.07772](https://arxiv.org/abs/2412.07772) | 双方向の教師から因果的・少ステップの生徒へ |
+| History-Guided Video Diffusion (Song et al.) | ICML | 2025 | [arXiv:2502.06764](https://arxiv.org/abs/2502.06764) | 可変長の履歴に対するガイダンス |
+| Wan: Open and Advanced Large-Scale Video Generative Models (Team Wan) | プレプリント | 2025 | [arXiv:2503.20314](https://arxiv.org/abs/2503.20314) | 多くの世界モデルのオープンなバックボーン |
+| MAGI-1: Autoregressive Video Generation at Scale (Sand AI) | プレプリント | 2025 | [arXiv:2505.13211](https://arxiv.org/abs/2505.13211) | 大規模なチャンク単位の自己回帰拡散 |
+| Mean Flows for One-step Generative Modeling (Geng et al.) | プレプリント | 2025 | [arXiv:2505.13447](https://arxiv.org/abs/2505.13447) | 平均速度のフローによる 1 ステップ生成 |
+| Self Forcing: Bridging the Train-Test Gap in Autoregressive Video Diffusion (Huang et al.) | NeurIPS | 2025 | [arXiv:2506.08009](https://arxiv.org/abs/2506.08009) | 自分のロールアウトで訓練、リアルタイムの因果的動画 |
+| Self-Forcing++: Towards Minute-Scale High-Quality Video Generation (Cui et al.) | プレプリント | 2025 | [arXiv:2510.02283](https://arxiv.org/abs/2510.02283) | 長い教師なしで分単位のロールアウト |
+| Diffusion Transformers with Representation Autoencoders (Zheng et al.) | 技術レポート | 2025 | [arXiv:2510.11690](https://arxiv.org/abs/2510.11690) | 事前学習済み特徴空間での拡散 |
+| Causal Forcing (Zhu et al.) | ICML | 2026 | [arXiv:2602.02214](https://arxiv.org/abs/2602.02214) | 自己回帰型の教師による因果的蒸留 |
+| Causal-rCM (Zheng et al.) | 技術レポート | 2026 | [arXiv:2606.25473](https://arxiv.org/abs/2606.25473) | 教師強制の一貫性蒸留 + Self Forcing 型 DMD |
 
 ## 学習リソース
 
@@ -496,5 +544,12 @@ print(f"Flow matching 50 Euler steps: {100 * frac:.1f}% near a mode, {modes}/8 m
 3. DDPM のスクリプトで、DDIM を 10、50、200 ステップ、および $\eta \in \lbrace 0, 1 \rbrace$ で比較してください。ステップ数を減らしたとき、どちらが先に劣化するでしょうか。
 4. クラスラベル（モードのインデックス）を追加し、15% のラベルドロップアウトで訓練してください。classifier-free guidance を実装し、$w \in \lbrace 1, 3, 7 \rbrace$ についてサンプルをプロットしてください。各モードの広がりはどうなるでしょうか。
 5. 線形経路 $x_t = (1-t)x_0 + t x_1$ について、速度予測器 $v_\theta$ とノイズ予測器が $\hat\epsilon = x_t - t\,v_\theta(x_t, t)$ という関係にあることを示してください。
+6. （2025〜2026 年の更新）因果的な動画モデルがフレームあたり $S$ 回のデノイズステップを使い、$F$ フレームを生成するとします。Self Forcing の訓練クリップを 1 本展開するのに必要なネットワーク評価の回数を数え、Self Forcing が $S = 4$ なら実用的で $S = 50$ ではそうでない理由を説明してください。Diffusion Forcing は、教師強制とテスト時のギャップのどの部分を埋め、どの部分を残すでしょうか。
+
+<details markdown="1"><summary>ヒント</summary>
+
+展開には $F \cdot S$ 回の評価が必要です（KV キャッシュにより 1 回あたりのコストはほぼ一定）。たとえば $F = 20$、$S = 4$ なら 80 回ですが、$S = 50$ なら 1,000 回です。実際には、メモリを節約するため展開の一部にしか勾配を通しません。Diffusion Forcing はモデルに*ノイズを含む*コンテキストへの耐性を教えますが、そのノイズはガウス分布です。一方、テスト時の実際のコンテキストには、モデル自身の構造化された誤差（ぼけ、ずれ）が含まれます。そうした誤差にモデルを触れさせられるのは、自分のロールアウトでの訓練だけです。
+
+</details>
 
 **次回：** [第 3 回]({{ '/blog/2026/world-models-03-video-world-simulators/' | relative_url }}) では、これらの道具を使って動画ベースの世界シミュレータを構築します。Sora、Genie 1-3、GameNGen、UniSim、GAIA-1、Cosmos です。

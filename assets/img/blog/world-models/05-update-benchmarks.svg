@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Hand-written stand-in (no Python runtime in the authoring session); regenerate with
+     bin/figures/world-models/world_models_updates.py. Columns are the five questions of Section 5
+     (5.1 quality, 5.2 physics, 5.3 control, 5.4 memory, 5.5 usefulness). Filled = an explicit, named dimension
+     in the benchmark's abstract; hollow = partial (e.g. text-instruction following, or 'dynamics'). -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 470" width="720" height="470" font-family="DejaVu Sans, Arial, sans-serif" font-size="15">
+  <rect width="720" height="470" fill="#ffffff"/>
+  <g fill="#222" font-weight="bold" text-anchor="middle">
+    <text x="390" y="34">5.1</text><text x="460" y="34">5.2</text><text x="530" y="34">5.3</text><text x="600" y="34">5.4</text><text x="670" y="34">5.5</text>
+  </g>
+  <g stroke="#ddd" stroke-width="1">
+    <line x1="20" y1="45" x2="705" y2="45"/>
+    <line x1="20" y1="275" x2="705" y2="275" stroke="#888" stroke-dasharray="5 4"/>
+    <line x1="20" y1="440" x2="705" y2="440"/>
+  </g>
+  <!-- row y = 65 + 30 i ; years: 2024 / 2025 above dashed line, 2026 below -->
+  <g fill="#222" text-anchor="end">
+    <text x="345" y="70">VBench ('24)</text>
+    <text x="345" y="100">Physics-IQ ('25)</text>
+    <text x="345" y="130">WorldModelBench ('25)</text>
+    <text x="345" y="160">VideoPhy-2 ('25)</text>
+    <text x="345" y="190">WorldScore ('25)</text>
+    <text x="345" y="220">IntPhys 2 ('25)</text>
+    <text x="345" y="250">World-in-World ('25)</text>
+    <text x="345" y="310">WorldMark ('26)</text>
+    <text x="345" y="340">WBench ('26)</text>
+    <text x="345" y="370">WorldArena 2.0 ('26)</text>
+    <text x="345" y="400">WRBench ('26)</text>
+    <text x="345" y="430">Last Exam in Physics ('26)</text>
+  </g>
+  <g fill="#1f77b4">
+    <!-- VBench -->      <circle cx="390" cy="65" r="9"/>
+    <!-- Physics-IQ -->  <circle cx="460" cy="95" r="9"/>
+    <!-- WMBench -->     <circle cx="460" cy="125" r="9"/>
+    <!-- VideoPhy-2 -->  <circle cx="460" cy="155" r="9"/>
+    <!-- WorldScore -->  <circle cx="390" cy="185" r="9"/><circle cx="530" cy="185" r="9"/>
+    <!-- IntPhys 2 -->   <circle cx="460" cy="215" r="9"/>
+    <!-- World-in-World --><circle cx="670" cy="245" r="9"/>
+    <!-- WorldMark -->   <circle cx="530" cy="305" r="9"/>
+    <!-- WBench -->      <circle cx="390" cy="335" r="9"/><circle cx="460" cy="335" r="9"/><circle cx="530" cy="335" r="9"/><circle cx="600" cy="335" r="9"/>
+    <!-- WorldArena 2.0 --><circle cx="390" cy="365" r="9"/><circle cx="670" cy="365" r="9"/>
+    <!-- WRBench -->     <circle cx="600" cy="395" r="9"/>
+    <!-- Last Exam -->   <circle cx="460" cy="425" r="9"/>
+  </g>
+  <g fill="#ffffff" stroke="#1f77b4" stroke-width="2.5">
+    <!-- WMBench instruction following --><circle cx="530" cy="125" r="8"/>
+    <!-- WorldScore dynamics -->          <circle cx="460" cy="185" r="8"/>
+  </g>
+  <!-- column counts (filled) -->
+  <g fill="#555" text-anchor="middle" font-size="14">
+    <text x="20" y="455" text-anchor="start">&#931;</text>
+    <text x="390" y="455">4</text><text x="460" y="455">6</text><text x="530" y="455">3</text><text x="600" y="455">2</text><text x="670" y="455">2</text>
+  </g>
+</svg>

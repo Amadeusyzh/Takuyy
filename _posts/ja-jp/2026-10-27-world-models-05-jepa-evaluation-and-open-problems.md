@@ -111,6 +111,8 @@ $$
 
 論文では、学習データに含まれていない 2 つのラボで、Franka アームを使い、画像のゴールだけからゼロショット（zero-shot）のピックアンドプレースを実現したと報告されています。これは現時点で最も完成された形の JEPA プログラムです。主に受動的な動画から学習した世界モデルを、少量のインタラクションデータで制御に適応させ、潜在空間でのプランニングに用いているのです。
 
+*更新（2026 年 11 月）：* V-JEPA 2.1（2026 年 3 月）は密な特徴を加え、実ロボットの把持で V-JEPA 2-AC より 20 ポイント高い成功率を報告しています。LeWorldModel（2026 年 3 月）は JEPA の世界モデルをピクセルからエンドツーエンドで学習します。本記事末尾の 2025〜2026 年の進展の節を参照してください。
+
 図は同じ手順を玩具的な 2 次元潜在空間で実行したもので、L1 目的関数の等高線はひし形になります。
 
 {% include blog_figure.liquid path="assets/img/blog/world-models/05-latent-planning.svg" caption="上の目的関数による玩具的な潜在空間プランニング。予測器は $\hat s_k = \hat s_{k-1} + a_k$（行動の各成分は $\pm 0.45$ にクリップ）で、状態は灰色の円盤に入れません。灰色のひし形はゴール（星）までの L1 距離の等高線です。左：$H = 8$ 個の行動に対する CEM（サンプル 200、エリート 20、反復 8 回）は、ゴールから L1 距離 0.23 で終わります。右：MPC は最初の行動だけを実行して再計画し、25 ステップ後にはゴールから 0.15 です。" %}
@@ -300,6 +302,57 @@ print("delta PSNR (model that ignores actions):",
 
 世界モデルが最も重要になるのは、行動が物理世界で結果をもたらす場面です。このブログの次のシリーズである[身体性AI（Embodied AI）]({{ '/blog/category/embodied-ai/' | relative_url }})では、ロボティクスの基礎とシミュレーションから始め、その後ロボットの側から本シリーズのアイデアに立ち返ります。すなわち、sim-to-real 転移（sim-to-real transfer）のためのシミュレータとしての世界モデル、方策の評価器としての世界モデル、（V-JEPA 2-AC や DINO-WM のような）プランナーとしての世界モデル、そして視覚・言語・行動モデル（vision-language-action models）の内部にある「想像」としての世界モデルです。
 
+## 2025〜2026 年の進展（2026 年 11 月時点）
+
+この節では、2025 年半ばから 2026 年 11 月初めまでの JEPA と評価に関する研究を補足し、明確にラベル付けした公開された主張の一覧も加えます。すべての研究は 2026 年 11 月に arXiv のページまたは公式記事で確認しました。「プレプリント」はまだ学会や論文誌で発表されていないものです。タイムラインのウィジェット（「JEPA」と「評価」で絞り込み）にすべての項目が載っています。
+
+{% include widget.liquid name="world-models-timeline" height="560" caption="試してみましょう：「JEPA」と「評価」のボタンでこの記事の項目を表示し、点をタップすると要約、ステータス、リンクが表示されます。2026 年に評価の論文が集中していることに注目してください。ベンチマークは、それが測るシステムからおよそ 1 年遅れてやってきます。" %}
+
+### V-JEPA 2 以後の JEPA の系譜
+
+- **V-JEPA 2.1**（Mur-Labadia et al.、プレプリント、[arXiv:2603.14482](https://arxiv.org/abs/2603.14482)、2026 年 3 月）は、V-JEPA 2 の既知の弱点に取り組みます。その特徴は全体的な理解には強い一方、位置ごとの*密な*タスクには弱いというものでした。解決策は、密な予測損失を加え、画像と動画で同時に学習することです。論文では、より良い密な特徴と、1B から 2B パラメータへのスケーリングが報告されています。3.2 節に関係する点として、実ロボットでの把持成功率が V-JEPA 2-AC より 20 ポイント高いことも報告されています。操作は物体が*どこにあるか*に依存し、場面に何があるかだけでは決まらないので、密な特徴はプランニングにとって重要です。
+- **LeJEPA**（Balestriero and LeCun、プレプリント、[arXiv:2511.08544](https://arxiv.org/abs/2511.08544)、2025 年 11 月）は、4.1 節の崩壊の問題に理論から取り組みます。論文は、下流の予測リスクを最小にする埋め込みの分布は**等方的なガウス分布**（isotropic Gaussian）だと論じ、その分布を **SIGReg**（Sketched Isotropic Gaussian Regularization）で課します。埋め込みのバッチをランダムな方向 $u$ に射影し、各 1 次元射影 $u^\top z$ が標準正規分布からどれだけ離れているかを、1 変数の統計的検定で罰するのです。分布はそのすべての 1 次元射影によって一意に決まる（Cramér-Wold の定理）ので、十分な数のランダム射影を合わせれば分布全体が目標に近づきます。これにより、崩壊のおもちゃの実験で必要だったヒューリスティクスが不要になります。EMA の教師も stop-gradient も要らず、トレードオフのハイパーパラメータは 1 つだけです。4.1 節の VICReg と比べてみてください。VICReg が最初の 2 つのモーメント（分散と共分散）しか合わせないのに対し、SIGReg はサンプルした各方向で分布全体を合わせます。
+- **LeWorldModel**（Maes et al.、プレプリント、[arXiv:2603.19312](https://arxiv.org/abs/2603.19312)、2026 年 3 月）は、同じ考え方を*世界モデル*に適用します。生のピクセルからエンドツーエンドで学習する JEPA で、損失項は 2 つだけなので、損失のハイパーパラメータは 6 個から 1 個に減ります。約 1500 万パラメータで、GPU 1 枚で数時間で学習でき、大規模な事前学習済みエンコーダに基づく世界モデルより最大 48 倍速くプランニングできると報告されています。それまでの潜在空間のプランナー（DINO-WM、3.3 節）は、エンドツーエンドの JEPA 学習が不安定だったため、凍結した基盤エンコーダに頼っていました。LeWorldModel は、もうその松葉杖は要らないと主張しています。
+- **VL-JEPA**（Chen et al.、プレプリント、[arXiv:2512.10942](https://arxiv.org/abs/2512.10942)、2025 年 12 月）は、JEPA の原理を視覚言語に持ち込みます。トークンを生成するのではなく、目標テキストの連続的な*埋め込み*を予測し、必要なときだけテキストにデコードします。統制された比較では、学習可能なパラメータが 50% 少ないにもかかわらず、トークン空間のベースラインを上回りました。
+- **DINO-world**（Baldassarre et al.、プレプリント、[arXiv:2507.19468](https://arxiv.org/abs/2507.19468)、2025 年 7 月）は、第 4 節の 2 つの陣営の中間に位置します。凍結した DINOv2 エンコーダの特徴空間で将来のフレームを予測する汎用の動画世界モデルで、ピクセルでもゼロから学習した潜在表現でもない「中間の」ターゲットを使います。
+
+**予測型と生成型の論争**（第 4 節）は終わっていませんが、論点は変わりました。潜在空間での予測は、安定したより簡単な学習レシピ（LeJEPA、LeWorldModel）と密な特徴（V-JEPA 2.1）を手に入れました。一方、生成型の動画モデルはリアルタイムで制御可能になり（第 3 回の更新）、Cosmos 3 のような最大級の産業モデルは、推論モデルと生成器を 1 つのシステムに組み合わせています。
+
+### 評価：「見た目が正しいか」から「役に立つか」へ
+
+第 5 節では評価を 5 つの問いに分けました。2025〜2026 年のベンチマークの多くは 5.2（物理）、5.3（制御）、5.4（記憶）を対象とし、最初の閉ループのベンチマークは 5.5 を対象としています。図は、各ベンチマークを明示的に測っている問いに対応づけたものです。
+
+{% include blog_figure.liquid path="assets/img/blog/world-models/05-update-benchmarks.svg" width="85%" caption="各ベンチマークが、その要旨によれば第 5 節の 5 つの問い（列 5.1 品質、5.2 物理、5.3 制御、5.4 記憶、5.5 有用性）のどれを明示的に採点しているかを示します。塗りつぶしの点は名前の付いた評価次元、白抜きの点は部分的なもの（WorldModelBench のテキスト指示への追従、WorldScore の「ダイナミクス」）です。破線より上は 2024〜2025 年、下は 2026 年のベンチマークです。物理（5.2 列）は混み合っていますが、記憶と有用性はそれぞれ 2 つしかありません。" %}
+
+**物理（5.2）。** *WorldModelBench*（Li et al.、プレプリント、[arXiv:2502.20694](https://arxiv.org/abs/2502.20694)）は、動画生成器を世界モデルとして、指示への追従と物理への忠実さで評価し、微調整した視覚言語モデルを判定者に使います。*VideoPhy-2*（Bansal et al.、プレプリント、[arXiv:2503.06800](https://arxiv.org/abs/2503.06800)）は、行動を中心とした物理的常識に焦点を当てます。*IntPhys 2*（Bordes et al.、プレプリント、[arXiv:2506.09849](https://arxiv.org/abs/2506.09849)）は、期待違反のテスト（5.2 節）を複雑な合成シーンに持ち込み、モデルの成績がチャンスレベルに近いことを報告しています。*World Models' Last Exam in Physics*（Gao et al.、プレプリント、[arXiv:2610.08791](https://arxiv.org/abs/2610.08791)、2026 年 10 月）は、力学、光学、流体、熱、電磁気、表面張力にわたる 40 の測定ベースのタスクを使います。各タスクは開始画像とプロンプトを物理的な基準と組み合わせるので、参照動画は要りません。8 つの動画生成器・1,280 本の動画で、最高得点は 100 点中 57.76 でした。
+
+**制御（5.3）。** *WorldScore*（Duan et al.、ICCV 2025、[arXiv:2504.00983](https://arxiv.org/abs/2504.00983)）は、世界生成を指定されたカメラ経路に沿った「次のシーンの生成」の連続とみなし、制御可能性、品質、ダイナミクスを採点します。*WorldMark*（Xu et al.、プレプリント、[arXiv:2604.21686](https://arxiv.org/abs/2604.21686)、2026 年 4 月）は、第 6 節の「共通の行動インターフェースがない」という問題を評価の面で解決します。モデルごとのアダプタで同じ WASD 型の入力を 10 個の対話型モデルに渡し、500 のケースで評価します。制御工学的な指標（方向の正確さ、応答遅延、動きの安定性）を加え、最も速く応答するモデルほど不安定なことが多いと報告しています。
+
+**記憶と永続的な状態（5.4）。** *WBench*（Ying et al.、プレプリント、[arXiv:2605.25874](https://arxiv.org/abs/2605.25874)、2026 年 5 月）は複数ターンのベンチマークで、289 のケース、1,058 の対話ターン、22 の自動サブ指標により、品質、設定と対話への追従、一貫性、物理を評価します。20 のモデルのうち、すべての次元で首位のものはありませんでした。*WRBench*（"Current World Models Lack a Persistent State Core"、Lu et al.、プレプリント、[arXiv:2606.20545](https://arxiv.org/abs/2606.20545)、2026 年 6 月）は、カメラの動きを使って進行中の出来事を*隠し*、見えていない間にそれが進み続けたかを調べます。23 のモデルの 9,600 本の動画で、モデルはたいてい出来事を離れたときの状態から再開し、先に進めませんでした。これは 5.4 節の再訪テストをより鋭くしたものです。見た目を覚えていることは、状態をシミュレーションすることと同じではありません。
+
+**有用性（5.5）。** *World-in-World*（Zhang et al.、ICLR 2026 口頭発表、[arXiv:2510.18135](https://arxiv.org/abs/2510.18135)）は、世界モデルを身体性エージェントとの閉ループに置き、視覚的な品質ではなくタスクの成功で採点します。*WorldArena 2.0*（Li et al.、プレプリント、[arXiv:2605.17912](https://arxiv.org/abs/2605.17912)、2026 年 5 月）は、身体性の世界モデルのベンチマークを、視触覚入力、強化学習の環境として使う世界モデル、複数のシミュレーション上・実機のロボットへと広げています。閉ループのスコアこそ、第 6 節の 6 項目めが求めていた「有用性を予測する評価」です。
+
+補完的な調査として、*Video models are zero-shot learners and reasoners*（Wiedemer et al.、プレプリント、[arXiv:2509.20328](https://arxiv.org/abs/2509.20328)）は、Veo 3 を学習していない知覚、モデリング、操作、推論のタスクで試し、LLM が言語でそうなったように、動画モデルが汎用の視覚基盤モデルになりうると論じています。
+
+### 研究所やスタートアップによる公開の主張（企業の声明であり、査読されていません）
+
+以下は公式発表に含まれる主張です。独立に検証されたからではなく、見かけたときに見分けられるように挙げています。
+
+- **Google DeepMind、Genie 4**（[2026 年 10 月 27 日](https://deepmind.google/blog/genie-4-a-new-generation-of-world-simulation/)）：Genie 3 より優れた物理と人物キャラクター、ネイティブ音声、リアルタイムの言語による操作。ベンチマークの表、解像度、フレームレートは公表されていません。
+- **NVIDIA、Cosmos 3**（[2026 年 6 月 1 日](https://investor.nvidia.com/news/press-release-details/2026/NVIDIA-Launches-Cosmos-3-the-Open-Frontier-Foundation-Model-for-Physical-AI/default.aspx)）：複数の世界生成リーダーボード（Physics-IQ を含む）、行動方策のリーダーボード、視覚理解のリーダーボードでオープンモデル中 1 位。
+- **World Labs、Atlas**（[2026 年 9 月 1 日](https://worldlabs.ai/blog/atlas)）：5 つの動画モデルとの比較で、人間の評価者が 75%〜94% の割合で Atlas を好み、記事の図では 3D 再構成の誤差がベースラインより小さい。
+- **Wayve、GAIA-4**（[2026 年 8 月 3 日](https://wayve.ai/thinking/gaia-4/)）：GAIA をシーン再構成向けに学習したことで、記録された世界を保つ忠実度が 2.5 倍に向上。
+- **AMI Labs。** 2025 年 12 月、Yann LeCun は新しい世界モデルのスタートアップ Advanced Machine Intelligence（AMI Labs）を自ら会長として立ち上げることを認めました（[TechCrunch、2025 年 12 月 19 日](https://techcrunch.com/2025/12/19/yann-lecun-confirms-his-new-world-model-startup-reportedly-seeks-5b-valuation)）。掲げる目標は LLM に代わる世界モデルで、第 1 節のポジションペーパーと同じ方向です。2026 年 11 月時点で、公開された技術的成果はありません。
+
+### 第 5 節と第 6 節で変わったこと
+
+- 未解決の課題 1（記憶）は、動画世界モデルの主要な研究フロントになりました（第 3 回の更新）。一方で WRBench は、*動的な*永続性がまだ欠けていることを示しました。
+- 未解決の課題 3（共通の行動インターフェース）は、評価ではアダプタによって部分的に回避され（WorldMark）、ロボットでは動画と行動の同時予測モデルによって取り組まれています（第 1 回の更新）。
+- 未解決の課題 6（有用性を予測する評価）には、最初の閉ループのベンチマーク（World-in-World、WorldArena 2.0）が登場しました。そのスコアがタスクやロボットをまたいで相関するかどうかが次の問いです。
+- 全体を把握するためのサーベイとポジションペーパーとして、*A Definition and Roadmap for World Models*（Chen et al.、[arXiv:2607.06401](https://arxiv.org/abs/2607.06401)）と *A Tutorial on World Models and Physical AI*（Oh、[arXiv:2606.12783](https://arxiv.org/abs/2606.12783)）があります。どちらも 2026 年のプレプリントです。
+
+JEPA 型と生成型の世界モデルがロボットの中でどう使われるかは[身体性 AI シリーズ]({{ '/blog/category/embodied-ai/' | relative_url }})で、エンジンやシミュレータがこれらのベンチマークの依拠する正解データとしてどう機能するかは[グラフィックスエンジン第 5 回]({{ '/blog/2026/graphics-engine-05-physics-and-simulation-engines/' | relative_url }})で扱います。
+
 ## 代表的な論文
 
 | 論文 | 発表先 | 年 | リンク | なぜ重要か |
@@ -317,6 +370,22 @@ print("delta PSNR (model that ignores actions):",
 | Physion: Evaluating Physical Prediction from Vision in Humans and Machines (Bear et al.) | NeurIPS Datasets and Benchmarks | 2021 | [arXiv:2106.08261](https://arxiv.org/abs/2106.08261) | 人間のデータを伴う物理予測ベンチマーク |
 | VBench: Comprehensive Benchmark Suite for Video Generative Models (Huang et al.) | CVPR | 2024 | [arXiv:2311.17982](https://arxiv.org/abs/2311.17982) | 多次元的な動画品質評価 |
 | Do generative video models understand physical principles? (Physics-IQ, Motamed et al.) | WACV | 2026 | [arXiv:2501.09038](https://arxiv.org/abs/2501.09038) | 視覚的リアリズムは物理的理解を意味しない |
+| WorldModelBench: Judging Video Generation Models As World Models (Li et al.) | プレプリント | 2025 | [arXiv:2502.20694](https://arxiv.org/abs/2502.20694) | 指示への追従と物理への忠実さ |
+| VideoPhy-2: A Challenging Action-Centric Physical Commonsense Evaluation in Video Generation (Bansal et al.) | プレプリント | 2025 | [arXiv:2503.06800](https://arxiv.org/abs/2503.06800) | 行動中心の物理的常識 |
+| WorldScore: A Unified Evaluation Benchmark for World Generation (Duan et al.) | ICCV | 2025 | [arXiv:2504.00983](https://arxiv.org/abs/2504.00983) | カメラ指定の次シーン生成 |
+| IntPhys 2: Benchmarking Intuitive Physics Understanding In Complex Synthetic Environments (Bordes et al.) | プレプリント | 2025 | [arXiv:2506.09849](https://arxiv.org/abs/2506.09849) | 複雑なシーンでの期待違反テスト |
+| Back to the Features: DINO as a Foundation for Video World Models (Baldassarre et al.) | プレプリント | 2025 | [arXiv:2507.19468](https://arxiv.org/abs/2507.19468) | 凍結した DINOv2 特徴空間での予測 |
+| Video models are zero-shot learners and reasoners (Wiedemer et al.) | プレプリント | 2025 | [arXiv:2509.20328](https://arxiv.org/abs/2509.20328) | 学習していない視覚タスクで Veo 3 を調査 |
+| World-in-World: World Models in a Closed-Loop World (Zhang et al.) | ICLR（口頭発表） | 2026 | [arXiv:2510.18135](https://arxiv.org/abs/2510.18135) | 閉ループ・タスク成功による評価 |
+| LeJEPA: Provable and Scalable Self-Supervised Learning Without the Heuristics (Balestriero, LeCun) | プレプリント | 2025 | [arXiv:2511.08544](https://arxiv.org/abs/2511.08544) | SIGReg が EMA と stop-gradient を置き換える |
+| VL-JEPA: Joint Embedding Predictive Architecture for Vision-language (Chen et al.) | プレプリント | 2025 | [arXiv:2512.10942](https://arxiv.org/abs/2512.10942) | トークンではなくテキスト埋め込みを予測 |
+| LeWorldModel: Stable End-to-End Joint-Embedding Predictive Architecture from Pixels (Maes et al.) | プレプリント | 2026 | [arXiv:2603.19312](https://arxiv.org/abs/2603.19312) | エンドツーエンドの JEPA 世界モデル、損失は 2 項 |
+| V-JEPA 2.1: Unlocking Dense Features in Video Self-Supervised Learning (Mur-Labadia et al.) | プレプリント | 2026 | [arXiv:2603.14482](https://arxiv.org/abs/2603.14482) | 密な特徴、ロボット把持の改善 |
+| WorldMark: A Unified Benchmark Suite for Interactive Video World Models (Xu et al.) | プレプリント | 2026 | [arXiv:2604.21686](https://arxiv.org/abs/2604.21686) | アダプタで制御を統一、制御指標 |
+| WorldArena 2.0 (Li et al.) | プレプリント | 2026 | [arXiv:2605.17912](https://arxiv.org/abs/2605.17912) | 身体性・マルチプラットフォームの世界モデルベンチマーク |
+| WBench: A Comprehensive Multi-turn Benchmark for Interactive Video World Model Evaluation (Ying et al.) | プレプリント | 2026 | [arXiv:2605.25874](https://arxiv.org/abs/2605.25874) | 複数ターンの対話型評価 |
+| Current World Models Lack a Persistent State Core (WRBench, Lu et al.) | プレプリント | 2026 | [arXiv:2606.20545](https://arxiv.org/abs/2606.20545) | 画面外の動きがシミュレーションされない |
+| World Models' Last Exam in Physics (Gao et al.) | プレプリント | 2026 | [arXiv:2610.08791](https://arxiv.org/abs/2610.08791) | 測定ベースの物理タスク |
 
 ## 学習リソース
 
@@ -332,5 +401,12 @@ print("delta PSNR (model that ignores actions):",
 3. V-JEPA 2-AC のプランニングの目的関数を CEM ループ（サンプリング、予測器による展開、ゴール埋め込みへの L1 距離によるスコア付け、再フィッティング）として書いてください。第 1 回の CEM の説明を再利用してかまいません。
 4. 動画世界モデルのための再訪一貫性の指標を設計してください。カメラの経路、比較に使う指標、そしてズルをして満点をとれてしまうベースラインを明記してください。そのズルをどのように排除しますか。
 5. 第 6 節から未解決の課題を 1 つ選び、半ページの研究提案を書いてください。仮説、最小限の実験、そしてそれをどう評価するかを含めてください。
+6. （2025〜2026 年の更新）4.1 節の崩壊のおもちゃの実験で、完全に崩壊したエンコーダはすべての入力を同じベクトル $c$ に写します。このとき各 1 次元射影 $u^\top z$ がどうなるか、そして SIGReg 型の罰則（各射影を $\mathcal{N}(0, 1)$ と比べる）がなぜ大きくなるかを説明してください。次に、埋め込みが 1 つの方向 $e_1$ に沿ってしか変化しない「次元の崩壊」を考えます。どのランダムな方向 $u$ がそれを検出し、なぜ十分な数のランダムな方向があれば必ず検出できるのでしょうか。
+
+<details markdown="1"><summary>ヒント</summary>
+
+完全な崩壊では、どの射影も定数 $u^\top c$、つまり分散ゼロの点質量になり、どの $u$ でも単位ガウスから遠く離れます。次元の崩壊では、$u^\top z = (u^\top e_1)\, z_1$ の分散は $(u^\top e_1)^2 \operatorname{Var}(z_1)$ です。高次元ではほとんどのランダムな $u$ でこれはゼロに近いので、大半の方向でほぼ定数の射影が見え、罰せられます。Cramér-Wold の定理により、すべての 1 次元射影が $\mathcal{N}(0,1)$ に一致すれば、分布はちょうど $\mathcal{N}(0, I)$ になります。
+
+</details>
 
 **次回：** 本記事は世界モデルシリーズの最終回です。続きは[身体性AI（Embodied AI）]({{ '/blog/category/embodied-ai/' | relative_url }})シリーズへどうぞ。基礎に立ち返りたい場合は[第 1 回]({{ '/blog/2026/world-models-01-what-is-a-world-model/' | relative_url }})に戻ってください。

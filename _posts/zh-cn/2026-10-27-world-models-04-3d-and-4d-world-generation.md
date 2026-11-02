@@ -154,6 +154,8 @@ SDS 点最终比真实样本更靠近各模式中心：每个点都爬向附近�
 
 总的经验是：**在数据所在的 2D 中生成，在需要一致性的 3D 中重建**。场景生成器也是这样工作的。
 
+*更新（2026 年 11 月）：*DUSt3R 的后继者（VGGT、π³、MapAnything、Depth Anything 3）如今能一次性为大量视角预测相机和几何，2025–2026 年的若干生成器还直接从视频模型的潜变量解码出 3D 高斯或三角形。参见本文末尾的 2025–2026 年进展一节。
+
 ## 4. 通过迭代修复与提升生成场景
 
 ### 4.1 循环
@@ -254,6 +256,8 @@ print("new points:", new_points.shape, "z range:", new_points[:, 2].min().round(
 
 World Labs 于 2025 年 9 月以有限测试版形式发布了 **Marble**，并于 [2025 年 11 月 12 日](https://www.worldlabs.ai/blog/marble-world-model)正式公开提供。Marble 从文本、图像、视频或粗略的 3D 布局生成**持久的、可下载的 3D 世界**，而不是即时生成帧。根据发布文章，高斯泼溅是 Marble 世界保真度最高的表示，世界也可以导出为网格（用于物理的低保真碰撞网格，以及高质量网格）。一个名为 **Chisel** 的实验性编辑器让用户可以用简单形状或导入的资产搭出结构，再由模型补全外观。目前没有描述该模型的技术论文，因此其内部工作原理并未公开。
 
+*更新（2026 年 11 月）：*World Labs 随后推出了 World API（2026 年 1 月）和 Spark 2.0 网页渲染器（2026 年 4 月），并于 2026 年 9 月发布了将驱动未来版本 Marble 的多模态模型 **Atlas**。参见更新一节。
+
 Marble 之所以适合作为参照点，是因为它端到端地体现了显式路线：生成得到的是一个资产（泼溅 + 网格），随后由普通的图形与游戏工具使用。而像素空间路线（Genie 3）产生的则是一种*体验*，它只在模型运行期间存在。
 
 ## 7. 权衡：像素 vs. 显式 3D/4D
@@ -285,6 +289,67 @@ Marble 之所以适合作为参照点，是因为它端到端地体现了显式�
 
 {% include blog_figure.liquid path="assets/img/blog/world-models/04-terrain-edit.svg" caption="由 3200 个高斯 splat 组成的程序化地形（高度由多个倍频正弦项叠加而成，按高度着色），以及做了一次抬起高斯形凸起的雕刻编辑之后的样子。只有笔刷附近的 334 个 splat（红色，10%）发生变化；其余部分，以及从任何视角看到的它们，都完全保持原样。" %}
 
+## 2025–2026 年进展（截至 2026 年 11 月）
+
+本节介绍 2025 年至 2026 年 11 月初的 3D 与 4D 世界生成。最重要的结论是：第 7 节的预测比预期更快地成为了现实。两条路线已经汇合：视频模型现在会输出几何，显式生成器则把视频模型当作引擎。第二个转变是，**前馈重建**（feed-forward reconstruction）已经好到足以充当两者之间的桥梁。状态标注规则与第 3 篇的更新相同：“预印本”指尚未在会议或期刊发表，公司文章属于公告。交互式时间线（筛选“3D/4D 生成”）列出了下文的所有工作。
+
+{% include widget.liquid name="world-models-timeline" height="560" caption="动手试试：点击“3D/4D 生成”按钮，只显示本篇的条目，再点击圆点查看摘要、状态和链接。实心点是论文，空心点是公司公告或产品。把日期与“交互式视频”一行对照：带显式记忆的视频模型紧跟在快速前馈 3D 生成器之后出现。" %}
+
+### 前馈几何成为骨干
+
+第 3 节以 DUSt3R 结尾：在相机未知的情况下由图像对预测点图。2025 年，这一思路扩展成了通用的**前馈几何模型**。它们的输出正是场景生成器把生成的像素变成持久 3D 状态所需要的东西。
+
+- **VGGT**（Wang et al.，CVPR 2025，[arXiv:2503.11651](https://arxiv.org/abs/2503.11651)）是一个大型 Transformer，给定一个到数百个视角，在一次前向传播中预测相机、深度图、点图和点轨迹，不需要测试时优化。
+- **π³**（Wang et al.，预印本，[arXiv:2507.13347](https://arxiv.org/abs/2507.13347)）让网络具有置换等变性（permutation-equivariant），因此没有任何输入视角被特殊地当作参考系。**MapAnything**（Keetha et al.，3DV 2026，[arXiv:2509.13414](https://arxiv.org/abs/2509.13414)）预测*度量尺度*的几何，并可利用内参、位姿或深度等可选的额外输入。**Depth Anything 3**（Lin et al.，预印本，[arXiv:2511.10647](https://arxiv.org/abs/2511.10647)）表明，一个从任意数量视角预测深度图和光线图的朴素 Transformer 就足以得到一致的几何。
+
+这对世界生成为什么重要：4.2 节中的深度对齐步骤（把单目深度拟合到已有场景）现在可以替换为一次网络调用，一次性为所有生成的视角返回一致的相机和几何。**Gen3R**（Huang et al.，预印本，[arXiv:2601.04090](https://arxiv.org/abs/2601.04090)，2026 年 1 月）更进一步。它改造 VGGT，使其产生与预训练视频扩散模型的外观潜变量对齐的*几何潜变量*，于是生成器同时输出 RGB 视频以及相机、深度和点云。生成与重建合为一个模型。
+
+### 从视频先验到几秒钟内得到 3D 高斯
+
+第 3 节“在 2D 中生成，在 3D 中重建”的经验被做成了快速的单次前向管线：
+
+- **Stable Virtual Camera**（Zhou et al.，预印本，[arXiv:2503.14489](https://arxiv.org/abs/2503.14489)）是一个通用的新视角扩散模型。它接受任意数量的输入视角和目标相机，沿长相机路径生成一致的视角，相当于 CAT3D 思路的开放模型版本。
+- **GEN3C**（Ren et al.，CVPR 2025，[arXiv:2503.03751](https://arxiv.org/abs/2503.03751)）维护一个 **3D 缓存**：由预测深度反投影得到的点云。它沿请求的相机路径渲染该缓存，并用渲染结果作为视频生成的条件。这带来了精确的相机控制和一致性，相当于把第 4 节的循环放进了视频模型。
+- **Bolt3D**（Szymanowicz et al.，ICCV 2025，[arXiv:2503.14445](https://arxiv.org/abs/2503.14445)）是一个潜在扩散模型，能在几秒钟内直接生成场景的高斯“splatter image”，无需逐场景优化。
+- **Lyra**（Bahmani et al.，预印本，[arXiv:2509.19296](https://arxiv.org/abs/2509.19296)）把一个相机可控的视频扩散模型自蒸馏到一个解码器中，由视频潜变量输出 3D 高斯，因此不需要多视角训练数据；同样的技巧还可以扩展到动态（4D）场景。**FlashWorld**（Li et al.，预印本，[arXiv:2510.13678](https://arxiv.org/abs/2510.13678)）把面向多视角的生成质量蒸馏到面向 3D 的生成器中，从而在几秒钟内直接生成 3D 高斯场景。
+- **FLAT**（Kupyn et al.，预印本，[arXiv:2606.24876](https://arxiv.org/abs/2606.24876)，2026 年 6 月）在一次前向中直接从视频扩散潜变量解码出**三角形泼溅**（triangle splats）而不是高斯。论文报告其几何精度更高，且一个短暂的细化步骤就能得到游戏引擎可用的不透明表示。这很重要，因为与半透明的高斯不同，不透明三角形可以直接接入普通的光栅化器（[图形学第 2 篇]({{ '/blog/2026/graphics-02-rasterization/' | relative_url }})）和物理引擎。
+
+### 全景优先的世界生成器
+
+2025 年的另一种配方是先生成 **360° 全景图**（因为全景图一次性确定了整个环境），再把它提升到 3D：
+
+- **HunyuanWorld 1.0**（HunyuanWorld Team，预印本，[arXiv:2507.21809](https://arxiv.org/abs/2507.21809)，2025 年 7 月）由文本或图像生成全景代理，把它分解为语义层（天空、背景、物体），再把各层提升到 3D 并导出网格，因此世界可以在标准工具中探索和编辑。**HunyuanWorld-Voyager**（Huang et al.，预印本，[arXiv:2506.04225](https://arxiv.org/abs/2506.04225)）沿用户的相机路径联合生成 RGB *和深度*视频，并维护一个世界缓存，因此能借助直接的 3D 重建在大范围内扩展场景。
+- **Matrix-3D**（Yang et al.，技术报告，[arXiv:2508.08086](https://arxiv.org/abs/2508.08086)）沿轨迹生成全景视频，再用快速前馈模型或优化方法重建 3D。
+- **HY-World 2.0**（Team HY-World，预印本，[arXiv:2604.14268](https://arxiv.org/abs/2604.14268)，2026 年 4 月）统一了重建、生成和模拟。它通过四阶段管线由文本或单张图像生成可导航的 3DGS 世界，并在多视角输入时使用其前馈重建模型 WorldMirror 2.0。作者把它描述为一个*离线*世界模型，并报告其结果与 Marble 相当；这一比较是作者自己的说法。
+
+### Marble 成为平台，以及 Atlas
+
+第 6 节介绍了 Marble 的公开发布（2025 年 11 月 12 日）。它在 2026 年的轨迹很好地说明了世界生成器如何变成基础设施。以下来源均为 World Labs 的文章：
+
+- **World API**（[2026 年 1 月 21 日](https://worldlabs.ai/blog/announcing-the-world-api)）以编程方式开放世界生成。
+- **Spark 2.0**（[2026 年 4 月 14 日](https://worldlabs.ai/blog/spark-2.0)）是 World Labs 用于在浏览器中流式传输大型 3DGS 世界的网页渲染器。高斯泼溅成了一种交付格式，而不只是研究中的表示（对照[神经渲染第 4 篇]({{ '/blog/2026/neural-rendering-04-3d-gaussian-splatting/' | relative_url }})）。
+- **Atlas**（[2026 年 9 月 1 日](https://worldlabs.ai/blog/atlas)）是一个新模型，目前面向部分合作伙伴提前开放。它被描述为一个多模态自回归扩散 Transformer，在文本、图像、视频和 3D 上从零开始预训练。每张输入图像都被锚定在共享空间上下文中的一个 3D 位姿上。模型可以生成相机可控的视频（据文章所述，最长一分钟、1440p）、全景图，以及显式的点云或高斯泼溅。World Labs 表示 Atlas 将驱动未来版本的 Marble。从架构上看，Atlas 正是第 7 节所说的混合方案：带位姿的帧（如第 3 篇中的 RTFM）加上显式 3D 输出（如 Marble）。
+- 2026 年 9 月 28 日，World Labs 宣布[加入 AMD](https://worldlabs.ai/blog/amd-announcement)。World Labs 还发表了关于为机器人训练生成世界的文章（"Building Worlds That Train Robots"，2026 年 7 月），把本篇与具身智能的仿真联系了起来（[图形引擎第 5 篇]({{ '/blog/2026/graphics-engine-05-physics-and-simulation-engines/' | relative_url }})）。
+
+### 4D 与物体
+
+- **4DNeX**（Chen et al.，预印本，[arXiv:2508.13154](https://arxiv.org/abs/2508.13154)）是一个前馈的图像到 4D 模型。它微调一个视频扩散模型，使其为每一帧输出 RGB 加一张 XYZ 点图，即一段可以直接转换为动态点云或高斯的“6D 视频”。可以把它与第 5 节中逐场景的 SDS 优化对比。
+- **Aether**（Aether Team，预印本，[arXiv:2503.18945](https://arxiv.org/abs/2503.18945)）在合成数据上训练一个几何感知模型，同时完成三项任务：4D 重建、以动作为条件的视频预测和以目标为条件的视觉规划。它表明，4D 生成器也可以兼作[第 1 篇]({{ '/blog/2026/world-models-01-what-is-a-world-model/' | relative_url }})意义上的世界模型。
+- **SAM 3D**（SAM 3D Team，预印本，[arXiv:2511.16624](https://arxiv.org/abs/2511.16624)）从单张自然图像重建物体（形状、纹理和布局）。“免费”获得物体级 3D 意味着场景生成器可以用可分离、可编辑的物体来填充世界，而不是一整块融合的表面。
+
+### 显式 3D 作为交互式生成的记忆
+
+2026 年最有意思的进展把本篇与第 3 篇连在了一起。**L3G-World**（Choi et al.，预印本，[arXiv:2610.40614](https://arxiv.org/abs/2610.40614)，2026 年 10 月）维护一个**潜在 3D 高斯记忆**。一个前馈更新器只在场景需要新几何的地方添加新的高斯，一个以记忆为条件的视频扩散 Transformer 再由它渲染接下来的帧。因此，如玩具示意图所示，记忆随*已探索的场景*增长，而不是随流的长度增长。与此前最高效的 3D 记忆基线相比，作者报告 3D 图元最多减少 38.6 倍，并能以 9 fps 实时生成。
+
+{% include blog_figure.liquid path="assets/img/blog/world-models/04-update-memory-growth.svg" width="85%" caption="一次行走中记忆增长的玩具对比：先探索 40 秒，再穿过已见过的空间返回 40 秒（灰色带，↺），然后再次探索。如果每个潜在帧（每秒 6 帧，每帧 5 万个高斯）都被反投影，记忆按 $O(T)$ 增长（红色），达到 3600 万个图元。如果只添加新的几何（这里探索时每帧 25%，返回时为零），记忆随已探索面积 $O(\lvert A\rvert)$ 增长（绿色），并在返回期间保持平坦。这正是 L3G-World 背后的规模论证；数字仅作示意，并非来自论文。" %}
+
+### 第 7 节有哪些变化
+
+- **持久性与动态。** 显式记忆如今被用在交互式视频模型*内部*（GEN3C、Voyager、L3G-World），因此权衡表中的“记忆”一行不再那么截然地区分两列。
+- **速度。** 借助前馈解码器，单图到 3D 场景从几分钟（CAT3D）缩短到几秒钟（Bolt3D、FlashWorld）。
+- **引擎就绪。** 输出格式向引擎能直接使用的东西靠拢：网格（HunyuanWorld 1.0）、三角形泼溅（FLAT）和可流式传输的泼溅（Spark 2.0）。关于泼溅和生成资产如何进入真正的引擎，参见[图形引擎第 6 篇]({{ '/blog/2026/graphics-engine-06-ai-meets-graphics-engines/' | relative_url }})。
+- **仍未解决。** 生成的世界大多仍是静态的。具有物理意义的材质、铰接物体和智能体都很少见，而且上述系统都没有公开评估其世界是否*有助于*训练智能体（第 5 篇的更新介绍了首批闭环基准）。
+
 ## 代表性论文
 
 | 论文 | 会议/期刊 | 年份 | 链接 | 为什么重要 |
@@ -306,6 +371,27 @@ Marble 之所以适合作为参照点，是因为它端到端地体现了显式�
 | PhysGaussian: Physics-Integrated 3D Gaussians for Generative Dynamics (Xie et al.) | CVPR | 2024 | [arXiv:2311.12198](https://arxiv.org/abs/2311.12198) | 对同一批高斯既模拟又渲染 |
 | CAT3D: Create Anything in 3D with Multi-View Diffusion Models (Gao et al.) | NeurIPS | 2024 | [arXiv:2405.10314](https://arxiv.org/abs/2405.10314) | 面向场景的多视角扩散 + 重建 |
 | WonderWorld: Interactive 3D Scene Generation from a Single Image (Yu et al.) | CVPR | 2025 | [arXiv:2406.09394](https://arxiv.org/abs/2406.09394) | 可交互、10 秒以内的场景生成 |
+| VGGT: Visual Geometry Grounded Transformer (Wang et al.) | CVPR | 2025 | [arXiv:2503.11651](https://arxiv.org/abs/2503.11651) | 由多视角前馈预测相机、深度和点 |
+| GEN3C: 3D-Informed World-Consistent Video Generation with Precise Camera Control (Ren et al.) | CVPR | 2025 | [arXiv:2503.03751](https://arxiv.org/abs/2503.03751) | 用 3D 缓存为视频模型提供条件 |
+| Bolt3D: Generating 3D Scenes in Seconds (Szymanowicz et al.) | ICCV | 2025 | [arXiv:2503.14445](https://arxiv.org/abs/2503.14445) | 对高斯场景直接做潜在扩散 |
+| Stable Virtual Camera: Generative View Synthesis with Diffusion Models (Zhou et al.) | 预印本 | 2025 | [arXiv:2503.14489](https://arxiv.org/abs/2503.14489) | 开放的通用新视角扩散模型 |
+| Aether: Geometric-Aware Unified World Modeling (Aether Team) | 预印本 | 2025 | [arXiv:2503.18945](https://arxiv.org/abs/2503.18945) | 一个模型完成 4D 重建、预测和规划 |
+| Voyager: Long-Range and World-Consistent Video Diffusion for Explorable 3D Scene Generation (Huang et al.) | 预印本 | 2025 | [arXiv:2506.04225](https://arxiv.org/abs/2506.04225) | 带世界缓存的 RGB-D 视频 |
+| π³: Permutation-Equivariant Visual Geometry Learning (Wang et al.) | 预印本 | 2025 | [arXiv:2507.13347](https://arxiv.org/abs/2507.13347) | 无需参考视角的前馈几何 |
+| HunyuanWorld 1.0 (HunyuanWorld Team) | 预印本 | 2025 | [arXiv:2507.21809](https://arxiv.org/abs/2507.21809) | 全景优先、分层、可导出网格的世界 |
+| Matrix-3D: Omnidirectional Explorable 3D World Generation (Yang et al.) | 技术报告 | 2025 | [arXiv:2508.08086](https://arxiv.org/abs/2508.08086) | 先全景视频，再 3D 重建 |
+| 4DNeX: Feed-Forward 4D Generative Modeling Made Easy (Chen et al.) | 预印本 | 2025 | [arXiv:2508.13154](https://arxiv.org/abs/2508.13154) | 由图像生成 RGB + XYZ 视频（4D） |
+| MapAnything: Universal Feed-Forward Metric 3D Reconstruction (Keetha et al.) | 3DV | 2026 | [arXiv:2509.13414](https://arxiv.org/abs/2509.13414) | 可利用可选额外输入的度量几何 |
+| Lyra: Generative 3D Scene Reconstruction via Video Diffusion Model Self-Distillation (Bahmani et al.) | 预印本 | 2025 | [arXiv:2509.19296](https://arxiv.org/abs/2509.19296) | 把视频模型蒸馏为 3DGS 解码器 |
+| FlashWorld: High-quality 3D Scene Generation within Seconds (Li et al.) | 预印本 | 2025 | [arXiv:2510.13678](https://arxiv.org/abs/2510.13678) | 直接的、面向 3D 的高斯生成 |
+| Marble: A Multimodal World Model (World Labs) | blog | 2025 | [worldlabs.ai](https://worldlabs.ai/blog/marble-world-model) | 产品化的显式世界生成器 |
+| Depth Anything 3: Recovering the Visual Space from Any Views (Lin et al.) | 预印本 | 2025 | [arXiv:2511.10647](https://arxiv.org/abs/2511.10647) | 朴素 Transformer，深度 + 光线，任意视角 |
+| SAM 3D: 3Dfy Anything in Images (SAM 3D Team) | 预印本 | 2025 | [arXiv:2511.16624](https://arxiv.org/abs/2511.16624) | 单图物体重建 |
+| Gen3R: 3D Scene Generation Meets Feed-Forward Reconstruction (Huang et al.) | 预印本 | 2026 | [arXiv:2601.04090](https://arxiv.org/abs/2601.04090) | 与视频潜变量对齐的几何潜变量 |
+| HY-World 2.0 (Team HY-World) | 预印本 | 2026 | [arXiv:2604.14268](https://arxiv.org/abs/2604.14268) | 重建、生成并模拟 3DGS 世界 |
+| FLAT: Feedforward Latent Triangle Splatting (Kupyn et al.) | 预印本 | 2026 | [arXiv:2606.24876](https://arxiv.org/abs/2606.24876) | 由视频潜变量得到引擎可用的三角形泼溅 |
+| Atlas: A World Model for Spatial Intelligence (World Labs) | blog | 2026 | [worldlabs.ai](https://worldlabs.ai/blog/atlas) | 带位姿的图像上下文加显式 3D 输出 |
+| L3G-World: Real-Time Infinite World Generation with Latent 3D Gaussian Memory (Choi et al.) | 预印本 | 2026 | [arXiv:2610.40614](https://arxiv.org/abs/2610.40614) | 随场景范围增长的高斯记忆 |
 
 ## 学习资源
 
@@ -321,5 +407,12 @@ Marble 之所以适合作为参照点，是因为它端到端地体现了显式�
 3. 把玩具示例改成 VSD：在当前粒子 `theta` 上在线训练第二个小型去噪器，并用它的预测替代 `eps`。分散程度是否会接近真实数据的分散程度？
 4. 在深度对齐脚本中，把平面场景替换为带有阶跃不连续的场景，并让单目深度成为真实深度的非线性函数。全局仿射拟合在哪里失效？局部拟合又会如何帮助？
 5. 选取第 7 节权衡表中的一行，设计一个混合系统，使其在这一行上兼得两列之长。它的训练数据会是什么？
+6. （2025–2026 年更新）在记忆增长的玩具模型中，设行走过程中有比例 $r$ 的时间在返回（而不是三分之一），探索时每帧新几何所占比例为 $f$。写出 $N_{\text{frame}}(T)$、$N_{\text{extent}}(T)$ 及其比值。当 $f = 0.25$、$r = 1/3$ 时，120 秒后的比值是多少？它与 L3G-World 相对 3D 记忆基线报告的最多 38.6 倍的缩减相比如何？
+
+<details markdown="1"><summary>提示</summary>
+
+$N_{\text{frame}} = cT$，$N_{\text{extent}} = c f (1 - r) T$，因此比值为 $1 / (f(1-r))$，当 $f = 0.25$、$r = 1/3$ 时为 $6$。更大的缩减需要更小的 $f$（帧间重叠更多，例如相机缓慢移动）或更多的返回。论文中的基线是另一种已经剪枝过的 3D 记忆，因此两者的数字不能直接比较。
+
+</details>
 
 **下一篇：**[第 5 篇]({{ '/blog/2026/world-models-05-jepa-evaluation-and-open-problems/' | relative_url }})将从生成退后一步：JEPA 以及预测式与生成式之争、世界模型如何评估，以及通向具身智能（embodied AI）的开放问题。

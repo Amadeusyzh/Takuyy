@@ -473,7 +473,42 @@ for it in range(3):
 | 行为 | 在线性控制器上做进化优化（CMA-ES） | CEM 规划 | 在想象中做 actor-critic | 在模型中做 MCTS |
 | 主要启示 | 策略可以在梦境中训练 | 联合学习潜在动力学 + 规划 | 带解析梯度的想象训练可以扩展 | 只需要与价值相关的预测 |
 
-这些模型规模小、针对特定任务，并且要在每个环境中从零训练。接下来的两篇将介绍当动力学模型被互联网规模的生成模型取代后发生了什么：先介绍工具箱（VAE、tokenizer、Transformer、扩散、流匹配），再介绍 Genie 和 GameNGen 等视频世界模拟器。
+这些模型规模小、针对特定任务，并且要在每个环境中从零训练。（*更新，2026 年 11 月：*Dreamer 4（2025 年）去掉了这一限制：它的世界模型是在离线视频上训练的视频规模 Transformer，智能体完全在想象中学习。参见下文的 2025–2026 年进展一节。）接下来的两篇将介绍当动力学模型被互联网规模的生成模型取代后发生了什么：先介绍工具箱（VAE、tokenizer、Transformer、扩散、流匹配），再介绍 Genie 和 GameNGen 等视频世界模拟器。
+
+## 2025–2026 年进展（截至 2026 年 11 月）
+
+本节补充 2025 年至 2026 年 11 月初基于模型的智能体的进展。主要转变是：本篇中“规模小、针对特定任务、从零训练”的世界模型，与第 2、3 篇中的大型视频模型相遇了。智能体如今可以在视频规模的世界模型*内部*训练，而无需接触环境；机器人策略也越来越多地用一个网络同时预测未来视频和动作。“预印本”指尚未在会议或期刊发表的 arXiv 论文。
+
+### Dreamer 4：视频规模的想象训练
+
+**Dreamer 4**（Hafner, Yan and Lillicrap, "Training Agents Inside of Scalable World Models"，预印本，[arXiv:2509.24527](https://arxiv.org/abs/2509.24527)，2025 年 9 月）是 5.3 节的后继者。DreamerV3 通过智能体自身的交互在线学习世界模型；Dreamer 4 则从一个**固定的离线数据集**中学习，训练期间从不与环境交互。下图概括了它的三个阶段。
+
+{% include blog_figure.liquid path="assets/img/blog/world-models/01-update-dreamer4.svg" width="90%" caption="Dreamer 4 的三个阶段。(1) tokenizer $E$ 把视频帧 $x$ 映射为隐变量 $z$，Transformer 动力学模型 $p_\theta$ 学习预测下一个隐变量。大部分视频没有动作标签，只有一小部分有，但这已足以学会通用的动作条件。(2) 加入策略头 $\pi$ 和奖励头 $\hat r$，在离线数据上通过行为克隆（BC）和奖励预测进行训练。(3) 在 $p_\theta$ 想象出的推演上用强化学习改进策略，不与环境交互。可与 5.1 节的 Dreamer 循环对比，那里的第 3 阶段与真实数据收集交替进行。" %}
+
+有三个要素使它能在大规模下奏效。
+
+1. **快速而准确的视频世界模型。** 动力学用 *shortcut forcing* 目标和高效的 Transformer 来学习。该目标把 Diffusion Forcing 的逐帧噪声水平（第 3 篇第 6 节）与少步的“shortcut”采样（第 2 篇的更新）结合起来。模型能在单块 GPU 上实时运行；作者报告，在 Minecraft 中它对物体交互和游戏机制的预测远比早期世界模型准确。
+2. **以无标注视频为主。** 动作条件从少量带动作标签的数据中学到，而大部分知识来自多样的无标注视频。这相当于把第 3 篇中潜在动作（Genie）的思想变成了一套控制配方。
+3. **在行为克隆之上做想象强化学习。** 与 5.1 节一样，行动者和评论者从想象的推演中学习，但这里它们从 BC 策略出发，并且完全在学到的模拟器中训练。
+
+最重要的结果是“离线钻石挑战”。在 Minecraft 中收集钻石需要从原始像素出发执行两万多次鼠标和键盘操作，而 Dreamer 4 是第一个据报告仅凭离线数据就做到这一点的智能体；DreamerV3 完成同一任务需要在线交互。对本篇的启示是：**模型利用和误差累积（第 2 节）并没有消失，但足够准确的世界模型可以让长时程的想象训练在没有新真实数据的情况下也能奏效**。这正是对机器人至关重要的性质，因为真实交互既慢又不安全。第 1 阶段的模型恰恰是[第 3 篇]({{ '/blog/2026/world-models-03-video-world-simulators/' | relative_url }})意义上的交互式视频世界模型，Dreamer 4 是本系列前后两半交汇的地方。
+
+### 作为机器人数据生成器和策略评估器的世界模型
+
+- **DreamGen**（Jang et al.，预印本，[arXiv:2505.12705](https://arxiv.org/abs/2505.12705)，2025 年 5 月）在目标机器人上微调视频世界模型，并用提示让它生成新行为的视频。然后用伪动作（来自潜在动作或逆动力学模型）为视频打标签，并在这些“神经轨迹”上训练策略。这就是以视频生成器为模型的 Dyna（2.3 节）。
+- **Ctrl-World**（Guo et al.，预印本，[arXiv:2510.10125](https://arxiv.org/abs/2510.10125)，2025 年 10 月）是在 DROID 机器人数据集上训练的可控多视角世界模型。通用策略可以在其中的想象中行动，从而被*评估*，还能通过在想象的成功轨迹上微调而被*改进*。作者报告轨迹能保持 20 秒以上的一致性，策略成功率提升 44.7%。
+
+### 世界动作模型：同时预测视频和动作
+
+2026 年的一个趋势是**世界动作模型**（world action model，WAM），[具身智能第 5 篇]({{ '/blog/2026/embodied-ai-05-vision-language-action-models/' | relative_url }})对此有详细讨论。它是一个单一网络，通常由预训练的视频扩散模型初始化，同时预测未来帧*和*机器人动作。
+
+- **DreamZero**（"World Action Models are Zero-shot Policies"，Ye et al.，预印本，[arXiv:2602.15922](https://arxiv.org/abs/2602.15922)，2026 年 2 月）是构建在视频扩散骨干上的 14B 自回归 WAM，以 7 Hz 进行闭环控制。作者报告，它在新任务和新环境上的泛化比最先进的 VLA 好 2 倍以上；来自其他机器人或人类的纯视频演示还能在未见任务上带来超过 42% 的相对提升。
+- **Fast-WAM**（Yuan et al.，预印本，[arXiv:2603.16666](https://arxiv.org/abs/2603.16666)，2026 年 3 月）追问测试时是否需要想象。它在训练中保留视频联合训练，但在推理时跳过未来帧的生成，与“先想象再执行”的 WAM 相比仍有竞争力，且快 4 倍以上（延迟 190 ms）。用第 6 节的话说，视频预测也许最有用的是作为塑造表示的*训练信号*，这与 MuZero 和 JEPA 从另一侧提出的论点相同。
+- 两篇 2026 年的综述梳理了这一领域：教程 *From World Models to World Action Models*（[arXiv:2607.00836](https://arxiv.org/abs/2607.00836)）和综述 *World-Action Models for Robot Learning and Control*（[arXiv:2609.16074](https://arxiv.org/abs/2609.16074)）。NVIDIA 的 Cosmos 3（第 3 篇更新）也被宣传为世界动作模型的骨干。
+
+### 第 9 节的表格如何扩展
+
+Dreamer 4 会新增一列：隐状态 = token 化的视频隐变量；重建像素 = 是；行为 = 先 BC，再在想象中做 actor-critic；主要启示 = 只要世界模型足够好，*离线*想象训练就能奏效。WAM 一列则是：没有单独的世界模型，视频-动作预测器直接用作策略。经典模拟器仍是训练机器人的主要替代方案（[图形引擎第 5 篇]({{ '/blog/2026/graphics-engine-05-physics-and-simulation-engines/' | relative_url }})），而直接扮演环境本身的神经游戏引擎见[图形引擎第 6 篇]({{ '/blog/2026/graphics-engine-06-ai-meets-graphics-engines/' | relative_url }})。
 
 ## 代表性论文
 
@@ -491,6 +526,11 @@ for it in range(3):
 | Transformers are Sample-Efficient World Models (IRIS, Micheli et al.) | ICLR | 2023 | [arXiv:2209.00588](https://arxiv.org/abs/2209.00588) | 离散 token + Transformer 动力学 |
 | TD-MPC2: Scalable, Robust World Models for Continuous Control (Hansen et al.) | ICLR | 2024 | [arXiv:2310.16828](https://arxiv.org/abs/2310.16828) | 大规模的无解码器潜在 MPC |
 | Diffusion for World Modeling: Visual Details Matter in Atari (DIAMOND, Alonso et al.) | NeurIPS | 2024 | [arXiv:2405.12399](https://arxiv.org/abs/2405.12399) | 以扩散模型作为动力学模型；可玩的 CS:GO 模型 |
+| DreamGen: Unlocking Generalization in Robot Learning through Video World Models (Jang et al.) | 预印本 | 2025 | [arXiv:2505.12705](https://arxiv.org/abs/2505.12705) | 用视频世界模型生成机器人训练数据 |
+| Training Agents Inside of Scalable World Models (Dreamer 4, Hafner et al.) | 预印本 | 2025 | [arXiv:2509.24527](https://arxiv.org/abs/2509.24527) | 离线想象强化学习；无交互获得 Minecraft 钻石 |
+| Ctrl-World: A Controllable Generative World Model for Robot Manipulation (Guo et al.) | 预印本 | 2025 | [arXiv:2510.10125](https://arxiv.org/abs/2510.10125) | 在想象中评估和改进策略 |
+| World Action Models are Zero-shot Policies (DreamZero, Ye et al.) | 预印本 | 2026 | [arXiv:2602.15922](https://arxiv.org/abs/2602.15922) | 视频-动作联合预测直接作为策略 |
+| Fast-WAM: Do World Action Models Need Test-time Future Imagination? (Yuan et al.) | 预印本 | 2026 | [arXiv:2603.16666](https://arxiv.org/abs/2603.16666) | 视频预测仅作为训练信号 |
 
 ## 学习资源
 
@@ -507,5 +547,12 @@ for it in range(3):
 3. 在 PyTorch 示例中，把高斯随机状态替换为 8 个各有 8 个类别的类别变量，并使用直通梯度（`one_hot + probs - probs.detach()`）。`kl_balanced` 需要做哪些改动？
 4. 在 `lambda_return` 中分别设置 `lam=0` 和 `lam=1`。它们各自对应哪种估计量？各自更信任系统的哪一部分（critic 还是世界模型）？
 5. MuZero 从不重建观测。当奖励非常稀疏时，请给出这一选择的一个优点和一种失效模式。
+6. （2025–2026 年更新）Dreamer 4 仅凭离线数据在想象中训练策略。以第 2 节的模型误差图为参考，解释为什么从*数据集*状态出发、持续 $H$ 步的想象推演，比贯穿整个两万步回合的推演更安全。如果策略找到了离线数据中从未出现过的动作，会出什么问题？
+
+<details markdown="1"><summary>提示</summary>
+
+模型误差随推演长度累积，因此从真实状态出发的短分支（MBPO，第 7 节）能让预测状态保持在数据分布附近。数据之外的动作正是模型最不准确的地方，而针对模型优化的策略恰恰会去寻找这些误差（模型利用）。从 BC 策略出发并限制强化学习让策略偏离的程度，是常用的防护措施。
+
+</details>
 
 **下一篇：**[第 2 篇]({{ '/blog/2026/world-models-02-generative-modeling-foundations/' | relative_url }})将搭建构成现代世界模型的生成式工具箱：VAE、VQ tokenizer、自回归 Transformer、扩散模型与流匹配。

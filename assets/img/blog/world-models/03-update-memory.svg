@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Hand-written stand-in (no Python runtime in the authoring session); regenerate with
+     bin/figures/world-models/world_models_updates.py. Data: 24 fps video, 4x temporal compression
+     (6 latent frames per second); W = 30 latent frames (5 s) recent window; K = 16 retrieved memory frames. -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 400" width="720" height="400" font-family="DejaVu Sans, Arial, sans-serif" font-size="15">
+  <rect width="720" height="400" fill="#ffffff"/>
+  <!-- grid -->
+  <g stroke="#e6e6e6" stroke-width="1">
+    <line x1="80" y1="190" x2="690" y2="190"/>
+    <line x1="80" y1="40" x2="690" y2="40"/>
+    <line x1="232.5" y1="40" x2="232.5" y2="340"/>
+    <line x1="385" y1="40" x2="385" y2="340"/>
+    <line x1="537.5" y1="40" x2="537.5" y2="340"/>
+    <line x1="690" y1="40" x2="690" y2="340"/>
+  </g>
+  <!-- axes -->
+  <g stroke="#222" stroke-width="1.5">
+    <line x1="80" y1="340" x2="690" y2="340"/>
+    <line x1="80" y1="40" x2="80" y2="340"/>
+  </g>
+  <g fill="#222" text-anchor="middle">
+    <text x="80" y="362">0</text><text x="232.5" y="362">30</text><text x="385" y="362">60</text><text x="537.5" y="362">90</text><text x="690" y="362">120</text>
+    <text x="385" y="390">t  [s]</text>
+  </g>
+  <g fill="#222" text-anchor="end">
+    <text x="72" y="345">10</text><text x="72" y="195">100</text><text x="72" y="45">1000</text>
+  </g>
+  <text x="22" y="190" fill="#222" text-anchor="middle" transform="rotate(-90 22 190)">N_ctx</text>
+  <!-- Genie 3 stated visual memory: about one minute -->
+  <line x1="385" y1="40" x2="385" y2="340" stroke="#888" stroke-width="1.5" stroke-dasharray="6 4"/>
+  <text x="391" y="325" fill="#555" font-size="13">Genie 3: ~60 s</text>
+  <!-- full context O(T): N = 6 t -->
+  <polyline fill="none" stroke="#d62728" stroke-width="3.5" points="88.5,340 90.2,328.1 105.4,268.4 130.8,223.3 181.7,178.1 283.3,133.0 385,106.6 486.7,87.8 588.3,73.3 690,61.4"/>
+  <!-- window + memory O(W+K): min(6t, 46) -->
+  <polyline fill="none" stroke="#2ca02c" stroke-width="3.5" points="88.5,340 90.2,328.1 105.4,268.4 119.0,240.6 690,240.6"/>
+  <!-- sliding window O(W): min(6t, 30) -->
+  <polyline fill="none" stroke="#1f77b4" stroke-width="3.5" stroke-dasharray="9 5" points="88.5,340 90.2,328.1 105.4,268.4 690,268.4"/>
+  <!-- legend -->
+  <g font-size="15">
+    <rect x="470" y="118" width="210" height="88" fill="#ffffff" stroke="#cccccc"/>
+    <line x1="482" y1="138" x2="516" y2="138" stroke="#d62728" stroke-width="3.5"/><text x="524" y="143">O(T)</text>
+    <line x1="482" y1="164" x2="516" y2="164" stroke="#2ca02c" stroke-width="3.5"/><text x="524" y="169">O(W+K)</text>
+    <line x1="482" y1="190" x2="516" y2="190" stroke="#1f77b4" stroke-width="3.5" stroke-dasharray="9 5"/><text x="524" y="195">O(W)</text>
+  </g>
+</svg>

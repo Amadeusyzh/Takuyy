@@ -458,7 +458,44 @@ print(f"Flow matching 50 Euler steps: {100 * frac:.1f}% near a mode, {modes}/8 m
 | Sora (2024) | 视频压缩网络 | 作用于时空 patch 的扩散 Transformer | 文本、图像、视频 |
 | Cosmos (2025) | Cosmos tokenizer | 扩散式与自回归式世界基础模型 | 文本、视频、（后训练加入的）动作 |
 
-第 3 篇将深入这些视频世界模拟器的内部。
+第 3 篇将深入这些视频世界模拟器的内部。（*更新，2026 年 11 月：*下文的 2025–2026 年进展一节用因果少步视频扩散模型扩展了这张表。）
+
+## 2025–2026 年进展（截至 2026 年 11 月）
+
+本节补充 2025 年至 2026 年 11 月初与世界模型相关的生成建模进展。这里不是视频生成的综述，那一领域发展太快，无法在此覆盖。对世界模型来说，最大的变化是：**因果、少步的视频扩散成为交互式模拟器的标准骨干**。它的关键问题，也是最重要的新思想，在于*训练时模型看到什么作为上下文*。“预印本”指尚未在会议或期刊发表的 arXiv 论文。
+
+### 因果视频扩散与训练-测试差距
+
+交互式世界模型必须由帧 $\lt t$ 和动作生成第 $t$ 帧，再以*自己的*输出为条件生成第 $t+1$ 帧（第 3 篇第 4 节的分解）。用 $x_{\lt t}$ 表示真实帧，$\hat x_{\lt t}$ 表示生成的帧。标准的**教师强制**（teacher forcing，TF）在真实上下文上训练 $p_\theta(x_t \mid x_{\lt t})$，但在测试时模型收到的是 $\hat x_{\lt t}$。$\hat x$ 中的误差是它从未见过的输入，因此会不断累积。这是第 1 篇误差累积问题的“暴露偏差”（exposure bias）版本。下图比较了选择训练上下文的三种方式。
+
+{% include blog_figure.liquid path="assets/img/blog/world-models/02-update-forcing.svg" width="90%" caption="因果视频模型在训练时以什么为条件。TF（教师强制）：干净的真实过去 $x_{1:5}$，只有正在学习的帧被加噪。DF（Diffusion Forcing，第 3 篇）：每一帧获得独立的噪声水平 $\sigma$（灰度），因此模型学会处理不确定的上下文。SF（Self Forcing）：上下文是模型自己的自回归推演 $\hat x_{1:5}$（箭头，用 KV 缓存生成，与测试时完全相同），损失通过分布匹配（DMD）或对抗目标作用在整段生成的视频上。只有 SF 在部署时会看到的同样输入上训练。" %}
+
+- **CausVid**（Yin et al., "From Slow Bidirectional to Fast Autoregressive Video Diffusion Models"，CVPR 2025，[arXiv:2412.07772](https://arxiv.org/abs/2412.07772)）把一个高质量的*双向*视频扩散教师蒸馏成只需少量去噪步的*因果*学生，生成借助 KV 缓存变为流式。蒸馏使用分布匹配蒸馏（distribution matching distillation，DMD）：训练学生使其输出分布与教师一致，而不是复制单个样本。
+- **Self Forcing**（Huang et al.，NeurIPS 2025，[arXiv:2506.08009](https://arxiv.org/abs/2506.08009)）直接弥合训练-测试差距。训练时，模型像推理时一样，用 KV 缓存逐帧自回归地生成整段视频，再在自己的输出上施加整体的视频级损失（DMD、score identity 或 GAN）。只有当每帧只需少量去噪步时，在训练中展开推演才负担得起。结果可以在单块 GPU 上实时运行，并成为 Matrix-Game 2.0 等开放交互世界模型的默认配方（第 3 篇更新）。
+- 后续工作修补了剩余的弱点。**Self-Forcing++**（Cui et al.，预印本，[arXiv:2510.02283](https://arxiv.org/abs/2510.02283)）在不需要长视频教师的情况下减少长推演中的漂移，视频长度可达 4 分 15 秒。**LongLive**（预印本，[arXiv:2509.22622](https://arxiv.org/abs/2509.22622)）支持在生成过程中切换提示。**Causal Forcing**（Zhu et al.，ICML 2026，[arXiv:2602.02214](https://arxiv.org/abs/2602.02214)）指出，从*双向*教师蒸馏会留下架构上的差距，因此在 DMD 之前用*自回归*教师初始化学生，并报告其在运动动态上明显优于 Self Forcing。**Causal Forcing++**（预印本，[arXiv:2605.15141](https://arxiv.org/abs/2605.15141)）和 **Causal-rCM**（Zheng et al.，预印本，[arXiv:2606.25473](https://arxiv.org/abs/2606.25473)）把每帧的采样步数推到 2 步；Causal-rCM 把教师强制的一致性蒸馏与 Self Forcing 式的 DMD 结合起来。
+- 两个相关思想。**History-Guided Video Diffusion**（Song et al.，ICML 2025，[arXiv:2502.06764](https://arxiv.org/abs/2502.06764)）训练一个可接受可变长度历史的 Diffusion Forcing Transformer，并把无分类器引导（第 7 节）用在*历史*上：比较有无过去帧时的预测，以增强长程一致性。**MAGI-1**（Sand AI，预印本，[arXiv:2505.13211](https://arxiv.org/abs/2505.13211)）把逐块（chunk-by-chunk）的自回归视频扩散扩展为一个大型开放模型。
+
+### 少步采样器：shortcut 模型与 MeanFlow
+
+实时世界模型每帧只能负担一到四次网络计算。第 8 节介绍了 reflow，另有两种较新的思想直接训练少步采样器。
+
+- **Shortcut 模型**（Frans et al., "One Step Diffusion via Shortcut Models"，[arXiv:2410.12557](https://arxiv.org/abs/2410.12557)，2024）除了噪声水平之外，还以期望的*步长* $d$ 为条件，并用自一致性目标训练网络：一步长度为 $2d$ 的跨步应等于两步连续的长度为 $d$ 的跨步。这样同一个模型就能用 1、2、4……步采样。Dreamer 4 的 *shortcut forcing*（第 1 篇更新）把它与 Diffusion Forcing 结合了起来。
+- **MeanFlow**（Geng et al., "Mean Flows for One-step Generative Modeling"，预印本，[arXiv:2505.13447](https://arxiv.org/abs/2505.13447)）学习一个区间上的*平均*速度 $u(x_t, r, t) = \frac{1}{t - r}\int_r^t v(x_\tau, \tau)\, d\tau$，而不是流匹配的瞬时速度 $v$。这样一次计算就能从噪声跳到数据：$x_r = x_t - (t - r)\, u(x_t, r, t)$。（这里采用论文的约定：数据在 $t = 0$，噪声在 $t = 1$，与第 8 节相反。）可以与上面流路径小部件中弯曲的精确路径对照：大步长的 Euler 步之所以会冲过头，是因为它用的是瞬时速度。
+
+### 开放骨干与 tokenizer
+
+- **Wan**（Team Wan，预印本，[arXiv:2503.20314](https://arxiv.org/abs/2503.20314)，2025 年 3 月）是一个开放的大型视频扩散 Transformer 系列（流匹配、因果 3D VAE）。2025–2026 年的许多世界模型都以它为起点，包括第 3 篇更新中的若干模型以及基于 Wan2.1/2.2 构建的模型。
+- **表示自编码器**（representation autoencoders；Zheng et al., "Diffusion Transformers with Representation Autoencoders"，技术报告，[arXiv:2510.11690](https://arxiv.org/abs/2510.11690)）用一个冻结的*预训练表示编码器*（如 DINOv2）加一个训练好的解码器，取代潜在扩散（第 6 节）中的 VAE，使扩散模型在语义特征空间中工作。这与 JEPA 和 DINO-world 所做的“在特征空间中预测”的选择相同（第 5 篇），只是现在用于生成。
+- **Cosmos tokenizer**（第 11 节表格）仍是视频领域常用的开放选择；NVIDIA 后续的 Cosmos 版本见第 3 篇更新。
+
+### 扩展第 11 节的表格
+
+| 系统 | 压缩器 | 动力学 / 生成器 | 条件 |
+| --- | --- | --- | --- |
+| Self Forcing / CausVid 学生模型（2025） | 视频 VAE（Wan） | 带 KV 缓存的因果少步视频扩散 | 文本（微调后可加入动作） |
+| Matrix-Game 2.0（2025） | 视频 VAE | 因果少步扩散（Self Forcing 式） | 键盘与鼠标 |
+| Dreamer 4（2025） | 学到的视频 tokenizer | 使用 shortcut forcing 的 Transformer | 动作（少量标签） |
+| Cosmos 3（2026） | 公告中未详述 | 混合 Transformer：推理 + 生成 | 文本、图像、视频、声音、动作 |
 
 ## 代表性论文
 
@@ -481,6 +518,17 @@ print(f"Flow matching 50 Euler steps: {100 * frac:.1f}% near a mode, {modes}/8 m
 | Scalable Diffusion Models with Transformers (DiT, Peebles, Xie) | ICCV | 2023 | [arXiv:2212.09748](https://arxiv.org/abs/2212.09748) | Transformer 去噪器、adaLN-Zero、扩展性 |
 | Scaling Rectified Flow Transformers for High-Resolution Image Synthesis (Esser et al.) | ICML | 2024 | [arXiv:2403.03206](https://arxiv.org/abs/2403.03206) | 大规模的整流流 + Transformer（SD3） |
 | Language Model Beats Diffusion: Tokenizer is Key to Visual Generation (MAGVIT-v2, Yu et al.) | ICLR | 2024 | [arXiv:2310.05737](https://arxiv.org/abs/2310.05737) | 无查找量化的视频 tokenizer |
+| One Step Diffusion via Shortcut Models (Frans et al.) | arXiv | 2024 | [arXiv:2410.12557](https://arxiv.org/abs/2410.12557) | 以步长为条件的少步采样 |
+| From Slow Bidirectional to Fast Autoregressive Video Diffusion Models (CausVid, Yin et al.) | CVPR | 2025 | [arXiv:2412.07772](https://arxiv.org/abs/2412.07772) | 从双向教师到因果少步学生 |
+| History-Guided Video Diffusion (Song et al.) | ICML | 2025 | [arXiv:2502.06764](https://arxiv.org/abs/2502.06764) | 对可变长度历史施加引导 |
+| Wan: Open and Advanced Large-Scale Video Generative Models (Team Wan) | 预印本 | 2025 | [arXiv:2503.20314](https://arxiv.org/abs/2503.20314) | 许多世界模型的开放骨干 |
+| MAGI-1: Autoregressive Video Generation at Scale (Sand AI) | 预印本 | 2025 | [arXiv:2505.13211](https://arxiv.org/abs/2505.13211) | 大规模逐块自回归扩散 |
+| Mean Flows for One-step Generative Modeling (Geng et al.) | 预印本 | 2025 | [arXiv:2505.13447](https://arxiv.org/abs/2505.13447) | 用平均速度流实现单步采样 |
+| Self Forcing: Bridging the Train-Test Gap in Autoregressive Video Diffusion (Huang et al.) | NeurIPS | 2025 | [arXiv:2506.08009](https://arxiv.org/abs/2506.08009) | 在自身推演上训练；实时因果视频 |
+| Self-Forcing++: Towards Minute-Scale High-Quality Video Generation (Cui et al.) | 预印本 | 2025 | [arXiv:2510.02283](https://arxiv.org/abs/2510.02283) | 无需长视频教师的分钟级推演 |
+| Diffusion Transformers with Representation Autoencoders (Zheng et al.) | 技术报告 | 2025 | [arXiv:2510.11690](https://arxiv.org/abs/2510.11690) | 在预训练特征空间中做扩散 |
+| Causal Forcing (Zhu et al.) | ICML | 2026 | [arXiv:2602.02214](https://arxiv.org/abs/2602.02214) | 用自回归教师做因果蒸馏 |
+| Causal-rCM (Zheng et al.) | 技术报告 | 2026 | [arXiv:2606.25473](https://arxiv.org/abs/2606.25473) | 教师强制一致性 + Self Forcing 式 DMD |
 
 ## 学习资源
 
@@ -496,5 +544,12 @@ print(f"Flow matching 50 Euler steps: {100 * frac:.1f}% near a mode, {modes}/8 m
 3. 在 DDPM 脚本中，比较步数为 10、50、200 以及 $\eta \in \lbrace 0, 1 \rbrace$ 时的 DDIM。减少步数时，哪一种先退化？
 4. 加入类别标签（模态的索引），并以 15% 的标签丢弃率进行训练。实现无分类器引导，并画出 $w \in \lbrace 1, 3, 7 \rbrace$ 时的样本。每个模态的分散程度会发生什么变化？
 5. 证明对于线性路径 $x_t = (1-t)x_0 + t x_1$，速度预测器 $v_\theta$ 与噪声预测器之间满足 $\hat\epsilon = x_t - t\,v_\theta(x_t, t)$。
+6. （2025–2026 年更新）一个因果视频模型每帧使用 $S$ 个去噪步，共生成 $F$ 帧。数一数展开一段 Self Forcing 训练视频需要多少次网络计算，并解释为什么 Self Forcing 在 $S = 4$ 时可行而在 $S = 50$ 时不可行。Diffusion Forcing 弥合了教师强制与测试时之间差距的哪一部分，又留下了哪一部分？
+
+<details markdown="1"><summary>提示</summary>
+
+展开需要 $F \cdot S$ 次计算（KV 缓存使每次的开销大致恒定），例如 $F = 20$、$S = 4$ 时为 80 次，而 $S = 50$ 时为 1,000 次。实践中，为了节省内存，梯度只保留在展开的一部分上。Diffusion Forcing 教会模型容忍*带噪声的*上下文，但这种噪声是高斯的，而测试时真实的上下文包含模型自身的结构化误差（模糊、漂移）。只有在自身推演上训练，才能让模型接触到这些误差。
+
+</details>
 
 **下一篇：**[第 3 篇]({{ '/blog/2026/world-models-03-video-world-simulators/' | relative_url }})将利用这些工具构建视频世界模拟器：Sora、Genie 1-3、GameNGen、UniSim、GAIA-1 与 Cosmos。

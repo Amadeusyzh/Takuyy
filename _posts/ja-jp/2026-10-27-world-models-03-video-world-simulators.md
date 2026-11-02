@@ -107,6 +107,8 @@ $$
 
 **Genie 3**（Google DeepMind ブログ、[2025 年 8 月](https://deepmind.google/discover/blog/genie-3-a-new-frontier-for-world-models/)）はテキストプロンプトから生成され、シリーズで初めて**リアルタイムでインタラクティブ**なモデルです。発表によれば、720p で毎秒 24 フレーム、数分間にわたる一貫性を実現しています。また、**プロンプト可能なワールドイベント**（promptable world events）も導入されました。これは実行中の世界を変えるテキスト指示（天候、新しい物体やキャラクター）です。発表には、エージェントの行動空間が限られていること、マルチエージェントのインタラクションが難しいこと、実在の場所や文字の描画が不正確であること、インタラクションの持続時間が限られていることなどの制約が挙げられています。発表時点では論文やアーキテクチャの詳細は公開されていないため、具体的な能力に関する主張はあくまで同社自身のものとして扱ってください。
 
+*更新（2026 年 11 月）：* Genie 3 は 2026 年 1 月に **Project Genie** として一般に使えるようになり、**Genie 4** が 2026 年 10 月 27 日にリサーチプレビューとして発表され、ネイティブ音声と言語による操作が加わりました。本記事末尾の 2025〜2026 年の進展の節を参照してください。
+
 ## 4. GameNGen：ゲームエンジンとしての拡散モデル
 
 **GameNGen**（Valevski et al., "Diffusion Models Are Real-Time Game Engines", ICLR 2025, [arXiv:2408.14837](https://arxiv.org/abs/2408.14837)）は、範囲は狭いものの鋭い問いを立てます。ニューラルネットワークは、複雑なゲームのゲームエンジン*そのもの*になれるのか、という問いです。GameNGen は TPU 1 基で、DOOM を毎秒 20 フレームでインタラクティブに、数分間にわたってシミュレートします。レシピは 2 段階からなります。
@@ -142,9 +144,13 @@ GameNGen の限界も同じくらい示唆に富んでいます。約 3 秒分�
 
 **GAIA-1**（Hu et al., Wayve, [arXiv:2309.17080](https://arxiv.org/abs/2309.17080), 2023）は自動運転のための生成的世界モデルです。動画、テキスト、自車の行動がトークンに符号化され、自己回帰 Transformer の世界モデルが次の画像トークンを予測し（将来予測を次トークン予測として扱う）、別の動画拡散デコーダが高解像度のフレームを描画します。行動を条件とすることで反実仮想的な問い（「車が左にハンドルを切っていたら？」）を立てることができ、テキストプロンプトで天候や時間帯を変えることもできます。まれで危険なシナリオこそシミュレータが生成すべきものなので、運転は自然な応用先です。
 
+*更新（2026 年 11 月）：* この系譜は GAIA-2（2025 年、複数カメラの潜在拡散）と GAIA-4（2026 年、閉ループのカメラとレーダーのシミュレーション）へと続き、Waymo は Genie 3 を土台に独自の運転世界モデルを構築しました。更新の節を参照してください。
+
 ### 5.3 NVIDIA Cosmos
 
 **Cosmos**（NVIDIA, "Cosmos World Foundation Model Platform for Physical AI", [arXiv:2501.03575](https://arxiv.org/abs/2501.03575), 2025）は、世界モデルをフィジカル AI のための**基盤モデル**（foundation models）として位置付けています。このプラットフォームには、動画キュレーションのパイプライン、連続および離散の **Cosmos トークナイザ**、拡散型と自己回帰型の両方の事前学習済み**世界基盤モデル**（world foundation models）、ガードレール、そして汎用モデルをカメラ制御、ロボットマニピュレーション、自動運転に特化させるポストトレーニングの例が含まれています。モデルは NVIDIA Open Model License のもとで公開されています（[github.com/NVIDIA/Cosmos](https://github.com/NVIDIA/Cosmos)）。想定されているワークフローは「幅広い動画で一度事前学習し、自分のロボットや車でポストトレーニングする」というもので、LLM の適応方法とよく似ています。大規模なオープンの動画世界モデルで実験したいなら、Cosmos はよい出発点です。
+
+*更新（2026 年 11 月）：* NVIDIA はその後、Cosmos-Predict2.5 と Transfer2.5（2025 年 10 月）、さらに推論と行動出力も行う mixture-of-transformers モデルである **Cosmos 3**（2026 年 6 月）を発表しました。更新の節を参照してください。
 
 ## 6. 自己回帰的な動画ロールアウトを安定させる
 
@@ -161,7 +167,7 @@ GameNGen の限界も同じくらい示唆に富んでいます。約 3 秒分�
 
 ## 7. まだ足りないもの
 
-- **長期的な一貫性と記憶。** 2 回振り返ると部屋が変わってしまいます。ピクセル空間のモデルには、コンテキストウィンドウ以外に永続的な状態がありません。数分単位の一貫性は最先端の主張であり、数時間単位は未解決です。
+- **長期的な一貫性と記憶。** 2 回振り返ると部屋が変わってしまいます。ピクセル空間のモデルには、コンテキストウィンドウ以外に永続的な状態がありません。数分単位の一貫性は最先端の主張であり、数時間単位は未解決です。（*更新、2026 年 11 月：* 姿勢で索引付けした記憶を持つオープンなモデルが分単位の一貫性を報告するようになりました。時間単位の一貫性と画面外の動きは未解決のままです。更新の節を参照してください。）
 - **物理。** Kang et al.（"How Far is Video Generation from World Model: A Physical Law Perspective", ICML 2025, [arXiv:2411.02385](https://arxiv.org/abs/2411.02385)）は、合成した 2D 物理データで動画拡散モデルを学習し、分布内ではほぼ完璧に汎化する一方、分布外では失敗することを見いだしました。モデルは法則を学ぶのではなく、**事例ベース**（case-based）の検索（最も近い学習例の模倣）のように振る舞うのです。Physics-IQ（Motamed et al., WACV 2026, [arXiv:2501.09038](https://arxiv.org/abs/2501.09038)）は、現在の動画モデルの物理理解は著しく限られており、視覚的なリアルさとは無関係であることを示しました。評価については第 5 回で改めて扱います。
 - **制御可能性と行動空間。** あるゲームではキーボード操作、別のゲームでは潜在行動、また別の場所ではロボットの関節指令というように、共通の行動インターフェースが存在せず、これが転移を制限しています。
 - **因果と相関。** 受動的な動画で学習したモデルは「傘が雨を引き起こす」と学習してしまうかもしれません。介入データ（行動）は役に立ちますが、ほとんどの動画には行動がありません。
@@ -236,6 +242,59 @@ with torch.no_grad():
 
 {% include blog_figure.liquid path="assets/img/blog/world-models/03-lam-results.svg" caption="上：各隠れ行動の遷移が、学習された 8 個のコードにどう割り当てられたかの割合。並進不変な ConvEncoder では各行動が専用のコードを持ちます（平均純度 0.96、「down」は 2 つのコードに分かれる）。MLP エンコーダではコードが混ざり合います（平均純度 0.25、偶然に近い）。下：3 列目から「right」のコードを 4 回入力して ConvEncoder の世界モデルを「プレイ」した結果。点は 1 ステップに 1 マスずつ右へ動いて 7 列目に達し、その一方でデコーダの小さな誤差が背景ノイズとして蓄積していきます。" %}
 
+## 2025〜2026 年の進展（2026 年 11 月時点）
+
+この節では、本文の執筆後から 2026 年 11 月初めまでに起きたことを補足します。この時期、インタラクティブな動画世界モデルは急速に進歩しました。リアルタイム生成が当たり前になり、オープンなモデルが 2025 年のクローズドなデモに追いつき、関心は「見た目が正しいか」から「記憶しているか、エージェントが使えるか」へと移りました。各項目にはステータスを記しています。「プレプリント」はまだ学会や論文誌で発表されていない arXiv 論文、「発表」は企業のブログや製品ページを指し、その能力に関する記述は査読済みの結果ではなく企業自身の主張です。下のタイムラインには、この更新（および第 4 回・第 5 回の更新）で扱うすべてのシステムをまとめました。項目をタップすると、要約、ステータス、リンクが表示されます。
+
+{% include widget.liquid name="world-models-timeline" height="560" caption="試してみましょう：第 3〜5 回の 2025〜2026 年の更新で扱った世界モデルの、絞り込み可能なタイムラインです。ボタンで種類を絞り込み、点をタップ（または矢印ボタンを使用）すると、2 行の要約、ステータス（塗りつぶしの点 = 論文、白抜きの点 = 企業の発表や製品）、リンクが表示されます。破線は 2026 年 11 月初めを示します。インタラクティブ動画の行が 2025 年半ばから密になり、評価の論文がおよそ 1 年遅れで続いていることに注目してください。" %}
+
+### Google DeepMind：Genie 3 から Project Genie、Genie 4 へ
+
+3.3 節では **Genie 3**（2025 年 8 月）を紹介しました。テキストプロンプトから世界を生成し、720p・毎秒 24 フレームで、数分間の一貫性と約 1 分の視覚的記憶を持つモデルです。2026 年 1 月、Google はこれを研究室の外で使えるようにしました。**Project Genie**（[Google ブログ、2026 年 1 月 29 日](https://blog.google/innovation-and-ai/models-and-research/google-deepmind/project-genie/)）は、Genie 3、画像モデル Nano Banana Pro、Gemini を組み合わせた実験的なウェブアプリです。最初は米国の成人の Google AI Ultra 加入者向けに提供され、1 回の生成は 60 秒に制限されています。2026 年 10 月 27 日には DeepMind が **Genie 4**（[DeepMind ブログ](https://deepmind.google/blog/genie-4-a-new-generation-of-world-simulation/)）を、信頼できるテスター向けのリサーチプレビューとして発表しました。発表では、ネイティブに生成される音声（出来事に反応する環境音、音楽、会話）、自然言語プロンプトによるリアルタイムの操作、物理と人物キャラクターのより良いシミュレーションが強調されています。推論と連続性は Gemini モデルが担い、Gemini のエージェントがステップを計画して確認することもできます。ブログには解像度、フレームレート、アーキテクチャの記載がなく、一貫性が保たれるのは*短いセッション*の間であり、長時間の実行や多数の編集の後にはずれが生じうると書かれています。第 7 節の言葉でいえば、最先端の主張はいまだに「数時間ではなく数分」です。Genie 3 はドメイン特化モデルの土台にもなりました。それが **Waymo World Model**（後述の自動運転の項）です。
+
+### オープンなリアルタイム・インタラクティブモデル
+
+学習者にとって 2025〜2026 年の最も重要な変化は、インタラクティブな世界モデルを自分で*動かせる*ようになったことです。オープンなモデルの多くは同じレシピに従っています。大規模な事前学習済みのテキスト・画像から動画への拡散モデル（多くは Wan。[第 2 回]({{ '/blog/2026/world-models-02-generative-modeling-foundations/' | relative_url }})を参照）から出発し、因果的にして行動条件を加えます。そのうえで、Self Forcing 型の目的関数で少ステップの自己回帰サンプラーに蒸留します（Self Forcing とその後継は第 2 回の更新で説明します）。
+
+- **Matrix-Game 2.0**（He et al.、プレプリント、[arXiv:2508.13009](https://arxiv.org/abs/2508.13009)、2025 年 8 月）は、大規模なゲームと運転のデータで学習した、オープンソースでリアルタイム・ストリーミングの世界モデルです。因果的な少ステップ拡散の生徒モデルにキーボードとマウスの条件付けを組み合わせ、GameNGen の考え方（第 4 節）をオープンドメインの場面と長いストリームで成り立たせました。**Matrix-Game 3.0**（Wang et al.、プレプリント、[arXiv:2604.08995](https://arxiv.org/abs/2604.08995)、2026 年 4 月）は記憶を加えます。カメラ姿勢で過去のフレームを検索し、DMD で複数区間にわたって蒸留し、量子化と枝刈りした VAE デコーダでデコードを高速化します。5B モデルで 720p・最大 40 fps、1 分に及ぶ系列での記憶の一貫性が報告されています。
+- **Hunyuan-GameCraft**（Li et al.、プレプリント、[arXiv:2506.17201](https://arxiv.org/abs/2506.17201)、2025 年 6 月）は、キーボードとマウスの入力を共通のカメラ運動空間に写し、学習時に複数の履歴条件を混ぜることで、長いゲーム風の動画が入力に反応し続けるようにします。**Yan**（Ye et al.、プレプリント、[arXiv:2508.08601](https://arxiv.org/abs/2508.08601)、2025 年 8 月）は、リアルタイムのシミュレーション、マルチモーダルな生成、実行中の世界のテキストによる編集という 3 つの部分からなるフレームワークです。
+- **WorldPlay**（Sun et al.、プレプリント、[arXiv:2512.14614](https://arxiv.org/abs/2512.14614)、2025 年 12 月）は速度と記憶のトレードオフに取り組みます。行動を 2 通りに表現し、過去のフレームからコンパクトなコンテキスト記憶を再構成し、「context forcing」による蒸留を用います。720p を 24 fps でストリーミング生成し、長期的な幾何の一貫性が向上しています。**AlayaWorld**（プレプリント、[arXiv:2607.18367](https://arxiv.org/abs/2607.18367)、2026 年 7 月）は 24 fps の 15B 自己回帰動画 DiT です。コンテキストは「シンク」フレーム、圧縮された履歴、空間記憶、直近のフレームの 4 つから構成されます。蒸留により、各チャンクのサンプリングは約 30 ステップから 4 ステップに減ります。
+- **LongLive**（Yang et al.、プレプリント、[arXiv:2509.22622](https://arxiv.org/abs/2509.22622)、2025 年 9 月）は行動条件付きではありませんが、長い動画で同じ仕組みを示しています。フレーム単位の自己回帰モデルで、生成中にユーザーがプロンプトを切り替えられます。1.3B モデルが H100 1 枚で 20.7 fps で動作し、最長 240 秒の動画を生成します。
+
+### 記憶：最大の研究フロント
+
+第 7 節では長期的な一貫性を最大の欠落として挙げましたが、2025〜2026 年の論文の多くはこれに取り組んでいます。図は基本的な予算の問題を示しています。過去の潜在フレームをすべてコンテキストに保持するモデルは、メモリとアテンションのコストがロールアウト長 $T$ とともに増えます。$W$ フレームのスライディングウィンドウは安価ですが、忘れてしまいます。一般的な折衷案は、ウィンドウを残したうえで*選ばれた* $K$ 枚の記憶フレーム（またはコンパクトな 3D 状態）を加えることです。こうするとコストは有界のまま、昔の場所を思い出すこともできます。
+
+{% include blog_figure.liquid path="assets/img/blog/world-models/03-update-memory.svg" width="85%" caption="24 fps の動画を時間方向に 4 倍圧縮（毎秒 6 潜在フレーム）したときの、コンテキストの大きさ $N_{ctx}$（潜在フレーム数、対数目盛）とロールアウト時間の関係です。完全なコンテキストは $O(T)$ で増え（赤）、2 分後には 720 フレームに達します。5 秒のスライディングウィンドウ（青の破線）は $W = 30$ で一定ですが、5 秒より前のものは何も見えません。ウィンドウに検索した $K = 16$ 枚の記憶フレームを加えたもの（緑）も 46 で一定で、しかも古い視点にアクセスできます。縦の破線は、Genie 3 について述べられている「約 1 分」の視覚的記憶です。" %}
+
+記憶の設計は、暗黙的なものから明示的なものへとおおよそ 4 つの系統に分けられます。
+
+1. **カメラ姿勢による過去フレームの検索。** *WorldMem*（Xiao et al.、プレプリント、[arXiv:2504.12369](https://arxiv.org/abs/2504.12369)）は過去のフレームを姿勢とタイムスタンプとともに保存し、関連するものにアテンションを向けます。*Context as Memory*（Yu et al.、SIGGRAPH Asia 2025、[arXiv:2506.03141](https://arxiv.org/abs/2506.03141)）は、カメラの視錐台が現在の視点と重なるフレームをコンテキストとして選びます。*VMem*（Li et al.、ICCV 2025、[arXiv:2506.18903](https://arxiv.org/abs/2506.18903)）はサーフェル（surfel）で過去の視点に索引を付けます。*ReWorld*（Chen et al.、プレプリント、[arXiv:2608.23565](https://arxiv.org/abs/2608.23565)、2026 年 8 月）は、有界の KV キャッシュと姿勢で索引付けしたランドマークバンクを保持します。4 ステップのサンプリングで 704x1280 の動画をストリーミングし、64 秒の往復の後でも出発地点の視点を再生成できます。World Labs の **RTFM**（[ブログ、2025 年 10 月](https://worldlabs.ai/blog/rtfm)）は、製品のリサーチプレビューで同じ原理を用いています。明示的な 3D はなく、姿勢付きのフレームが空間記憶として働き、近くのフレームがコンテキストに「入れ替え」（context juggling）られます。H100 1 枚でインタラクティブな速度で動作します。
+2. **圧縮された再帰状態。** *Long-Context State-Space Video World Models*（Po et al.、プレプリント、[arXiv:2505.20171](https://arxiv.org/abs/2505.20171)）は、長期記憶にブロック単位の状態空間層を、細部に局所アテンションを使います。[第 1 回]({{ '/blog/2026/world-models-01-what-is-a-world-model/' | relative_url }})の RSSM の考え方を動画の規模に広げたものです。
+3. **長いコンテキストに対する学習されたスパースアテンション。** *Mixture of Contexts*（Cai et al.、プレプリント、[arXiv:2508.21058](https://arxiv.org/abs/2508.21058)）は、各クエリを長い履歴のうち関連する少数のチャンクにだけ振り分け、密なアテンションを避けます。
+4. **明示的な 3D 記憶。** この系統のモデルはフレームを点群やガウシアンに逆投影し、その状態をレンダリングして条件として与えます。例としては第 4 回の更新で扱う GEN3C と Voyager、そしてガウシアン記憶が時間ではなく探索した場面の広さに応じて増える *L3G-World*（2026 年 10 月）があります。
+
+2026 年の丁寧な研究 **Echo-Memory**（King et al.、プレプリント、[arXiv:2606.09803](https://arxiv.org/abs/2606.09803)、2026 年 6 月）は、共通のバックボーン上でこれらの選択肢を比較しています。生のコンテキストは強いベースラインであること、強い圧縮はある場所に戻るのに必要な手がかりを失うこと、オープンドメインで戻る能力が最も高かったのはブロック単位の状態空間再帰であることが示されました。この分野を整理したサーベイとして、*Towards Interactive Video World Modeling*（[arXiv:2606.01164](https://arxiv.org/abs/2606.01164)）と *The Past Frames the Future: Memory for Autoregressive Video Generation*（[arXiv:2609.28466](https://arxiv.org/abs/2609.28466)）があります。ただし、第 5 回の更新で扱う WRBench（2026 年 6 月）は、現在のモデルが*見えていない*出来事を進行させ続けないことを示しており、これらすべてに冷や水を浴びせる結果です。ある場所の見た目を覚えていることは、離れている間にそこで起きたことをシミュレーションすることと同じではありません。
+
+### フィジカル AI の基盤モデルと汎用世界モデル
+
+- **Cosmos の第 2・第 3 世代。** NVIDIA の *World Simulation with Video Foundation Models for Physical AI*（プレプリント、[arXiv:2511.00062](https://arxiv.org/abs/2511.00062)、2025 年 10 月）は Cosmos-Predict2.5 と Cosmos-Transfer2.5 を導入しました。フローベースの動画モデルがテキスト・画像・動画から世界への生成を統一し、Transfer モデルは深度、セグメンテーション、エッジなどの制御入力を加えます（Cosmos-Transfer1：[arXiv:2503.14492](https://arxiv.org/abs/2503.14492)）。Cosmos-Reason1（[arXiv:2503.15558](https://arxiv.org/abs/2503.15558)）は推論を担う視覚言語の部分です。2026 年 6 月 1 日、NVIDIA は **Cosmos 3**（[プレスリリース](https://investor.nvidia.com/news/press-release-details/2026/NVIDIA-Launches-Cosmos-3-the-Open-Frontier-Foundation-Model-for-Physical-AI/default.aspx)）を発表しました。これはオープンな「オムニモデル」とされ、推論用 Transformer と生成エキスパートを組み合わせた mixture-of-transformers 構成で、テキスト、画像、動画、環境音、行動を理解・生成します。視覚言語モデル、世界モデル、あるいはロボット向けの「世界行動モデル」（world action model）のバックボーンとして使えます。NVIDIA は Physics-IQ を含む複数のリーダーボードでオープンモデル中 1 位だと述べていますが、独立した評価が出るまでは企業の主張として扱ってください。この設計は、5.3 節のシミュレータとしての役割と、[身体性 AI 第 5 回]({{ '/blog/2026/embodied-ai-05-vision-language-action-models/' | relative_url }})のプランナー・方策としての役割を一つにまとめるものです。
+- **Runway GWM-1**（[Runway、2025 年 12 月 11 日](https://runway.com/research/introducing-runway-gwm-1)）は、動画モデル Gen-4.5 の上に構築された自己回帰型の世界モデルです。フレームごとに生成し、カメラ姿勢、ロボット指令、音声で制御できます。事後学習した 3 つの派生モデル（Worlds、Avatars、Robotics）があり、出力は 720p、動画は最長 2 分です。
+- **Emu3.5**（Cui et al.、プレプリント、[arXiv:2510.26583](https://arxiv.org/abs/2510.26583)、2025 年 10 月）は、動画由来の長い系列を含むインターリーブされた視覚言語データで学習した、ネイティブなマルチモーダル次トークン予測モデルで、「世界の学習者」と位置づけられています。第 2 回の自己回帰の系統が、拡散と並んでいまも健在であることを示しています。
+
+### 自動運転の世界モデル
+
+自動運転は依然として最も成熟した産業応用です（5.2 節）。**GAIA-2**（Russell et al.、プレプリント、[arXiv:2503.20523](https://arxiv.org/abs/2503.20523)、2025 年 3 月）は、一貫した複数カメラの動画を生成する潜在拡散モデルで、自車の行動、他の交通参加者、天候、道路レイアウトで制御できます。Wayve の **GAIA-4**（[Wayve ブログ、2026 年 8 月 3 日](https://wayve.ai/thinking/gaia-4/)）は*閉ループ*のシミュレーションに進みました。記録されたセンサーログから場面を再構成し、運転方策をループの中に残すので、方策の判断が次に受け取るカメラ*とレーダー*の入力を変えます。反応型エージェントを有効にしない限り、他の道路利用者はログどおりの振る舞いを再生します。**Waymo World Model**（[Waymo ブログ、2026 年 2 月 6 日](https://waymo.com/blog/2026/02/the-waymo-world-model-a-new-frontier-for-autonomous-driving-simulation)）は Genie 3 を運転向けに事後学習したもので、カメラと LiDAR の両方の出力（4D 点群）を生成し、運転行動、シーンレイアウト、言語による制御を備えています。Waymo はこれを、まれで安全上重要な事象をシミュレーションするための道具として位置づけています。汎用の世界モデルがドメイン特化シミュレータの土台になった最も明確な例であり、5.3 節の「広く事前学習し、自分の車のデータで事後学習する」というワークフローそのものです。
+
+### 「まだ足りないもの」で変わったこと
+
+- **計算量とリアルタイム性：** 蒸留により、オープンなモデルでも 720p ではほぼ解決しました（GPU 1 枚で毎秒数十フレーム）。いま未解決なのは速度ではなく、長いストリームでの品質です。
+- **記憶：** 分単位の一貫性は、最先端の主張だけでなくオープンなモデルの成果になりました。時間単位の一貫性と*永続的な動的状態*（画面外で続く出来事）は未解決のままです。
+- **行動空間：** 依然として断片的です。探索型のモデルではカメラ姿勢が事実上の共通インターフェースとなり、ロボットのモデルは動画と行動の同時予測へ向かいました（第 1 回の更新を参照）。
+- **物理と評価：** 物理のベンチマークは急増しましたが、最良のモデルでも満点にはほど遠い状況です（第 5 回の更新を参照）。
+
+これらのモデルがゲームエンジンにどう組み込まれつつあるか（エンジン内のニューラルレンダリング、プレイ可能なニューラルゲーム、エンジン側のツール）は[グラフィックスエンジン第 6 回]({{ '/blog/2026/graphics-engine-06-ai-meets-graphics-engines/' | relative_url }})を、比較対象となる古典的なシミュレータ（Isaac、MuJoCo、Newton など）は[グラフィックスエンジン第 5 回]({{ '/blog/2026/graphics-engine-05-physics-and-simulation-engines/' | relative_url }})を参照してください。
+
 ## 代表的な論文
 
 | 論文 | 会議・論文誌 | 年 | リンク | なぜ重要か |
@@ -253,6 +312,30 @@ with torch.no_grad():
 | Cosmos World Foundation Model Platform for Physical AI (NVIDIA) | arXiv | 2025 | [arXiv:2501.03575](https://arxiv.org/abs/2501.03575) | オープンな世界基盤モデルとトークナイザ |
 | Genie 3: A new frontier for world models (Google DeepMind) | blog | 2025 | [deepmind.google](https://deepmind.google/discover/blog/genie-3-a-new-frontier-for-world-models/) | リアルタイム、テキストプロンプト、プロンプト可能なワールドイベント |
 | How Far is Video Generation from World Model: A Physical Law Perspective (Kang et al.) | ICML | 2025 | [arXiv:2411.02385](https://arxiv.org/abs/2411.02385) | 動画モデルは物理法則ではなく事例ごとに汎化する |
+| GAIA-2: A Controllable Multi-View Generative World Model for Autonomous Driving (Russell et al.) | プレプリント | 2025 | [arXiv:2503.20523](https://arxiv.org/abs/2503.20523) | 豊富な制御を備えた複数カメラの運転世界モデル |
+| WorldMem: Long-term Consistent World Simulation with Memory (Xiao et al.) | プレプリント | 2025 | [arXiv:2504.12369](https://arxiv.org/abs/2504.12369) | 姿勢付きの過去フレームの記憶バンク |
+| Context as Memory (Yu et al.) | SIGGRAPH Asia | 2025 | [arXiv:2506.03141](https://arxiv.org/abs/2506.03141) | カメラ視錐台の重なりでコンテキストフレームを検索 |
+| VMem: Consistent Interactive Video Scene Generation with Surfel-Indexed View Memory (Li et al.) | ICCV | 2025 | [arXiv:2506.18903](https://arxiv.org/abs/2506.18903) | 幾何で索引付けした視点記憶 |
+| Long-Context State-Space Video World Models (Po et al.) | プレプリント | 2025 | [arXiv:2505.20171](https://arxiv.org/abs/2505.20171) | SSM の記憶と局所アテンション |
+| Hunyuan-GameCraft (Li et al.) | プレプリント | 2025 | [arXiv:2506.17201](https://arxiv.org/abs/2506.17201) | 行動をカメラ空間に統一、混合履歴条件 |
+| Matrix-Game 2.0 (He et al.) | プレプリント | 2025 | [arXiv:2508.13009](https://arxiv.org/abs/2508.13009) | オープンなリアルタイム・ストリーミング世界モデル |
+| Yan: Foundational Interactive Video Generation (Ye et al.) | プレプリント | 2025 | [arXiv:2508.08601](https://arxiv.org/abs/2508.08601) | シミュレーション・生成・編集を一つの枠組みに |
+| Mixture of Contexts for Long Video Generation (Cai et al.) | プレプリント | 2025 | [arXiv:2508.21058](https://arxiv.org/abs/2508.21058) | 長い履歴に対する学習されたスパースな振り分け |
+| LongLive: Real-time Interactive Long Video Generation (Yang et al.) | プレプリント | 2025 | [arXiv:2509.22622](https://arxiv.org/abs/2509.22622) | 分単位・プロンプト切替可能なリアルタイム自己回帰動画 |
+| World Simulation with Video Foundation Models for Physical AI (NVIDIA, Cosmos-Predict2.5) | プレプリント | 2025 | [arXiv:2511.00062](https://arxiv.org/abs/2511.00062) | 第 2 世代の Cosmos 世界シミュレータ |
+| Emu3.5: Native Multimodal Models are World Learners (Cui et al.) | プレプリント | 2025 | [arXiv:2510.26583](https://arxiv.org/abs/2510.26583) | 世界の学習者としての次トークン・マルチモーダルモデル |
+| RTFM: A Real-Time Frame Model (World Labs) | blog | 2025 | [worldlabs.ai](https://worldlabs.ai/blog/rtfm) | 姿勢付きフレームを空間記憶に、明示的 3D なし |
+| Introducing Runway GWM-1 (Runway) | blog | 2025 | [runway.com](https://runway.com/research/introducing-runway-gwm-1) | Gen-4.5 に基づく汎用世界モデル群 |
+| WorldPlay (Sun et al.) | プレプリント | 2025 | [arXiv:2512.14614](https://arxiv.org/abs/2512.14614) | 再構成コンテキスト記憶によるリアルタイム 720p |
+| Project Genie (Google) | blog | 2026 | [blog.google](https://blog.google/innovation-and-ai/models-and-research/google-deepmind/project-genie/) | 一般公開プロトタイプとしての Genie 3 |
+| The Waymo World Model (Waymo) | blog | 2026 | [waymo.com](https://waymo.com/blog/2026/02/the-waymo-world-model-a-new-frontier-for-autonomous-driving-simulation) | Genie 3 を事後学習したカメラ + LiDAR 運転シミュレータ |
+| Matrix-Game 3.0 (Wang et al.) | プレプリント | 2026 | [arXiv:2604.08995](https://arxiv.org/abs/2604.08995) | 長期記憶を備えた 720p リアルタイムモデル |
+| NVIDIA Launches Cosmos 3 (NVIDIA) | プレスリリース | 2026 | [nvidia.com](https://investor.nvidia.com/news/press-release-details/2026/NVIDIA-Launches-Cosmos-3-the-Open-Frontier-Foundation-Model-for-Physical-AI/default.aspx) | オープンなオムニモデル：推論 + 生成 + 行動 |
+| Echo-Memory: A Controlled Study of Memory in Action World Models (King et al.) | プレプリント | 2026 | [arXiv:2606.09803](https://arxiv.org/abs/2606.09803) | 記憶機構の公平な比較 |
+| AlayaWorld (AlayaWorld Team) | プレプリント | 2026 | [arXiv:2607.18367](https://arxiv.org/abs/2607.18367) | 15B の長期インタラクティブモデル |
+| GAIA-4 (Wayve) | blog | 2026 | [wayve.ai](https://wayve.ai/thinking/gaia-4/) | 閉ループのカメラ + レーダー運転シミュレーション |
+| ReWorld: An Interactive World Model with Long-Horizon Memory (Chen et al.) | プレプリント | 2026 | [arXiv:2608.23565](https://arxiv.org/abs/2608.23565) | 有界キャッシュと姿勢索引付きランドマーク |
+| Genie 4: A new generation of world simulation (Google DeepMind) | blog | 2026 | [deepmind.google](https://deepmind.google/blog/genie-4-a-new-generation-of-world-simulation/) | ネイティブ音声、言語による操作（リサーチプレビュー） |
 
 ## 学習リソース
 
@@ -268,5 +351,12 @@ with torch.no_grad():
 2. LAM のデコーダを多ステップの世界モデルに変え、30 ステップのロールアウトを行ってください。点はくっきりしたままでしょうか。GameNGen 風のコンテキストのノイズ拡張（学習時に入力フレームにノイズを加え、ノイズレベルを渡す）を実装して比較してください。
 3. GameNGen と、Sora 型のクリップ全体を扱う拡散で用いられる分解 $p(x_{1:T} \mid a_{1:T})$ を書き下してください。どちらがインタラクティブに使えるでしょうか。また、それぞれ何のために再学習が必要になるでしょうか。
 4. Genie 3 の発表から主張を 1 つ選び、それを定量的に検証する実験（データ、指標、ベースライン）を設計してください。
+5. （2025〜2026 年の更新）記憶の図の数値を使って、完全なコンテキストのモデルの 120 秒後の KV キャッシュの大きさを計算してください。各潜在フレームが 1,560 トークン、モデルが 30 層で、各層が幅 1,536 のキーとバリューを 16 ビット浮動小数点で保存するとします。$W + K = 46$ フレームの設計と比べてください。
+
+<details markdown="1"><summary>ヒント</summary>
+
+1 フレームあたり $1560 \times 30 \times 2 \times 1536 \times 2$ バイト $\approx 0.29$ GB です。完全なコンテキスト（720 フレーム）では約 207 GB となり、GPU 1 枚には収まりません。有界の設計（46 フレーム）なら約 13 GB です。更新で扱ったリアルタイムモデルがすべてコンテキストを有界にしているのはこのためです。
+
+</details>
 
 **次回：**[第 4 回]({{ '/blog/2026/world-models-04-3d-and-4d-world-generation/' | relative_url }})では、ピクセル空間のシミュレータに代わるアプローチ、すなわち明示的な 3D・4D 世界の生成を、スコア蒸留（score distillation）からガウシアンシーン生成器、World Labs の Marble まで見ていきます。

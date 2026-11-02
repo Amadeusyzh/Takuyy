@@ -138,3 +138,121 @@
 3. 第 3 周：Genie → GameNGen → UniSim → Diffusion Forcing → Cosmos；精读 Sora 报告与 Genie 2/3 博客的局限部分。
 4. 第 4 周：DreamFusion → ProlificDreamer → Text2Room → LucidDreamer → WonderWorld → 4D-fy / AYG → PhysGaussian。
 5. 第 5 周：LeCun 立场论文 → I-JEPA → V-JEPA → V-JEPA 2 → DINO-WM；评测方面读 Physion、Physics-IQ、Kang et al.。
+
+## 2025-2026（世界模型系列第 1-5 篇的 2025–2026 年更新，截至 2026 年 11 月）
+
+状态说明：“预印本”= 尚未在会议/期刊发表的 arXiv 论文；“公告”= 公司博客或新闻稿（其中的能力描述为公司自述）。所有条目已于 2026 年 11 月对照 arXiv 页面或官方文章核实。★ = 推荐优先阅读。
+
+### 模型式强化学习、智能体与机器人世界模型（第 1 篇）
+
+| 论文 / 报告 | 状态 | 年份 | 链接 | 一句话说明 |
+| --- | --- | --- | --- | --- |
+| DreamGen: Unlocking Generalization in Robot Learning through Video World Models | 预印本 | 2025 | [arXiv:2505.12705](https://arxiv.org/abs/2505.12705) | 用视频世界模型生成“神经轨迹”训练机器人策略 |
+| ★ Training Agents Inside of Scalable World Models (Dreamer 4) | 预印本 | 2025 | [arXiv:2509.24527](https://arxiv.org/abs/2509.24527) | shortcut forcing 视频世界模型；纯离线想象强化学习拿到 Minecraft 钻石 |
+| Ctrl-World: A Controllable Generative World Model for Robot Manipulation | 预印本 | 2025 | [arXiv:2510.10125](https://arxiv.org/abs/2510.10125) | 在想象中评估并改进通用机器人策略 |
+| World Action Models are Zero-shot Policies (DreamZero) | 预印本 | 2026 | [arXiv:2602.15922](https://arxiv.org/abs/2602.15922) | 视频扩散骨干上的视频-动作联合预测策略 |
+| Fast-WAM: Do World Action Models Need Test-time Future Imagination? | 预印本 | 2026 | [arXiv:2603.16666](https://arxiv.org/abs/2603.16666) | 训练时用视频监督、推理时不生成未来帧 |
+| From World Models to World Action Models: A Concise Tutorial for Robotics | 预印本 | 2026 | [arXiv:2607.00836](https://arxiv.org/abs/2607.00836) | WAM 入门教程 |
+| World-Action Models for Robot Learning and Control: A Survey | 预印本 | 2026 | [arXiv:2609.16074](https://arxiv.org/abs/2609.16074) | WAM 综述 |
+
+### 生成骨干：因果少步视频扩散（第 2 篇）
+
+| 论文 / 报告 | 状态 | 年份 | 链接 | 一句话说明 |
+| --- | --- | --- | --- | --- |
+| One Step Diffusion via Shortcut Models | arXiv | 2024 | [arXiv:2410.12557](https://arxiv.org/abs/2410.12557) | 以步长为条件的少步采样（Dreamer 4 的基础之一） |
+| From Slow Bidirectional to Fast Autoregressive Video Diffusion Models (CausVid) | CVPR | 2025 | [arXiv:2412.07772](https://arxiv.org/abs/2412.07772) | 双向教师 → 因果少步学生（DMD） |
+| History-Guided Video Diffusion | ICML | 2025 | [arXiv:2502.06764](https://arxiv.org/abs/2502.06764) | 对历史帧施加引导的 Diffusion Forcing Transformer |
+| Wan: Open and Advanced Large-Scale Video Generative Models | 预印本 | 2025 | [arXiv:2503.20314](https://arxiv.org/abs/2503.20314) | 许多开源世界模型的骨干 |
+| MAGI-1: Autoregressive Video Generation at Scale | 预印本 | 2025 | [arXiv:2505.13211](https://arxiv.org/abs/2505.13211) | 大规模逐块自回归视频扩散 |
+| Mean Flows for One-step Generative Modeling | 预印本 | 2025 | [arXiv:2505.13447](https://arxiv.org/abs/2505.13447) | 学习平均速度，单步生成 |
+| ★ Self Forcing: Bridging the Train-Test Gap in Autoregressive Video Diffusion | NeurIPS | 2025 | [arXiv:2506.08009](https://arxiv.org/abs/2506.08009) | 在自身推演上训练，弥合训练-测试差距 |
+| Self-Forcing++: Towards Minute-Scale High-Quality Video Generation | 预印本 | 2025 | [arXiv:2510.02283](https://arxiv.org/abs/2510.02283) | 分钟级长视频 |
+| Diffusion Transformers with Representation Autoencoders | 技术报告 | 2025 | [arXiv:2510.11690](https://arxiv.org/abs/2510.11690) | 在冻结的表示编码器特征空间中做扩散 |
+| Causal Forcing | ICML | 2026 | [arXiv:2602.02214](https://arxiv.org/abs/2602.02214) | 用自回归教师初始化因果蒸馏 |
+| Causal Forcing++ | 预印本 | 2026 | [arXiv:2605.15141](https://arxiv.org/abs/2605.15141) | 逐帧 2 步自回归蒸馏 |
+| Causal-rCM | 技术报告 | 2026 | [arXiv:2606.25473](https://arxiv.org/abs/2606.25473) | 教师强制一致性 + Self Forcing 式 DMD 的开放配方 |
+
+### 交互式视频世界模型与记忆（第 3 篇）
+
+| 论文 / 报告 | 状态 | 年份 | 链接 | 一句话说明 |
+| --- | --- | --- | --- | --- |
+| World Simulation with Video Foundation Models for Physical AI (Cosmos-Predict2.5) | 预印本 | 2025 | [arXiv:2511.00062](https://arxiv.org/abs/2511.00062) | 第二代 Cosmos |
+| Cosmos-Transfer1 / Cosmos-Reason1 | 预印本 | 2025 | [arXiv:2503.14492](https://arxiv.org/abs/2503.14492) / [arXiv:2503.15558](https://arxiv.org/abs/2503.15558) | 多模态控制生成 / 物理常识推理 |
+| GAIA-2 | 预印本 | 2025 | [arXiv:2503.20523](https://arxiv.org/abs/2503.20523) | 多相机可控驾驶世界模型 |
+| WorldMem | 预印本 | 2025 | [arXiv:2504.12369](https://arxiv.org/abs/2504.12369) | 带位姿的帧记忆库 |
+| Long-Context State-Space Video World Models | 预印本 | 2025 | [arXiv:2505.20171](https://arxiv.org/abs/2505.20171) | SSM 长程记忆 + 局部注意力 |
+| ★ Context as Memory | SIGGRAPH Asia | 2025 | [arXiv:2506.03141](https://arxiv.org/abs/2506.03141) | 按视锥重叠检索上下文帧 |
+| Hunyuan-GameCraft | 预印本 | 2025 | [arXiv:2506.17201](https://arxiv.org/abs/2506.17201) | 游戏视频交互生成 |
+| VMem | ICCV | 2025 | [arXiv:2506.18903](https://arxiv.org/abs/2506.18903) | 面元索引的视角记忆 |
+| Yan: Foundational Interactive Video Generation | 预印本 | 2025 | [arXiv:2508.08601](https://arxiv.org/abs/2508.08601) | 模拟、生成、编辑三合一 |
+| ★ Matrix-Game 2.0 | 预印本 | 2025 | [arXiv:2508.13009](https://arxiv.org/abs/2508.13009) | 开源实时流式世界模型 |
+| Mixture of Contexts for Long Video Generation | 预印本 | 2025 | [arXiv:2508.21058](https://arxiv.org/abs/2508.21058) | 长历史上的稀疏路由 |
+| LongLive | 预印本 | 2025 | [arXiv:2509.22622](https://arxiv.org/abs/2509.22622) | 实时、可切换提示的长视频 |
+| Emu3.5: Native Multimodal Models are World Learners | 预印本 | 2025 | [arXiv:2510.26583](https://arxiv.org/abs/2510.26583) | 下一个 token 多模态“世界学习者” |
+| WorldPlay | 预印本 | 2025 | [arXiv:2512.14614](https://arxiv.org/abs/2512.14614) | 720p/24 fps 实时，重建式上下文记忆 |
+| Matrix-Game 3.0 | 预印本 | 2026 | [arXiv:2604.08995](https://arxiv.org/abs/2604.08995) | 720p 实时 + 长时程记忆 |
+| Echo-Memory | 预印本 | 2026 | [arXiv:2606.09803](https://arxiv.org/abs/2606.09803) | 动作世界模型中记忆机制的受控比较 |
+| AlayaWorld | 预印本 | 2026 | [arXiv:2607.18367](https://arxiv.org/abs/2607.18367) | 15B 长时程交互模型 |
+| ReWorld | 预印本 | 2026 | [arXiv:2608.23565](https://arxiv.org/abs/2608.23565) | 有界 KV 缓存 + 位姿索引地标库 |
+| Towards Interactive Video World Modeling（综述） | 预印本 | 2026 | [arXiv:2606.01164](https://arxiv.org/abs/2606.01164) | 交互式视频世界模型综述 |
+| The Past Frames the Future（综述） | 预印本 | 2026 | [arXiv:2609.28466](https://arxiv.org/abs/2609.28466) | 自回归视频生成中的记忆综述 |
+
+公告与产品（公司自述）：[Genie 3](https://deepmind.google/discover/blog/genie-3-a-new-frontier-for-world-models/)（2025-08）、[RTFM](https://worldlabs.ai/blog/rtfm)（2025-10）、[Runway GWM-1](https://runway.com/research/introducing-runway-gwm-1)（2025-12）、[Project Genie](https://blog.google/innovation-and-ai/models-and-research/google-deepmind/project-genie/)（2026-01）、[Waymo World Model](https://waymo.com/blog/2026/02/the-waymo-world-model-a-new-frontier-for-autonomous-driving-simulation)（2026-02）、[Cosmos 3](https://investor.nvidia.com/news/press-release-details/2026/NVIDIA-Launches-Cosmos-3-the-Open-Frontier-Foundation-Model-for-Physical-AI/default.aspx)（2026-06）、[GAIA-4](https://wayve.ai/thinking/gaia-4/)（2026-08）、[Genie 4](https://deepmind.google/blog/genie-4-a-new-generation-of-world-simulation/)（2026-10）。
+
+### 3D / 4D 世界生成（第 4 篇）
+
+| 论文 / 报告 | 状态 | 年份 | 链接 | 一句话说明 |
+| --- | --- | --- | --- | --- |
+| ★ VGGT: Visual Geometry Grounded Transformer | CVPR | 2025 | [arXiv:2503.11651](https://arxiv.org/abs/2503.11651) | 前馈预测相机、深度、点图 |
+| GEN3C | CVPR | 2025 | [arXiv:2503.03751](https://arxiv.org/abs/2503.03751) | 3D 缓存引导的视频生成 |
+| Bolt3D | ICCV | 2025 | [arXiv:2503.14445](https://arxiv.org/abs/2503.14445) | 几秒钟内生成高斯场景 |
+| Stable Virtual Camera | 预印本 | 2025 | [arXiv:2503.14489](https://arxiv.org/abs/2503.14489) | 通用新视角扩散 |
+| Aether | 预印本 | 2025 | [arXiv:2503.18945](https://arxiv.org/abs/2503.18945) | 4D 重建 + 预测 + 规划 |
+| Voyager | 预印本 | 2025 | [arXiv:2506.04225](https://arxiv.org/abs/2506.04225) | RGB-D 视频 + 世界缓存 |
+| π³ | 预印本 | 2025 | [arXiv:2507.13347](https://arxiv.org/abs/2507.13347) | 置换等变的前馈几何 |
+| HunyuanWorld 1.0 | 预印本 | 2025 | [arXiv:2507.21809](https://arxiv.org/abs/2507.21809) | 全景优先、分层、可导出网格 |
+| Matrix-3D | 技术报告 | 2025 | [arXiv:2508.08086](https://arxiv.org/abs/2508.08086) | 全景视频 → 3D 重建 |
+| 4DNeX | 预印本 | 2025 | [arXiv:2508.13154](https://arxiv.org/abs/2508.13154) | 前馈图像到 4D |
+| MapAnything | 3DV | 2026 | [arXiv:2509.13414](https://arxiv.org/abs/2509.13414) | 度量尺度的通用前馈重建 |
+| ★ Lyra | 预印本 | 2025 | [arXiv:2509.19296](https://arxiv.org/abs/2509.19296) | 视频模型自蒸馏为 3DGS 解码器 |
+| FlashWorld | 预印本 | 2025 | [arXiv:2510.13678](https://arxiv.org/abs/2510.13678) | 几秒钟内生成 3D 高斯场景 |
+| Depth Anything 3 | 预印本 | 2025 | [arXiv:2511.10647](https://arxiv.org/abs/2511.10647) | 任意视角的深度 + 光线 |
+| SAM 3D | 预印本 | 2025 | [arXiv:2511.16624](https://arxiv.org/abs/2511.16624) | 单图物体 3D 重建 |
+| Gen3R | 预印本 | 2026 | [arXiv:2601.04090](https://arxiv.org/abs/2601.04090) | 几何潜变量与视频潜变量对齐 |
+| HY-World 2.0 | 预印本 | 2026 | [arXiv:2604.14268](https://arxiv.org/abs/2604.14268) | 重建 / 生成 / 模拟 3DGS 世界 |
+| Feed-Forward 3D Scene Modeling: A Problem-Driven Perspective（综述） | 预印本 | 2026 | [arXiv:2604.14025](https://arxiv.org/abs/2604.14025) | 前馈 3D 场景建模综述 |
+| FLAT | 预印本 | 2026 | [arXiv:2606.24876](https://arxiv.org/abs/2606.24876) | 由视频潜变量解码三角形泼溅 |
+| ★ L3G-World | 预印本 | 2026 | [arXiv:2610.40614](https://arxiv.org/abs/2610.40614) | 随场景范围增长的潜在 3D 高斯记忆 |
+
+公告与产品：[Marble 正式发布](https://worldlabs.ai/blog/marble-world-model)（2025-11-12）、[World API](https://worldlabs.ai/blog/announcing-the-world-api)（2026-01）、[Spark 2.0](https://worldlabs.ai/blog/spark-2.0)（2026-04）、[Atlas](https://worldlabs.ai/blog/atlas)（2026-09）。
+
+### JEPA 与评测（第 5 篇）
+
+| 论文 / 报告 | 状态 | 年份 | 链接 | 一句话说明 |
+| --- | --- | --- | --- | --- |
+| WorldModelBench | 预印本 | 2025 | [arXiv:2502.20694](https://arxiv.org/abs/2502.20694) | 指令遵循与物理一致性 |
+| VideoPhy-2 | 预印本 | 2025 | [arXiv:2503.06800](https://arxiv.org/abs/2503.06800) | 以动作为中心的物理常识 |
+| WorldScore | ICCV | 2025 | [arXiv:2504.00983](https://arxiv.org/abs/2504.00983) | 指定相机路径的世界生成评测 |
+| IntPhys 2 | 预印本 | 2025 | [arXiv:2506.09849](https://arxiv.org/abs/2506.09849) | 复杂场景的违背预期测试 |
+| DINO-world (Back to the Features) | 预印本 | 2025 | [arXiv:2507.19468](https://arxiv.org/abs/2507.19468) | 在 DINOv2 特征空间中预测未来 |
+| Video models are zero-shot learners and reasoners | 预印本 | 2025 | [arXiv:2509.20328](https://arxiv.org/abs/2509.20328) | Veo 3 的零样本视觉能力 |
+| ★ World-in-World | ICLR（口头报告） | 2026 | [arXiv:2510.18135](https://arxiv.org/abs/2510.18135) | 闭环、以任务成功率评测世界模型 |
+| ★ LeJEPA | 预印本 | 2025 | [arXiv:2511.08544](https://arxiv.org/abs/2511.08544) | SIGReg：无启发式技巧的 JEPA |
+| VL-JEPA | 预印本 | 2025 | [arXiv:2512.10942](https://arxiv.org/abs/2512.10942) | 预测文本嵌入的视觉语言 JEPA |
+| LeWorldModel | 预印本 | 2026 | [arXiv:2603.19312](https://arxiv.org/abs/2603.19312) | 端到端像素 JEPA 世界模型 |
+| V-JEPA 2.1 | 预印本 | 2026 | [arXiv:2603.14482](https://arxiv.org/abs/2603.14482) | 稠密特征，机器人抓取更好 |
+| WorldMark | 预印本 | 2026 | [arXiv:2604.21686](https://arxiv.org/abs/2604.21686) | 统一控制接口的交互模型评测 |
+| WorldArena 2.0 | 预印本 | 2026 | [arXiv:2605.17912](https://arxiv.org/abs/2605.17912) | 具身、多平台世界模型基准 |
+| WBench | 预印本 | 2026 | [arXiv:2605.25874](https://arxiv.org/abs/2605.25874) | 多轮交互评测 |
+| ★ Current World Models Lack a Persistent State Core (WRBench) | 预印本 | 2026 | [arXiv:2606.20545](https://arxiv.org/abs/2606.20545) | 画面外事件不会继续演化 |
+| A Tutorial on World Models and Physical AI | 预印本 | 2026 | [arXiv:2606.12783](https://arxiv.org/abs/2606.12783) | 教程 |
+| A Definition and Roadmap for World Models | 预印本 | 2026 | [arXiv:2607.06401](https://arxiv.org/abs/2607.06401) | 定义与路线图 |
+| World Models' Last Exam in Physics | 预印本 | 2026 | [arXiv:2610.08791](https://arxiv.org/abs/2610.08791) | 基于测量的物理任务，最佳 57.76/100 |
+
+### 2025-2026 建议学习路线
+
+1. Self Forcing → Causal Forcing（理解因果少步视频扩散）→ Matrix-Game 2.0 / 3.0（开源可跑）。
+2. Context as Memory → VMem → WorldPlay → Echo-Memory（记忆）→ WRBench（记忆的局限）。
+3. VGGT → Lyra / FlashWorld → Gen3R → L3G-World（显式 3D 与视频模型的汇合）。
+4. Dreamer 4 → DreamZero / Fast-WAM（从想象训练到世界动作模型）。
+5. LeJEPA → LeWorldModel → V-JEPA 2.1；评测读 World-in-World 与 World Models' Last Exam in Physics。

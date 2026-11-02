@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Hand-written schematic (no Python runtime in the authoring session); regenerate with
+     bin/figures/world-models/world_models_updates.py. The three training phases of Dreamer 4 as summarized in
+     arXiv:2509.24527: (1) world model pretraining on (mostly unlabeled) video, (2) agent finetuning
+     (behavior cloning + reward heads), (3) reinforcement learning purely in imagination. -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 330" width="760" height="330" font-family="DejaVu Sans, Arial, sans-serif" font-size="16">
+  <rect width="760" height="330" fill="#ffffff"/>
+  <defs>
+    <marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#444"/></marker>
+  </defs>
+  <!-- phase labels -->
+  <g font-size="22" font-weight="bold" fill="#333" text-anchor="middle">
+    <text x="125" y="34">1</text><text x="380" y="34">2</text><text x="635" y="34">3</text>
+  </g>
+  <g fill="none" stroke="#bbb" stroke-width="1.5" stroke-dasharray="6 4">
+    <rect x="12" y="46" width="226" height="270" rx="10"/>
+    <rect x="267" y="46" width="226" height="270" rx="10"/>
+    <rect x="522" y="46" width="226" height="270" rx="10"/>
+  </g>
+  <!-- phase 1: video (stack of frames), a few action labels -->
+  <g stroke="#1f77b4" stroke-width="2" fill="#e8f1fa">
+    <rect x="40" y="70" width="60" height="44"/><rect x="50" y="80" width="60" height="44"/><rect x="60" y="90" width="60" height="44"/>
+  </g>
+  <text x="140" y="118" fill="#1f77b4">x&#8321;&#8230;x&#8348;</text>
+  <text x="40" y="160" fill="#888" font-size="14">a&#8321;&#8230;a&#8348;  (few)</text>
+  <line x1="90" y1="168" x2="90" y2="196" stroke="#444" stroke-width="2" marker-end="url(#ar)"/>
+  <rect x="45" y="200" width="160" height="40" rx="6" fill="#fff" stroke="#1f77b4" stroke-width="2.5"/>
+  <text x="125" y="226" text-anchor="middle">E : x &#8594; z</text>
+  <rect x="45" y="256" width="160" height="44" rx="6" fill="#fff" stroke="#1f77b4" stroke-width="2.5"/>
+  <text x="125" y="284" text-anchor="middle" font-size="15">p&#952;(z&#8348;&#8330;&#8321; | z&#8804;&#8348;, a&#8804;&#8348;)</text>
+  <line x1="125" y1="240" x2="125" y2="254" stroke="#444" stroke-width="2" marker-end="url(#ar)"/>
+  <!-- phase 2: frozen-ish world model + policy and reward heads -->
+  <rect x="300" y="80" width="160" height="44" rx="6" fill="#f3f3f3" stroke="#1f77b4" stroke-width="2.5"/>
+  <text x="380" y="108" text-anchor="middle" font-size="15">p&#952;</text>
+  <line x1="350" y1="124" x2="330" y2="176" stroke="#444" stroke-width="2" marker-end="url(#ar)"/>
+  <line x1="410" y1="124" x2="430" y2="176" stroke="#444" stroke-width="2" marker-end="url(#ar)"/>
+  <rect x="280" y="180" width="95" height="44" rx="6" fill="#fff4e8" stroke="#ff7f0e" stroke-width="2.5"/>
+  <text x="327" y="208" text-anchor="middle">&#960;(a|z)</text>
+  <rect x="385" y="180" width="95" height="44" rx="6" fill="#fff4e8" stroke="#ff7f0e" stroke-width="2.5"/>
+  <text x="432" y="208" text-anchor="middle">r&#770;(z)</text>
+  <text x="380" y="262" text-anchor="middle" fill="#555" font-size="15">BC + reward</text>
+  <text x="380" y="290" text-anchor="middle" fill="#888" font-size="14">(offline data)</text>
+  <!-- phase 3: imagination loop -->
+  <circle cx="635" cy="175" r="78" fill="none" stroke="#2ca02c" stroke-width="3" stroke-dasharray="2 0"/>
+  <path d="M 700 132 A 78 78 0 0 1 712 170" fill="none" stroke="#2ca02c" stroke-width="3" marker-end="url(#ar)"/>
+  <rect x="590" y="85" width="90" height="36" rx="6" fill="#fff" stroke="#1f77b4" stroke-width="2.5"/>
+  <text x="635" y="109" text-anchor="middle" font-size="15">p&#952;</text>
+  <rect x="590" y="230" width="90" height="36" rx="6" fill="#fff4e8" stroke="#ff7f0e" stroke-width="2.5"/>
+  <text x="635" y="254" text-anchor="middle">&#960;</text>
+  <text x="635" y="172" text-anchor="middle" fill="#2ca02c">z&#770;&#8348;&#8330;&#8342;, r&#770;</text>
+  <text x="635" y="196" text-anchor="middle" fill="#2ca02c" font-size="14">k = 1&#8230;H</text>
+  <text x="635" y="298" text-anchor="middle" fill="#555" font-size="15">RL, no env.</text>
+  <!-- arrows between phases -->
+  <line x1="240" y1="180" x2="264" y2="180" stroke="#444" stroke-width="2.5" marker-end="url(#ar)"/>
+  <line x1="495" y1="180" x2="519" y2="180" stroke="#444" stroke-width="2.5" marker-end="url(#ar)"/>
+</svg>

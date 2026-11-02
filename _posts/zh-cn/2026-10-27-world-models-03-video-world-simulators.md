@@ -107,6 +107,8 @@ $$
 
 **Genie 3**（Google DeepMind 博客，[2025 年 8 月](https://deepmind.google/discover/blog/genie-3-a-new-frontier-for-world-models/)）由文本提示生成，是该系列中第一个**可实时交互**的模型：公告称其在 720p 下达到每秒 24 帧，并能在几分钟内保持一致性。它还引入了**可提示的世界事件**（promptable world events）：用文本指令改变正在运行的世界（天气、新的物体或角色）。公告列出了若干局限，包括智能体的动作空间有限、多智能体交互困难、对真实地点和文字的渲染不准确，以及交互时长有限。公告发布时并未公开论文或架构细节，因此应把具体的能力主张视为该公司自己的说法。
 
+*更新（2026 年 11 月）：*Genie 3 于 2026 年 1 月以 **Project Genie** 的形式向公众开放；**Genie 4** 于 2026 年 10 月 27 日以研究预览形式发布，加入了原生音频和语言操控。参见本文末尾的 2025–2026 年进展一节。
+
 ## 4. GameNGen：把扩散模型当作游戏引擎
 
 **GameNGen**（Valevski et al., "Diffusion Models Are Real-Time Game Engines", ICLR 2025, [arXiv:2408.14837](https://arxiv.org/abs/2408.14837)）提出了一个范围很窄但很尖锐的问题：神经网络能否*本身就是*一个复杂游戏的游戏引擎？它在单个 TPU 上以每秒 20 帧交互式地模拟 DOOM，单次会话可持续数分钟。其方法分为两个阶段：
@@ -142,9 +144,13 @@ GameNGen 的局限同样富有启发性：由于只有约三秒的视觉上下�
 
 **GAIA-1**（Hu et al., Wayve, [arXiv:2309.17080](https://arxiv.org/abs/2309.17080), 2023）是一个面向自动驾驶的生成式世界模型。视频、文本和自车动作被编码为 token，一个自回归 Transformer 世界模型预测下一组图像 token（把未来预测当作下一个 token 预测），再由一个独立的视频扩散解码器渲染高分辨率帧。以动作为条件使人们可以提出反事实问题（“如果车向左转会怎样？”），文本提示则可以改变天气或时间。驾驶是一个天然的应用场景，因为罕见而危险的场景正是模拟器应该生成的东西。
 
+*更新（2026 年 11 月）：*这条路线延续为 GAIA-2（2025 年，多相机潜在扩散）和 GAIA-4（2026 年，闭环的相机与雷达仿真）；Waymo 则在 Genie 3 的基础上构建了自己的驾驶世界模型。参见更新一节。
+
 ### 5.3 NVIDIA Cosmos
 
 **Cosmos**（NVIDIA, "Cosmos World Foundation Model Platform for Physical AI", [arXiv:2501.03575](https://arxiv.org/abs/2501.03575), 2025）把世界模型定位为物理 AI 的**基础模型**（foundation models）。该平台包括视频筛选管线、连续和离散的 **Cosmos tokenizer**、扩散和自回归两种形式的预训练**世界基础模型**（world foundation models）、安全护栏，以及把通用模型专门化到相机控制、机器人操作和自动驾驶的后训练示例。这些模型以 NVIDIA Open Model License 发布（[github.com/NVIDIA/Cosmos](https://github.com/NVIDIA/Cosmos)）。预期的工作流是“在广泛的视频上预训练一次，再在你的机器人或汽车数据上后训练”，这与 LLM 的适配方式如出一辙。如果你想在一个大型开放视频世界模型上做实验，Cosmos 是一个很好的起点。
+
+*更新（2026 年 11 月）：*NVIDIA 随后推出了 Cosmos-Predict2.5 和 Transfer2.5（2025 年 10 月），以及 **Cosmos 3**（2026 年 6 月），后者是一个同时具备推理能力并能输出动作的混合 Transformer 模型。参见更新一节。
 
 ## 6. 让自回归视频推演保持稳定
 
@@ -161,7 +167,7 @@ GameNGen 的局限同样富有启发性：由于只有约三秒的视觉上下�
 
 ## 7. 仍然缺少什么
 
-- **长时程一致性与记忆。** 转两圈身，房间就变了。像素空间模型除了上下文窗口之外没有任何持久状态；几分钟级别的一致性是前沿主张，几小时级别则尚未解决。
+- **长时程一致性与记忆。** 转两圈身，房间就变了。像素空间模型除了上下文窗口之外没有任何持久状态；几分钟级别的一致性是前沿主张，几小时级别则尚未解决。（*更新，2026 年 11 月：*带按位姿索引记忆的开放模型如今已报告分钟级一致性；小时级一致性和画面外的动态仍未解决。参见更新一节。）
 - **物理。** Kang et al.（"How Far is Video Generation from World Model: A Physical Law Perspective", ICML 2025, [arXiv:2411.02385](https://arxiv.org/abs/2411.02385)）在合成的 2D 物理数据上训练视频扩散模型，发现其在分布内的泛化近乎完美，但在分布外失败：模型表现得像**基于案例的**（case-based）检索（模仿最接近的训练样例），而不是学到了规律。Physics-IQ（Motamed et al., WACV 2026, [arXiv:2501.09038](https://arxiv.org/abs/2501.09038)）发现，当前视频模型的物理理解极为有限，且与视觉真实感无关。第 5 篇会再回到评估问题。
 - **可控性与动作空间。** 一个游戏里是键盘动作，另一个里是潜在动作，别处又是机器人关节指令：不存在共享的动作接口，这限制了迁移。
 - **因果与相关。** 在被动视频上训练的模型可能会学到“雨伞导致下雨”。干预数据（动作）有帮助，但大多数视频都没有动作。
@@ -236,6 +242,59 @@ with torch.no_grad():
 
 {% include blog_figure.liquid path="assets/img/blog/world-models/03-lam-results.svg" caption="上：每个隐藏动作的转移被分到 8 个学到的码上的比例。使用平移不变的 ConvEncoder 时，每个动作都有自己的码（平均纯度 0.96；“down” 被分到两个码上）；使用 MLP 编码器时，码是混杂的（平均纯度 0.25，接近随机）。下：从第 3 列出发，连续四次输入“right”的码来“玩”ConvEncoder 世界模型：圆点每步右移一格，到达第 7 列，同时解码器的小误差逐渐累积成背景噪声。" %}
 
+## 2025–2026 年进展（截至 2026 年 11 月）
+
+本节补充正文写成之后、截至 2026 年 11 月初发生的进展。这一时期交互式视频世界模型发展极快：实时生成成为常态，开放模型追上了 2025 年的闭源演示，研究重心也从“看起来对不对”转向“它记不记得住、智能体能不能用它”。每个条目都标注了状态：“预印本”指尚未在会议或期刊发表的 arXiv 论文；“公告”指公司博客或产品页面，其中的能力描述是公司的自述，而非经过同行评审的结果。下面的时间线汇总了本次更新（以及第 4、5 篇更新）中的所有系统，点击条目即可查看摘要、状态和链接。
+
+{% include widget.liquid name="world-models-timeline" height="560" caption="动手试试：第 3–5 篇 2025–2026 年更新中涉及的世界模型的可筛选时间线。按钮按类型筛选；点击圆点（或用箭头按钮）查看两行摘要、状态（实心点 = 论文，空心点 = 公司公告或产品）和链接。虚线标出 2026 年 11 月初。可以看到，交互式视频这一行从 2025 年年中开始变得密集，而评测论文大约滞后一年跟上。" %}
+
+### Google DeepMind：从 Genie 3 到 Project Genie 和 Genie 4
+
+3.3 节介绍了 **Genie 3**（2025 年 8 月）：由文本提示生成世界，720p、每秒 24 帧，可保持几分钟的一致性，视觉记忆约一分钟。2026 年 1 月，Google 让它走出了实验室：**Project Genie**（[Google 博客，2026 年 1 月 29 日](https://blog.google/innovation-and-ai/models-and-research/google-deepmind/project-genie/)）是一个实验性网页应用，组合了 Genie 3、Nano Banana Pro 图像模型和 Gemini。它最初面向美国的成年 Google AI Ultra 订阅用户开放，每次生成限制在 60 秒以内。2026 年 10 月 27 日，DeepMind 发布了 **Genie 4**（[DeepMind 博客](https://deepmind.google/blog/genie-4-a-new-generation-of-world-simulation/)），以研究预览的形式向受信任的测试者开放。公告强调了原生生成的音频（会对事件做出反应的环境音、音乐和对话）、用自然语言提示进行实时操控，以及对物理和人物角色更好的模拟。Gemini 模型负责推理和连续性，一个 Gemini 智能体还能规划和检查步骤。博客没有给出分辨率、帧率或架构，并指出一致性只能在*短时会话*中保持，时间更长或多次编辑之后可能发生漂移。用第 7 节的话说，前沿主张仍然是“几分钟，而不是几小时”。Genie 3 还成为了一个领域模型的基础，即 **Waymo World Model**（见下文自动驾驶部分）。
+
+### 开放的实时交互模型
+
+对学习者来说，2025–2026 年最重要的变化是：交互式世界模型现在可以自己*跑起来*了。大多数开放模型共享同一套配方。它们从一个大型预训练文生视频或图生视频扩散模型出发（常用 Wan，见[第 2 篇]({{ '/blog/2026/world-models-02-generative-modeling-foundations/' | relative_url }})），把它改成因果的并加入动作条件，再用 Self Forcing 式的目标把它蒸馏成少步自回归采样器（第 2 篇的更新解释了 Self Forcing 及其后续工作）。
+
+- **Matrix-Game 2.0**（He et al.，预印本，[arXiv:2508.13009](https://arxiv.org/abs/2508.13009)，2025 年 8 月）是一个开源、实时、流式的世界模型，在大规模游戏和驾驶数据上训练。它把因果少步扩散学生模型与键盘、鼠标条件结合起来，让 GameNGen 的思路（第 4 节）在开放域场景和长时流式生成中也能成立。**Matrix-Game 3.0**（Wang et al.，预印本，[arXiv:2604.08995](https://arxiv.org/abs/2604.08995)，2026 年 4 月）加入了记忆：它按相机位姿检索过去的帧，用 DMD 做多段蒸馏，并用量化和剪枝后的 VAE 解码器加速解码。论文报告 5B 模型在 720p 下最高 40 fps，并能在长达一分钟的序列中保持记忆一致性。
+- **Hunyuan-GameCraft**（Li et al.，预印本，[arXiv:2506.17201](https://arxiv.org/abs/2506.17201)，2025 年 6 月）把键盘和鼠标输入映射到共享的相机运动空间，并在训练中混合使用多种历史条件，使长的游戏风格视频能持续响应输入。**Yan**（Ye et al.，预印本，[arXiv:2508.08601](https://arxiv.org/abs/2508.08601)，2025 年 8 月）是一个由三部分组成的框架：实时模拟、多模态生成，以及用文本编辑正在运行的世界。
+- **WorldPlay**（Sun et al.，预印本，[arXiv:2512.14614](https://arxiv.org/abs/2512.14614)，2025 年 12 月）针对速度与记忆之间的权衡。它用两种方式表示动作，从过去的帧重建紧凑的上下文记忆，并使用“context forcing”蒸馏。它以 24 fps 流式生成 720p 视频，长期几何一致性更好。**AlayaWorld**（预印本，[arXiv:2607.18367](https://arxiv.org/abs/2607.18367)，2026 年 7 月）是一个 24 fps 的 15B 自回归视频 DiT。它的上下文由四部分组成：一个“sink”帧、压缩后的历史、空间记忆和最近的帧。蒸馏把每个块的采样步数从约 30 步降到 4 步。
+- **LongLive**（Yang et al.，预印本，[arXiv:2509.22622](https://arxiv.org/abs/2509.22622)，2025 年 9 月）不以动作为条件，但在长视频上展示了同一套机制。它是一个帧级自回归模型，用户可以在生成过程中切换提示。1.3B 模型在单块 H100 上达到 20.7 fps，可生成最长 240 秒的视频。
+
+### 记忆：最主要的研究前沿
+
+第 7 节把长时程一致性列为最大的缺口，2025–2026 年的大多数论文都在攻克它。下图展示了最基本的预算问题。把所有过去的潜在帧都保留在上下文中的模型，其内存和注意力开销随推演长度 $T$ 增长。$W$ 帧的滑动窗口很便宜，但会遗忘。常见的折中是保留窗口，再加上 $K$ 个*经过挑选的*记忆帧（或一个紧凑的 3D 状态），这样开销保持有界，旧的地点仍然可以被回忆起来。
+
+{% include blog_figure.liquid path="assets/img/blog/world-models/03-update-memory.svg" width="85%" caption="上下文大小 $N_{ctx}$（潜在帧数，对数坐标）随推演时间的变化，假设 24 fps 视频、4 倍时间压缩（每秒 6 个潜在帧）。完整上下文按 $O(T)$ 增长（红色），两分钟后达到 720 帧。5 秒的滑动窗口（蓝色虚线）保持在 $W = 30$，但看不到 5 秒以前的任何内容。窗口加上 $K = 16$ 个检索出的记忆帧（绿色）同样保持平坦（46 帧），并且仍能访问旧的视角。竖直虚线是 Genie 3 声称的约一分钟视觉记忆。" %}
+
+记忆设计大致可按从隐式到显式分为四类：
+
+1. **按相机位姿检索过去的帧。** *WorldMem*（Xiao et al.，预印本，[arXiv:2504.12369](https://arxiv.org/abs/2504.12369)）连同位姿和时间戳一起存储过去的帧，并对相关的帧做注意力。*Context as Memory*（Yu et al.，SIGGRAPH Asia 2025，[arXiv:2506.03141](https://arxiv.org/abs/2506.03141)）挑选相机视锥与当前视角重叠的帧作为上下文。*VMem*（Li et al.，ICCV 2025，[arXiv:2506.18903](https://arxiv.org/abs/2506.18903)）用面元（surfel）为过去的视角建立索引。*ReWorld*（Chen et al.，预印本，[arXiv:2608.23565](https://arxiv.org/abs/2608.23565)，2026 年 8 月）维护一个有界的 KV 缓存和一个按位姿索引的地标库。它用 4 个采样步流式生成 704x1280 视频，在 64 秒的往返行程后能重新生成起始视角。World Labs 的 **RTFM**（[博客，2025 年 10 月](https://worldlabs.ai/blog/rtfm)）在一个产品研究预览中应用了同样的原理。它没有显式 3D：带位姿的帧充当空间记忆，附近的帧被“轮换”（context juggling）进上下文。它在单块 H100 上以交互速率运行。
+2. **压缩的循环状态。** *Long-Context State-Space Video World Models*（Po et al.，预印本，[arXiv:2505.20171](https://arxiv.org/abs/2505.20171)）用分块状态空间层负责长程记忆，用局部注意力负责细节。这相当于把[第 1 篇]({{ '/blog/2026/world-models-01-what-is-a-world-model/' | relative_url }})的 RSSM 思想放大到视频尺度。
+3. **对长上下文的可学习稀疏注意力。** *Mixture of Contexts*（Cai et al.，预印本，[arXiv:2508.21058](https://arxiv.org/abs/2508.21058)）让每个查询只路由到长历史中少数几个相关的块，而不是做稠密注意力。
+4. **显式 3D 记忆。** 这一类模型把帧反投影成点云或高斯，并把渲染出的状态作为条件。例子有第 4 篇更新中介绍的 GEN3C 和 Voyager，以及 *L3G-World*（2026 年 10 月），它的高斯记忆随已探索的场景而不是随时间增长。
+
+2026 年的一项严谨研究 **Echo-Memory**（King et al.，预印本，[arXiv:2606.09803](https://arxiv.org/abs/2606.09803)，2026 年 6 月）在同一个共享骨干网络上比较了这些选择。研究发现：原始上下文是一个很强的基线；激进的压缩会丢失返回某处所需的证据；在开放域中，分块状态空间循环是返回能力最强的机制。两篇综述梳理了这一领域：*Towards Interactive Video World Modeling*（[arXiv:2606.01164](https://arxiv.org/abs/2606.01164)）和 *The Past Frames the Future: Memory for Autoregressive Video Generation*（[arXiv:2609.28466](https://arxiv.org/abs/2609.28466)）。第 5 篇更新中的一个结果给所有这些工作泼了冷水：WRBench（2026 年 6 月）发现，当前模型不会让*看不见的*事件继续演化。记住一个地方的样子，并不等于模拟你离开期间那里发生了什么。
+
+### 物理 AI 基础模型与通用世界模型
+
+- **Cosmos 第二代和第三代。** NVIDIA 的 *World Simulation with Video Foundation Models for Physical AI*（预印本，[arXiv:2511.00062](https://arxiv.org/abs/2511.00062)，2025 年 10 月）推出了 Cosmos-Predict2.5 和 Cosmos-Transfer2.5。这个基于流的视频模型统一了文本、图像和视频到世界的生成，Transfer 模型则加入深度、分割和边缘等控制输入（Cosmos-Transfer1：[arXiv:2503.14492](https://arxiv.org/abs/2503.14492)）。Cosmos-Reason1（[arXiv:2503.15558](https://arxiv.org/abs/2503.15558)）是负责推理的视觉语言部分。2026 年 6 月 1 日，NVIDIA 发布了 **Cosmos 3**（[新闻稿](https://investor.nvidia.com/news/press-release-details/2026/NVIDIA-Launches-Cosmos-3-the-Open-Frontier-Foundation-Model-for-Physical-AI/default.aspx)）。它被描述为一个开放的“全模态模型”（omnimodel），采用混合 Transformer（mixture-of-transformers）设计：一个推理 Transformer 加一个生成专家，能理解并生成文本、图像、视频、环境声音和动作。它可以充当视觉语言模型、世界模型，或机器人“世界动作模型”（world action model）的骨干。NVIDIA 称它在包括 Physics-IQ 在内的多个排行榜上位列开放模型第一；在独立评测出现之前，应将其视为公司的说法。这一设计把 5.3 节中的模拟器角色与[具身智能第 5 篇]({{ '/blog/2026/embodied-ai-05-vision-language-action-models/' | relative_url }})中的规划器/策略角色合在了一起。
+- **Runway GWM-1**（[Runway，2025 年 12 月 11 日](https://runway.com/research/introducing-runway-gwm-1)）是构建在 Gen-4.5 视频模型之上的自回归世界模型。它逐帧生成，可以用相机位姿、机器人指令或音频来控制。它有三个后训练变体（Worlds、Avatars、Robotics），输出 720p，视频最长两分钟。
+- **Emu3.5**（Cui et al.，预印本，[arXiv:2510.26583](https://arxiv.org/abs/2510.26583)，2025 年 10 月）是一个原生多模态的下一个 token 预测模型，在交错的视觉语言数据（包括来自视频的长序列）上训练，被定位为“世界学习者”。它说明第 2 篇中的自回归路线在扩散之外依然有生命力。
+
+### 自动驾驶世界模型
+
+自动驾驶仍然是最成熟的工业应用（5.2 节）。**GAIA-2**（Russell et al.，预印本，[arXiv:2503.20523](https://arxiv.org/abs/2503.20523)，2025 年 3 月）是一个生成一致多相机视频的潜在扩散模型，可以用自车动作、其他交通参与者、天气和道路布局来控制。Wayve 的 **GAIA-4**（[Wayve 博客，2026 年 8 月 3 日](https://wayve.ai/thinking/gaia-4/)）转向*闭环*仿真。它从记录的传感器日志重建场景，并让驾驶策略留在回路中，因此策略的决策会改变它接下来收到的相机*和雷达*输入。除非开启反应式智能体，其他道路使用者会重放日志中的行为。**Waymo World Model**（[Waymo 博客，2026 年 2 月 6 日](https://waymo.com/blog/2026/02/the-waymo-world-model-a-new-frontier-for-autonomous-driving-simulation)）在 Genie 3 的基础上针对驾驶进行后训练，同时生成相机和激光雷达输出（4D 点云），并提供驾驶动作、场景布局和语言三种控制方式。Waymo 把它定位为模拟罕见、安全攸关事件的工具。这是迄今最清晰的一个案例：通用世界模型成为领域模拟器的基础，正是 5.3 节所说的“广泛预训练，再在你的汽车数据上后训练”的工作流。
+
+### “仍然缺少什么”有哪些变化
+
+- **算力与实时性：**借助蒸馏，开放模型在 720p 下已基本解决（单块 GPU 上每秒几十帧）。现在的未解问题是长时流式生成中的质量，而不是速度。
+- **记忆：**分钟级一致性已经是开放模型的成果，而不只是前沿主张。小时级一致性和*持久的动态状态*（在画面外继续发生的事件）仍未解决。
+- **动作空间：**仍然碎片化。相机位姿成为探索类模型事实上的共享接口，机器人模型则转向视频与动作的联合预测（见第 1 篇更新）。
+- **物理与评测：**物理基准大量涌现，但最好的模型离满分仍很远（见第 5 篇更新）。
+
+关于这些模型如何被接入游戏引擎（引擎中的神经渲染、可玩的神经游戏、引擎侧工具），参见[图形引擎第 6 篇]({{ '/blog/2026/graphics-engine-06-ai-meets-graphics-engines/' | relative_url }})；关于用来与它们比较的经典模拟器（Isaac、MuJoCo、Newton 等），参见[图形引擎第 5 篇]({{ '/blog/2026/graphics-engine-05-physics-and-simulation-engines/' | relative_url }})。
+
 ## 代表性论文
 
 | 论文 | 会议/期刊 | 年份 | 链接 | 为什么重要 |
@@ -253,6 +312,30 @@ with torch.no_grad():
 | Cosmos World Foundation Model Platform for Physical AI (NVIDIA) | arXiv | 2025 | [arXiv:2501.03575](https://arxiv.org/abs/2501.03575) | 开放的世界基础模型与 tokenizer |
 | Genie 3: A new frontier for world models (Google DeepMind) | blog | 2025 | [deepmind.google](https://deepmind.google/discover/blog/genie-3-a-new-frontier-for-world-models/) | 实时、文本提示、可提示的世界事件 |
 | How Far is Video Generation from World Model: A Physical Law Perspective (Kang et al.) | ICML | 2025 | [arXiv:2411.02385](https://arxiv.org/abs/2411.02385) | 视频模型按案例泛化，而非依据物理规律 |
+| GAIA-2: A Controllable Multi-View Generative World Model for Autonomous Driving (Russell et al.) | 预印本 | 2025 | [arXiv:2503.20523](https://arxiv.org/abs/2503.20523) | 控制方式丰富的多相机驾驶世界模型 |
+| WorldMem: Long-term Consistent World Simulation with Memory (Xiao et al.) | 预印本 | 2025 | [arXiv:2504.12369](https://arxiv.org/abs/2504.12369) | 带位姿的过去帧记忆库 |
+| Context as Memory (Yu et al.) | SIGGRAPH Asia | 2025 | [arXiv:2506.03141](https://arxiv.org/abs/2506.03141) | 按相机视锥重叠检索上下文帧 |
+| VMem: Consistent Interactive Video Scene Generation with Surfel-Indexed View Memory (Li et al.) | ICCV | 2025 | [arXiv:2506.18903](https://arxiv.org/abs/2506.18903) | 以几何为索引的视角记忆 |
+| Long-Context State-Space Video World Models (Po et al.) | 预印本 | 2025 | [arXiv:2505.20171](https://arxiv.org/abs/2505.20171) | SSM 记忆加局部注意力 |
+| Hunyuan-GameCraft (Li et al.) | 预印本 | 2025 | [arXiv:2506.17201](https://arxiv.org/abs/2506.17201) | 动作统一到相机空间，混合历史条件 |
+| Matrix-Game 2.0 (He et al.) | 预印本 | 2025 | [arXiv:2508.13009](https://arxiv.org/abs/2508.13009) | 开放的实时流式世界模型 |
+| Yan: Foundational Interactive Video Generation (Ye et al.) | 预印本 | 2025 | [arXiv:2508.08601](https://arxiv.org/abs/2508.08601) | 模拟、生成与编辑合于一个框架 |
+| Mixture of Contexts for Long Video Generation (Cai et al.) | 预印本 | 2025 | [arXiv:2508.21058](https://arxiv.org/abs/2508.21058) | 在长历史上做可学习的稀疏路由 |
+| LongLive: Real-time Interactive Long Video Generation (Yang et al.) | 预印本 | 2025 | [arXiv:2509.22622](https://arxiv.org/abs/2509.22622) | 分钟级、可切换提示的实时自回归视频 |
+| World Simulation with Video Foundation Models for Physical AI (NVIDIA, Cosmos-Predict2.5) | 预印本 | 2025 | [arXiv:2511.00062](https://arxiv.org/abs/2511.00062) | 第二代 Cosmos 世界模拟器 |
+| Emu3.5: Native Multimodal Models are World Learners (Cui et al.) | 预印本 | 2025 | [arXiv:2510.26583](https://arxiv.org/abs/2510.26583) | 作为世界学习者的下一个 token 多模态模型 |
+| RTFM: A Real-Time Frame Model (World Labs) | blog | 2025 | [worldlabs.ai](https://worldlabs.ai/blog/rtfm) | 带位姿的帧作为空间记忆，无显式 3D |
+| Introducing Runway GWM-1 (Runway) | blog | 2025 | [runway.com](https://runway.com/research/introducing-runway-gwm-1) | 基于 Gen-4.5 的通用世界模型系列 |
+| WorldPlay (Sun et al.) | 预印本 | 2025 | [arXiv:2512.14614](https://arxiv.org/abs/2512.14614) | 带重建式上下文记忆的实时 720p |
+| Project Genie (Google) | blog | 2026 | [blog.google](https://blog.google/innovation-and-ai/models-and-research/google-deepmind/project-genie/) | Genie 3 作为公开原型 |
+| The Waymo World Model (Waymo) | blog | 2026 | [waymo.com](https://waymo.com/blog/2026/02/the-waymo-world-model-a-new-frontier-for-autonomous-driving-simulation) | 由 Genie 3 后训练而来的相机 + 激光雷达驾驶模拟器 |
+| Matrix-Game 3.0 (Wang et al.) | 预印本 | 2026 | [arXiv:2604.08995](https://arxiv.org/abs/2604.08995) | 带长时程记忆的 720p 实时模型 |
+| NVIDIA Launches Cosmos 3 (NVIDIA) | 新闻稿 | 2026 | [nvidia.com](https://investor.nvidia.com/news/press-release-details/2026/NVIDIA-Launches-Cosmos-3-the-Open-Frontier-Foundation-Model-for-Physical-AI/default.aspx) | 开放全模态模型：推理 + 生成 + 动作 |
+| Echo-Memory: A Controlled Study of Memory in Action World Models (King et al.) | 预印本 | 2026 | [arXiv:2606.09803](https://arxiv.org/abs/2606.09803) | 对记忆机制的公平比较 |
+| AlayaWorld (AlayaWorld Team) | 预印本 | 2026 | [arXiv:2607.18367](https://arxiv.org/abs/2607.18367) | 15B 长时程交互模型 |
+| GAIA-4 (Wayve) | blog | 2026 | [wayve.ai](https://wayve.ai/thinking/gaia-4/) | 闭环的相机 + 雷达驾驶仿真 |
+| ReWorld: An Interactive World Model with Long-Horizon Memory (Chen et al.) | 预印本 | 2026 | [arXiv:2608.23565](https://arxiv.org/abs/2608.23565) | 有界缓存加按位姿索引的地标 |
+| Genie 4: A new generation of world simulation (Google DeepMind) | blog | 2026 | [deepmind.google](https://deepmind.google/blog/genie-4-a-new-generation-of-world-simulation/) | 原生音频、语言操控（研究预览） |
 
 ## 学习资源
 
@@ -268,5 +351,12 @@ with torch.no_grad():
 2. 把 LAM 的解码器改造成多步世界模型，并推演 30 步。点能保持清晰吗？实现 GameNGen 风格的上下文噪声增强（训练时给输入帧加噪并传入噪声强度），并进行比较。
 3. 写出 GameNGen 和 Sora 式整段片段扩散所使用的分解 $p(x_{1:T} \mid a_{1:T})$。哪一种可以交互式使用？各自需要为什么而重新训练？
 4. 从 Genie 3 的公告中挑选一项主张，设计一个能定量检验它的实验（数据、指标、基线）。
+5. （2025–2026 年更新）利用记忆示意图中的数字，计算完整上下文模型在 120 秒后的 KV 缓存大小。假设每个潜在帧有 1,560 个 token，模型有 30 层，每层以 16 位浮点存储宽度为 1,536 的键和值。将其与 $W + K = 46$ 帧的设计进行比较。
+
+<details markdown="1"><summary>提示</summary>
+
+每帧：$1560 \times 30 \times 2 \times 1536 \times 2$ 字节 $\approx 0.29$ GB。完整上下文（720 帧）约需 207 GB，单块 GPU 放不下；有界设计（46 帧）约需 13 GB。这就是更新中每个实时模型都要限制上下文大小的原因。
+
+</details>
 
 **下一篇：**[第 4 篇]({{ '/blog/2026/world-models-04-3d-and-4d-world-generation/' | relative_url }})将探讨像素空间模拟器之外的另一条路线：生成显式的 3D 和 4D 世界，从分数蒸馏（score distillation）到高斯场景生成器，再到 World Labs 的 Marble。
