@@ -250,7 +250,7 @@ with torch.no_grad():
 
 ### Google DeepMind：从 Genie 3 到 Project Genie 和 Genie 4
 
-3.3 节介绍了 **Genie 3**（2025 年 8 月）：由文本提示生成世界，720p、每秒 24 帧，可保持几分钟的一致性，视觉记忆约一分钟。2026 年 1 月，Google 让它走出了实验室：**Project Genie**（[Google 博客，2026 年 1 月 29 日](https://blog.google/innovation-and-ai/models-and-research/google-deepmind/project-genie/)）是一个实验性网页应用，组合了 Genie 3、Nano Banana Pro 图像模型和 Gemini。它最初面向美国的成年 Google AI Ultra 订阅用户开放，每次生成限制在 60 秒以内。2026 年 10 月 27 日，DeepMind 发布了 **Genie 4**（[DeepMind 博客](https://deepmind.google/blog/genie-4-a-new-generation-of-world-simulation/)），以研究预览的形式向受信任的测试者开放。公告强调了原生生成的音频（会对事件做出反应的环境音、音乐和对话）、用自然语言提示进行实时操控，以及对物理和人物角色更好的模拟。Gemini 模型负责推理和连续性，一个 Gemini 智能体还能规划和检查步骤。博客没有给出分辨率、帧率或架构，并指出一致性只能在*短时会话*中保持，时间更长或多次编辑之后可能发生漂移。用第 7 节的话说，前沿主张仍然是“几分钟，而不是几小时”。Genie 3 还成为了一个领域模型的基础，即 **Waymo World Model**（见下文自动驾驶部分）。
+3.3 节介绍了 **Genie 3**（2025 年 8 月）：由文本提示生成世界，720p、每秒 24 帧，可保持几分钟的一致性，视觉记忆约一分钟。2026 年 1 月，Google 让它走出了实验室：**Project Genie**（[Google 博客，2026 年 1 月 29 日](https://blog.google/innovation-and-ai/models-and-research/google-deepmind/project-genie/)）是一个实验性网页应用，组合了 Genie 3、Nano Banana Pro 图像模型和 Gemini。它最初面向美国的成年 Google AI Ultra 订阅用户开放，每次生成限制在 60 秒以内。2026 年 10 月 27 日，DeepMind 发布了 **Genie 4**（[DeepMind 博客](https://deepmind.google/blog/genie-4-a-new-generation-of-world-simulation/)），以研究预览的形式向受信任的测试者开放。公告强调了原生生成的音频（会对事件做出反应的环境音、音乐和对话）、用自然语言提示进行实时操控，以及对物理和人物角色更好的模拟。Gemini 模型为模拟提供支持：它们把文本提示适配到周围场景，并在两次输入之间让世界继续演化。博客没有给出分辨率、帧率或架构，并指出一致性只能在*短时会话*中保持，时间更长或多次编辑之后可能发生漂移。用第 7 节的话说，前沿主张仍然是“几分钟，而不是几小时”。Genie 3 还成为了一个领域模型的基础，即 **Waymo World Model**（见下文自动驾驶部分）。
 
 ### 开放的实时交互模型
 
