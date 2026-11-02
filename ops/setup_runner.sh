@@ -3,7 +3,7 @@
 set -euo pipefail
 
 sudo apt-get update -qq
-sudo apt-get install -y -qq fonts-wqy-zenhei jq bubblewrap >/dev/null
+sudo apt-get install -y -qq fonts-wqy-zenhei jq bubblewrap socat >/dev/null
 # Claude Code isolates tool subprocesses (and scrubs credentials from them) with bubblewrap.
 # Ubuntu 24.04 restricts unprivileged user namespaces through AppArmor; allow them on this throwaway VM.
 sudo sysctl -q -w kernel.apparmor_restrict_unprivileged_userns=0 || true
@@ -12,6 +12,7 @@ bwrap --ro-bind / / --dev /dev --proc /proc --unshare-pid true && echo "bubblewr
 python -m pip install -q --upgrade pip
 python -m pip install -q numpy scipy matplotlib requests
 python -m pip install -q torch --index-url https://download.pytorch.org/whl/cpu
+python -c "import matplotlib.pyplot"   # build the font cache now; the sandbox may not write to ~/.cache later
 
 npm install -g --silent @anthropic-ai/claude-code playwright
 playwright install --with-deps chromium >/dev/null
@@ -39,7 +40,44 @@ echo "ARIS_REPO=$ARIS_REPO" >> "$GITHUB_ENV"
 
 cat > "$HOME/.claude/settings.json" <<'JSON'
 {
-  "includeCoAuthoredBy": false
+  "includeCoAuthoredBy": false,
+  "sandbox": {
+    "network": {
+      "allowLocalBinding": true,
+      "allowedDomains": [
+        "arxiv.org",
+        "export.arxiv.org",
+        "api.semanticscholar.org",
+        "api.openalex.org",
+        "dblp.org",
+        "openreview.net",
+        "api.openreview.net",
+        "api2.openreview.net",
+        "huggingface.co",
+        "kesen.realtimerendering.com",
+        "doi.org",
+        "dl.acm.org",
+        "openaccess.thecvf.com",
+        "github.com",
+        "api.github.com",
+        "raw.githubusercontent.com",
+        "cdn.jsdelivr.net",
+        "cdnjs.cloudflare.com",
+        "fonts.googleapis.com",
+        "fonts.gstatic.com",
+        "code.jquery.com",
+        "unpkg.com",
+        "registry.npmjs.org",
+        "pypi.org",
+        "files.pythonhosted.org"
+      ]
+    },
+    "filesystem": {
+      "allowWrite": [
+        "/tmp"
+      ]
+    }
+  }
 }
 JSON
 

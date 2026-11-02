@@ -1,44 +1,44 @@
 {
   "workers": [
     {
-      "id": "gfx-a",
-      "budget": 23
-    },
-    {
-      "id": "gfx-b",
-      "budget": 23
-    },
-    {
       "id": "gfx-c",
-      "budget": 14
+      "budget": 6,
+      "mode": "continue"
     },
     {
       "id": "gfx-d",
-      "budget": 19
+      "budget": 6,
+      "mode": "continue"
     },
     {
       "id": "eng-a",
-      "budget": 23
+      "budget": 7,
+      "mode": "continue"
     },
     {
       "id": "eng-b",
-      "budget": 23
+      "budget": 7,
+      "mode": "continue"
     },
     {
       "id": "eng-c",
-      "budget": 23
+      "budget": 7,
+      "mode": "continue"
     },
     {
       "id": "wm-up",
-      "budget": 14
+      "budget": 5,
+      "mode": "continue"
     },
     {
       "id": "eai-up",
-      "budget": 14
+      "budget": 5,
+      "mode": "continue"
     },
     {
       "id": "digest",
-      "budget": 19
+      "budget": 6,
+      "mode": "continue"
     }
   ]
 }

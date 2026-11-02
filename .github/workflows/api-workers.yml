@@ -11,7 +11,7 @@ permissions:
   contents: write
 
 concurrency:
-  group: api-workers
+  group: api-workers-${{ github.sha }}
   cancel-in-progress: false
 
 env:
@@ -79,6 +79,7 @@ jobs:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           WORKER_ID: ${{ matrix.id }}
           WORKER_BUDGET: ${{ matrix.budget }}
+          WORKER_MODE: ${{ matrix.mode }}
         run: bash ops-src/ops/run_worker.sh
       - name: Commit leftovers, push branch and report
         if: always()

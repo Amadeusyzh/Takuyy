@@ -22,7 +22,12 @@ if [ -s "$OUT/result.json" ]; then
   jq -r '.result // "(no final text)"' "$OUT/result.json" > "$OUT/report.md"
   jq -c '{id: env.WORKER_ID, subtype, is_error, total_cost_usd, num_turns, duration_ms}' "$OUT/result.json" > "$OUT/summary.json"
 else
-  echo "(no result event; the worker was interrupted)" > "$OUT/report.md"
+  {
+    echo "(no result event; the worker was interrupted or did not start)"
+    [ -f "$OUT/preflight-failed.txt" ] && cat "$OUT/preflight-failed.txt"
+    # keep the earlier report, so a later continuation run still has it
+    if [ -f "$RUNNER_TEMP/earlier-report.md" ]; then echo; cat "$RUNNER_TEMP/earlier-report.md"; fi
+  } > "$OUT/report.md"
   printf '{"id":"%s","error":"no result event"}\n' "$WORKER_ID" > "$OUT/summary.json"
 fi
 tail -c 4000 "$OUT/stderr.txt" > "$OUT/stderr-tail.txt"

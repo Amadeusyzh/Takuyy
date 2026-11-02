@@ -146,6 +146,10 @@ Your tools are restricted on purpose:
   available.
 - For web pages use WebFetch. For APIs (arXiv, Semantic Scholar, OpenAlex, dblp) use the ARIS Python helpers,
   or small Python scripts with `urllib` or `requests`.
+- Bash runs inside Claude Code's sandbox. You can write inside the repository and `/tmp`. Network access
+  from Bash goes through the sandbox proxy, and only to these hosts: the research APIs (arXiv, Semantic
+  Scholar, OpenAlex, dblp, OpenReview, Hugging Face), the CDNs the site loads, GitHub, npm and PyPI.
+  Reach every other site with WebFetch.
 - If a command is denied, use an allowed alternative; do not try to get around the restriction.
 
 ## Build and check

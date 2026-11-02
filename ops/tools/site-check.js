@@ -3,7 +3,8 @@ const { chromium } = require('playwright');
 
 (async () => {
   const slugs = process.argv.slice(2);
-  const browser = await chromium.launch();
+  const proxy = process.env.HTTPS_PROXY || process.env.https_proxy || process.env.HTTP_PROXY || process.env.http_proxy;
+  const browser = await chromium.launch(proxy ? { proxy: { server: proxy, bypass: '127.0.0.1,localhost' } } : {});
   const out = [];
   for (const slug of slugs) {
     for (const lang of ['', 'zh-cn/', 'ja-jp/']) {
