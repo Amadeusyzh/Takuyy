@@ -366,7 +366,8 @@ function parseMaterial(m, json) {
     baseColorFactor: pbr.baseColorFactor || [1, 1, 1, 1],
     metallicFactor: pbr.metallicFactor ?? 1,
     roughnessFactor: pbr.roughnessFactor ?? 1,
-    emissiveFactor: m.emissiveFactor || [0, 0, 0],
+    // We do not sample emissiveTexture; its factor alone would make the whole surface glow.
+    emissiveFactor: m.emissiveTexture ? [0, 0, 0] : m.emissiveFactor || [0, 0, 0],
     baseColorTexture: pbr.baseColorTexture ? json.textures[pbr.baseColorTexture.index].source : -1,
     metallicRoughnessTexture: pbr.metallicRoughnessTexture ? json.textures[pbr.metallicRoughnessTexture.index].source : -1,
     sampler: samplerOf(pbr.baseColorTexture),
@@ -1455,6 +1456,14 @@ export class DebugPanel {
 
 该图是模型而非实测，但它传达的信息与性能分析器在实践中显示的一致：在 GPU 忙起来之前很久，按对象的 API 调用就已主导了 CPU 时间。我们引擎中单次 `writeBuffer` 加动态偏移，把拐点移到了很靠右的位置；实例化（一次绘制多个网格副本）或 GPU 驱动渲染（第 02 篇）会把它推得更远。
 
+### 10.1 引擎跑起来的样子
+
+本文的完整代码会渲染出下面这一帧。我们在无头（headless）Chromium 中原封不动地运行了它，WebGPU 跑在 SwiftShader（Vulkan 的一个 CPU 实现）上。只有*测试脚手架*做了一处改动：在我们的构建机器上，无头 Chromium 无法向 `webgpu` 画布呈现，于是脚手架把 `canvas.getContext('webgpu')` 换成一个对象，它的 `getCurrentTexture()` 返回一张与画布同尺寸的普通 `rgba8unorm` 纹理，再用 `copyTextureToBuffer` 把这张纹理读回来（这就是第 12 节的黄金图像技术）。这次运行没有报告任何 WebGPU 校验错误，也没有任何 WGSL 警告。
+
+{% include blog_figure.liquid path="assets/img/blog/graphics-engine/03-engine-frame.png" caption="本文迷你引擎渲染的一帧，取自上文描述的那次运行。左：DamagedHelmet 模型放在转台上，下方是 6 m 的地面，使用了基础色和金属度-粗糙度纹理、第 6 节的 Cook-Torrance 着色器、第 7 节的 2048 × 2048 阴影贴图加 3 × 3 PCF，以及 Reinhard 色调映射。右：同一次运行中本节的调试面板。GPU 时间（阴影 11 ms、不透明 34 ms）来自 CPU 上的软件光栅化器，比任何真实 GPU 都慢得多；只有它们之间的比例有参考意义。模型：Khronos glTF Sample Assets，ctxwing 以 CC BY 4.0 发布，基于 theblueturtle_ 以 CC BY-NC 4.0 发布的模型。" %}
+
+第一次运行还发现了一个 bug，这本身就是很好的一课。DamagedHelmet 把 `emissiveFactor` 设为 $(1, 1, 1)$，同时带有一张 `emissiveTexture`，这张纹理超过 99% 的纹素是黑的（只有几处小灯会发光）。我们加载器的第一版复制了这个系数却忽略了纹理，于是着色器给每个像素都加上了 1 的自发光，整个头盔泛着一片平淡、发白的光。在 glTF 中，自发光颜色是系数*乘以*纹理，所以跳过纹理的加载器也必须丢掉系数；这就是第 4 节 `parseMaterial` 中那一行规则。如果有一个只输出 `material.emissive` 的调试视图，问题会一眼就看出来。
+
 ## 11. 调试：RenderDoc 与浏览器工具
 
 图形 bug 往往是无声的：黑屏、物体消失、阴影出现在错误的位置。请尽早养成使用这些工具的习惯。
@@ -1474,7 +1483,7 @@ export class DebugPanel {
 1. **纯逻辑，在 Node 中测试。**`core/math.js`（矩阵恒等式：$P V$ 把已知点映射到已知的 NDC，$\text{fromTRS}$ 与 $T \cdot R \cdot S$ 一致）、`ecs/world.js`（查询恰好返回正确的实体）、`scene/transform.js`（脏标记重新计算了正确的数量）、`render/passes.js`（对固定列表检查顺序、剔除和生命周期），以及在手工构造的小 `ArrayBuffer` 上测试 `assets/gltf.js`。一个最小的测试只需要 `node:test`：
 
    ```js
-   // test/passes.test.mjs   run with: node --test test/
+   // test/passes.test.mjs   run with: node --test   (finds *.test.mjs files)
    import { test } from 'node:test';
    import assert from 'node:assert/strict';
    import { PassList } from '../src/render/passes.js';
@@ -1553,7 +1562,7 @@ export class DebugPanel {
    每个对象 192 字节（256 减 64）。按网格对绘制列表排序，按网格连续写入矩阵，并把第一个槽位作为 `firstInstance` 传入。
    </details>
 3. **法线贴图。**扩展加载器以读取 `TANGENT` 和 `normalTexture`，并在着色器中用 TBN 矩阵扰动 `N`。当文件没有切线时应该怎么办？
-4. **级联阴影。**按公式 $z_i = \lambda\, n (f/n)^{i/3} + (1-\lambda)(n + (f-n)\, i/3)$ 选取距离，把相机视锥分成 3 个级联，并为每个级联拟合一个正交光源矩阵。
+4. **级联阴影。**按公式 $z_i = \lambda\, z_i^{\log} + (1-\lambda)\, z_i^{\text{lin}}$（其中 $z_i^{\log} = n (f/n)^{i/3}$，$z_i^{\text{lin}} = n + (f-n)\, i/3$） 选取距离，把相机视锥分成 3 个级联，并为每个级联拟合一个正交光源矩阵。
 5. **测试加载器。**在内存中构建一个 3 顶点的 glTF（JSON 加上编码为 `data:` URI 的 36 字节缓冲区），用 `readAccessor` 解析它，并断言位置；然后添加一个 `byteStride = 32` 的交错版本，并检验第 4 节的算例。
    <details markdown="1"><summary>提示</summary>
    `readAccessor` 只需要 `json` 和一个 `ArrayBuffer` 数组，所以你可以在 Node 中不用 `fetch` 直接调用它。

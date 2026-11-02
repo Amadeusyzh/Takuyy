@@ -366,7 +366,8 @@ function parseMaterial(m, json) {
     baseColorFactor: pbr.baseColorFactor || [1, 1, 1, 1],
     metallicFactor: pbr.metallicFactor ?? 1,
     roughnessFactor: pbr.roughnessFactor ?? 1,
-    emissiveFactor: m.emissiveFactor || [0, 0, 0],
+    // We do not sample emissiveTexture; its factor alone would make the whole surface glow.
+    emissiveFactor: m.emissiveTexture ? [0, 0, 0] : m.emissiveFactor || [0, 0, 0],
     baseColorTexture: pbr.baseColorTexture ? json.textures[pbr.baseColorTexture.index].source : -1,
     metallicRoughnessTexture: pbr.metallicRoughnessTexture ? json.textures[pbr.metallicRoughnessTexture.index].source : -1,
     sampler: samplerOf(pbr.baseColorTexture),
@@ -1455,6 +1456,14 @@ export class DebugPanel {
 
 The figure is a model, not a measurement, but its message matches what profilers show in practice: per-object API calls dominate the CPU long before the GPU is busy. Our engine's single `writeBuffer` and dynamic offsets move the knee far to the right; instancing (one draw for many copies of a mesh) or GPU-driven rendering (post 02) move it further.
 
+### 10.1 The engine running
+
+The complete code of this post produces the frame below. We ran it unchanged in headless Chromium with WebGPU on SwiftShader, a CPU implementation of Vulkan, with one change in the *test harness*: on our build machine headless Chromium could not present to a `webgpu` canvas, so the harness replaced `canvas.getContext('webgpu')` with an object whose `getCurrentTexture()` returns an ordinary `rgba8unorm` texture of the canvas size, and read that texture back with `copyTextureToBuffer` (the golden-image technique of Section 12). The run reported no WebGPU validation error and no WGSL warning.
+
+{% include blog_figure.liquid path="assets/img/blog/graphics-engine/03-engine-frame.png" caption="A frame rendered by the mini engine of this post, captured from the run described above. Left: the DamagedHelmet model on its turntable over the 6 m ground plane, with base color and metallic-roughness textures, the Cook-Torrance shader of Section 6, the 2048 × 2048 shadow map with 3 × 3 PCF of Section 7 and Reinhard tone mapping. Right: the debug panel of this section from the same run. The GPU times (shadow 11 ms, opaque 34 ms) come from a software rasterizer on the CPU and are far slower than on any real GPU; compare only their ratio. Model: Khronos glTF Sample Assets, CC BY 4.0 by ctxwing, based on a CC BY-NC 4.0 model by theblueturtle_." %}
+
+That first run also found a bug, which is a useful lesson. DamagedHelmet sets `emissiveFactor` to $(1, 1, 1)$ together with an `emissiveTexture` in which more than 99 % of the texels are black (only a few small lights glow). The first version of our loader copied the factor but ignored the texture, so the shader added an emission of 1 to every pixel and the whole helmet glowed a flat, washed-out white. In glTF the emissive color is factor *times* texture, so a loader that skips the texture must also drop the factor; that is the one-line rule in `parseMaterial` in Section 4. A debug view that outputs only `material.emissive` would have shown the problem at once.
+
 ## 11. Debugging: RenderDoc and the browser tools
 
 Graphics bugs are usually silent: a black screen, a missing object, a shadow in the wrong place. Build the habit of these tools early.
@@ -1474,7 +1483,7 @@ Graphics code is notoriously under-tested because "it looks right" is hard to as
 1. **Pure logic, in Node.** `core/math.js` (matrix identities: $P V$ maps known points to known NDC, $\text{fromTRS}$ agrees with $T \cdot R \cdot S$), `ecs/world.js` (queries return exactly the right entities), `scene/transform.js` (dirty flags recompute the right count), `render/passes.js` (order, culling, lifetimes for a fixed list), and `assets/gltf.js` on small hand-built `ArrayBuffer`s. A minimal test needs nothing but `node:test`:
 
    ```js
-   // test/passes.test.mjs   run with: node --test test/
+   // test/passes.test.mjs   run with: node --test   (finds *.test.mjs files)
    import { test } from 'node:test';
    import assert from 'node:assert/strict';
    import { PassList } from '../src/render/passes.js';
@@ -1553,7 +1562,7 @@ With this skeleton, the natural extensions are the topics of the rest of the ser
    192 bytes per object (256 minus 64). Sort the draw list by mesh, write matrices contiguously per mesh, and pass the first slot as `firstInstance`.
    </details>
 3. **Normal maps.** Extend the loader to read `TANGENT` and `normalTexture` and perturb `N` in the shader with the TBN matrix. What should happen when a file has no tangents?
-4. **Cascaded shadows.** Split the camera frustum into 3 cascades at distances chosen by $z_i = \lambda\, n (f/n)^{i/3} + (1-\lambda)(n + (f-n)\, i/3)$ and fit one orthographic light matrix per cascade.
+4. **Cascaded shadows.** Split the camera frustum into 3 cascades at distances chosen by $z_i = \lambda\, z_i^{\log} + (1-\lambda)\, z_i^{\text{lin}}$, with $z_i^{\log} = n (f/n)^{i/3}$ and $z_i^{\text{lin}} = n + (f-n)\, i/3$, and fit one orthographic light matrix per cascade.
 5. **Test the loader.** Build a 3-vertex glTF in memory (JSON plus a 36-byte buffer encoded as a `data:` URI), parse it with `readAccessor`, and assert the positions; then add an interleaved version with `byteStride = 32` and check the worked example of Section 4.
    <details markdown="1"><summary>Hint</summary>
    `readAccessor` only needs `json` and an array of `ArrayBuffer`s, so you can call it directly in Node without `fetch`.

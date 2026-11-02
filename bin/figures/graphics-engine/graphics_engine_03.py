@@ -67,8 +67,15 @@ def fig_modules():
         lv(m)
     nlev = max(level.values()) + 1
     pos = {}
-    for L in range(nlev):
+    for L in reversed(range(nlev)):
         mods = sorted([m for m in IMPORTS if level[m] == L])
+        # Barycenter ordering: put modules imported by a placed non-root module under it (fewer
+        # crossing arrows), and split the modules imported only by main.js to the two sides.
+        def importers(m):
+            return [pos[k][0] for k, deps in IMPORTS.items() if m in deps and k in pos and k != "main.js"]
+        inner = sorted([m for m in mods if importers(m)], key=lambda m: np.mean(importers(m)))
+        outer = [m for m in mods if not importers(m)]
+        mods = outer[: len(outer) // 2] + inner + outer[len(outer) // 2:]
         xs = (np.arange(len(mods)) - (len(mods) - 1) / 2) * 1.95
         for m, x in zip(mods, xs):
             pos[m] = (x, 2.2 * L)
@@ -192,7 +199,7 @@ def fig_gltf_structure():
         else:                                         # child above
             arrow(ax, (xa, ya + hgt(a) / 2), (xb, yb - hgt(b) / 2), color=col)
     for k, (x, y, text, fc) in nodes.items():
-        box(ax, x, y, 2.5 if k == "mat" else w, hgt(k), text, fc=fc, fs=11)
+        box(ax, x, y, 2.5 if k == "mat" else w, hgt(k), text, fc=fc, fs=10 if k in ("t0", "t1") else 11)
     ax.set_xlim(-2.2, 10.4); ax.set_ylim(-0.8, 8.6)
     ax.axis("off")
     save(fig, out("gltf-structure"))
@@ -537,20 +544,52 @@ def fig_frame_graph():
     order, kept, culled, life, edges = compile_passes(PASSES)
     ylane = {"shadow": 2.0, "depthPrepass": 0.0, "ssao": -1.2, "ssaoBlur": -1.2, "ssaoDebug": -2.5,
              "opaque": 1.0, "sky": 1.0, "bloomDown": -0.2, "bloomUp": -0.2, "tonemap": 1.0, "ui": 1.0}
-    xpos = {n: 1.55 * i for i, n in enumerate(order)}
+    # x = dependency depth (longest path from a source), so passes that follow each other in
+    # the execution order but do not depend on each other can share a column.
+    edges = list(dict.fromkeys(edges))              # one arrow per (writer, reader, resource)
+    depth = {}
+    for n in order:
+        preds = [a for a, b, _ in edges if b == n]
+        depth[n] = 1 + max(depth[a] for a in preds) if preds else 0
+    xpos = {n: 2.05 * depth[n] for n in order}
     fig, ax = plt.subplots(figsize=(15, 5.8))
-    w, h = 1.3, 0.55
+    w, h = 1.6, 0.55
+
+    def hits_box(x0, y0, x1, y1, rad, skip):
+        """Does the arc3 curve with this rad pass through any pass box other than its ends?"""
+        cx, cy = (x0 + x1) / 2 + rad * (y1 - y0), (y0 + y1) / 2 - rad * (x1 - x0)
+        for t in np.linspace(0.05, 0.95, 40):
+            px = (1 - t) ** 2 * x0 + 2 * t * (1 - t) * cx + t ** 2 * x1
+            py = (1 - t) ** 2 * y0 + 2 * t * (1 - t) * cy + t ** 2 * y1
+            for n in order:
+                if n not in skip and abs(px - xpos[n]) < w / 2 + 0.1 and abs(py - ylane[n]) < h / 2 + 0.1:
+                    return True
+        return False
+
     for a, b, r in edges:
         cul = a in culled or b in culled
         x0, y0, x1, y1 = xpos[a] + w / 2, ylane[a], xpos[b] - w / 2, ylane[b]
-        arrow(ax, (x0, y0), (x1, y1), color=C["gray"] if cul else "#555555", ls="--" if cul else "-", lw=1.3)
-        ax.text((x0 + x1) / 2, (y0 + y1) / 2 + 0.13, r, fontsize=10, color=C["gray"], ha="center",
+        # straight if possible, otherwise the smallest bend that avoids the other boxes
+        rad = next((q for q in (0.0, -0.15, 0.15, -0.3, 0.3, -0.45, 0.45)
+                    if not hits_box(x0, y0, x1, y1, q, {a, b})), 0.0)
+        col = C["gray"] if cul else "#555555"
+        cx, cy = (x0 + x1) / 2 + rad * (y1 - y0), (y0 + y1) / 2 - rad * (x1 - x0)
+        t = np.linspace(0, 1, 60)[:, None]
+        curve = (1 - t) ** 2 * [x0, y0] + 2 * t * (1 - t) * [cx, cy] + t ** 2 * [x1, y1]
+        ax.plot(curve[:-3, 0], curve[:-3, 1], color=col, lw=1.3, ls="--" if cul else "-")
+        ax.annotate("", xy=curve[-1], xytext=curve[-4],
+                    arrowprops=dict(arrowstyle="-|>", color=col, lw=1.3, shrinkA=0, shrinkB=0, mutation_scale=14))
+        # label at the midpoint of the (possibly bent) edge
+        mx, my = (x0 + x1) / 2, (y0 + y1) / 2
+        dx, dy = x1 - x0, y1 - y0
+        mx, my = mx + 0.5 * rad * dy, my - 0.5 * rad * dx   # midpoint of the quadratic Bezier
+        ax.text(mx, my + 0.13, r, fontsize=10, color=C["gray"], ha="center",
                 bbox=dict(fc="white", ec="none", pad=0.5, alpha=0.85))
     for n in order:
         cul = n in culled
         box(ax, xpos[n], ylane[n], w, h, n, fc="#f2f2f2" if cul else "#e8e0f5", ec=C["gray"] if cul else C["a"],
-            ls="--" if cul else "-", fs=11, tc=C["gray"] if cul else None)
-    xb = xpos["ui"] + 1.5
+            ls="--" if cul else "-", fs=10, tc=C["gray"] if cul else None)
+    xb = xpos["ui"] + 1.6
     ax.text(xb, ylane["ui"], "backbuffer", fontsize=11, va="center", color=C["dark"])
     arrow(ax, (xpos["ui"] + w / 2, ylane["ui"]), (xb - 0.05, ylane["ui"]), color="#555555")
     ax.set_xlim(-1.0, xb + 1.6); ax.set_ylim(-3.0, 2.6)
@@ -645,11 +684,12 @@ def fig_frame_budget():
             left = 0.0
             for j, key in enumerate(["systems", "upload", "shadow", "opaque", "submit"]):
                 v = float(m[key])
-                a2.barh(s, v, left=left, color=stage_cols[j], ec="white",
+                a2.barh(s, v, left=left, color=stage_cols[j], ec="white", height=0.5,
                         label=stages[j] if s == 0 else None)
                 left += v
             a2.text(left + 0.6, s, f"{left:.1f}", va="center", fontsize=12)
-        a2.set_yticks(range(3)); a2.set_yticklabels(strat, fontsize=12)
+            a2.text(0.2, s - 0.33, strat[s], va="bottom", fontsize=12, color=cols[s])  # label above the bar
+        a2.set_yticks([])
         a2.invert_yaxis()
         a2.set_xlabel(tl)
         a2.set_xlim(0, 50)

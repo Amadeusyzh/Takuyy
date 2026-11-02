@@ -366,7 +366,8 @@ function parseMaterial(m, json) {
     baseColorFactor: pbr.baseColorFactor || [1, 1, 1, 1],
     metallicFactor: pbr.metallicFactor ?? 1,
     roughnessFactor: pbr.roughnessFactor ?? 1,
-    emissiveFactor: m.emissiveFactor || [0, 0, 0],
+    // We do not sample emissiveTexture; its factor alone would make the whole surface glow.
+    emissiveFactor: m.emissiveTexture ? [0, 0, 0] : m.emissiveFactor || [0, 0, 0],
     baseColorTexture: pbr.baseColorTexture ? json.textures[pbr.baseColorTexture.index].source : -1,
     metallicRoughnessTexture: pbr.metallicRoughnessTexture ? json.textures[pbr.metallicRoughnessTexture.index].source : -1,
     sampler: samplerOf(pbr.baseColorTexture),
@@ -1455,6 +1456,14 @@ export class DebugPanel {
 
 この図は実測ではなくモデルですが、そのメッセージはプロファイラが実際に示す結果と一致します。GPU が忙しくなるずっと前に、オブジェクトごとの API 呼び出しが CPU 時間を支配するのです。このエンジンの単一の `writeBuffer` と動的オフセットは、その分岐点（knee）をはるか右へ動かします。インスタンシング（1 回の描画でメッシュの多数のコピーを描く）や GPU 駆動レンダリング（第 02 回）は、それをさらに右へ動かします。
 
+### 10.1 エンジンが動いている様子
+
+この記事の完全なコードは、下のフレームを描画します。私たちはこれを、ヘッドレス（headless）Chromium 上で、SwiftShader（Vulkan の CPU 実装）を使う WebGPU で、変更せずに実行しました。変更したのは*テスト用ハーネス*の 1 か所だけです。私たちのビルドマシンでは、ヘッドレス Chromium が `webgpu` キャンバスに表示できなかったため、ハーネスが `canvas.getContext('webgpu')` を、`getCurrentTexture()` がキャンバスと同じ大きさの通常の `rgba8unorm` テクスチャを返すオブジェクトに置き換え、そのテクスチャを `copyTextureToBuffer` で読み戻しました（12 節のゴールデンイメージの手法です）。この実行では、WebGPU の検証エラーも WGSL の警告も一切報告されませんでした。
+
+{% include blog_figure.liquid path="assets/img/blog/graphics-engine/03-engine-frame.png" caption="この記事のミニエンジンが描画した 1 フレームで、上で説明した実行から取得したものです。左: ターンテーブル上の DamagedHelmet モデルと 6 m の地面。ベースカラーとメタリック・ラフネスのテクスチャ、6 節の Cook-Torrance シェーダ、7 節の 2048 × 2048 シャドウマップと 3 × 3 PCF、Reinhard トーンマッピングを使っています。右: 同じ実行でのこの節のデバッグパネル。GPU 時間（シャドウ 11 ms、不透明 34 ms）は CPU 上のソフトウェアラスタライザによるもので、どんな実際の GPU よりもはるかに遅いため、比率だけを比べてください。モデル: Khronos glTF Sample Assets、ctxwing による CC BY 4.0、theblueturtle_ による CC BY-NC 4.0 のモデルに基づきます。" %}
+
+この最初の実行ではバグも 1 つ見つかり、それ自体が良い教訓になります。DamagedHelmet は `emissiveFactor` を $(1, 1, 1)$ に設定し、同時に、テクセルの 99 % 以上が黒い（光るのは小さなライト数か所だけの）`emissiveTexture` を持っています。最初の版のローダはこの係数をコピーしながらテクスチャを無視していたため、シェーダがすべてのピクセルに 1 の発光を加え、ヘルメット全体が平坦で白っぽく光っていました。glTF では発光色は係数とテクスチャの*積*なので、テクスチャを読み飛ばすローダは係数も捨てなければなりません。これが 4 節の `parseMaterial` にある 1 行のルールです。`material.emissive` だけを出力するデバッグビューがあれば、問題はすぐに分かったはずです。
+
 ## 11. デバッグ: RenderDoc とブラウザのツール
 
 グラフィックスのバグは、たいてい何のエラーも出しません。画面が真っ黒になる、オブジェクトが消える、影が違う位置に出る、といった形で現れます。これらのツールを早い段階から使う習慣をつけましょう。
@@ -1474,7 +1483,7 @@ export class DebugPanel {
 1. **純粋なロジックは Node でテストする。** `core/math.js`（行列の恒等式: $P V$ が既知の点を既知の NDC に写すこと、$\text{fromTRS}$ が $T \cdot R \cdot S$ と一致すること）、`ecs/world.js`（クエリがちょうど正しいエンティティを返すこと）、`scene/transform.js`（ダーティフラグが正しい個数だけ再計算すること）、`render/passes.js`（固定のリストに対する順序、カリング、生存期間）、そして小さな手作りの `ArrayBuffer` を使った `assets/gltf.js` です。最小限のテストに必要なのは `node:test` だけです。
 
    ```js
-   // test/passes.test.mjs   run with: node --test test/
+   // test/passes.test.mjs   run with: node --test   (finds *.test.mjs files)
    import { test } from 'node:test';
    import assert from 'node:assert/strict';
    import { PassList } from '../src/render/passes.js';
@@ -1553,7 +1562,7 @@ export class DebugPanel {
    オブジェクトあたり 192 バイトです（256 から 64 を引いた値）。描画リストをメッシュ順にソートし、メッシュごとに行列を連続して書き込み、最初のスロットを `firstInstance` として渡します。
    </details>
 3. **法線マップ。** ローダを拡張して `TANGENT` と `normalTexture` を読み込み、シェーダで TBN 行列を使って `N` を摂動させてください。ファイルに接線がない場合は、どうするべきでしょうか。
-4. **カスケードシャドウ。** カメラの視錐台を、$z_i = \lambda\, n (f/n)^{i/3} + (1-\lambda)(n + (f-n)\, i/3)$ で選んだ距離で 3 つのカスケードに分割し、カスケードごとに 1 つの正射影ライト行列をフィットさせてください。
+4. **カスケードシャドウ。** カメラの視錐台を、$z_i = \lambda\, z_i^{\log} + (1-\lambda)\, z_i^{\text{lin}}$（ただし $z_i^{\log} = n (f/n)^{i/3}$、$z_i^{\text{lin}} = n + (f-n)\, i/3$） で選んだ距離で 3 つのカスケードに分割し、カスケードごとに 1 つの正射影ライト行列をフィットさせてください。
 5. **ローダのテスト。** メモリ上で 3 頂点の glTF（JSON と、`data:` URI として符号化した 36 バイトのバッファ）を作り、`readAccessor` でパースして位置をアサートしてください。次に `byteStride = 32` のインターリーブ版を追加し、第 4 節の計算例を確認しましょう。
    <details markdown="1"><summary>ヒント</summary>
    `readAccessor` に必要なのは `json` と `ArrayBuffer` の配列だけなので、`fetch` なしで Node 上で直接呼び出せます。
