@@ -588,6 +588,10 @@ $\theta$ down, towards it. With $\sigma \to 0$ the chain becomes the determinist
 noise is what makes the likelihood exist. In pi0, $v_\theta$ is the action expert and $a$ is a 50-step action chunk, but
 the bookkeeping is the same.
 
+The figure below shows both halves of the argument: the noisy chains, and how sharply the ratio reacts to $\theta$ for different noise levels.
+
+{% include blog_figure.liquid path="assets/img/blog/embodied-ai/02-update-flow-noise.svg" caption="Left: 25 noisy denoising chains of the toy flow policy with $\sigma = 0.3$ (orange) and six deterministic ODE chains (dashed), all heading for $\theta_\text{old} = 0.5$; the noise is what gives each step a Gaussian density. Right: the PPO ratio $\rho$ of one sampled chain as $\theta$ moves away from 0.5, for three noise levels. The $\sigma = 0.3$ curve is the chain of the worked example ($a_K = 0.44$, $\rho = 0.157$ at $\theta = 0.6$). With small $\sigma$ the ratio leaves the clip band (grey) almost at once; with large $\sigma$ the signal is flat and weak." %}
+
 The common thread is the **division of labour**: imitation or large-scale pre-training supplies the prior and the
 semantics, and RL supplies the last mile of precision and reliability, either with policy gradients (pi_RL,
 SimpleVLA-RL) or with value-based relabelling (Recap).

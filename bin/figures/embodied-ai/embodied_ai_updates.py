@@ -58,6 +58,64 @@ def fig_tracking_reward():
 
 
 # ---------------------------------------------------------------------------------------------
+# Post 02: Flow-Noise. Noisy Euler chains of a toy 1-D flow policy, and the PPO ratio as a function of theta.
+# Same model as the worked example in the post: v_theta(a, tau) = (theta - a) / (1 - tau), K = 10 steps.
+# ---------------------------------------------------------------------------------------------
+def _fn_sample(theta, sigma, rng, K=10):
+    dt = 1.0 / K
+    ch = [rng.standard_normal()]
+    for k in range(K):
+        mean = ch[-1] + (theta - ch[-1]) / (1.0 - k * dt) * dt
+        ch.append(mean + sigma * np.sqrt(dt) * rng.standard_normal())
+    return np.array(ch)
+
+
+def _fn_logp(ch, theta, sigma):
+    K = len(ch) - 1
+    dt = 1.0 / K
+    std = sigma * np.sqrt(dt)
+    lp = -0.5 * ch[0] ** 2 - 0.5 * np.log(2 * np.pi)
+    for k in range(K):
+        mean = ch[k] + (theta - ch[k]) / (1.0 - k * dt) * dt
+        lp += -0.5 * ((ch[k + 1] - mean) / std) ** 2 - np.log(std * np.sqrt(2 * np.pi))
+    return lp
+
+
+def fig_flow_noise():
+    fig, (a1, a2) = plt.subplots(1, 2, figsize=(11, 4.6))
+    rng = np.random.default_rng(1)
+    tau = np.linspace(0, 1, 11)
+    for i in range(25):
+        a1.plot(tau, _fn_sample(0.5, 0.3, rng), color=C["b"], alpha=0.35, lw=1.2,
+                label=r"Flow-Noise, $\sigma=0.3$" if i == 0 else None)
+    rng2 = np.random.default_rng(2)
+    for i in range(6):
+        a1.plot(tau, _fn_sample(0.5, 1e-6, rng2), color=C["dark"], lw=1.6, ls="--",
+                label=r"ODE, $\sigma\to 0$" if i == 0 else None)
+    a1.axhline(0.5, color=C["x"], lw=1.2)
+    a1.text(1.02, 0.5, r"$\theta_{old}$", color=C["x"], fontsize=12, va="center", clip_on=False)
+    a1.set_xlabel(r"flow time $\tau$")
+    a1.set_ylabel(r"action $a$")
+    a1.legend(loc="lower right", fontsize=11)
+
+    th = np.linspace(0.3, 0.7, 401)
+    for s, c in zip([0.1, 0.3, 1.0], [C["x"], C["b"], C["z"]]):
+        ch = _fn_sample(0.5, s, np.random.default_rng(0))
+        ratio = np.exp(np.array([_fn_logp(ch, t, s) for t in th]) - _fn_logp(ch, 0.5, s))
+        a2.plot(th, ratio, color=c, label=r"$\sigma=%.1f$ ($a_K=%.2f$)" % (s, ch[-1]))
+    a2.axvline(0.5, color=C["gray"], lw=1)
+    a2.axhspan(0.8, 1.2, color=C["gray"], alpha=0.15)
+    a2.text(0.57, 1.3, "PPO clip 1 $\\pm$ 0.2", fontsize=11, color=C["dark"], va="bottom")
+    a2.set_yscale("log")
+    a2.set_ylim(1e-3, 1e2)
+    a2.set_xlabel(r"new parameter $\theta$")
+    a2.set_ylabel(r"$\rho=\pi_\theta(a_{0:K})/\pi_{\theta_{old}}(a_{0:K})$")
+    a2.legend(loc="upper right", fontsize=11)
+    fig.tight_layout()
+    save(fig, OUT / "02-update-flow-noise.svg")
+
+
+# ---------------------------------------------------------------------------------------------
 # Post 04: dataset scale. Hours (log) by data source, and trajectories vs. number of embodiments.
 # ---------------------------------------------------------------------------------------------
 HOURS = [  # name, hours, kind ("robot", "umi", "human"); ">=" values are plotted at the stated lower bound
@@ -214,6 +272,7 @@ def fig_vla_timeline(lang):
 
 if __name__ == "__main__":
     fig_tracking_reward()
+    fig_flow_noise()
     for lang in LANGS:
         fig_dataset_scale(lang)
         fig_vla_timeline(lang)
