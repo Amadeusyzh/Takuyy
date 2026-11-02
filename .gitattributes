@@ -1,2 +1,4 @@
 # Force LF line endings, needed for Docker to work on Windows
 *.sh text eol=lf
+# Parallel blog workers append to the reading lists; keep both sides on merge
+docs/reading-lists/*.md merge=union
