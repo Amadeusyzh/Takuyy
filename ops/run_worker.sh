@@ -12,7 +12,16 @@ OUT="$RUNNER_TEMP/out"
 mkdir -p "$OUT"
 
 PROMPT="$RUNNER_TEMP/prompt.md"
-if [ "${WORKER_MODE:-new}" = "continue" ]; then
+if [ "${WORKER_MODE:-new}" = "existing" ]; then
+  # The branch api/<id> was prepared by the orchestrator (for example from the integration branch).
+  git fetch -q origin "+refs/heads/$BRANCH:refs/remotes/origin/$BRANCH"
+  git checkout -q -B "$BRANCH" "origin/$BRANCH"
+  {
+    sed "s#__BRANCH__#$BRANCH#g" "$OPS/common.md"
+    printf '\n\n---\n\n'
+    cat "$OPS/briefs/$WORKER_ID.md"
+  } > "$PROMPT"
+elif [ "${WORKER_MODE:-new}" = "continue" ]; then
   git fetch -q origin "+refs/heads/$BRANCH:refs/remotes/origin/$BRANCH" "+refs/heads/report/$WORKER_ID:refs/remotes/origin/report/$WORKER_ID"
   git checkout -q -B "$BRANCH" "origin/$BRANCH"
   git show "origin/report/$WORKER_ID:report.md" > "$RUNNER_TEMP/earlier-report.md" 2>/dev/null || echo "(no earlier report)" > "$RUNNER_TEMP/earlier-report.md"

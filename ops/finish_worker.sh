@@ -8,7 +8,7 @@ OUT="$RUNNER_TEMP/out"
 mkdir -p "$OUT"
 AUTH="AUTHORIZATION: basic $(printf 'x-access-token:%s' "$GH_TOKEN" | base64 -w0)"
 
-git add -- _posts assets/img/blog assets/js/widgets bin/figures docs/reading-lists 2>/dev/null || true
+git add -- _posts assets/img/blog assets/js/widgets bin/figures docs/reading-lists _sass/_base.scss 2>/dev/null || true
 if ! git diff --cached --quiet; then
   git commit -q -m "WIP: work left uncommitted when worker $WORKER_ID stopped" \
     -m "Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>

@@ -1,6 +1,6 @@
 {
   "workers": [
-    {"id": "gfx-a", "budget": 9, "mode": "continue"},
-    {"id": "gfx-b", "budget": 9, "mode": "continue"}
+    {"id": "fixer", "budget": 12, "mode": "existing"},
+    {"id": "zh-review", "budget": 14, "mode": "existing"}
   ]
 }
