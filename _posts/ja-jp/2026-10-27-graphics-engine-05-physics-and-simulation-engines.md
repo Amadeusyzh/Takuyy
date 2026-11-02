@@ -21,7 +21,7 @@ related_posts: false
 ## 前提知識
 
 - ベクトル、内積と外積。凸集合（任意の 2 点を結ぶ線分を含む集合）。
-- ニュートンの法則と力積（力積 $\mathbf{J}$ によって $\Delta \mathbf{v} = \mathbf{J}/m$）。
+- ニュートンの法則と力積（力の時間積分である力積 $\lambda$ は、質量 $m$ の物体の速度を $\Delta v = \lambda/m$ だけ変えます）。
 - [グラフィックス第 07 回]({{ '/blog/2026/graphics-07-physically-based-simulation/' | relative_url }})のシンプレクティック・オイラー法と XPBD、[エンジン第 01 回]({{ '/blog/2026/graphics-engine-01-anatomy-of-an-engine/' | relative_url }})の固定タイムステップループ。
 - Python と NumPy。
 
@@ -29,7 +29,7 @@ related_posts: false
 
 剛体（rigid body）は質量 $m$、慣性テンソル $\mathbf{I}$、位置 $\mathbf{x}$、姿勢 $\mathbf{q}$、並進速度 $\mathbf{v}$、角速度 $\boldsymbol{\omega}$ を持ち、さらに 1 つ以上の衝突**形状**（shape）を持ちます。球、箱、カプセル、凸包、三角形メッシュ、ハイトフィールドなどです。`step(dt)` を呼ぶたびに、図に示した同じ段階が実行されます。
 
-1. **外力の積分**：$\mathbf{v} \mathrel{+}= h\,\mathbf{M}^{-1}\mathbf{f}_{\text{ext}}$（重力、ユーザーが加える力）。
+1. **外力の積分**：$\mathbf{v} \mathrel{+}= h\,\mathbf{M}^{-1}\mathbf{f}_{\text{ext}}$（重力、ユーザーが加える力。$h$ はこのステップの時間刻み、$\mathbf{M}$ は $m$ と $\mathbf{I}$ からなる質量行列です）。
 2. **ブロードフェーズ**（broad phase）：バウンディングボックスが重なるペアを見つけます。安価で保守的です。
 3. **ナローフェーズ**（narrow phase）：各ペアについて厳密な幾何計算を行います。接触しているか、どこで、どれだけ深く。
 4. **接触マニフォールド**（contact manifold）：法線と貫通深さを共有する数個の接触点を作り、前フレームの接触と対応付けます。
@@ -78,7 +78,7 @@ print(n * (n - 1) // 2, len(cand), len(true))   # all pairs, x-candidates, true 
 
 なぜ効果があるのでしょうか。箱が幅 $L$ の世界に一様に散らばり、平均半幅が $\bar r$ なら、2 つの区間が $x$ 上で重なる確率は約 $4\bar r / L$ です。したがって候補数の期待値は約 $\tfrac{n^2}{2}\cdot\tfrac{4\bar r}{L}$ になります。物体数とともに世界が密度一定で大きくなる場合（2D では $L \propto \sqrt{n}$）、候補は $n^2$ ではなく $n^{1.5}$ で増え、本当の重なりは $n$ に比例して増えます。
 
-実際に SAP を速くする工夫が 2 つあります。フレーム間で物体はわずかしか動かないので、ソート済みリストはほぼソートされたままであり、**挿入ソート**でほぼ $O(n)$ で直せます。また、エンジンは走査をやり直す代わりに、2 つの端点が入れ替わるたびに重なりの開始・終了イベントを記録します。
+実際に SAP を速くする工夫が 2 つあります。フレーム間で物体はわずかしか動かないので、ソート済みリストはほぼソートされたままであり、**挿入ソート**でほぼ $O(n)$ で直せます。また、エンジンは走査をやり直す代わりに、2 つの端点が入れ替わるたびに重なりの開始・終了イベントを記録します。下の図は、上の見積もりをランダムな箱で確かめたものです。左では実際に重なる箱を、右では 3 種類のペア数の増え方を見比べてください。
 
 {% include blog_figure.liquid path="assets/img/blog/graphics-engine/05-sweep-and-prune.svg" caption="ランダムな箱に対するスイープ・アンド・プルーン（スクリプトの実際の実行結果）。左：40 個の箱。シーンの下の灰色の棒は走査順に並べた x 区間で、赤い箱は少なくとも 1 つの本当の AABB 重なりに含まれています。右：密度一定のもとでのペア数と $n$ の関係（両対数）。全ペアは $n^2$ で増え、SAP の x 候補は点線の見積もり $\frac{n^2}{2}\frac{4\bar r}{L}\propto n^{1.5}$ に沿い、本当の重なりはほぼ線形に増えます。青と赤の曲線の差はナローフェーズの無駄な仕事で、2 本目の軸や木構造で取り除けます。" %}
 
@@ -110,7 +110,7 @@ $$
 s_A(\mathbf{d}) = \arg\max_{\mathbf{a}\in A} \mathbf{a}\cdot\mathbf{d}, \qquad s_{A\ominus B}(\mathbf{d}) = s_A(\mathbf{d}) - s_B(-\mathbf{d}).
 $$
 
-多角形のサポート点は内積が最大の頂点、球なら $\mathbf{c} + r\,\mathbf{d}/\lVert\mathbf{d}\rVert$、カプセルなら線分のサポート点に球のサポート点を足したものです。GJK が同じコードで任意の凸形状を扱えるのはこのためです。
+第 2 の等式が成り立つのは $(\mathbf{a}-\mathbf{b})\cdot\mathbf{d} = \mathbf{a}\cdot\mathbf{d} + \mathbf{b}\cdot(-\mathbf{d})$ で、2 つの項を別々に最大化できるからです。多角形のサポート点は内積が最大の頂点、球なら $\mathbf{c} + r\,\mathbf{d}/\lVert\mathbf{d}\rVert$、カプセルなら線分のサポート点に球のサポート点を足したものです。GJK が同じコードで任意の凸形状を扱えるのはこのためです。
 
 GJK はサポート点からなる**単体**（simplex）を成長させます。点、線分、三角形、3D ではさらに四面体です。
 
@@ -119,7 +119,7 @@ GJK はサポート点からなる**単体**（simplex）を成長させます�
 3. $\mathbf{p}$ を $S$ に加えます。原点を含む領域に対応する部分単体（頂点、辺、または単体全体）だけを残し、その要素から原点へ向かう方向を $\mathbf{d}$ にします。
 4. 単体が原点を囲んだら**衝突**です。そうでなければ 2 に戻ります。
 
-2D では「辺 $\mathbf{ab}$ に垂直で原点を向く方向」をベクトル三重積 $(\mathbf{ab}\times\mathbf{ao})\times\mathbf{ab} = \mathbf{ao}\,(\mathbf{ab}\cdot\mathbf{ab}) - \mathbf{ab}\,(\mathbf{ab}\cdot\mathbf{ao})$ で計算します。アルゴリズム全体が 1 画面に収まります。
+2D では「辺 $\mathbf{ab}$ に垂直で原点を向く方向」をベクトル三重積 $(\mathbf{ab}\times\mathbf{ao})\times\mathbf{ab} = \mathbf{ao}\,(\mathbf{ab}\cdot\mathbf{ab}) - \mathbf{ab}\,(\mathbf{ab}\cdot\mathbf{ao})$ で計算します。三角形 $\mathbf{abc}$（$\mathbf{a}$ が最新の点）では、同じ計算を 2 本の辺 $\mathbf{ab}$、$\mathbf{ac}$ に適用します（コード中の `ab_perp`、`ac_perp` は 3 つ目の頂点から遠ざかる向きです）。原点がある辺の外側にあれば、反対側の頂点を捨ててその法線方向に探索を続け、どちらの辺の内側にもあれば原点は三角形の内側にあり、衝突です。辺 $\mathbf{bc}$ は前の反復で除外済みです。アルゴリズム全体が 1 画面に収まります。
 
 ```python
 import numpy as np
@@ -224,7 +224,7 @@ n, depth = epa(A, B, s)
 print(n, depth)   # -> [ 0.9701425  -0.24253563] 0.7276068751089989
 ```
 
-符号の約束を簡単な場合で確かめましょう。$A$ が左にあり、$B$ が右から重なっているとき、$A\ominus B$ の大部分は $x$ が負の側にあり、$+x$ 側でわずかに原点を越えています。EPA は $\mathbf{n} = (+1, 0)$ を返し、$B$ を $d\,\mathbf{n}$ だけ押すと右へ動いて $A$ から抜け出します。
+符号の約束を簡単な場合で確かめましょう。$A$ が左にあり、$B$ が右から重なっているとき、$A\ominus B$ の大部分は $x$ が負の側にあり、$+x$ 側でわずかに原点を越えています。EPA は $\mathbf{n} = (+1, 0)$ を返し、$B$ を $d\,\mathbf{n}$ だけ押すと右へ動いて $A$ から抜け出します。一般に $A\ominus(B + d\,\mathbf{n}) = (A\ominus B) - d\,\mathbf{n}$ なので、境界上の点 $d\,\mathbf{n}$ がちょうど原点に移り、押し出した後の 2 つの形状はちょうど接触します。下の図は同じペアでの EPA です。
 
 {% include blog_figure.liquid path="assets/img/blog/graphics-engine/05-epa.svg" caption="同じペアに対する EPA（スクリプトの出力）。最初のパネル：開始時の多面体は GJK の最後の三角形（赤）です。中央：最終的な多面体で、最も近い辺が $A\ominus B$ の境界上にあります。原点からの緑の矢印が貫通ベクトル $d\,\mathbf{n}$ です。右：$B$（破線は元の位置）を $d\,\mathbf{n}$ だけ動かすと、2 つの形状はちょうど接触します。" %}
 
@@ -250,7 +250,7 @@ $$
 \dot C = \mathbf{J}\mathbf{u}, \qquad \mathbf{J} = \big(-\mathbf{n}^\top,\ -(\mathbf{r}_A\times\mathbf{n})^\top,\ \mathbf{n}^\top,\ (\mathbf{r}_B\times\mathbf{n})^\top\big).
 $$
 
-ここで $\mathbf{r}_A, \mathbf{r}_B$ はそれぞれの重心から接触点へのベクトルです。接触は押すことしかできないので、力積 $\lambda$ は**相補性**（complementarity）条件
+ここで $\mathbf{J}$ はこの接触のヤコビアンの行、$\mathbf{r}_A, \mathbf{r}_B$ はそれぞれの重心から接触点へのベクトル、$\mathbf{u}$ に対応する質量行列は $\mathbf{M} = \operatorname{diag}(m_A\mathbf{1}, \mathbf{I}_A, m_B\mathbf{1}, \mathbf{I}_B)$ です。接触は押すことしかできないので、力積 $\lambda$ は**相補性**（complementarity）条件
 
 $$
 \lambda \ge 0, \qquad \mathbf{J}\mathbf{u}^+ + b \ge 0, \qquad \lambda\,(\mathbf{J}\mathbf{u}^+ + b) = 0
@@ -260,7 +260,7 @@ $$
 
 ### 逐次インパルス = 射影ガウス・ザイデル（PGS）
 
-拘束を 1 つずつ解けば十分です。力積 $\Delta\lambda$ を加えると速度は $\mathbf{M}^{-1}\mathbf{J}^\top\Delta\lambda$ だけ変わります。$\mathbf{J}\mathbf{u}^+ + b = 0$ を課すと
+拘束を 1 つずつ解けば十分です。力積 $\Delta\lambda$ を加えると速度は $\mathbf{M}^{-1}\mathbf{J}^\top\Delta\lambda$ だけ変わります。したがって $\mathbf{u}^+ = \mathbf{u} + \mathbf{M}^{-1}\mathbf{J}^\top\Delta\lambda$ です。$\mathbf{J}\mathbf{u}^+ + b = 0$、すなわち $\mathbf{J}\mathbf{u} + b + \mathbf{J}\mathbf{M}^{-1}\mathbf{J}^\top\Delta\lambda = 0$ を課すと
 
 $$
 \Delta\lambda = -\frac{\mathbf{J}\mathbf{u} + b}{\mathbf{J}\mathbf{M}^{-1}\mathbf{J}^\top} = -m_{\text{eff}}\,(\mathbf{J}\mathbf{u} + b), \qquad m_{\text{eff}} = \big(\mathbf{J}\mathbf{M}^{-1}\mathbf{J}^\top\big)^{-1}
@@ -322,7 +322,7 @@ $$
 \lambda = -h\Big(k\,(C + h\,\mathbf{J}\mathbf{u}^+) + c\,\mathbf{J}\mathbf{u}^+\Big).
 $$
 
-これを $\lambda$ について解くと、数行の代数で
+これを $\lambda$ について解きます。括弧を展開し、$\mathbf{J}\mathbf{u}^+ = \mathbf{J}\mathbf{u} + \lambda/m$、$k = m\omega^2$、$c = 2m\zeta\omega$ を代入し、$(h^2 k + h c)/m = h^2\omega^2 + 2\zeta h\omega$ を使います。$a = h\omega\,(2\zeta + h\omega)$ とおくと $\lambda\,(1 + a) = -m\,(h\omega^2 C + a\,\mathbf{J}\mathbf{u})$ となります。両辺を $1 + a$ で割り、括弧から $a$ をくくり出すと（$h\omega^2/a = \omega/(2\zeta + h\omega)$ なので）、
 
 $$
 \lambda = -m\,\underbrace{\frac{a}{1+a}}_{\text{mass scale}}\Big(\mathbf{J}\mathbf{u} + \underbrace{\frac{\omega}{2\zeta + h\omega}}_{\text{bias rate}}\, C\Big), \qquad a = h\omega\,(2\zeta + h\omega)
@@ -369,7 +369,7 @@ $$
 \mathbf{M}(\mathbf{q})\,\ddot{\mathbf{q}} + \mathbf{c}(\mathbf{q},\dot{\mathbf{q}}) = \boldsymbol{\tau} + \mathbf{J}_c^\top\boldsymbol{\lambda}_c
 $$
 
-となります。ここで質量行列は姿勢に依存し $\mathbf{M}(\mathbf{q}) = \sum_i m_i\,\mathbf{J}_i^\top\mathbf{J}_i$（に回転の項を加えたもの）、$\mathbf{c}$ はコリオリ項と重力項、$\boldsymbol{\tau}$ は関節トルク、$\boldsymbol{\lambda}_c$ は接触力積です。**Featherstone** の多関節体アルゴリズム（articulated-body algorithm, ABA）は、$n$ 個のリンクからなる木について、$\mathbf{M}$ を作らずに $\ddot{\mathbf{q}}$ を $O(n)$ で計算します。複合剛体アルゴリズム（CRBA）は $\mathbf{M}$ を $O(n^2)$ で作り、再帰ニュートン・オイラー法（RNEA）は逆動力学を計算します。制御器もこれらの量を必要とします。質量行列、重力トルク、ヤコビアンはロボット制御器が扱う対象そのものです。
+となります。ここで質量行列は姿勢に依存し $\mathbf{M}(\mathbf{q}) = \sum_i m_i\,\mathbf{J}_i^\top\mathbf{J}_i$（$\mathbf{J}_i$ はリンク $i$ の重心の位置ヤコビアンで、これに回転の項を加えたもの）、$\mathbf{c}$ はコリオリ項と重力項、$\boldsymbol{\tau}$ は関節トルク、$\boldsymbol{\lambda}_c$ は接触力積です。**Featherstone** の多関節体アルゴリズム（articulated-body algorithm, ABA）は、$n$ 個のリンクからなる木について、$\mathbf{M}$ を作らずに $\ddot{\mathbf{q}}$ を $O(n)$ で計算します。複合剛体アルゴリズム（CRBA）は $\mathbf{M}$ を $O(n^2)$ で作り、再帰ニュートン・オイラー法（RNEA）は逆動力学を計算します。制御器もこれらの量を必要とします。質量行列、重力トルク、ヤコビアンはロボット制御器が扱う対象そのものです。
 
 図は、軽いリンクと重い先端質量を持つ 4 リンクの振り子で、両方の定式化を動かしたものです。
 
