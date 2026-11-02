@@ -79,3 +79,7 @@
 - RiCo（刚体神经仿真）— https://arxiv.org/abs/2610.12333
 - GraftRay — https://arxiv.org/abs/2610.37036
 - Budgeted-GS — https://arxiv.org/abs/2610.03162
+- SemEllipsoid（语义感知的椭球形状抽象，2026-10-30）— https://arxiv.org/abs/2610.42145
+- Altered Visual Hand Feedback in VR（特发性震颤探索性研究，2026-10-30）— https://arxiv.org/abs/2610.41496
+
+（2026-11-02 复查：arXiv API 中 cs.GR 在 10 月 30 日至 11 月 2 日只有上面两篇新提交，均未达到收录标准，所以本期实际覆盖到 10 月 29 日。）
