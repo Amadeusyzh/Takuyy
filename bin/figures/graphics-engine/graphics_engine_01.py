@@ -413,7 +413,7 @@ def fig_bvh():
     half = rng.uniform(0.6, 2.2, (M, 2))
     lo, hi = centers - half, centers + half
     root, nodes = build_bvh(lo, hi, np.arange(M))
-    cam, ang, far = np.array([4.0, 30.0]), np.radians(28), 75.0
+    cam, ang, far = np.array([4.0, 30.0]), np.radians(18), 55.0
     dirs = [np.array([np.cos(a), np.sin(a)]) for a in (np.radians(15) + ang, np.radians(15) - ang)]
     fwd = np.array([np.cos(np.radians(15)), np.sin(np.radians(15))])
     planes = []
@@ -534,7 +534,7 @@ def fig_jobs():
     cols = {}
     for i, n in enumerate(JOBS):
         cols[n] = plt.cm.tab20(i % 20)
-    fig, axs = plt.subplots(1, 2, figsize=(14, 5.6), gridspec_kw=dict(width_ratios=[1.05, 1]))
+    fig, axs = plt.subplots(2, 1, figsize=(10, 10), gridspec_kw=dict(height_ratios=[1.15, 1]))
     ax = axs[0]
     bylev = {}
     for n in JOBS:
@@ -553,18 +553,19 @@ def fig_jobs():
         ax.add_patch(FancyBboxPatch((x - 0.42, y - 0.22), 0.84, 0.44, boxstyle="round,pad=0.02",
                                     fc=cols[n], ec=C["x"] if n in crit else C["dark"],
                                     lw=2.2 if n in crit else 1))
-        ax.text(x, y, f"{n}\n{JOBS[n][0]} ms", ha="center", va="center", fontsize=9.5)
+        ax.text(x, y, f"{n}\n{JOBS[n][0]} ms", ha="center", va="center", fontsize=12)
     ax.set_xlim(-0.6, max(level.values()) + 0.6); ax.set_ylim(-1.6, 1.6)
     ax.axis("off")
-    ax.set_title("job DAG (red: critical path, 12 ms)", fontsize=13)
+    ax.set_title("job DAG (red: critical path, 12 ms)", fontsize=15)
     ax = axs[1]
     for n, w, s, e in sched:
         ax.barh(w, e - s, left=s, color=cols[n], ec="white", height=0.7)
-        ax.text((s + e) / 2, w, n, ha="center", va="center", fontsize=9, rotation=0 if e - s >= 2 else 90)
+        ax.text((s + e) / 2, w, n, ha="center", va="center", fontsize=12 if e - s >= 2 else 10.5,
+                rotation=0 if e - s >= 2 else 90)
     ax.set_yticks(range(4)); ax.set_yticklabels([f"worker {i}" for i in range(4)])
     ax.invert_yaxis(); ax.set_xlabel("t (ms)")
     total = sum(d for d, _ in JOBS.values())
-    ax.set_title(f"4 workers: makespan {span} ms (1 worker: {total} ms)", fontsize=13)
+    ax.set_title(f"4 workers: makespan {span} ms (1 worker: {total} ms)", fontsize=15)
     ax.set_xlim(0, span + 0.5); ax.grid(axis="y", visible=False)
     fig.tight_layout()
     save(fig, out("01-job-graph.svg"))

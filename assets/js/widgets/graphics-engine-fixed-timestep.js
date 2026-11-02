@@ -11,25 +11,24 @@
           v: "variable dt = frame time", raw: "fixed dt, no interpolation", lerp: "fixed dt + interpolation",
           ghost: "dashed circle: exact solution", energy: "energy E/E0 (should stay 1)",
           hint: "drag a ball to restart", steps: "steps" },
-    zh: { jit: "~5e27~65f6~95f4~6296~52a8", rate: "~7269~7406~9891~7387", hitch: "~6ce8~5165 200 ms ~5361~987f",
-          v: "~53ef~53d8 dt = ~5e27~65f6~95f4", raw: "~56fa~5b9a dt~ff0c~65e0~63d2~503c", lerp: "~56fa~5b9a dt + ~63d2~503c",
-          ghost: "~865a~7ebf~5706~ff1a~7cbe~786e~89e3", energy: "~80fd~91cf E/E0~ff08~5e94~4fdd~6301~4e3a 1~ff09",
-          hint: "~62d6~52a8~5c0f~7403~91cd~65b0~5f00~59cb", steps: "~6b65~6570" },
-    ja: { jit: "~30d5~30ec~30fc~30e0~6642~9593~306e~3086~3089~304e", rate: "~7269~7406~30ec~30fc~30c8",
-          hitch: "200 ms ~306e~30d2~30c3~30c1~3092~5165~308c~308b",
-          v: "~53ef~5909 dt = ~30d5~30ec~30fc~30e0~6642~9593", raw: "~56fa~5b9a dt~30fb~88dc~9593~306a~3057",
-          lerp: "~56fa~5b9a dt + ~88dc~9593", ghost: "~7834~7dda~306e~5186~ff1a~53b3~5bc6~89e3",
-          energy: "~30a8~30cd~30eb~30ae~30fc E/E0~ff081 ~306e~307e~307e~304c~6b63~3057~3044~ff09",
-          hint: "~30dc~30fc~30eb~3092~30c9~30e9~30c3~30b0~3057~3066~518d~30b9~30bf~30fc~30c8", steps: "~30b9~30c6~30c3~30d7" }
+    zh: { jit: "\u5e27\u65f6\u95f4\u6296\u52a8", rate: "\u7269\u7406\u9891\u7387", hitch: "\u6ce8\u5165 200 ms \u5361\u987f",
+          v: "\u53ef\u53d8 dt = \u5e27\u65f6\u95f4", raw: "\u56fa\u5b9a dt\uff0c\u65e0\u63d2\u503c", lerp: "\u56fa\u5b9a dt + \u63d2\u503c",
+          ghost: "\u865a\u7ebf\u5706\uff1a\u7cbe\u786e\u89e3", energy: "\u80fd\u91cf E/E0\uff08\u5e94\u4fdd\u6301\u4e3a 1\uff09",
+          hint: "\u62d6\u52a8\u5c0f\u7403\u91cd\u65b0\u5f00\u59cb", steps: "\u6b65\u6570" },
+    ja: { jit: "\u30d5\u30ec\u30fc\u30e0\u6642\u9593\u306e\u3086\u3089\u304e", rate: "\u7269\u7406\u30ec\u30fc\u30c8",
+          hitch: "200 ms \u306e\u30d2\u30c3\u30c1\u3092\u5165\u308c\u308b",
+          v: "\u53ef\u5909 dt = \u30d5\u30ec\u30fc\u30e0\u6642\u9593", raw: "\u56fa\u5b9a dt\u30fb\u88dc\u9593\u306a\u3057",
+          lerp: "\u56fa\u5b9a dt + \u88dc\u9593", ghost: "\u7834\u7dda\u306e\u5186\uff1a\u53b3\u5bc6\u89e3",
+          energy: "\u30a8\u30cd\u30eb\u30ae\u30fc E/E0\uff081 \u306e\u307e\u307e\u304c\u6b63\u3057\u3044\uff09",
+          hint: "\u30dc\u30fc\u30eb\u3092\u30c9\u30e9\u30c3\u30b0\u3057\u3066\u518d\u30b9\u30bf\u30fc\u30c8", steps: "\u30b9\u30c6\u30c3\u30d7" }
   };
-  // Non-ASCII text is written as ~hhhh (4 hex digits) so that this file stays ASCII-only.
-  function U(s) { return s.replace(/~([0-9a-f]{4})/g, function (m, h) { return String.fromCharCode(parseInt(h, 16)); }); }
+  // Non-ASCII text is written as \u escapes so that this file stays ASCII-only.
   var COL = { v: "#d62728", raw: "#ff7f0e", lerp: "#1f77b4", text: "#222", grid: "#e6e6e6", spring: "#999" };
 
   function setup(el) {
     var lang = TXT[el.dataset.lang] ? el.dataset.lang : "en";
     var T = {};
-    for (var key in TXT[lang]) T[key] = U(TXT[lang][key]);
+    for (var key in TXT[lang]) T[key] = (TXT[lang][key]);
     el.style.background = "#fcfcfd";
 
     // ---- controls (native inputs: keyboard and touch friendly)
@@ -101,7 +100,7 @@
     function resize() {
       W = el.clientWidth || 600;
       var total = Math.max(parseInt(el.style.minHeight, 10) || 440, 360);
-      H = Math.max(total - bar.offsetHeight, 280);
+      H = Math.max(total - bar.offsetHeight, 8 + 3 * 62 + 36 + 54 + 130 + 24);
       var dpr = window.devicePixelRatio || 1;
       cv.width = Math.round(W * dpr); cv.height = Math.round(H * dpr); cv.style.height = H + "px";
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
@@ -109,7 +108,7 @@
     }
 
     function geom() {
-      var laneH = Math.min(70, H * 0.17), top = 8;
+      var laneH = 62, top = 8;
       var x0 = 14, cx = x0 + (W - x0) * 0.5, A = (W - x0) * 0.36;
       return { laneH: laneH, top: top, x0: x0, cx: cx, A: A, plotTop: top + 3 * laneH + 36 };
     }
@@ -145,12 +144,12 @@
       lane(2, shown.lerp, COL.lerp, T.lerp, g);
       ctx.fillStyle = "#555"; ctx.font = "12px sans-serif";
       var info = "dt = " + (shown.dt * 1000).toFixed(1) + " ms   " + T.steps + " = " + shown.steps +
-                 "   " + U("~03b1") + " = " + shown.alpha.toFixed(2);
+                 "   " + ("\u03b1") + " = " + shown.alpha.toFixed(2);
       ctx.fillText(T.ghost, g.x0, g.plotTop - 22);
       ctx.fillText(info, g.x0, g.plotTop - 6);
 
       // energy plot
-      var px0 = 46, px1 = W - 10, py0 = g.plotTop + 14, py1 = H - 24;
+      var px0 = 46, px1 = W - 10, py0 = g.plotTop + 56, py1 = H - 24;
       if (py1 - py0 < 40) return;
       var lo = 0.9, hi = 1.1;
       hist.forEach(function (h) { lo = Math.min(lo, h[1], h[2]); hi = Math.max(hi, h[1], h[2]); });
@@ -170,9 +169,9 @@
       });
       var last = hist.length ? hist[hist.length - 1] : [0, 1, 1];
       ctx.font = "12px sans-serif";
-      ctx.fillStyle = COL.text; ctx.fillText(T.energy, px0 + 6, py0 + 14);
-      ctx.fillStyle = COL.v; ctx.fillText(U("~25cf ") + T.v + ": " + last[1].toFixed(3), px0 + 6, py0 + 30);
-      ctx.fillStyle = COL.lerp; ctx.fillText(U("~25cf ") + T.lerp + ": " + last[2].toFixed(3), px0 + 6, py0 + 46);
+      ctx.fillStyle = COL.text; ctx.fillText(T.energy, g.x0, g.plotTop + 14);
+      ctx.fillStyle = COL.v; ctx.fillText(("\u25cf ") + T.v + ": " + last[1].toFixed(3), g.x0, g.plotTop + 30);
+      ctx.fillStyle = COL.lerp; ctx.fillText(("\u25cf ") + T.lerp + ": " + last[2].toFixed(3), g.x0, g.plotTop + 46);
       ctx.fillStyle = "#888"; ctx.font = "12px sans-serif";
       var hw = ctx.measureText(T.hint).width;
       ctx.fillText(T.hint, W - hw - 8, H - 6);

@@ -361,7 +361,11 @@ M_\text{hand} = L_\text{root}\, L_\text{arm}\, L_\text{hand} .
 $$
 
 使用二维齐次矩阵
-$L = \begin{pmatrix} \cos\theta & -\sin\theta & t_x \\ \sin\theta & \cos\theta & t_y \\ 0 & 0 & 1 \end{pmatrix}$，
+
+$$
+L = \begin{pmatrix} \cos\theta & -\sin\theta & t_x \\ \sin\theta & \cos\theta & t_y \\ 0 & 0 & 1 \end{pmatrix} ,
+$$
+
 设根节点位于 $(2, 1)$、旋转 $20°$，手臂在局部 $(1.5, 0)$、旋转 $40°$，手在局部 $(1.2, 0)$、旋转 $-30°$。手的世界原点为
 
 $$
@@ -513,7 +517,7 @@ for p in (1, 2, 3, 4):
 
 验证一下下界：$W = 27$ ms，$C = 12$ ms（input、physics、gameplay、cull、build、submit）。两个工作线程时下界为 $\max(12, 13.5) = 13.5$ ms，调度器达到 15 ms。从三个线程开始，关键路径成为瓶颈，第四个线程只会增加空闲时间（图 11）。要让这一帧更快，必须缩短关键路径（例如把物理拆分成多个岛），而不是增加核心。
 
-{% include blog_figure.liquid path="assets/img/blog/graphics-engine/01-job-graph.svg" caption="左：代码中的任务 DAG，红色是 12 ms 的关键路径。右：列表调度器在 4 个工作线程上生成的甘特图。总时长等于关键路径；线程 2 有一半时间空闲，线程 3 根本没有分到任务，所以更多核心对这一帧没有帮助。" %}
+{% include blog_figure.liquid path="assets/img/blog/graphics-engine/01-job-graph.svg" caption="上：代码中的任务 DAG，红色是 12 ms 的关键路径。下：列表调度器在 4 个工作线程上生成的甘特图。总时长等于关键路径；线程 2 有一半时间空闲，线程 3 根本没有分到任务，所以更多核心对这一帧没有帮助。" %}
 
 下面的小部件运行同一个调度器。改变工作线程数，把优先级切换成单纯的声明顺序，再把物理拆成两个并行的 2 ms 岛：物理链变短了，但关键路径只从 12 ms 降到 11 ms，因为现在限制这一帧的是动画链（input、anim、skinning、cull、build、submit）。
 

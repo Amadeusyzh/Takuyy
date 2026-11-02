@@ -361,7 +361,11 @@ M_\text{hand} = L_\text{root}\, L_\text{arm}\, L_\text{hand} .
 $$
 
 With 2D homogeneous matrices
-$L = \begin{pmatrix} \cos\theta & -\sin\theta & t_x \\ \sin\theta & \cos\theta & t_y \\ 0 & 0 & 1 \end{pmatrix}$,
+
+$$
+L = \begin{pmatrix} \cos\theta & -\sin\theta & t_x \\ \sin\theta & \cos\theta & t_y \\ 0 & 0 & 1 \end{pmatrix} ,
+$$
+
 take the root at $(2, 1)$ rotated $20°$, the arm at local $(1.5, 0)$ rotated $40°$ and the hand at local $(1.2, 0)$ rotated $-30°$. The hand's world origin is
 
 $$
@@ -513,7 +517,7 @@ for p in (1, 2, 3, 4):
 
 Check the bound: $W = 27$ ms and $C = 12$ ms (input, physics, gameplay, cull, build, submit). With two workers the bound is $\max(12, 13.5) = 13.5$ ms and the scheduler reaches 15 ms. From three workers on, the critical path is the limit, and a fourth worker only adds idle time (Figure 11). To speed this frame up you must shorten the critical path, for example by splitting physics into islands, not add cores.
 
-{% include blog_figure.liquid path="assets/img/blog/graphics-engine/01-job-graph.svg" caption="Left: the job DAG of the code, with the 12 ms critical path in red. Right: the Gantt chart that the list scheduler produces on 4 workers. The makespan equals the critical path; worker 2 is idle half of the time and worker 3 never receives a job, so more cores would not help this frame." %}
+{% include blog_figure.liquid path="assets/img/blog/graphics-engine/01-job-graph.svg" caption="Top: the job DAG of the code, with the 12 ms critical path in red. Bottom: the Gantt chart that the list scheduler produces on 4 workers. The makespan equals the critical path; worker 2 is idle half of the time and worker 3 never receives a job, so more cores would not help this frame." %}
 
 The widget runs the same scheduler. Change the number of workers, switch the priority to plain declaration order, and split physics into two parallel 2 ms islands: the physics chain gets shorter, but the critical path only drops from 12 to 11 ms, because the animation chain (input, anim, skinning, cull, build, submit) now limits the frame.
 

@@ -8,14 +8,13 @@
   var TXT = {
     en: { workers: "workers", cp: "critical path first", decl: "declaration order", split: "split physics into 2 islands",
           span: "makespan", bound: "lower bound" },
-    zh: { workers: "~5de5~4f5c~7ebf~7a0b", cp: "~5173~952e~8def~5f84~4f18~5148", decl: "~58f0~660e~987a~5e8f",
-          split: "~628a~7269~7406~62c6~6210 2 ~4e2a~5c9b", span: "~603b~65f6~957f", bound: "~4e0b~754c" },
-    ja: { workers: "~30ef~30fc~30ab~30fc", cp: "~30af~30ea~30c6~30a3~30ab~30eb~30d1~30b9~512a~5148",
-          decl: "~5ba3~8a00~9806", split: "~7269~7406~3092 2 ~3064~306e~30a2~30a4~30e9~30f3~30c9~306b~5206~5272",
-          span: "~6240~8981~6642~9593", bound: "~4e0b~754c" }
+    zh: { workers: "\u5de5\u4f5c\u7ebf\u7a0b", cp: "\u5173\u952e\u8def\u5f84\u4f18\u5148", decl: "\u58f0\u660e\u987a\u5e8f",
+          split: "\u628a\u7269\u7406\u62c6\u6210 2 \u4e2a\u5c9b", span: "\u603b\u65f6\u957f", bound: "\u4e0b\u754c" },
+    ja: { workers: "\u30ef\u30fc\u30ab\u30fc", cp: "\u30af\u30ea\u30c6\u30a3\u30ab\u30eb\u30d1\u30b9\u512a\u5148",
+          decl: "\u5ba3\u8a00\u9806", split: "\u7269\u7406\u3092 2 \u3064\u306e\u30a2\u30a4\u30e9\u30f3\u30c9\u306b\u5206\u5272",
+          span: "\u6240\u8981\u6642\u9593", bound: "\u4e0b\u754c" }
   };
-  // Non-ASCII text is written as ~hhhh (4 hex digits) so that this file stays ASCII-only.
-  function U(s) { return s.replace(/~([0-9a-f]{4})/g, function (m, h) { return String.fromCharCode(parseInt(h, 16)); }); }
+  // Non-ASCII text is written as \u escapes so that this file stays ASCII-only.
   var PAL = ["#1f77b4", "#aec7e8", "#ff7f0e", "#ffbb78", "#2ca02c", "#98df8a", "#9467bd", "#c5b0d5",
              "#8c564b", "#c49c94", "#e377c2", "#f7b6d2", "#7f7f7f", "#bcbd22"];
 
@@ -84,7 +83,7 @@
   function setup(el) {
     var lang = TXT[el.dataset.lang] ? el.dataset.lang : "en";
     var T = {};
-    for (var key in TXT[lang]) T[key] = U(TXT[lang][key]);
+    for (var key in TXT[lang]) T[key] = (TXT[lang][key]);
     el.style.background = "#fcfcfd";
     var bar = document.createElement("div");
     bar.style.cssText = "display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center;padding:8px;font:13px sans-serif;color:#222";
