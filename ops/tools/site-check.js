@@ -47,10 +47,12 @@ const { chromium } = require('playwright');
         await page.evaluate(() => window.scrollTo(0, 0));
         await page.screenshot({ path: `/tmp/shots/${name}.png` });
         if (mobile) {
-          const els = await page.$$('.blog-fig, .blog-widget');
-          for (let i = 0; i < els.length; i++) {
-            await els[i].scrollIntoViewIfNeeded();
-            await els[i].screenshot({ path: `/tmp/shots/${name}-el${String(i).padStart(2, '0')}.png` }).catch(() => {});
+          for (const [sel, tag] of [['.blog-fig', 'fig'], ['.blog-widget', 'wid']]) {
+            const els = await page.$$(sel);
+            for (let i = 0; i < els.length; i++) {
+              await els[i].scrollIntoViewIfNeeded();
+              await els[i].screenshot({ path: `/tmp/shots/${name}-${tag}${String(i).padStart(2, '0')}.png` }).catch(() => {});
+            }
           }
         }
         out.push({ page: name, http: resp ? resp.status() : 'ERR', ...info, errors: [...new Set(errors)].slice(0, 6) });

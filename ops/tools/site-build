@@ -1,8 +1,10 @@
 #!/usr/bin/env bash
 # Builds the site (imagemagick off) and prints errors plus the tail of the log.
+# The local config also excludes `scripts`: the worker sandbox leaves a placeholder there that Jekyll cannot read.
 set -o pipefail
 cd "$SITE_DIR"
-printf 'imagemagick:\n  enabled: false\n' > /tmp/local.yml
+ruby -ryaml -e 'c = YAML.load_file("_config.yml"); ex = ((c["exclude"] || []) + ["scripts"]).uniq
+  File.write("/tmp/local.yml", { "imagemagick" => { "enabled" => false }, "exclude" => ex }.to_yaml)'
 LANG=C.UTF-8 bundle exec jekyll build --config _config.yml,/tmp/local.yml > /tmp/site-build.log 2>&1
 code=$?
 grep -iE 'error|liquid|kramdown|warning: ' /tmp/site-build.log | grep -viE 'deprecation|sass' | head -40

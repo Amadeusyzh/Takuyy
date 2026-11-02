@@ -164,7 +164,7 @@ Your tools are restricted on purpose:
   - console errors, after a simulated drag on every widget.
 
   It saves screenshots in `/tmp/shots/`: `<slug>-<lang>-<width>.png` for the top of each page, and one
-  `-elNN.png` per figure or widget at 390 px.
+  `-figNN.png` per figure and `-widNN.png` per widget at 390 px.
 - Fix everything the check reports. Open several screenshots with the Read tool and look at them yourself:
   legibility on a phone, figures matching the text, widgets drawn correctly.
 - Playwright is available to your own `node` scripts (`require('playwright')`) if you need more. MathJax and

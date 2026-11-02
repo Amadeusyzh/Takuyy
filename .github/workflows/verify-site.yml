@@ -1,0 +1,50 @@
+# Builds a branch of the site and checks pages in headless Chromium with full network access
+# (MathJax and the CDNs load). No AI and no API key involved. Triggered by pushes to ops/verify;
+# the branch to check and the post slugs are in ops/verify.json. Results go to the branch report/verify.
+name: Verify site
+
+on:
+  push:
+    branches: ["ops/verify"]
+
+permissions:
+  contents: write
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - name: Checkout ops
+        uses: actions/checkout@v4
+        with:
+          path: ops-src
+          persist-credentials: false
+      - id: cfg
+        run: echo "ref=$(jq -r '.ref' ops-src/ops/verify.json)" >> "$GITHUB_OUTPUT"
+      - name: Checkout site
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ steps.cfg.outputs.ref }}
+          path: site
+          persist-credentials: false
+      - name: Setup Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: "3.3.5"
+          bundler-cache: true
+          working-directory: site
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Install Playwright
+        run: |
+          sudo apt-get update -qq && sudo apt-get install -y -qq fonts-wqy-zenhei >/dev/null
+          npm install -g --silent playwright
+          playwright install --with-deps chromium >/dev/null
+          echo "NODE_PATH=$(npm root -g)" >> "$GITHUB_ENV"
+      - name: Build and check
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: bash ops-src/ops/verify.sh
