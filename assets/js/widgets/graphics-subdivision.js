@@ -16,18 +16,18 @@
       hint: "Drag the black control points.",
     },
     zh: {
-      schemes: ["Chaikin", "4点", "三次 B 样条"],
-      kinds: ["逼近型", "插值型", "逼近型"],
-      level: "层级", ghost: "显示所有层级", pts: "个点",
-      reset: "重置", add: "添加点",
-      hint: "拖动黑色控制点。",
+      schemes: ["Chaikin", "4\u70b9", "\u4e09\u6b21 B \u6837\u6761"],
+      kinds: ["\u903c\u8fd1\u578b", "\u63d2\u503c\u578b", "\u903c\u8fd1\u578b"],
+      level: "\u5c42\u7ea7", ghost: "\u663e\u793a\u6240\u6709\u5c42\u7ea7", pts: "\u4e2a\u70b9",
+      reset: "\u91cd\u7f6e", add: "\u6dfb\u52a0\u70b9",
+      hint: "\u62d6\u52a8\u9ed1\u8272\u63a7\u5236\u70b9\u3002",
     },
     ja: {
-      schemes: ["Chaikin", "4点法", "3次 B スプライン"],
-      kinds: ["近似型", "補間型", "近似型"],
-      level: "レベル", ghost: "全レベルを表示", pts: "点",
-      reset: "リセット", add: "点を追加",
-      hint: "黒い制御点をドラッグしてください。",
+      schemes: ["Chaikin", "4\u70b9\u6cd5", "3\u6b21 B \u30b9\u30d7\u30e9\u30a4\u30f3"],
+      kinds: ["\u8fd1\u4f3c\u578b", "\u88dc\u9593\u578b", "\u8fd1\u4f3c\u578b"],
+      level: "\u30ec\u30d9\u30eb", ghost: "\u5168\u30ec\u30d9\u30eb\u3092\u8868\u793a", pts: "\u70b9",
+      reset: "\u30ea\u30bb\u30c3\u30c8", add: "\u70b9\u3092\u8ffd\u52a0",
+      hint: "\u9ed2\u3044\u5236\u5fa1\u70b9\u3092\u30c9\u30e9\u30c3\u30b0\u3057\u3066\u304f\u3060\u3055\u3044\u3002",
     },
   };
 

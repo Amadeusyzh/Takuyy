@@ -10,10 +10,10 @@
   var TEXT = {
     en: { res: "Cells", field: "show field", interp: "linear interpolation", segs: "segments",
       hint: "Drag the three circle centres." },
-    zh: { res: "单元数", field: "显示场", interp: "线性插值", segs: "条线段",
-      hint: "拖动三个圆心。" },
-    ja: { res: "セル数", field: "場を表示", interp: "線形補間", segs: "本の線分",
-      hint: "3 つの円の中心をドラッグしてください。" },
+    zh: { res: "\u5355\u5143\u6570", field: "\u663e\u793a\u573a", interp: "\u7ebf\u6027\u63d2\u503c", segs: "\u6761\u7ebf\u6bb5",
+      hint: "\u62d6\u52a8\u4e09\u4e2a\u5706\u5fc3\u3002" },
+    ja: { res: "\u30bb\u30eb\u6570", field: "\u5834\u3092\u8868\u793a", interp: "\u7dda\u5f62\u88dc\u9593", segs: "\u672c\u306e\u7dda\u5206",
+      hint: "3 \u3064\u306e\u5186\u306e\u4e2d\u5fc3\u3092\u30c9\u30e9\u30c3\u30b0\u3057\u3066\u304f\u3060\u3055\u3044\u3002" },
   };
 
   function smin(a, b, k) {
@@ -121,9 +121,9 @@
         for (var j = 0; j < rows; j++) {
           var v = f((i + 0.5) * step, (j + 0.5) * step) / scale;
           var t = Math.max(-1, Math.min(1, v)), r, g, b;
-          if (t < 0) { r = 255 + t * 180; g = 255 + t * 130; b = 255; } else { r = 255; g = 255 - t * 140; b = 255 - t * 160; }
-          var band = Math.abs((v * 6) % 1) < 0.08 ? 0.9 : 1; // faint level-set bands
-          ctx.fillStyle = "rgb(" + Math.round(r * band) + "," + Math.round(g * band) + "," + Math.round(b * band) + ")";
+          // light diverging colours: blue inside (f < 0), red outside, white on the surface
+          if (t < 0) { r = 255 + t * 150; g = 255 + t * 110; b = 255; } else { r = 255; g = 255 - t * 95; b = 255 - t * 110; }
+          ctx.fillStyle = "rgb(" + Math.round(r) + "," + Math.round(g) + "," + Math.round(b) + ")";
           ctx.fillRect(i * step, j * step, step, step);
         }
       }
@@ -168,7 +168,7 @@
         ctx.fillStyle = k === drag ? "#9467bd" : "#222"; ctx.fill();
         ctx.lineWidth = 2; ctx.strokeStyle = "#fff"; ctx.stroke();
       }
-      info.innerHTML = nCells + " × " + ny + ": " + M.segs.length + " " + T.segs +
+      info.innerHTML = nCells + " \u00d7 " + ny + ": " + M.segs.length + " " + T.segs +
         ' &nbsp; <span style="color:#777">' + T.hint + "</span>";
     }
 

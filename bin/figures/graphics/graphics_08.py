@@ -253,7 +253,9 @@ def fig_halfedge():
             outv = np.array([-ev[1], ev[0]]) / np.linalg.norm(ev)  # left normal of a -> b = outward
             shrink = lambda p, o=outv: p + 0.07 * o  # noqa: E731
         s, e = shrink(a + 0.12 * (b - a)), shrink(b - 0.12 * (b - a))
-        if h in ring:
+        if h == nxt[h_center]:  # highlight next(h) so its label is unambiguous
+            col, lw = C["dark"], 2.8
+        elif h in ring:
             col, lw = C["a"], 3.0
         elif face[h] == -1:
             col, lw = C["b"], 2.4
@@ -268,9 +270,13 @@ def fig_halfedge():
         m = 0.5 * (a + b)
         d_ = b - a
         ref = cent[face[hh]] if face[hh] >= 0 else m + np.array([-d_[1], d_[0]])
-        pos = m + 0.28 * (ref - m) / np.linalg.norm(ref - m)
-        ax.text(*pos, txt, fontsize=14, ha="center", va="center",
-                bbox=dict(fc="white", ec="none", alpha=0.85, pad=1))
+        # interior half-edges: just inside the arrow; boundary: just outside the orange arrow
+        dist = (0.16 if txt == "h" else 0.1) if face[hh] >= 0 else 0.2
+        pos = m + dist * (ref - m) / np.linalg.norm(ref - m)
+        if face[hh] >= 0:  # slide along the edge, away from the shared corner, to avoid overlaps
+            pos = pos + (-0.1 if txt == "h" else 0.15) * d_ / np.linalg.norm(d_)
+        ax.text(*pos, txt, fontsize=13, ha="center", va="center", fontweight="bold",
+                bbox=dict(fc="white", ec="none", alpha=0.85, pad=1), zorder=7)
     for i, p in enumerate(P):
         ax.plot(*p, "o", ms=13, color=C["dark"], zorder=5)
         ax.text(p[0], p[1], str(i), color="white", fontsize=11, ha="center", va="center", zorder=6)
@@ -330,8 +336,9 @@ def fig_cotan():
                 ha="center", va="center")
     ax.annotate("", xy=uni_vec * 4, xytext=(0, 0),
                 arrowprops=dict(arrowstyle="-|>", color=C["b"], lw=3, mutation_scale=18))
-    ax.text(*(uni_vec * 4 + np.array([0.04, -0.1])), r"$4\times$ uniform $\Delta$", color=C["b"],
-            fontsize=14)
+    ax.text(*(uni_vec * 4 + np.array([-0.02, 0.06])), r"$4\times$ uniform $\Delta$", color=C["b"],
+            fontsize=14, ha="center", va="bottom",
+            bbox=dict(fc="white", ec="none", alpha=0.85, pad=1))
     for i, p in enumerate(P):
         ax.plot(*p, "o", ms=11, color=C["dark"], zorder=5)
         ax.text(p[0], p[1], str(i), color="white", fontsize=10, ha="center", va="center", zorder=6)
@@ -369,7 +376,7 @@ def fig_curvature():
     ax.plot(W[sel], H[sel], "s", color=C["z"], ms=5, label=r"discrete $H$")
     ax.set_xlabel(r"$v$ (around the tube)")
     ax.set_xticks([0, np.pi, 2 * np.pi]); ax.set_xticklabels(["0", r"$\pi$", r"$2\pi$"])
-    ax.legend(fontsize=12, loc="lower center")
+    ax.legend(fontsize=12, loc="lower left")
     ax.set_title(r"$\sum_i (2\pi-\sum\theta) = $" + f"{defect.sum():.1e}" + r" $= 2\pi\chi$", fontsize=14)
     save(fig, out("curvature"))
 
@@ -468,13 +475,15 @@ def fig_loop():
     V[4] *= 1.6  # stretch one apex so the limit surface is not just a sphere
     F = np.array([(0, 2, 4), (2, 1, 4), (1, 3, 4), (3, 0, 4), (2, 0, 5), (1, 2, 5), (3, 1, 5), (0, 3, 5)])
     fig = plt.figure(figsize=(16, 4.8))
-    V0 = V.copy()
+    V0, F_cage = V.copy(), F.copy()
     for lvl in range(4):
         ax = fig.add_subplot(1, 4, lvl + 1, projection="3d")
         draw_mesh(ax, V, F, shaded_colors(V, F, base=C["a"] if lvl else C["gray"]),
                   edgecolor=C["dark"], lw=0.6 if lvl < 3 else 0.3)
-        if lvl:
-            ax.plot(*np.vstack([V0[[0, 2, 1, 3, 0]]]).T, color=C["gray"], lw=1, ls="--")
+        if lvl:  # the level-0 control cage as a dashed wireframe: Loop is approximating
+            F0 = F_cage
+            for a, b in {(min(f[i], f[(i + 1) % 3]), max(f[i], f[(i + 1) % 3])) for f in F0 for i in range(3)}:
+                ax.plot(*V0[[a, b]].T, color=C["gray"], lw=0.9, ls="--")
         frame3d(ax, V0, elev=18, azim=-50, pad=0.62)
         ax.set_title(f"level {lvl}: {len(F)} faces", fontsize=14)
         V, F = loop_subdivide(V, F)
@@ -706,14 +715,14 @@ def fig_marching_squares():
     fine = np.linspace(-1, 1, 400)
     FX, FY = np.meshgrid(fine, fine, indexing="ij")
     D = sdf2(np.stack([FX, FY], -1))
-    fig, axs = plt.subplots(1, 3, figsize=(16, 5.6))
+    fig, axs = plt.subplots(1, 3, figsize=(16, 5.6), gridspec_kw=dict(wspace=0.32))
     lim = np.abs(D).max()
     im = axs[0].pcolormesh(FX, FY, D, cmap="RdBu_r", norm=TwoSlopeNorm(vmin=-lim, vcenter=0, vmax=lim),
                            shading="auto", rasterized=True)
     axs[0].contour(FX, FY, D, levels=np.arange(-0.4, 0.8, 0.1), colors="k", linewidths=0.6, alpha=0.5)
     axs[0].contour(FX, FY, D, levels=[0], colors=C["dark"], linewidths=2.5)
-    fig.colorbar(im, ax=axs[0], shrink=0.8, label=r"$f(x,y)$")
-    axs[0].set_title(r"SDF: smooth union, level sets", fontsize=14)
+    fig.colorbar(im, ax=axs[0], shrink=0.8, pad=0.03)
+    axs[0].set_title(r"SDF $f(x,y)$: smooth union", fontsize=14)
     for ax, m in [(axs[1], 12), (axs[2], 36)]:
         xs = np.linspace(-1, 1, m)
         G, segs = marching_squares(sdf2, xs, xs)
@@ -860,7 +869,7 @@ def fig_poisson():
     im = axs[1].pcolormesh(GX, GY, chi, cmap="viridis", shading="auto", rasterized=True)
     axs[1].contour(GX, GY, chi, levels=[iso], colors="white", linewidths=2.2)
     fig.colorbar(im, ax=axs[1], shrink=0.8, label=r"$\chi$")
-    axs[1].set_title(r"$\Delta\chi = -\nabla\cdot\vec V$, iso = mean $\chi$ at points", fontsize=14)
+    axs[1].set_title(r"$\Delta\chi = -\nabla\cdot\vec V$" + "\n" + r"iso-level = mean $\chi$ at points", fontsize=13)
     tt = np.linspace(0, 2 * np.pi, 400)
     axs[2].plot(curve(tt) * np.cos(tt), curve(tt) * np.sin(tt), "--", color=C["gray"], lw=2, label="true")
     cs = axs[2].contour(GX, GY, chi, levels=[iso], colors=C["a"], linewidths=2.6)

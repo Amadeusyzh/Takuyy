@@ -112,7 +112,7 @@ print("boundary loop:", loop)                               # [1, 0, 6, 5, 4, 3,
 
 この扇形は 7 頂点、11 辺、5 面です（$\chi = 1$：円板）。内部ハーフエッジ 15 本と境界ハーフエッジ 7 本で合計 22 本です。下の図は、同じコードでこれらのレコードを描いたものです。
 
-{% include blog_figure.liquid path="assets/img/blog/graphics/08-halfedge.svg" caption="`build_halfedge` で作った扇形のハーフエッジ構造。各矢印が 1 本のハーフエッジで、左側の面の少し内側に描いています。境界ハーフエッジ（オレンジ）は外側にあり、`next` で境界ループにつながっています。紫：`one_ring` がたどる頂点 0 の出るハーフエッジ（そのうち 1 本は境界ハーフエッジで、欠けたくさび形を回転が越えられるのはこのためです）。ラベルは 1 本のハーフエッジ $h$ と、その `next`、`twin` を示します。" %}
+{% include blog_figure.liquid path="assets/img/blog/graphics/08-halfedge.svg" caption="`build_halfedge` で作った扇形のハーフエッジ構造。各矢印が 1 本のハーフエッジで、左側の面の少し内側に描いています。境界ハーフエッジ（オレンジ）は外側にあり、`next` で境界ループにつながっています。紫：`one_ring` がたどる頂点 0 の出るハーフエッジ（そのうち 1 本は境界ハーフエッジで、欠けたくさび形を回転が越えられるのはこのためです）。ラベルは 1 本のハーフエッジ $h$（0 から 1 へ）と、その `next`（黒）、`twin`（境界上）を示します。" %}
 
 実用ライブラリ（OpenMesh、CGAL の `Surface_mesh`、geometry-central、Blender の BMesh）は同じ考え方を配列中の整数ハンドルで保存し、頂点ごとに「出るハーフエッジを 1 本」、面ごとに「ハーフエッジを 1 本」持たせます。リメッシュの三つの局所操作、辺の縮約（edge collapse）、辺の反転（edge flip）、辺の分割（edge split）は、数個のポインタの更新になります。
 
@@ -231,7 +231,7 @@ $$
 K(v) = \frac{\cos v}{r\,(R + r\cos v)}, \qquad H(v) = \frac{R + 2r\cos v}{2r\,(R + r\cos v)}
 $$
 
-です。外側の半分（$\cos v > 0$）は球面のようで $K > 0$、内側の半分は鞍面のようで $K < 0$ です。そして $\chi = 0$ なので、ガウス–ボネの定理によれば両者はちょうど打ち消し合わなければなりません。
+です。外側の半分（$\cos v > 0$）は球面のようで $K > 0$、内側の半分は鞍面のようで $K < 0$ です。そして $\chi = 0$ なので、ガウス–ボネの定理によれば両者はちょうど打ち消し合わなければなりません。下の $48\times24$ のトーラスでは、すべての角度欠損の和は $-3\times10^{-13}$（丸め誤差）で、公式に対する点ごとの最大誤差は $K$ で $0.03$（$K$ の範囲は $-4.2$ から $1.8$）、$H$ で $0.006$（厳密な法線を使用）です。
 
 {% include blog_figure.liquid path="assets/img/blog/graphics/08-curvature.svg" caption="$48\times24$ のトーラス（$R=1$、$r=0.4$）上の離散曲率（上のコードで計算）。左：角度欠損によるガウス曲率。赤が $K>0$（外側）、青が $K<0$（穴の内側）です。中：コタンジェント・ラプラシアンによる平均曲率。右：管の 1 周に沿った値と厳密な式の比較で、マーカーは曲線のすぐ近くに乗るはずです。タイトルにはすべての角度欠損の和が表示され、$\chi=0$ のときガウス–ボネの定理が要求するとおり、丸め誤差の範囲で 0 になります。" %}
 
@@ -297,17 +297,20 @@ for _ in range(1000):
 Z = np.linalg.solve(I - 25.0 * L, X0)                       # one implicit step
 for name, S in [("laplacian", X), ("taubin", Y), ("implicit", Z)]:
     print(f"{name:9s} area ratio = {area(S) / area(X0):.3f}")
+# laplacian area ratio = 0.593
+# taubin    area ratio = 1.029
+# implicit  area ratio = 0.949
 ```
 
 曲線は 1 次元のメッシュなので、フィルタが形状に作用する様子を目で確かめられます。`L` をメッシュのラプラシアンに置き換えれば、同じコードが三角形メッシュでも動きます。
 
-{% include blog_figure.liquid path="assets/img/blog/graphics/08-smoothing.svg" caption="スクリプトのノイズを含む五弁の曲線を平滑化したもの。陽的ラプラシアン平滑化（$\lambda=0.5$）は 10 回以内にノイズを消し、その後は花弁を消して曲線全体を縮め続けます。Taubin 平滑化はノイズを消しますが、花弁と大きさは保ちます。$h=25$ の陰的フェアリングは 1 ステップで強く平滑化します。右：初期値に対する囲まれた面積の比。ラプラシアンの曲線は下がり続け、Taubin の曲線は 1 付近にとどまります。" %}
+{% include blog_figure.liquid path="assets/img/blog/graphics/08-smoothing.svg" caption="スクリプトのノイズを含む五弁の曲線を平滑化したもの。陽的ラプラシアン平滑化（$\lambda=0.5$）は 10 回以内にノイズを消し、その後は花弁を消して曲線全体を縮め続けます。Taubin 平滑化はノイズを消しますが、花弁と大きさは保ちます。$h=25$ の陰的フェアリングは 1 ステップで強く平滑化します。右：初期値に対する囲まれた面積の比。ラプラシアンの曲線は下がり続け（1000 回後に 0.59）、Taubin の曲線は 1 付近にとどまって最後は 3% 上回ります。これは伝達関数が予言するわずかな低周波の増幅です。" %}
 
 ## 5. 細分割曲面
 
 細分割（subdivision）は逆向きの操作です。粗い**制御メッシュ**から出発し、決まった局所的な平均化規則で面の分割と頂点の移動を繰り返して、滑らかな曲面を得ます。極限ではメッシュは滑らかな**極限曲面（limit surface）**に収束します。アーティストは軽いケージをモデリングし、レンダラが細分割します。
 
-1 次元の場合ですべてが説明でき、下のウィジェットで試せます。**Chaikin** の角切りは、各辺 $\mathbf{p}_i\mathbf{p}_{i+1}$ を 2 点 $\frac34\mathbf{p}_i + \frac14\mathbf{p}_{i+1}$ と $\frac14\mathbf{p}_i + \frac34\mathbf{p}_{i+1}$ で置き換えます。極限は一様 2 次 B スプラインです。**3 次 B スプライン**法は辺の中点を挿入し、古い点を $\frac18(\mathbf{p}_{i-1} + 6\mathbf{p}_i + \mathbf{p}_{i+1})$ へ動かします。どちらも**近似型（approximating）**で、曲線は制御点を通りません。Dyn、Levin、Gregory の **4 点法**は古い点を残し、$\frac{9}{16}(\mathbf{p}_i + \mathbf{p}_{i+1}) - \frac1{16}(\mathbf{p}_{i-1} + \mathbf{p}_{i+2})$ を挿入します。**補間型（interpolating）**で、極限は $C^1$ です。
+1 次元の場合ですべてが説明でき、下のウィジェットで試せます。**Chaikin** の角切りは、各辺 $\mathbf{p}\_i\mathbf{p}\_{i+1}$ を 2 点 $\frac34\mathbf{p}\_i + \frac14\mathbf{p}\_{i+1}$ と $\frac14\mathbf{p}\_i + \frac34\mathbf{p}\_{i+1}$ で置き換えます。極限は一様 2 次 B スプラインです。**3 次 B スプライン**法は辺の中点を挿入し、古い点を $\frac18(\mathbf{p}\_{i-1} + 6\mathbf{p}\_i + \mathbf{p}\_{i+1})$ へ動かします。どちらも**近似型（approximating）**で、曲線は制御点を通りません。Dyn、Levin、Gregory の **4 点法**は古い点を残し、$\frac{9}{16}(\mathbf{p}\_i + \mathbf{p}\_{i+1}) - \frac1{16}(\mathbf{p}\_{i-1} + \mathbf{p}\_{i+2})$ を挿入します。**補間型（interpolating）**で、極限は $C^1$ です。
 
 {% include widget.liquid name="graphics-subdivision" height="460" caption="閉多角形の制御点（黒）をマウスまたは指でドラッグし、スキームを選んでレベルのスライダーを動かしてください。Chaikin と 3 次 B スプラインは角を切り落とし、制御点を通らない滑らかな曲線に近づきます。4 点法は制御点を通り、オーバーシュートすることがあります。表示は現在のレベルの点の数です。" %}
 
@@ -358,7 +361,7 @@ for level in range(3):
     print(level + 1, len(V), "vertices", len(F), "faces")   # 18/32, 66/128, 258/512
 ```
 
-{% include blog_figure.liquid path="assets/img/blog/graphics/08-loop-subdivision.svg" caption="上の頂点を引き上げた八面体の Loop 細分割（`loop_subdivide` で計算）。各レベルで面の数は 4 倍になります。Loop は近似型なので、曲面は制御ケージ（破線：その赤道）の内側に縮み、すぐに滑らかになります。元の 6 頂点は価数 4 で、どのレベルでも特異頂点のままです。" %}
+{% include blog_figure.liquid path="assets/img/blog/graphics/08-loop-subdivision.svg" caption="上の頂点を引き上げた八面体の Loop 細分割（`loop_subdivide` で計算）。各レベルで面の数は 4 倍になります。Loop は近似型なので、曲面は制御ケージ（破線：レベル 0 の八面体）の内側に縮み、すぐに滑らかになります。元の 6 頂点は価数 4 で、どのレベルでも特異頂点のままです。" %}
 
 ### Catmull–Clark（四角形）
 
@@ -380,7 +383,7 @@ $$
 (\mathbf{p}^\top\tilde{\mathbf{x}})^2 = \tilde{\mathbf{x}}^\top(\mathbf{p}\mathbf{p}^\top)\tilde{\mathbf{x}} = \tilde{\mathbf{x}}^\top\mathbf{K}_p\,\tilde{\mathbf{x}}
 $$
 
-です。ポイントは、多数の平面までの距離の 2 乗の*和*も一つの二次形式になることです。$\mathbf{Q}_v = \sum_{p \ni v}\mathbf{K}_p$ は対称な $4\times4$ 行列（10 個の数）です。$\mathbf{u}$ と $\mathbf{w}$ が合わさると、新しい二次形式は単に $\mathbf{Q}_u + \mathbf{Q}_w$ で、最適な位置は $\tilde{\mathbf{x}}^\top(\mathbf{Q}_u+\mathbf{Q}_w)\tilde{\mathbf{x}}$ を最小化します。$\mathbf{x}$ についての勾配を 0 とおくと、$3\times3$ の連立一次方程式になります。Garland と Heckbert の書き方では、$\mathbf{Q}$ の最終行を $(0,0,0,1)$ に置き換えて次を解きます。
+です。ポイントは、多数の平面までの距離の 2 乗の*和*も一つの二次形式になることです。$\mathbf{Q}\_v = \sum_{p \ni v}\mathbf{K}\_p$ は対称な $4\times4$ 行列（10 個の数）です。$\mathbf{u}$ と $\mathbf{w}$ が合わさると、新しい二次形式は単に $\mathbf{Q}\_u + \mathbf{Q}\_w$ で、最適な位置は $\tilde{\mathbf{x}}^\top(\mathbf{Q}\_u+\mathbf{Q}\_w)\tilde{\mathbf{x}}$ を最小化します。$\mathbf{x}$ についての勾配を 0 とおくと、$3\times3$ の連立一次方程式になります。Garland と Heckbert の書き方では、$\mathbf{Q}$ の最終行を $(0,0,0,1)$ に置き換えて次を解きます。
 
 $$
 \begin{pmatrix} q_{11} & q_{12} & q_{13} & q_{14}\\ q_{12} & q_{22} & q_{23} & q_{24}\\ q_{13} & q_{23} & q_{33} & q_{34}\\ 0&0&0&1 \end{pmatrix}\tilde{\mathbf{x}} = \begin{pmatrix}0\\0\\0\\1\end{pmatrix}.
@@ -481,7 +484,7 @@ $$
 \mathbf{u}_i = \sum_{j \in N(i)} \lambda_{ij}\,\mathbf{u}_j, \qquad \lambda_{ij} > 0, \quad \sum_j\lambda_{ij} = 1 .
 $$
 
-すると結果は正しい埋め込みになります。反転する三角形も重なる三角形もありません。計算としては疎な連立一次方程式を 1 回解くだけです：$\mathbf{L}_{II}\mathbf{U}_I = -\mathbf{L}_{IB}\mathbf{U}_B$（ラプラシアンの内部行。境界の位置は右辺に移します）。一様重みなら「重心」埋め込み、すなわち Tutte 埋め込みです。コタンジェント重みなら離散**調和写像（harmonic map）**で、メッシュの形をよりよく保ちますが、重みが負になるところで三角形が反転することがあります。Floater の**平均値座標（mean-value coordinates）**は、常に正で、しかも形状を考慮した重みを与えます。
+すると結果は正しい埋め込みになります。反転する三角形も重なる三角形もありません。計算としては疎な連立一次方程式を 1 回解くだけです：$\mathbf{L}\_{II}\mathbf{U}\_I = -\mathbf{L}\_{IB}\mathbf{U}\_B$（ラプラシアンの内部行。境界の位置は右辺に移します）。一様重みなら「重心」埋め込み、すなわち Tutte 埋め込みです。コタンジェント重みなら離散**調和写像（harmonic map）**で、メッシュの形をよりよく保ちますが、重みが負になるところで三角形が反転することがあります。Floater の**平均値座標（mean-value coordinates）**は、常に正で、しかも形状を考慮した重みを与えます。
 
 ```python
 import numpy as np
@@ -559,7 +562,7 @@ def marching_squares(f, xs, ys):
 
 circle = lambda p: np.hypot(p[..., 0], p[..., 1]) - 0.6
 segs = marching_squares(circle, np.linspace(-1, 1, 12), np.linspace(-1, 1, 12))
-print(len(segs), "segments")
+print(len(segs), "segments")                                  # 24
 ```
 
 {% include blog_figure.liquid path="assets/img/blog/graphics/08-marching-squares.svg" caption="左：2D の SDF（円と箱の滑らかな和）とその等値線。太線が $f=0$ です。中：$11\times11$ セルでの Marching Squares。青の塗りつぶし点が内側（$f<0$）、赤の白抜き点が外側、紫の線分が出力、灰色の破線が真のゼロ集合です。右：$35\times35$ セルでは、出力は見た目には正確です。曲線に沿った精度を決めるのは格子ではなく線形補間で、格子が決めるのはどの細部をそもそも解像できるかです。" %}
@@ -635,7 +638,7 @@ chi = np.real(np.fft.ifft2(chi_hat))
 # 4. iso-value = mean of chi at the samples; extract with marching squares
 idx = np.clip(np.round((P + 1) / h).astype(int), 0, M - 1)
 iso = chi[idx[:, 0], idx[:, 1]].mean()
-print("iso-value", round(float(iso), 4))
+print("iso-value", round(float(iso), 4))                     # 0.0485
 ```
 
 重心を使って向きを決める技は、このような星形の形状でしか使えません。ここでは上で述べた全域木による伝播の代わりです。

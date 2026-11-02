@@ -112,7 +112,7 @@ print("boundary loop:", loop)                               # [1, 0, 6, 5, 4, 3,
 
 The fan has 7 vertices, 11 edges and 5 faces ($\chi = 1$: a disk). Its 15 interior half-edges plus 7 boundary half-edges give 22. The figure draws exactly these records, from the same code.
 
-{% include blog_figure.liquid path="assets/img/blog/graphics/08-halfedge.svg" caption="The half-edge structure of the fan built by `build_halfedge`. Each arrow is one half-edge, drawn slightly inside the face to its left; boundary half-edges (orange) sit outside and are chained by `next` into the boundary loop. Purple: the outgoing half-edges of vertex 0 visited by `one_ring` (one of them is a boundary half-edge, which is how the rotation passes the missing wedge). The labels show one half-edge $h$, its `next` and its `twin`." %}
+{% include blog_figure.liquid path="assets/img/blog/graphics/08-halfedge.svg" caption="The half-edge structure of the fan built by `build_halfedge`. Each arrow is one half-edge, drawn slightly inside the face to its left; boundary half-edges (orange) sit outside and are chained by `next` into the boundary loop. Purple: the outgoing half-edges of vertex 0 visited by `one_ring` (one of them is a boundary half-edge, which is how the rotation passes the missing wedge). The labels show one half-edge $h$ (from 0 to 1), its `next` (black) and its `twin` (on the boundary)." %}
 
 Production libraries (OpenMesh, CGAL's `Surface_mesh`, geometry-central, Blender's BMesh) store the same idea with integer handles in arrays, plus a per-vertex "one outgoing half-edge" and per-face "one half-edge". Edge collapse, edge flip and edge split, the three local operations of remeshing, become a few pointer updates.
 
@@ -229,7 +229,7 @@ $$
 K(v) = \frac{\cos v}{r\,(R + r\cos v)}, \qquad H(v) = \frac{R + 2r\cos v}{2r\,(R + r\cos v)}.
 $$
 
-The outer half ($\cos v > 0$) is sphere-like with $K > 0$; the inner half is saddle-like with $K < 0$; and Gauss–Bonnet says the two must cancel exactly, since $\chi = 0$.
+The outer half ($\cos v > 0$) is sphere-like with $K > 0$; the inner half is saddle-like with $K < 0$; and Gauss–Bonnet says the two must cancel exactly, since $\chi = 0$. On the $48\times24$ torus below, the sum of all angle defects is $-3\times10^{-13}$ (rounding), and the largest pointwise errors against the formulas are $0.03$ for $K$ (which ranges from $-4.2$ to $1.8$) and $0.006$ for $H$ (with the exact normals).
 
 {% include blog_figure.liquid path="assets/img/blog/graphics/08-curvature.svg" caption="Discrete curvature on a $48\times24$ torus ($R=1$, $r=0.4$), computed with the code above. Left: Gaussian curvature from the angle defect, red where $K>0$ (outside) and blue where $K<0$ (inside the hole). Middle: mean curvature from the cotan Laplacian. Right: the values along one ring of the tube against the exact formulas; the markers should sit close to the curves. The title prints the sum of all angle defects, zero up to rounding, as Gauss–Bonnet requires for $\chi=0$." %}
 
@@ -295,17 +295,20 @@ for _ in range(1000):
 Z = np.linalg.solve(I - 25.0 * L, X0)                       # one implicit step
 for name, S in [("laplacian", X), ("taubin", Y), ("implicit", Z)]:
     print(f"{name:9s} area ratio = {area(S) / area(X0):.3f}")
+# laplacian area ratio = 0.593
+# taubin    area ratio = 1.029
+# implicit  area ratio = 0.949
 ```
 
 The curve case is a 1D mesh, so you can see the filters act on a shape. The same code works on a triangle mesh by replacing `L` with the mesh Laplacian.
 
-{% include blog_figure.liquid path="assets/img/blog/graphics/08-smoothing.svg" caption="Smoothing the noisy five-lobed curve of the script. Explicit Laplacian smoothing ($\lambda=0.5$) removes the noise within 10 iterations, then erases the lobes and keeps shrinking the whole curve. Taubin smoothing removes the noise but keeps the lobes and the size. Implicit fairing with $h=25$ smooths heavily in a single step. Right: enclosed area relative to the start; the Laplacian curve keeps falling, the Taubin curve stays near 1." %}
+{% include blog_figure.liquid path="assets/img/blog/graphics/08-smoothing.svg" caption="Smoothing the noisy five-lobed curve of the script. Explicit Laplacian smoothing ($\lambda=0.5$) removes the noise within 10 iterations, then erases the lobes and keeps shrinking the whole curve. Taubin smoothing removes the noise but keeps the lobes and the size. Implicit fairing with $h=25$ smooths heavily in a single step. Right: enclosed area relative to the start; the Laplacian curve keeps falling (0.59 after 1,000 iterations), while the Taubin curve stays near 1 and ends 3% above it, the slight low-frequency gain predicted by its transfer function." %}
 
 ## 5. Subdivision surfaces
 
 Subdivision goes the other way: from a coarse **control mesh** to a smooth surface, by repeatedly splitting faces and moving vertices with fixed local averaging rules. In the limit the mesh converges to a smooth **limit surface**. Artists model a light cage; the renderer subdivides it.
 
-The 1D case explains everything, and the widget below lets you play with it. **Chaikin's** corner cutting replaces each edge $\mathbf{p}_i\mathbf{p}_{i+1}$ with the two points $\frac34\mathbf{p}_i + \frac14\mathbf{p}_{i+1}$ and $\frac14\mathbf{p}_i + \frac34\mathbf{p}_{i+1}$; its limit is the uniform quadratic B-spline. The **cubic B-spline** scheme inserts edge midpoints and moves old points to $\frac18(\mathbf{p}_{i-1} + 6\mathbf{p}_i + \mathbf{p}_{i+1})$. Both are **approximating**: the curve does not pass through the control points. The **4-point** scheme of Dyn, Levin and Gregory keeps the old points and inserts $\frac{9}{16}(\mathbf{p}_i + \mathbf{p}_{i+1}) - \frac1{16}(\mathbf{p}_{i-1} + \mathbf{p}_{i+2})$; it is **interpolating** and its limit is $C^1$.
+The 1D case explains everything, and the widget below lets you play with it. **Chaikin's** corner cutting replaces each edge $\mathbf{p}\_i\mathbf{p}\_{i+1}$ with the two points $\frac34\mathbf{p}\_i + \frac14\mathbf{p}\_{i+1}$ and $\frac14\mathbf{p}\_i + \frac34\mathbf{p}\_{i+1}$; its limit is the uniform quadratic B-spline. The **cubic B-spline** scheme inserts edge midpoints and moves old points to $\frac18(\mathbf{p}\_{i-1} + 6\mathbf{p}\_i + \mathbf{p}\_{i+1})$. Both are **approximating**: the curve does not pass through the control points. The **4-point** scheme of Dyn, Levin and Gregory keeps the old points and inserts $\frac{9}{16}(\mathbf{p}\_i + \mathbf{p}\_{i+1}) - \frac1{16}(\mathbf{p}\_{i-1} + \mathbf{p}\_{i+2})$; it is **interpolating** and its limit is $C^1$.
 
 {% include widget.liquid name="graphics-subdivision" height="460" caption="Drag the control points (black) of the closed polygon with the mouse or a finger, pick a scheme and move the level slider. Chaikin and cubic B-spline cut the corners and approach a smooth curve that does not pass through the control points; the 4-point scheme passes through them and can overshoot. The readout shows the number of points at the current level." %}
 
@@ -356,7 +359,7 @@ for level in range(3):
     print(level + 1, len(V), "vertices", len(F), "faces")   # 18/32, 66/128, 258/512
 ```
 
-{% include blog_figure.liquid path="assets/img/blog/graphics/08-loop-subdivision.svg" caption="Loop subdivision of an octahedron whose top vertex is pulled up, computed with `loop_subdivide`. Each level multiplies the face count by 4. The surface shrinks inside the control cage (dashed: its equator), because Loop is approximating, and quickly becomes smooth; the six original vertices have valence 4 and stay extraordinary at every level." %}
+{% include blog_figure.liquid path="assets/img/blog/graphics/08-loop-subdivision.svg" caption="Loop subdivision of an octahedron whose top vertex is pulled up, computed with `loop_subdivide`. Each level multiplies the face count by 4. The surface shrinks inside the control cage (dashed: the level-0 octahedron), because Loop is approximating, and quickly becomes smooth; the six original vertices have valence 4 and stay extraordinary at every level." %}
 
 ### Catmull–Clark (quads)
 
@@ -378,7 +381,7 @@ $$
 (\mathbf{p}^\top\tilde{\mathbf{x}})^2 = \tilde{\mathbf{x}}^\top(\mathbf{p}\mathbf{p}^\top)\tilde{\mathbf{x}} = \tilde{\mathbf{x}}^\top\mathbf{K}_p\,\tilde{\mathbf{x}}.
 $$
 
-The trick is that a *sum* of squared distances to many planes is still a single quadratic form: $\mathbf{Q}_v = \sum_{p \ni v}\mathbf{K}_p$, a symmetric $4\times4$ matrix (10 numbers). When $\mathbf{u}$ and $\mathbf{w}$ merge, the new quadric is simply $\mathbf{Q}_u + \mathbf{Q}_w$, and the best position minimizes $\tilde{\mathbf{x}}^\top(\mathbf{Q}_u+\mathbf{Q}_w)\tilde{\mathbf{x}}$. Setting the gradient with respect to $\mathbf{x}$ to zero gives a $3\times3$ linear system. Written as Garland and Heckbert do: replace the last row of $\mathbf{Q}$ by $(0,0,0,1)$ and solve
+The trick is that a *sum* of squared distances to many planes is still a single quadratic form: $\mathbf{Q}\_v = \sum_{p \ni v}\mathbf{K}\_p$, a symmetric $4\times4$ matrix (10 numbers). When $\mathbf{u}$ and $\mathbf{w}$ merge, the new quadric is simply $\mathbf{Q}\_u + \mathbf{Q}\_w$, and the best position minimizes $\tilde{\mathbf{x}}^\top(\mathbf{Q}\_u+\mathbf{Q}\_w)\tilde{\mathbf{x}}$. Setting the gradient with respect to $\mathbf{x}$ to zero gives a $3\times3$ linear system. Written as Garland and Heckbert do: replace the last row of $\mathbf{Q}$ by $(0,0,0,1)$ and solve
 
 $$
 \begin{pmatrix} q_{11} & q_{12} & q_{13} & q_{14}\\ q_{12} & q_{22} & q_{23} & q_{24}\\ q_{13} & q_{23} & q_{33} & q_{34}\\ 0&0&0&1 \end{pmatrix}\tilde{\mathbf{x}} = \begin{pmatrix}0\\0\\0\\1\end{pmatrix}.
@@ -479,7 +482,7 @@ $$
 \mathbf{u}_i = \sum_{j \in N(i)} \lambda_{ij}\,\mathbf{u}_j, \qquad \lambda_{ij} > 0, \quad \sum_j\lambda_{ij} = 1 .
 $$
 
-Then the result is a valid embedding: no triangle is flipped and none overlap. Computationally it is one sparse linear solve, $\mathbf{L}_{II}\mathbf{U}_I = -\mathbf{L}_{IB}\mathbf{U}_B$ (interior rows of the Laplacian, boundary positions moved to the right side). With uniform weights it is the "barycentric" or Tutte embedding; with cotan weights it is a discrete **harmonic map**, which preserves the mesh shape better but can flip triangles where weights become negative. Floater's **mean-value coordinates** give weights that are always positive and still shape-aware.
+Then the result is a valid embedding: no triangle is flipped and none overlap. Computationally it is one sparse linear solve, $\mathbf{L}\_{II}\mathbf{U}\_I = -\mathbf{L}\_{IB}\mathbf{U}\_B$ (interior rows of the Laplacian, boundary positions moved to the right side). With uniform weights it is the "barycentric" or Tutte embedding; with cotan weights it is a discrete **harmonic map**, which preserves the mesh shape better but can flip triangles where weights become negative. Floater's **mean-value coordinates** give weights that are always positive and still shape-aware.
 
 ```python
 import numpy as np
@@ -557,7 +560,7 @@ def marching_squares(f, xs, ys):
 
 circle = lambda p: np.hypot(p[..., 0], p[..., 1]) - 0.6
 segs = marching_squares(circle, np.linspace(-1, 1, 12), np.linspace(-1, 1, 12))
-print(len(segs), "segments")
+print(len(segs), "segments")                                  # 24
 ```
 
 {% include blog_figure.liquid path="assets/img/blog/graphics/08-marching-squares.svg" caption="Left: a 2D SDF (smooth union of a circle and a box) with its level sets; the thick line is $f=0$. Middle: marching squares on $11\times11$ cells; filled blue dots are inside ($f<0$), open red dots outside, purple segments are the output and the dashed gray curve the true zero set. Right: on $35\times35$ cells the output is visually exact. Linear interpolation, not the grid, sets the accuracy along the curve; the grid sets which details can be resolved at all." %}
@@ -633,7 +636,7 @@ chi = np.real(np.fft.ifft2(chi_hat))
 # 4. iso-value = mean of chi at the samples; extract with marching squares
 idx = np.clip(np.round((P + 1) / h).astype(int), 0, M - 1)
 iso = chi[idx[:, 0], idx[:, 1]].mean()
-print("iso-value", round(float(iso), 4))
+print("iso-value", round(float(iso), 4))                     # 0.0485
 ```
 
 The centroid trick for orientation only works for star-shaped shapes like this one; it stands in for the spanning-tree propagation described above.

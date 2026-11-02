@@ -112,7 +112,7 @@ print("boundary loop:", loop)                               # [1, 0, 6, 5, 4, 3,
 
 这个扇形有 7 个顶点、11 条边、5 个面（$\chi = 1$：圆盘）。15 条内部半边加上 7 条边界半边共 22 条。下图用同一份代码画出了这些记录。
 
-{% include blog_figure.liquid path="assets/img/blog/graphics/08-halfedge.svg" caption="`build_halfedge` 构建的扇形半边结构。每个箭头是一条半边，画在它左侧的面内略偏一点；边界半边（橙色）位于外侧，由 `next` 串成边界环。紫色：`one_ring` 访问到的顶点 0 的出半边（其中一条是边界半边，旋转正是借此越过缺失的楔形）。标签标出了一条半边 $h$、它的 `next` 和 `twin`。" %}
+{% include blog_figure.liquid path="assets/img/blog/graphics/08-halfedge.svg" caption="`build_halfedge` 构建的扇形半边结构。每个箭头是一条半边，画在它左侧的面内略偏一点；边界半边（橙色）位于外侧，由 `next` 串成边界环。紫色：`one_ring` 访问到的顶点 0 的出半边（其中一条是边界半边，旋转正是借此越过缺失的楔形）。标签标出了一条半边 $h$（从 0 到 1）、它的 `next`（黑色）和 `twin`（在边界上）。" %}
 
 生产级库（OpenMesh、CGAL 的 `Surface_mesh`、geometry-central、Blender 的 BMesh）用数组中的整数句柄存储同样的思想，并为每个顶点存"一条出半边"、为每个面存"一条半边"。重网格化的三种局部操作——边坍缩（edge collapse）、边翻转（edge flip）和边分裂（edge split）——都只需更新几个指针。
 
@@ -229,7 +229,7 @@ $$
 K(v) = \frac{\cos v}{r\,(R + r\cos v)}, \qquad H(v) = \frac{R + 2r\cos v}{2r\,(R + r\cos v)}.
 $$
 
-外半部分（$\cos v > 0$）像球面，$K > 0$；内半部分像鞍面，$K < 0$；而高斯–博内定理说两者必须恰好抵消，因为 $\chi = 0$。
+外半部分（$\cos v > 0$）像球面，$K > 0$；内半部分像鞍面，$K < 0$；而高斯–博内定理说两者必须恰好抵消，因为 $\chi = 0$。在下面的 $48\times24$ 环面上，所有角亏之和为 $-3\times10^{-13}$（舍入误差），与公式相比的最大逐点误差：$K$ 为 $0.03$（$K$ 的取值范围是 $-4.2$ 到 $1.8$），$H$ 为 $0.006$（使用精确法向）。
 
 {% include blog_figure.liquid path="assets/img/blog/graphics/08-curvature.svg" caption="$48\times24$ 环面（$R=1$，$r=0.4$）上的离散曲率，用上面的代码计算。左：由角亏得到的高斯曲率，红色为 $K>0$（外侧），蓝色为 $K<0$（洞的内侧）。中：由余切拉普拉斯得到的平均曲率。右：沿管的一圈的数值与精确公式的比较；标记点应当紧贴曲线。标题打印出所有角亏之和，在舍入误差内为零，正如 $\chi=0$ 时高斯–博内定理所要求的。" %}
 
@@ -295,17 +295,20 @@ for _ in range(1000):
 Z = np.linalg.solve(I - 25.0 * L, X0)                       # one implicit step
 for name, S in [("laplacian", X), ("taubin", Y), ("implicit", Z)]:
     print(f"{name:9s} area ratio = {area(S) / area(X0):.3f}")
+# laplacian area ratio = 0.593
+# taubin    area ratio = 1.029
+# implicit  area ratio = 0.949
 ```
 
 曲线是一维网格，所以能直观看到滤波器作用在形状上。把 `L` 换成网格拉普拉斯，同样的代码就能用于三角网格。
 
-{% include blog_figure.liquid path="assets/img/blog/graphics/08-smoothing.svg" caption="平滑脚本中带噪声的五瓣曲线。显式拉普拉斯平滑（$\lambda=0.5$）在 10 次迭代内去掉噪声，然后抹平花瓣并让整条曲线不断收缩。Taubin 平滑去掉噪声，但保留了花瓣和尺寸。$h=25$ 的隐式光顺一步就做了强烈平滑。右：相对初始值的围合面积；拉普拉斯的曲线持续下降，Taubin 的曲线保持在 1 附近。" %}
+{% include blog_figure.liquid path="assets/img/blog/graphics/08-smoothing.svg" caption="平滑脚本中带噪声的五瓣曲线。显式拉普拉斯平滑（$\lambda=0.5$）在 10 次迭代内去掉噪声，然后抹平花瓣并让整条曲线不断收缩。Taubin 平滑去掉噪声，但保留了花瓣和尺寸。$h=25$ 的隐式光顺一步就做了强烈平滑。右：相对初始值的围合面积；拉普拉斯的曲线持续下降（1000 次迭代后为 0.59），Taubin 的曲线保持在 1 附近，最终高出 3%，这正是其传递函数预言的轻微低频增益。" %}
 
 ## 5. 细分曲面
 
 细分（subdivision）走的是相反方向：从粗糙的**控制网格**出发，按照固定的局部平均规则反复分裂面、移动顶点，得到光滑曲面。在极限下网格收敛到光滑的**极限曲面（limit surface）**。美术建一个轻量的笼子，渲染器负责细分。
 
-一维情形就能解释一切，下面的小部件可以让你动手试。**Chaikin** 割角法把每条边 $\mathbf{p}_i\mathbf{p}_{i+1}$ 替换为两个点 $\frac34\mathbf{p}_i + \frac14\mathbf{p}_{i+1}$ 和 $\frac14\mathbf{p}_i + \frac34\mathbf{p}_{i+1}$；它的极限是均匀二次 B 样条。**三次 B 样条**格式插入边中点，并把旧点移到 $\frac18(\mathbf{p}_{i-1} + 6\mathbf{p}_i + \mathbf{p}_{i+1})$。两者都是**逼近型（approximating）**：曲线不经过控制点。Dyn、Levin 和 Gregory 的 **4 点格式**保留旧点，并插入 $\frac{9}{16}(\mathbf{p}_i + \mathbf{p}_{i+1}) - \frac1{16}(\mathbf{p}_{i-1} + \mathbf{p}_{i+2})$；它是**插值型（interpolating）**，极限为 $C^1$。
+一维情形就能解释一切，下面的小部件可以让你动手试。**Chaikin** 割角法把每条边 $\mathbf{p}\_i\mathbf{p}\_{i+1}$ 替换为两个点 $\frac34\mathbf{p}\_i + \frac14\mathbf{p}\_{i+1}$ 和 $\frac14\mathbf{p}\_i + \frac34\mathbf{p}\_{i+1}$；它的极限是均匀二次 B 样条。**三次 B 样条**格式插入边中点，并把旧点移到 $\frac18(\mathbf{p}\_{i-1} + 6\mathbf{p}\_i + \mathbf{p}\_{i+1})$。两者都是**逼近型（approximating）**：曲线不经过控制点。Dyn、Levin 和 Gregory 的 **4 点格式**保留旧点，并插入 $\frac{9}{16}(\mathbf{p}\_i + \mathbf{p}\_{i+1}) - \frac1{16}(\mathbf{p}\_{i-1} + \mathbf{p}\_{i+2})$；它是**插值型（interpolating）**，极限为 $C^1$。
 
 {% include widget.liquid name="graphics-subdivision" height="460" caption="用鼠标或手指拖动闭合多边形的控制点（黑色），选择一种格式并移动层级滑块。Chaikin 和三次 B 样条割去角点，逼近一条不经过控制点的光滑曲线；4 点格式经过控制点，并可能过冲。读数显示当前层级的点数。" %}
 
@@ -356,7 +359,7 @@ for level in range(3):
     print(level + 1, len(V), "vertices", len(F), "faces")   # 18/32, 66/128, 258/512
 ```
 
-{% include blog_figure.liquid path="assets/img/blog/graphics/08-loop-subdivision.svg" caption="对顶部顶点被拉高的八面体做 Loop 细分，用 `loop_subdivide` 计算。每一层面数乘以 4。由于 Loop 是逼近型，曲面收缩到控制笼（虚线：其赤道）内部，并很快变得光滑；原来的六个顶点度数为 4，在每一层都保持为奇异顶点。" %}
+{% include blog_figure.liquid path="assets/img/blog/graphics/08-loop-subdivision.svg" caption="对顶部顶点被拉高的八面体做 Loop 细分，用 `loop_subdivide` 计算。每一层面数乘以 4。由于 Loop 是逼近型，曲面收缩到控制笼（虚线：第 0 层的八面体）内部，并很快变得光滑；原来的六个顶点度数为 4，在每一层都保持为奇异顶点。" %}
 
 ### Catmull–Clark（四边形）
 
@@ -378,7 +381,7 @@ $$
 (\mathbf{p}^\top\tilde{\mathbf{x}})^2 = \tilde{\mathbf{x}}^\top(\mathbf{p}\mathbf{p}^\top)\tilde{\mathbf{x}} = \tilde{\mathbf{x}}^\top\mathbf{K}_p\,\tilde{\mathbf{x}}.
 $$
 
-诀窍在于：到许多平面的平方距离之*和*仍然是单个二次型：$\mathbf{Q}_v = \sum_{p \ni v}\mathbf{K}_p$，一个对称 $4\times4$ 矩阵（10 个数）。当 $\mathbf{u}$ 和 $\mathbf{w}$ 合并时，新的二次型就是 $\mathbf{Q}_u + \mathbf{Q}_w$，最佳位置最小化 $\tilde{\mathbf{x}}^\top(\mathbf{Q}_u+\mathbf{Q}_w)\tilde{\mathbf{x}}$。令关于 $\mathbf{x}$ 的梯度为零，得到一个 $3\times3$ 线性方程组。按 Garland 和 Heckbert 的写法：把 $\mathbf{Q}$ 的最后一行换成 $(0,0,0,1)$ 并求解
+诀窍在于：到许多平面的平方距离之*和*仍然是单个二次型：$\mathbf{Q}\_v = \sum_{p \ni v}\mathbf{K}\_p$，一个对称 $4\times4$ 矩阵（10 个数）。当 $\mathbf{u}$ 和 $\mathbf{w}$ 合并时，新的二次型就是 $\mathbf{Q}\_u + \mathbf{Q}\_w$，最佳位置最小化 $\tilde{\mathbf{x}}^\top(\mathbf{Q}\_u+\mathbf{Q}\_w)\tilde{\mathbf{x}}$。令关于 $\mathbf{x}$ 的梯度为零，得到一个 $3\times3$ 线性方程组。按 Garland 和 Heckbert 的写法：把 $\mathbf{Q}$ 的最后一行换成 $(0,0,0,1)$ 并求解
 
 $$
 \begin{pmatrix} q_{11} & q_{12} & q_{13} & q_{14}\\ q_{12} & q_{22} & q_{23} & q_{24}\\ q_{13} & q_{23} & q_{33} & q_{34}\\ 0&0&0&1 \end{pmatrix}\tilde{\mathbf{x}} = \begin{pmatrix}0\\0\\0\\1\end{pmatrix}.
@@ -479,7 +482,7 @@ $$
 \mathbf{u}_i = \sum_{j \in N(i)} \lambda_{ij}\,\mathbf{u}_j, \qquad \lambda_{ij} > 0, \quad \sum_j\lambda_{ij} = 1 .
 $$
 
-那么结果是一个合法嵌入：没有三角形翻转，也没有重叠。计算上只是一次稀疏线性求解 $\mathbf{L}_{II}\mathbf{U}_I = -\mathbf{L}_{IB}\mathbf{U}_B$（拉普拉斯的内部行，边界位置移到右边）。用均匀权重时它就是"重心"嵌入或 Tutte 嵌入；用余切权重时它是离散**调和映射（harmonic map）**，能更好地保持网格形状，但在权重为负的地方可能翻转三角形。Floater 的**均值坐标（mean-value coordinates）** 给出始终为正、同时感知形状的权重。
+那么结果是一个合法嵌入：没有三角形翻转，也没有重叠。计算上只是一次稀疏线性求解 $\mathbf{L}\_{II}\mathbf{U}\_I = -\mathbf{L}\_{IB}\mathbf{U}\_B$（拉普拉斯的内部行，边界位置移到右边）。用均匀权重时它就是"重心"嵌入或 Tutte 嵌入；用余切权重时它是离散**调和映射（harmonic map）**，能更好地保持网格形状，但在权重为负的地方可能翻转三角形。Floater 的**均值坐标（mean-value coordinates）** 给出始终为正、同时感知形状的权重。
 
 ```python
 import numpy as np
@@ -557,7 +560,7 @@ def marching_squares(f, xs, ys):
 
 circle = lambda p: np.hypot(p[..., 0], p[..., 1]) - 0.6
 segs = marching_squares(circle, np.linspace(-1, 1, 12), np.linspace(-1, 1, 12))
-print(len(segs), "segments")
+print(len(segs), "segments")                                  # 24
 ```
 
 {% include blog_figure.liquid path="assets/img/blog/graphics/08-marching-squares.svg" caption="左：一个二维 SDF（圆与方框的平滑并）及其等值线；粗线为 $f=0$。中：在 $11\times11$ 个单元上做 Marching Squares；蓝色实心点在内部（$f<0$），红色空心点在外部，紫色线段是输出，灰色虚线是真实零集。右：在 $35\times35$ 个单元上，输出在视觉上已经精确。沿曲线方向的精度由线性插值而不是网格决定；网格决定的是哪些细节根本能被分辨出来。" %}
@@ -633,7 +636,7 @@ chi = np.real(np.fft.ifft2(chi_hat))
 # 4. iso-value = mean of chi at the samples; extract with marching squares
 idx = np.clip(np.round((P + 1) / h).astype(int), 0, M - 1)
 iso = chi[idx[:, 0], idx[:, 1]].mean()
-print("iso-value", round(float(iso), 4))
+print("iso-value", round(float(iso), 4))                     # 0.0485
 ```
 
 用质心定向的技巧只适用于像这样的星形形状；它在这里代替上面描述的生成树传播。
