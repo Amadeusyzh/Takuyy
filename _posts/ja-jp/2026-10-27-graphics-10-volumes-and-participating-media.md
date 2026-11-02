@@ -159,7 +159,7 @@ $$
 
 唯一のパラメータがちょうど平均余弦 $g$ なので、測定値へのフィットが簡単です。$g=0$ で等方になり、前方と後方の散乱の比は $p(1)/p(-1) = \big((1+g)/(1-g)\big)^3$ です。
 
-**数値例**（$g = 0.6$）：$p(0) = \frac{1}{4\pi}\cdot\frac{0.64}{0.16^{3/2}} = 0.0796 \cdot 0.64 / 0.064 = 0.796$、$p(\pi) = 0.0796 \cdot 0.64/2.56^{3/2} = 0.0124$ です。比は $64 = (1.6/0.4)^3$ です。等方散乱の $1/(4\pi) = 0.0796$ と比べてみてください。
+**数値例**（$g = 0.6$）：$p(0) = \frac{1}{4\pi}\cdot\frac{0.64}{0.16^{3/2}}$ $= 0.0796 \cdot 0.64 / 0.064 = 0.796$、$p(\pi) = 0.0796 \cdot 0.64/2.56^{3/2} = 0.0124$ です。比は $64 = (1.6/0.4)^3$ です。等方散乱の $1/(4\pi) = 0.0796$ と比べてみてください。
 
 {% include blog_figure.liquid path="assets/img/blog/graphics/10-hg-lobes.svg" caption="Henyey-Greenstein のローブ。(a) g = −0.3 から 0.85 までの 4π·p(θ) を対数の半径で描いたもの。光は左から右へ進みます（黄色の矢印）。等方的な g = 0 の曲線は半径 1 の円です。正の g はローブを前方へ、負の g は後方へ伸ばします。(b) 下の逆 CDF で g = 0.7 に対してサンプリングした 500 方向を単位球面上に描いたもの。進行方向の周りに集まり、平均余弦は 0.7 に近くなります。" %}
 
@@ -212,7 +212,7 @@ print(2 * np.pi * np.sum(hg(m, g)) * (2 / 200000))  # ~1.0: normalized
 - **Mie 散乱**（$r \sim \lambda$：もや、霧、雲の水滴）には厳密だが複雑な解があります。非常に強い前方ピーク、広い側方領域、そして光輪（glory）や霧虹（fogbow）のような特徴を持ちます。レンダラーはこれを近似します。
 - 手軽な近似は **HG の混合** $w\,p_{HG}(\mu; g_1) + (1-w)\,p_{HG}(\mu; g_2)$ で、強い前方ローブと弱い後方ローブを組み合わせます。混合も正規化されており、確率 $w$ でローブを選べばサンプリングできます。
 - **Draine** 位相関数（Draine 2003）は HG にパラメータ $\alpha$ を 1 つ加えます。
-  $p_D(\mu; g, \alpha) = p_{HG}(\mu; g)\,\dfrac{1+\alpha\mu^2}{1+\alpha(1+2g^2)/3}$。
+  $p_D(\mu; g, \alpha) = p_{HG}(\mu; g)\,\frac{1+\alpha\mu^2}{1+\alpha(1+2g^2)/3}$。
   $\alpha = 0$ なら HG、$\alpha = 1$ なら Cornette-Shanks 関数です。Jendersie と d'Eon（2023）は、HG ローブと Draine ローブの混合を水滴の直径の関数として Lorenz-Mie 理論にフィットさせ、安価でサンプリング可能な霧・雲用の位相関数を得ました。フィットの式は論文と補足資料にあります。
 
 {% include blog_figure.liquid path="assets/img/blog/graphics/10-phase-functions.svg" caption="(a) 同じ対数半径の極座標プロットに描いた 4 つの位相関数（光は左から右）：Rayleigh（ピーナッツ形で対称）、g = 0.76 の HG、少し後方散乱を含む 2 ローブの HG 混合、そして HG に 1 + μ² の形を加えた α = 1 の Draine。(b) 3 つの g について、逆 CDF で引いた 200,000 個の cos θ のヒストグラムを正確な密度 2π p(cos θ) と重ねたもの（対数軸）。棒と曲線は一致し、サンプル平均は g と一致します。" %}
@@ -228,8 +228,8 @@ print(2 * np.pi * np.sum(hg(m, g)) * (2 / 200000))  # ~1.0: normalized
 ボリュームレンダリング方程式を評価する最も直接的な方法は、レイに沿ったリーマン和で、**レイマーチング**（ray marching）と呼ばれます。$[0, d]$ を長さ $\Delta t$ の $N$ 区間に分け、各区間でサンプル点 $\mathbf{x}_i$ を 1 つとります。累積の透過率 $T$ と累積の放射輝度 $L$ を保持します。
 
 1. $\sigma_t(\mathbf{x}_i)$ と $\sigma_s(\mathbf{x}_i)$ を参照します。
-2. **シャドウレイ**：$\mathbf{x}_i$ から光源へ向かってマーチングし、光源の透過率 $T_\ell(\mathbf{x}_i) = e^{-\tau_\ell}$ を求めます。
-3. 単一散乱のソース項：$S_i = p(\cos\theta)\,T_\ell(\mathbf{x}_i)\,L_{\text{light}}$。$\theta$ は光の進行方向 $-\boldsymbol{\omega}_\ell$ とカメラへ向かう方向 $-\boldsymbol{\omega}$ のなす角で、$\cos\theta = \boldsymbol{\omega}_\ell\cdot\boldsymbol{\omega}$ です。
+2. **シャドウレイ**：$$\mathbf{x}_i$$ から光源へ向かってマーチングし、光源の透過率 $$T_\ell(\mathbf{x}_i) = e^{-\tau_\ell}$$ を求めます。
+3. 単一散乱のソース項：$$S_i = p(\cos\theta)\,T_\ell(\mathbf{x}_i)\,L_{\text{light}}$$。$\theta$ は光の進行方向 $$-\boldsymbol{\omega}_\ell$$ とカメラへ向かう方向 $-\boldsymbol{\omega}$ のなす角で、$$\cos\theta = \boldsymbol{\omega}_\ell\cdot\boldsymbol{\omega}$$ です。
 4. 加算して減衰させます。
 
 $$
@@ -283,17 +283,17 @@ def march(n_steps=64, n_shadow=16, jitter=True, res=96, albedo=0.9, g=0.5, seed=
     return L, T
 
 L, T = march()
-img = 1 - np.exp(-(20.0 * L + 0.6 * T))      # exposure; background radiance 0.6
-print(img.shape, round(float(T.min()), 4))
+img = 1 - np.exp(-(120.0 * L + 0.1 * T))     # exposure; dark background radiance 0.1
+print(img.shape, round(float(T.min()), 4))    # (96, 96) 0.0011
 import matplotlib.pyplot as plt
 plt.imsave("sphere_volume.png", img, cmap="gray", vmin=0, vmax=1)
 ```
 
 ### 5.3 バンディング、ジッター、コスト
 
-区間内のサンプル位置を固定すると（`jitter=False`）、すべてのピクセルが同じ深さで密度をサンプリングします。すると滑らかな密度勾配が**バンディング**（banding）、つまり目に見える等高線になります（下の図の (a)）。開始オフセットをピクセルごとに（リアルタイムではフレームごとにも）**ジッター**（jittering）すると、この構造的な誤差がノイズに変わります。人の目はノイズのほうを許容しやすく、時間方向の蓄積やデノイザー（[第 06 回]({{ '/blog/2026/graphics-06-real-time-ray-tracing/' | relative_url }})を参照）で平均化して消せます。ブルーノイズのオフセットならさらに良くなります。コストはピクセルあたり $N_{\text{steps}} \times N_{\text{shadow}}$ 回の密度参照です。実用的なレンダラーは 3 つの方法でこれを減らします。$T < 10^{-3}$ での**早期終了**（early termination）、粗い占有グリッドによる**空領域スキップ**（empty-space skipping、8 節）、そして適応的なステップ幅です。
+区間内のサンプル位置を固定すると（`jitter=False`）、すべてのピクセルが同じ深さで密度をサンプリングします。すると滑らかな密度勾配が**バンディング**（banding）、つまり毎フレーム同じ場所にとどまる等高線になります。下の図のようにとても柔らかい雲では淡いですが（(a)）、輪郭のはっきりした媒質やステップ数が少ない場合にははっきりした縞になります。開始オフセットをピクセルごとに（リアルタイムではフレームごとにも）**ジッター**（jittering）すると、この構造的な誤差がノイズに変わります。人の目はノイズのほうを許容しやすく、時間方向の蓄積やデノイザー（[第 06 回]({{ '/blog/2026/graphics-06-real-time-ray-tracing/' | relative_url }})を参照）で平均化して消せます。ブルーノイズのオフセットならさらに良くなります。コストはピクセルあたり $N_{\text{steps}} \times N_{\text{shadow}}$ 回の密度参照です。実用的なレンダラーは 3 つの方法でこれを減らします。$T < 10^{-3}$ での**早期終了**（early termination）、粗い占有グリッドによる**空領域スキップ**（empty-space skipping、8 節）、そして適応的なステップ幅です。
 
-{% include blog_figure.liquid path="assets/img/blog/graphics/10-cloud-render.svg" caption="図のスクリプトのレイマーチャーでレンダリングした手続き的な雲（球の和集合をバリューノイズの fBm で侵食し、96×56×72 のグリッドに格納したもの）。太陽は雲の右上の奥にあります。(a) 位置を固定した 16 ステップではバンディングが出ます。(b) 同じ 16 ステップでもピクセルごとにジッターをかけると、縞がノイズに変わります。(c) 96 ステップ、単一散乱のみ：太陽と反対側はほぼ真っ黒です。そこへ光が届くには何度も跳ね返る必要があるからです。(d) 同じレンダリングに 7 節の多重散乱オクターブ近似を加えたもの：影の部分が柔らかな光で満たされ、本物の雲にずっと近づきます。" %}
+{% include blog_figure.liquid path="assets/img/blog/graphics/10-cloud-render.svg" caption="図のスクリプトのレイマーチャーでレンダリングした手続き的な雲（球の和集合をバリューノイズの fBm で侵食し、96×56×72 のグリッドに格納したもの）。太陽は雲の右上の奥にあります。(a) 位置を固定した 8 ステップ：画像は滑らかに見えますが、誤差は構造化されており（暗い下側の縁に淡い階段状の等高線）、毎フレーム同じなので平均しても消えません。(b) 同じ 8 ステップでもピクセルごとにジッターをかけると、構造化された誤差がピクセルごとのノイズになり、時間方向の蓄積で取り除けます。(c) 96 ステップ、単一散乱のみ：太陽と反対側はほぼ真っ黒です。そこへ光が届くには何度も跳ね返る必要があるからです。(d) 同じレンダリングに 7 節の多重散乱オクターブ近似を加えたもの：影の部分が柔らかな光で満たされ、本物の雲にずっと近づきます。" %}
 
 ## 6. 不偏な距離サンプリング：delta / ratio / residual tracking
 
@@ -406,7 +406,7 @@ Delta tracking と ratio tracking は、より大きな手法群の 2 つのメ�
 
 1. 現在の頂点から方向に沿って delta tracking を行い、最初の本物の衝突を見つけます（あるいは表面に到達するか、外へ抜けます）。
 2. 媒質内で本物の衝突が起きたら、確率 $\sigma_a/\sigma_t$ でパスは吸収されます（放射があれば加算します）。そうでなければ散乱します。同等のやり方として、スループットにアルベド $\rho$ を掛けて常に散乱させ、ロシアンルーレットで打ち切ることもできます。
-3. **次イベント推定**：光源上の点をサンプリングし、そこまでの透過率を **ratio tracking** で推定して、$\text{throughput}\times\rho\times p(\cos\theta)\times T_\ell\times L_{\text{light}}/\text{pdf}_{\text{light}}$ を加えます。
+3. **次イベント推定**：光源上の点をサンプリングし、そこまでの透過率を **ratio tracking** で推定して、$\text{throughput}\times\rho\times p(\cos\theta)$ $\times\, T_\ell\times L_{\text{light}}/\text{pdf}_{\text{light}}$ を加えます。
 4. 位相関数から新しい方向をサンプリングし（HG のサンプリングなら重みは 1）、続けます。
 
 下のコードはこれを核心だけに絞ったものです。光子が不均質なスラブに上から入り、delta tracking で本物の衝突を見つけ、HG サンプリングで新しい方向を選びます。出力は反射・透過・吸収の割合で、マテリアルの見た目のモデルが必要とする量です。
@@ -451,7 +451,7 @@ def trace(max_bounces=1000):
     return "A"
 
 fates = [trace() for _ in range(5000)]
-print({k: fates.count(k) / len(fates) for k in "RTA"})
+print({k: fates.count(k) / len(fates) for k in "RTA"})   # {'R': 0.2436, 'T': 0.4724, 'A': 0.284}
 ```
 
 下の図のランダムウォークは、パスそのものを見せています。アルベドの高い媒質では光子が何十回も散乱します。そのため光は横に広がり、太陽が直接照らさない場所にも届きます。雲の図の (c) が暗すぎる物理的な理由はこれです。
@@ -589,7 +589,7 @@ print(alpha.round(4), T.round(4), w.round(4), w.sum().round(4), (w * c).sum().ro
 # [0.3935 0.7769] [1.     0.6065] [0.3935 0.4712] 0.8647 0.4484
 ```
 
-{% include blog_figure.liquid path="assets/img/blog/graphics/10-quadrature.svg" caption="2 節の媒質でのアルファ合成を数値求積として見たもの。(a) 連続の重み T(t)σt(t)（紫）と 16 区間の離散的な重み T_iα_i/δ_i（棒）。棒は曲線に沿っており、最後の山が手前の山に遮られる効果も再現しています。(b) サンプル数 N を増やしたときの、描画色の厳密な積分に対する誤差。指数形 α = 1 − e^−σδ（エネルギー保存）はほぼ 2 次で収束します。素朴な α = σδ（1 で打ち切り）は N が小さいとずっと悪くなります。濃い区間で不透明度を過大評価するからです。" %}
+{% include blog_figure.liquid path="assets/img/blog/graphics/10-quadrature.svg" caption="2 節の媒質でのアルファ合成を数値求積として見たもの。(a) 連続の重み T(t)σt(t)（紫）と 16 区間の離散的な重み T_iα_i/δ_i（棒）。棒は曲線に沿っており、最後の山が手前の山に遮られる効果も再現しています。(b) サンプル数 N を増やしたときの、描画色の厳密な積分に対する誤差。指数形 α = 1 − e^−σδ（エネルギー保存）はほぼ 2 次で収束します（点線 ∝ N⁻²）。素朴な α = σδ（1 で打ち切り）はどの区間でも不透明度を過大評価するため 1 次（∝ 1/N）でしか収束せず、N = 512 では誤差が数百倍大きくなります。" %}
 
 本章の内容はすべてそのまま引き継がれます。透過率に基づくサンプリングは NeRF の重点的サンプリングに、空領域スキップは[高速な放射輝度場]({{ '/blog/2026/neural-rendering-03-fast-radiance-fields/' | relative_url }})の占有グリッドになります。バンディングとノイズのトレードオフは、NeRF が学習中にサンプル位置をジッターさせる理由です。
 
@@ -655,7 +655,7 @@ print(alpha.round(4), T.round(4), w.round(4), w.sum().round(4), (w * c).sum().ro
 5. 均質媒質での ratio tracking の分散 $e^{-2\sigma d}(e^{\sigma^2 d/\bar\sigma} - 1)$ をポアソン和から導き、$\sigma = 1$、$d = 1$、$\bar\sigma \in \{1, 2, 4, 8\}$ のシミュレーションと照らし合わせてください。
 
    <details markdown="1"><summary>ヒント</summary>
-   $E[\langle T\rangle^2] = \sum_n e^{-\bar\sigma d}\frac{(\bar\sigma d)^n}{n!}(1-\sigma/\bar\sigma)^{2n} = \exp\big(-\bar\sigma d + \bar\sigma d (1-\sigma/\bar\sigma)^2\big)$。2 乗を展開し、$T^2 = e^{-2\sigma d}$ を引きます。
+   $E[\langle T\rangle^2] = \sum_n e^{-\bar\sigma d}\frac{(\bar\sigma d)^n}{n!}(1-\sigma/\bar\sigma)^{2n}$ $= \exp\big(-\bar\sigma d + \bar\sigma d (1-\sigma/\bar\sigma)^2\big)$。2 乗を展開し、$T^2 = e^{-2\sigma d}$ を引きます。
    </details>
 
 次回は[リアルタイムレンダリングの技法]({{ '/blog/2026/graphics-11-real-time-rendering-techniques/' | relative_url }})です。ゲームが遅延シェーディング、ソフトシャドウ、アンビエントオクルージョン、反射、グローバルイルミネーション、トーンマッピングを 16 ms の 1 フレームにどう収めているかを扱います。

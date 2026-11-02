@@ -125,9 +125,14 @@
       function Y2(T) { return top2 + h2 - h2 * T; }
       ctx.fillStyle = "#fff"; ctx.fillRect(0, 0, W, H);
       ctx.font = "12px sans-serif"; ctx.textAlign = "left"; ctx.fillStyle = "#444";
-      ctx.fillText(L.delta + ":  \u25cf " + L.real + "   \u25cb " + L.nul, left, top1 - 8);
+      var head1 = L.delta + ":  \u25cf " + L.real + "   \u25cb " + L.nul;
+      ctx.fillText(head1, left, top1 - 8);
       ctx.fillText(L.ratio, left, top2 - 8);
-      ctx.textAlign = "right"; ctx.fillStyle = "#777"; ctx.fillText(L.tap, right, top1 - 8);
+      /* the tap hint goes next to the first header if it fits, else next to the second, else nowhere */
+      var wTap = ctx.measureText(L.tap).width, avail = right - left - 12;
+      ctx.textAlign = "right"; ctx.fillStyle = "#777";
+      if (ctx.measureText(head1).width + wTap <= avail) ctx.fillText(L.tap, right, top1 - 8);
+      else if (ctx.measureText(L.ratio).width + wTap <= avail) ctx.fillText(L.tap, right, top2 - 8);
       // panel 1: density, majorant, tentative collisions
       ctx.strokeStyle = COL.grid; ctx.lineWidth = 1;
       ctx.strokeRect(left, top1, right - left, h1); ctx.strokeRect(left, top2, right - left, h2);

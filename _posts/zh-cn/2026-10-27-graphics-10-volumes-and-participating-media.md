@@ -159,7 +159,7 @@ $$
 
 它唯一的参数恰好就是平均余弦 $g$，因此很容易拟合测量数据。$g=0$ 时退化为各向同性，前向与后向散射之比为 $p(1)/p(-1) = \big((1+g)/(1-g)\big)^3$。
 
-**数值例子**（$g = 0.6$）：$p(0) = \frac{1}{4\pi}\cdot\frac{0.64}{0.16^{3/2}} = 0.0796 \cdot 0.64 / 0.064 = 0.796$，$p(\pi) = 0.0796 \cdot 0.64/2.56^{3/2} = 0.0124$。两者之比为 $64 = (1.6/0.4)^3$。各向同性时为 $1/(4\pi) = 0.0796$，可作对照。
+**数值例子**（$g = 0.6$）：$p(0) = \frac{1}{4\pi}\cdot\frac{0.64}{0.16^{3/2}}$ $= 0.0796 \cdot 0.64 / 0.064 = 0.796$，$p(\pi) = 0.0796 \cdot 0.64/2.56^{3/2} = 0.0124$。两者之比为 $64 = (1.6/0.4)^3$。各向同性时为 $1/(4\pi) = 0.0796$，可作对照。
 
 {% include blog_figure.liquid path="assets/img/blog/graphics/10-hg-lobes.svg" caption="Henyey-Greenstein 波瓣。(a) 以对数半径绘制 4π·p(θ)，g 从 −0.3 到 0.85。光从左向右传播（黄色箭头）；各向同性的 g = 0 曲线是半径为 1 的圆。正的 g 把波瓣向前拉长，负的 g 向后。(b) 用下面的逆 CDF 为 g = 0.7 采样的 500 个方向，画在单位球面上：它们聚集在传播方向周围，平均余弦接近 0.7。" %}
 
@@ -212,7 +212,7 @@ print(2 * np.pi * np.sum(hg(m, g)) * (2 / 200000))  # ~1.0: normalized
 - **Mie 散射**（$r \sim \lambda$：霾、雾和云滴）有精确但复杂的解：极强的前向峰、宽阔的侧向区域，以及光环（glory）、雾虹（fogbow）等特征。渲染器会对它做近似。
 - 一种廉价的近似是 **HG 混合**：$w\,p_{HG}(\mu; g_1) + (1-w)\,p_{HG}(\mu; g_2)$，即一个强前向波瓣加一个弱后向波瓣。混合仍然是归一化的，采样时以概率 $w$ 选择一个波瓣即可。
 - **Draine** 相函数（Draine 2003）在 HG 上增加了一个参数 $\alpha$：
-  $p_D(\mu; g, \alpha) = p_{HG}(\mu; g)\,\dfrac{1+\alpha\mu^2}{1+\alpha(1+2g^2)/3}$。
+  $p_D(\mu; g, \alpha) = p_{HG}(\mu; g)\,\frac{1+\alpha\mu^2}{1+\alpha(1+2g^2)/3}$。
   $\alpha = 0$ 时即为 HG；$\alpha = 1$ 时即为 Cornette-Shanks 函数。Jendersie 和 d'Eon（2023）把一个 HG 波瓣与一个 Draine 波瓣的混合，按水滴直径拟合到 Lorenz-Mie 理论，得到了一种廉价且可采样的雾/云相函数。拟合公式见其论文和补充材料。
 
 {% include blog_figure.liquid path="assets/img/blog/graphics/10-phase-functions.svg" caption="(a) 同一张对数半径极坐标图上的四种相函数（光从左向右）：Rayleigh（花生形、对称）、g = 0.76 的 HG、带少量后向散射的双瓣 HG 混合，以及 α = 1 的 Draine（在 HG 上叠加 1 + μ² 的形状）。(b) 对三个 g 值，用逆 CDF 采样 200,000 个 cos θ 的直方图与精确密度 2π p(cos θ) 的对比（对数坐标）。柱与曲线吻合，样本均值与 g 一致。" %}
@@ -228,8 +228,8 @@ print(2 * np.pi * np.sum(hg(m, g)) * (2 / 200000))  # ~1.0: normalized
 计算体渲染方程最直接的方法是沿光线做黎曼和，称为**光线步进**（ray marching）。把 $[0, d]$ 分成 $N$ 段、每段长 $\Delta t$，每段取一个采样点 $\mathbf{x}_i$。维护累计透射率 $T$ 和累计辐射亮度 $L$：
 
 1. 查询 $\sigma_t(\mathbf{x}_i)$ 和 $\sigma_s(\mathbf{x}_i)$。
-2. **阴影光线**：从 $\mathbf{x}_i$ 向光源步进，得到光源透射率 $T_\ell(\mathbf{x}_i) = e^{-\tau_\ell}$。
-3. 单次散射源项：$S_i = p(\cos\theta)\,T_\ell(\mathbf{x}_i)\,L_{\text{light}}$。其中 $\theta$ 是光的传播方向 $-\boldsymbol{\omega}_\ell$ 与指向相机的方向 $-\boldsymbol{\omega}$ 之间的夹角，因此 $\cos\theta = \boldsymbol{\omega}_\ell\cdot\boldsymbol{\omega}$。
+2. **阴影光线**：从 $$\mathbf{x}_i$$ 向光源步进，得到光源透射率 $$T_\ell(\mathbf{x}_i) = e^{-\tau_\ell}$$。
+3. 单次散射源项：$$S_i = p(\cos\theta)\,T_\ell(\mathbf{x}_i)\,L_{\text{light}}$$。其中 $\theta$ 是光的传播方向 $$-\boldsymbol{\omega}_\ell$$ 与指向相机的方向 $-\boldsymbol{\omega}$ 之间的夹角，因此 $$\cos\theta = \boldsymbol{\omega}_\ell\cdot\boldsymbol{\omega}$$。
 4. 累加并衰减：
 
 $$
@@ -283,17 +283,17 @@ def march(n_steps=64, n_shadow=16, jitter=True, res=96, albedo=0.9, g=0.5, seed=
     return L, T
 
 L, T = march()
-img = 1 - np.exp(-(20.0 * L + 0.6 * T))      # exposure; background radiance 0.6
-print(img.shape, round(float(T.min()), 4))
+img = 1 - np.exp(-(120.0 * L + 0.1 * T))     # exposure; dark background radiance 0.1
+print(img.shape, round(float(T.min()), 4))    # (96, 96) 0.0011
 import matplotlib.pyplot as plt
 plt.imsave("sphere_volume.png", img, cmap="gray", vmin=0, vmax=1)
 ```
 
 ### 5.3 条带、抖动与开销
 
-如果每段的采样位置固定（`jitter=False`），所有像素都在相同深度上采样密度，平滑的密度梯度就会变成**条带**（banding），即可见的等高线，如下图 (a)。按像素（实时渲染中还按帧）**抖动**（jittering）起始偏移，可以把这种结构化误差变成噪声。人眼对噪声更宽容，时间累积和降噪器（见 [第 06 篇]({{ '/blog/2026/graphics-06-real-time-ray-tracing/' | relative_url }})）也能把它平均掉。用蓝噪声偏移效果更好。开销是每像素 $N_{\text{steps}} \times N_{\text{shadow}}$ 次密度查询。实际渲染器用三种办法削减它：$T < 10^{-3}$ 时**提前终止**（early termination）、用粗糙占用网格做**空域跳过**（empty-space skipping，第 8 节）、以及自适应步长。
+如果每段的采样位置固定（`jitter=False`），所有像素都在相同深度上采样密度，平滑的密度梯度就会变成**条带**（banding）：每一帧都停在同一位置的等高线。在下图这种非常柔和的云里它们很淡（图 (a)）；在边缘锐利的介质中或步数更少时，就会变成明显的条纹。按像素（实时渲染中还按帧）**抖动**（jittering）起始偏移，可以把这种结构化误差变成噪声。人眼对噪声更宽容，时间累积和降噪器（见 [第 06 篇]({{ '/blog/2026/graphics-06-real-time-ray-tracing/' | relative_url }})）也能把它平均掉。用蓝噪声偏移效果更好。开销是每像素 $N_{\text{steps}} \times N_{\text{shadow}}$ 次密度查询。实际渲染器用三种办法削减它：$T < 10^{-3}$ 时**提前终止**（early termination）、用粗糙占用网格做**空域跳过**（empty-space skipping，第 8 节）、以及自适应步长。
 
-{% include blog_figure.liquid path="assets/img/blog/graphics/10-cloud-render.svg" caption="用图脚本中的光线步进器渲染的程序化云（用值噪声 fBm 侵蚀一组球的并集，存于 96×56×72 的网格），太阳位于云的右上后方。(a) 16 步、位置固定，出现条带。(b) 同样 16 步、按像素抖动，条带变成噪声。(c) 96 步、只有单次散射：背向太阳的一侧几乎全黑，因为光要经过多次反弹才能到达那里。(d) 同一渲染加上第 7 节的多次散射八度（octave）近似：阴影区域被柔和的光填满，更接近真实的云。" %}
+{% include blog_figure.liquid path="assets/img/blog/graphics/10-cloud-render.svg" caption="用图脚本中的光线步进器渲染的程序化云（用值噪声 fBm 侵蚀一组球的并集，存于 96×56×72 的网格），太阳位于云的右上后方。(a) 8 步、位置固定：图像看起来平滑，但误差是结构化的（下方暗部边缘有淡淡的阶梯状等高线），而且每帧都完全相同，永远不会被平均掉。(b) 同样 8 步、按像素抖动：结构化误差变成可见的逐像素噪声，时间累积可以去除它。(c) 96 步、只有单次散射：背向太阳的一侧几乎全黑，因为光要经过多次反弹才能到达那里。(d) 同一渲染加上第 7 节的多次散射八度（octave）近似：阴影区域被柔和的光填满，更接近真实的云。" %}
 
 ## 6. 无偏距离采样：delta、ratio 与 residual tracking
 
@@ -406,7 +406,7 @@ Delta 与 ratio tracking 是一个更大家族中的两员。Novák、Georgiev�
 
 1. 从当前顶点出发，沿方向做 delta tracking，找到第一次真实碰撞（或到达表面、或逃逸）。
 2. 在介质中发生真实碰撞时：以概率 $\sigma_a/\sigma_t$ 被吸收（若有自发光则累加），否则散射。等价做法是把通量乘以反照率 $\rho$ 并总是散射，再用俄罗斯轮盘终止。
-3. **下一事件估计**：在光源上采样一点，用 **ratio tracking** 估计到该点的透射率，并累加 $\text{throughput}\times\rho\times p(\cos\theta)\times T_\ell\times L_{\text{light}}/\text{pdf}_{\text{light}}$。
+3. **下一事件估计**：在光源上采样一点，用 **ratio tracking** 估计到该点的透射率，并累加 $\text{throughput}\times\rho\times p(\cos\theta)$ $\times\, T_\ell\times L_{\text{light}}/\text{pdf}_{\text{light}}$。
 4. 按相函数采样新方向（HG 采样的权重为 1），继续。
 
 下面的代码把这些步骤精简到最核心：光子从顶部进入一块非均匀平板，用 delta tracking 找真实碰撞，用 HG 采样选择新方向。输出反射、透射和吸收的比例，这正是材质外观模型需要的量。
@@ -451,7 +451,7 @@ def trace(max_bounces=1000):
     return "A"
 
 fates = [trace() for _ in range(5000)]
-print({k: fates.count(k) / len(fates) for k in "RTA"})
+print({k: fates.count(k) / len(fates) for k in "RTA"})   # {'R': 0.2436, 'T': 0.4724, 'A': 0.284}
 ```
 
 下图中的随机游走展示了路径本身。高反照率介质会让光子散射几十次，光因此向侧面扩散，到达太阳直射不到的区域。这就是云图 (c) 过暗的物理原因。
@@ -589,7 +589,7 @@ print(alpha.round(4), T.round(4), w.round(4), w.sum().round(4), (w * c).sum().ro
 # [0.3935 0.7769] [1.     0.6065] [0.3935 0.4712] 0.8647 0.4484
 ```
 
-{% include blog_figure.liquid path="assets/img/blog/graphics/10-quadrature.svg" caption="在第 2 节的介质上把 alpha 合成看作数值求积。(a) 连续权重 T(t)σt(t)（紫色）与 16 段的离散权重 T_iα_i/δ_i（柱）：柱紧跟曲线，包括最后一个峰被前面的峰遮挡的效果。(b) 随采样数 N 增加，渲染颜色相对精确积分的误差。指数形式 α = 1 − e^−σδ（能量守恒）大约以二阶收敛；朴素的 α = σδ（截断到 1）在 N 较小时差得多，因为它在稠密段高估了不透明度。" %}
+{% include blog_figure.liquid path="assets/img/blog/graphics/10-quadrature.svg" caption="在第 2 节的介质上把 alpha 合成看作数值求积。(a) 连续权重 T(t)σt(t)（紫色）与 16 段的离散权重 T_iα_i/δ_i（柱）：柱紧跟曲线，包括最后一个峰被前面的峰遮挡的效果。(b) 随采样数 N 增加，渲染颜色相对精确积分的误差。指数形式 α = 1 − e^−σδ（能量守恒）大约以二阶收敛（点线 ∝ N⁻²）。朴素的 α = σδ（截断到 1）只有一阶收敛（∝ 1/N），因为它高估了每一段的不透明度；在 N = 512 时误差要大几百倍。" %}
 
 本章的一切都能迁移过去：基于透射率的采样变成 NeRF 的重要性采样；空域跳过变成 [快速辐射场]({{ '/blog/2026/neural-rendering-03-fast-radiance-fields/' | relative_url }}) 中的占用网格；条带与噪声之间的取舍，正是 NeRF 训练时抖动采样位置的原因。
 
@@ -655,7 +655,7 @@ print(alpha.round(4), T.round(4), w.round(4), w.sum().round(4), (w * c).sum().ro
 5. 从泊松求和推导均匀介质下 ratio tracking 的方差 $e^{-2\sigma d}(e^{\sigma^2 d/\bar\sigma} - 1)$，并用 $\sigma = 1$、$d = 1$、$\bar\sigma \in \{1, 2, 4, 8\}$ 的模拟加以验证。
 
    <details markdown="1"><summary>提示</summary>
-   $E[\langle T\rangle^2] = \sum_n e^{-\bar\sigma d}\frac{(\bar\sigma d)^n}{n!}(1-\sigma/\bar\sigma)^{2n} = \exp\big(-\bar\sigma d + \bar\sigma d (1-\sigma/\bar\sigma)^2\big)$。展开平方，再减去 $T^2 = e^{-2\sigma d}$。
+   $E[\langle T\rangle^2] = \sum_n e^{-\bar\sigma d}\frac{(\bar\sigma d)^n}{n!}(1-\sigma/\bar\sigma)^{2n}$ $= \exp\big(-\bar\sigma d + \bar\sigma d (1-\sigma/\bar\sigma)^2\big)$。展开平方，再减去 $T^2 = e^{-2\sigma d}$。
    </details>
 
 下一篇：[实时渲染技术]({{ '/blog/2026/graphics-11-real-time-rendering-techniques/' | relative_url }})。它讲游戏如何把延迟着色、软阴影、环境光遮蔽、反射、全局光照和色调映射塞进 16 ms 的一帧。

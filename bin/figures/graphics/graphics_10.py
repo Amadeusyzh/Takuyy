@@ -130,7 +130,7 @@ def fig_heterogeneous():
     ax2.spines["right"].set_visible(True)
     axs[1].set_xlabel(r"$t$")
     axs[1].set_ylabel(r"$T$")
-    axs[1].legend(frameon=False, loc="center left", fontsize=13)
+    axs[1].legend(frameon=False, loc="upper center", bbox_to_anchor=(0.47, 1.0), fontsize=13)
     axs[1].set_title("(b)")
     fig.tight_layout()
     save(fig, out("heterogeneous-transmittance"))
@@ -197,7 +197,7 @@ def fig_phase_functions():
     ax.set_rticks([1, 2, 3])
     ax.set_yticklabels(["0.1", "1", "10"], fontsize=12)
     ax.set_rlim(0, 3.6)
-    ax.legend(frameon=False, loc="upper left", bbox_to_anchor=(-0.35, 1.18), fontsize=11)
+    ax.legend(frameon=False, loc="upper center", bbox_to_anchor=(0.5, -0.08), ncol=2, fontsize=11)
     ax.set_title("(a)", pad=14)
 
     ax2 = fig.add_subplot(1, 2, 2)
@@ -406,8 +406,8 @@ def fig_ray_march():
 
 def fig_cloud_render():
     imgs = [
-        (render_cloud(16, False, 1), r"(a) $N=16$, fixed"),
-        (render_cloud(16, True, 1), r"(b) $N=16$, jittered"),
+        (render_cloud(8, False, 1), r"(a) $N=8$, fixed"),
+        (render_cloud(8, True, 1), r"(b) $N=8$, jittered"),
         (render_cloud(96, True, 1), r"(c) $N=96$, single"),
         (render_cloud(96, True, 4), r"(d) $N=96$, $+$ octaves"),
     ]
@@ -474,6 +474,14 @@ def fig_tracking():
     axs[0].legend(frameon=False, fontsize=12)
     axs[0].set_title(r"(a) $T=%.4f$, $N=%d$" % (T_true, N))
     axs[1].set_xscale("log")
+    from matplotlib.ticker import FixedLocator, FixedFormatter, NullLocator
+    for a in axs:
+        a.xaxis.set_major_locator(FixedLocator([1, 2, 4, 8]))
+        a.xaxis.set_major_formatter(FixedFormatter(["1", "2", "4", "8"]))
+        a.xaxis.set_minor_locator(NullLocator())
+    axs[0].yaxis.set_major_locator(FixedLocator([0.01, 0.02, 0.05, 0.1, 0.2]))
+    axs[0].yaxis.set_major_formatter(FixedFormatter(["0.01", "0.02", "0.05", "0.1", "0.2"]))
+    axs[0].yaxis.set_minor_locator(NullLocator())
     axs[1].set_xlabel(r"$\bar\sigma / \max\,\sigma_t$")
     axs[1].set_ylabel(r"lookups of $\sigma_t$")
     axs[1].set_title("(b)")
@@ -630,7 +638,7 @@ def fig_sky():
     for j, (az, title) in enumerate([(0.0, r"(a) $\phi=0$"), (np.pi, r"(b) $\phi=\pi$")]):
         ax = fig.add_subplot(gs[0, j])
         img = tonemap(sky(sun_el, view_el, az) * E_SUN, 2.0)
-        ax.imshow(img, origin="lower", aspect="auto", extent=[sun_el[0], sun_el[-1], 0, 90])
+        ax.imshow(img, origin="lower", aspect="auto", interpolation="bilinear", extent=[sun_el[0], sun_el[-1], 0, 90])
         ax.set_xlabel(r"$\theta_{sun}$ (deg)")
         if j == 0:
             ax.set_ylabel(r"$\theta_{view}$ (deg)")

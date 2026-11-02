@@ -159,7 +159,7 @@ $$
 
 Its single parameter is exactly the mean cosine $g$, which makes it easy to fit to measurements. It reduces to isotropic for $g=0$, and the ratio of forward to backward scattering is $p(1)/p(-1) = \big((1+g)/(1-g)\big)^3$.
 
-**Worked example** ($g = 0.6$): $p(0) = \frac{1}{4\pi}\cdot\frac{0.64}{0.16^{3/2}} = 0.0796 \cdot 0.64 / 0.064 = 0.796$ and $p(\pi) = 0.0796 \cdot 0.64/2.56^{3/2} = 0.0124$. The ratio is $64 = (1.6/0.4)^3$. Compare with $1/(4\pi) = 0.0796$ for isotropic scattering.
+**Worked example** ($g = 0.6$): $p(0) = \frac{1}{4\pi}\cdot\frac{0.64}{0.16^{3/2}}$ $= 0.0796 \cdot 0.64 / 0.064 = 0.796$ and $p(\pi) = 0.0796 \cdot 0.64/2.56^{3/2} = 0.0124$. The ratio is $64 = (1.6/0.4)^3$. Compare with $1/(4\pi) = 0.0796$ for isotropic scattering.
 
 {% include blog_figure.liquid path="assets/img/blog/graphics/10-hg-lobes.svg" caption="Henyey-Greenstein lobes. (a) 4π·p(θ) on a logarithmic radius for g from −0.3 to 0.85. Light travels from left to right (yellow arrow); the isotropic g = 0 curve is the circle at radius 1. Positive g stretches the lobe forward, negative g backward. (b) 500 directions sampled with the inverse CDF below for g = 0.7, drawn on the unit sphere: they crowd around the direction of travel, and their mean cosine is close to 0.7." %}
 
@@ -212,7 +212,7 @@ The right phase function depends on the particle size $r$ compared with the wave
 - **Mie scattering** ($r \sim \lambda$: haze, fog and cloud droplets) has an exact but complicated solution with a very strong forward peak, a broad side region and features such as the glory and fogbow. Renderers approximate it.
 - A cheap approximation is a **mixture of HG lobes**, $w\,p_{HG}(\mu; g_1) + (1-w)\,p_{HG}(\mu; g_2)$, with a strong forward lobe and a weak backward lobe. A mixture is still normalized, and it is sampled by choosing a lobe with probability $w$.
 - The **Draine** phase function (Draine 2003) adds one parameter $\alpha$ to HG:
-  $p_D(\mu; g, \alpha) = p_{HG}(\mu; g)\,\dfrac{1+\alpha\mu^2}{1+\alpha(1+2g^2)/3}$.
+  $p_D(\mu; g, \alpha) = p_{HG}(\mu; g)\,\frac{1+\alpha\mu^2}{1+\alpha(1+2g^2)/3}$.
   With $\alpha = 0$ it is HG; with $\alpha = 1$ it is the Cornette-Shanks function. Jendersie and d'Eon (2023) fitted a blend of an HG lobe and a Draine lobe to Lorenz-Mie theory for water droplets as a function of droplet diameter, which gives a cheap, sampleable fog and cloud phase function. The fitted formulas are in their paper and supplement.
 
 {% include blog_figure.liquid path="assets/img/blog/graphics/10-phase-functions.svg" caption="(a) Four phase functions on the same log-radius polar plot (light travels left to right): Rayleigh (peanut-shaped, symmetric), HG with g = 0.76, a two-lobe HG mixture with some back-scattering, and Draine with α = 1, which adds the 1 + μ² shape to HG. (b) Histograms of 200,000 cos θ samples from the inverse CDF overlaid on the exact density 2π p(cos θ) for three values of g (log scale). Bars and curves agree, and the sample means match g." %}
@@ -228,8 +228,8 @@ The widget below lets you feel these shapes. Drag on the plot to change where th
 The most direct way to evaluate the volume rendering equation is a Riemann sum along the ray, called **ray marching**. Split $[0, d]$ into $N$ segments of length $\Delta t$ and take one sample point $\mathbf{x}_i$ per segment. Keep a running transmittance $T$ and a running radiance $L$:
 
 1. Look up $\sigma_t(\mathbf{x}_i)$ and $\sigma_s(\mathbf{x}_i)$.
-2. **Shadow ray**: march from $\mathbf{x}_i$ toward the light to get the light's transmittance $T_\ell(\mathbf{x}_i) = e^{-\tau_\ell}$.
-3. Single-scattered source: $S_i = p(\cos\theta)\,T_\ell(\mathbf{x}_i)\,L_{\text{light}}$, where $\theta$ is the angle between the light's travel direction $-\boldsymbol{\omega}_\ell$ and the direction toward the camera, $-\boldsymbol{\omega}$, so $\cos\theta = \boldsymbol{\omega}_\ell\cdot\boldsymbol{\omega}$.
+2. **Shadow ray**: march from $$\mathbf{x}_i$$ toward the light to get the light's transmittance $$T_\ell(\mathbf{x}_i) = e^{-\tau_\ell}$$.
+3. Single-scattered source: $$S_i = p(\cos\theta)\,T_\ell(\mathbf{x}_i)\,L_{\text{light}}$$, where $\theta$ is the angle between the light's travel direction $$-\boldsymbol{\omega}_\ell$$ and the direction toward the camera, $-\boldsymbol{\omega}$, so $$\cos\theta = \boldsymbol{\omega}_\ell\cdot\boldsymbol{\omega}$$.
 4. Accumulate and attenuate:
 
 $$
@@ -283,17 +283,17 @@ def march(n_steps=64, n_shadow=16, jitter=True, res=96, albedo=0.9, g=0.5, seed=
     return L, T
 
 L, T = march()
-img = 1 - np.exp(-(20.0 * L + 0.6 * T))      # exposure; background radiance 0.6
-print(img.shape, round(float(T.min()), 4))
+img = 1 - np.exp(-(120.0 * L + 0.1 * T))     # exposure; dark background radiance 0.1
+print(img.shape, round(float(T.min()), 4))    # (96, 96) 0.0011
 import matplotlib.pyplot as plt
 plt.imsave("sphere_volume.png", img, cmap="gray", vmin=0, vmax=1)
 ```
 
 ### 5.3 Banding, jitter and cost
 
-With a fixed sample position per segment (`jitter=False`), every pixel samples the density at the same depths. Smooth density gradients then turn into **banding**: visible contour lines, as in panel (a) of the figure below. **Jittering** the start offset per pixel (and per frame, in real time) converts that structured error into noise, which the eye tolerates better and which temporal accumulation and denoisers (as in [post 06]({{ '/blog/2026/graphics-06-real-time-ray-tracing/' | relative_url }})) can average away. Blue-noise offsets are better still. The cost is $N_{\text{steps}} \times N_{\text{shadow}}$ density lookups per pixel. Practical renderers cut it with **early termination** when $T < 10^{-3}$, **empty-space skipping** with a coarse occupancy grid (Section 8) and adaptive step sizes.
+With a fixed sample position per segment (`jitter=False`), every pixel samples the density at the same depths. Smooth density gradients then turn into **banding**: contour lines that sit at the same place in every frame. In the very soft cloud below they are faint (panel a); in hard-edged media or with fewer steps they become obvious stripes. **Jittering** the start offset per pixel (and per frame, in real time) converts that structured error into noise, which the eye tolerates better and which temporal accumulation and denoisers (as in [post 06]({{ '/blog/2026/graphics-06-real-time-ray-tracing/' | relative_url }})) can average away. Blue-noise offsets are better still. The cost is $N_{\text{steps}} \times N_{\text{shadow}}$ density lookups per pixel. Practical renderers cut it with **early termination** when $T < 10^{-3}$, **empty-space skipping** with a coarse occupancy grid (Section 8) and adaptive step sizes.
 
-{% include blog_figure.liquid path="assets/img/blog/graphics/10-cloud-render.svg" caption="A procedural cloud (value-noise fBm eroding a union of spheres, stored in a 96×56×72 grid) rendered by the figure script's ray marcher, with the sun above and to the right behind the cloud. (a) 16 steps at fixed positions show banding. (b) The same 16 steps with per-pixel jitter turn bands into noise. (c) 96 steps, single scattering only: the side facing away from the sun is almost black, because light needs several bounces to get there. (d) The same render plus the multiple-scattering octave approximation of Section 7: the shadowed regions fill with soft light, much closer to how real clouds look." %}
+{% include blog_figure.liquid path="assets/img/blog/graphics/10-cloud-render.svg" caption="A procedural cloud (value-noise fBm eroding a union of spheres, stored in a 96×56×72 grid) rendered by the figure script's ray marcher, with the sun above and to the right behind the cloud. (a) 8 steps at fixed positions: the image looks smooth, but its error is structured (faint step contours along the dark lower lobes) and identical in every frame, so it never averages out. (b) The same 8 steps with per-pixel jitter: the structured error becomes visible per-pixel noise, which temporal accumulation removes. (c) 96 steps, single scattering only: the side facing away from the sun is almost black, because light needs several bounces to get there. (d) The same render plus the multiple-scattering octave approximation of Section 7: the shadowed regions fill with soft light, much closer to how real clouds look." %}
 
 ## 6. Unbiased distance sampling: delta, ratio and residual tracking
 
@@ -406,7 +406,7 @@ A volumetric path tracer extends the surface path tracer of post 05 with one new
 
 1. From the current vertex, delta-track along the direction to find the first real collision (or reach the surface or escape).
 2. At a real medium collision: with probability $\sigma_a/\sigma_t$ the path is absorbed (add emission if any). Otherwise it scatters. Equivalently, multiply the throughput by the albedo $\rho$ and always scatter, using Russian roulette to stop.
-3. **Next-event estimation**: sample a point on a light, estimate the transmittance toward it with **ratio tracking**, and add $\text{throughput}\times\rho\times p(\cos\theta)\times T_\ell\times L_{\text{light}}/\text{pdf}_{\text{light}}$.
+3. **Next-event estimation**: sample a point on a light, estimate the transmittance toward it with **ratio tracking**, and add $\text{throughput}\times\rho\times p(\cos\theta)$ $\times\, T_\ell\times L_{\text{light}}/\text{pdf}_{\text{light}}$.
 4. Sample the new direction from the phase function (HG sampling gives weight 1) and continue.
 
 The code below strips this to the essentials: photons enter a heterogeneous slab at the top, delta tracking finds real collisions, and HG sampling picks new directions. The output is the fraction reflected, transmitted and absorbed, the kind of quantity a material-appearance model needs.
@@ -451,7 +451,7 @@ def trace(max_bounces=1000):
     return "A"
 
 fates = [trace() for _ in range(5000)]
-print({k: fates.count(k) / len(fates) for k in "RTA"})
+print({k: fates.count(k) / len(fates) for k in "RTA"})   # {'R': 0.2436, 'T': 0.4724, 'A': 0.284}
 ```
 
 The random walks in the figure below show the paths themselves. High-albedo media scatter photons dozens of times, which spreads light sideways and lets it reach regions the sun never sees directly. That is the physical reason panel (c) of the cloud figure is too dark.
@@ -589,7 +589,7 @@ print(alpha.round(4), T.round(4), w.round(4), w.sum().round(4), (w * c).sum().ro
 # [0.3935 0.7769] [1.     0.6065] [0.3935 0.4712] 0.8647 0.4484
 ```
 
-{% include blog_figure.liquid path="assets/img/blog/graphics/10-quadrature.svg" caption="Alpha compositing as quadrature on the medium of Section 2. (a) The continuous weight T(t)σt(t) (purple) and the discrete weights T_iα_i/δ_i from 16 segments (bars): the bars follow the curve, including the shadowing of the last bump by the earlier ones. (b) Error of the rendered colour against the exact integral as the number of samples N grows. The exponential α = 1 − e^−σδ (energy-conserving) converges about quadratically; the naive α = σδ (clamped to 1) is far worse at low N, because it overestimates opacity in dense segments." %}
+{% include blog_figure.liquid path="assets/img/blog/graphics/10-quadrature.svg" caption="Alpha compositing as quadrature on the medium of Section 2. (a) The continuous weight T(t)σt(t) (purple) and the discrete weights T_iα_i/δ_i from 16 segments (bars): the bars follow the curve, including the shadowing of the last bump by the earlier ones. (b) Error of the rendered colour against the exact integral as the number of samples N grows. The exponential α = 1 − e^−σδ (energy-conserving) converges about quadratically (dotted line ∝ N⁻²). The naive α = σδ (clamped to 1) converges only at first order (∝ 1/N), because it overestimates the opacity of every segment; at N = 512 its error is several hundred times larger." %}
 
 Everything in this chapter carries over. Transmittance-based sampling becomes NeRF's importance sampling, empty-space skipping becomes occupancy grids in [fast radiance fields]({{ '/blog/2026/neural-rendering-03-fast-radiance-fields/' | relative_url }}), and the banding-versus-noise trade-off is why NeRF jitters its sample positions during training.
 
@@ -655,7 +655,7 @@ Everything in this chapter carries over. Transmittance-based sampling becomes Ne
 5. Derive the homogeneous ratio-tracking variance $e^{-2\sigma d}(e^{\sigma^2 d/\bar\sigma} - 1)$ from the Poisson sum, and check it against a simulation with $\sigma = 1$, $d = 1$, $\bar\sigma \in \{1, 2, 4, 8\}$.
 
    <details markdown="1"><summary>Hint</summary>
-   $E[\langle T\rangle^2] = \sum_n e^{-\bar\sigma d}\frac{(\bar\sigma d)^n}{n!}(1-\sigma/\bar\sigma)^{2n} = \exp\big(-\bar\sigma d + \bar\sigma d (1-\sigma/\bar\sigma)^2\big)$. Expand the square and subtract $T^2 = e^{-2\sigma d}$.
+   $E[\langle T\rangle^2] = \sum_n e^{-\bar\sigma d}\frac{(\bar\sigma d)^n}{n!}(1-\sigma/\bar\sigma)^{2n}$ $= \exp\big(-\bar\sigma d + \bar\sigma d (1-\sigma/\bar\sigma)^2\big)$. Expand the square and subtract $T^2 = e^{-2\sigma d}$.
    </details>
 
 Next: [real-time rendering techniques]({{ '/blog/2026/graphics-11-real-time-rendering-techniques/' | relative_url }}). It covers how games fit deferred shading, soft shadows, ambient occlusion, reflections, global illumination and tone mapping into a 16 ms frame.
