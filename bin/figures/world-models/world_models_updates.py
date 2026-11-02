@@ -237,6 +237,66 @@ def fig_memory_growth():
     save(fig, OUT / "04-update-memory-growth.svg")
 
 
+def fig_sigreg_toy():
+    """Real toy run: SIGReg alone un-collapses a dimensionally collapsed linear encoder (snippet in post 5's update)."""
+    import torch
+    torch.manual_seed(0)
+    N, D_in, D = 2048, 16, 8
+    X = torch.randn(N, D_in)
+    W = torch.zeros(D_in, D)
+    W[:, 0] = 0.05 * torch.randn(D_in)
+    W += 1e-3 * torch.randn(D_in, D)
+    W.requires_grad_(True)
+    tt = torch.linspace(-4, 4, 65)
+    w = torch.exp(-tt ** 2 / 2)
+
+    def sigreg(Z, M=64):
+        U = torch.randn(Z.shape[1], M)
+        U = U / U.norm(dim=0, keepdim=True)
+        arg = (Z @ U)[:, :, None] * tt
+        re, im = torch.cos(arg).mean(0), torch.sin(arg).mean(0)
+        return (((re - torch.exp(-tt ** 2 / 2)) ** 2 + im ** 2) * w).mean()
+
+    opt = torch.optim.Adam([W], lr=1e-2)
+    eigs, snaps = [], {}
+    g = torch.Generator().manual_seed(7)
+    u_fix = torch.randn(D, generator=g)
+    u_fix = u_fix / u_fix.norm()
+    for it in range(201):
+        Z = X @ W
+        loss = sigreg(Z)
+        opt.zero_grad()
+        loss.backward()
+        opt.step()
+        Zd = Z.detach()
+        eigs.append(torch.linalg.eigvalsh(torch.cov(Zd.T)).flip(0).numpy())
+        if it in (0, 50, 200):
+            snaps[it] = (Zd @ u_fix).numpy()
+    eigs = np.array(eigs)
+    print("eigenvalues at step 0 / 50 / 200:", eigs[0].round(2), eigs[50].round(2), eigs[200].round(2))
+    fig, (a1, a2) = plt.subplots(1, 2, figsize=(11, 4.6))
+    xs = np.linspace(-4, 4, 300)
+    a1.plot(xs, np.exp(-xs ** 2 / 2) / np.sqrt(2 * np.pi), color="#222222", lw=3, label=r"$\mathcal{N}(0,1)$")
+    for it, col in ((0, C["x"]), (50, C["b"]), (200, C["y"])):
+        a1.hist(snaps[it], bins=np.linspace(-4, 4, 41), density=True, histtype="step", lw=2.5, color=col,
+                label=f"step {it}")
+    a1.set_ylim(0, 1.0)
+    a1.set_xlim(-4, 4)
+    a1.set_xlabel(r"$u^\top z$")
+    a1.legend(loc="upper right", fontsize=13)
+    cmap = plt.get_cmap("viridis")
+    for k in range(eigs.shape[1]):
+        a2.plot(np.arange(len(eigs)), np.maximum(eigs[:, k], 1e-6), color=cmap(k / (eigs.shape[1] - 1)), lw=2.2)
+    a2.axhline(1.0, color="#222222", ls="--", lw=1.5)
+    a2.set_yscale("log")
+    a2.set_ylim(1e-5, 10)
+    a2.set_xlim(0, 200)
+    a2.set_xlabel("step")
+    a2.set_ylabel(r"$\lambda_k(\mathrm{Cov}(z))$")
+    fig.tight_layout()
+    save(fig, OUT / "05-update-sigreg.svg")
+
+
 # benchmark -> (year, {question: 1 named dimension, 0.5 partial})
 BENCH = [
     ("VBench ('24)", {1: 1}),
@@ -290,3 +350,4 @@ if __name__ == "__main__":
     fig_memory()
     fig_memory_growth()
     fig_benchmarks()
+    fig_sigreg_toy()

@@ -316,6 +316,69 @@ print("delta PSNR (model that ignores actions):",
 - **VL-JEPA**（Chen et al.，预印本，[arXiv:2512.10942](https://arxiv.org/abs/2512.10942)，2025 年 12 月）把 JEPA 原则带到视觉语言领域。模型预测目标文本的连续*嵌入*，而不是生成 token，只在需要时才解码为文本。在受控比较中，它以少 50% 的可训练参数胜过一个 token 空间的基线。
 - **DINO-world**（Baldassarre et al.，预印本，[arXiv:2507.19468](https://arxiv.org/abs/2507.19468)，2025 年 7 月）位于第 4 节两大阵营之间。它是一个通用视频世界模型，在冻结的 DINOv2 编码器的特征空间中预测未来帧。这是一个“中间”目标，既不是像素，也不是从零学习的隐变量。
 
+#### 一个玩具实验：SIGReg 让坍缩的编码器重新展开
+
+为了看清 SIGReg 的作用，取第 4.1 节中最坏的情形，即**维度坍缩**的编码器，并*只*用 SIGReg 训练它：没有预测器，没有 EMA，没有 stop-gradient。编码器是线性的，$z = W^\top x$，其中 $x \in \mathbb{R}^{16}$、$z \in \mathbb{R}^{8}$。初始时 $W$ 几乎全部集中在一列上，所以所有嵌入都落在一条直线附近。每一步我们抽取 $M = 64$ 个随机单位方向 $u$，计算整个 batch 的投影 $u^\top z$，并把每个投影的经验特征函数 $\hat\varphi_u(t) = \frac{1}{N}\sum_i e^{\mathrm{i}\, t\, u^\top z_i}$ 与标准正态的特征函数 $e^{-t^2/2}$ 比较：
+
+$$
+\mathcal{L}_{\text{SIGReg}} = \frac{1}{M}\sum_{m=1}^{M} \int \big\vert \hat\varphi_{u_m}(t) - e^{-t^2/2} \big\vert^2\, e^{-t^2/2}\, dt .
+$$
+
+特征函数相同的两个分布完全相同，所以只有当投影恰好服从 $\mathcal{N}(0, 1)$ 时损失才为零。积分用 $[-4, 4]$ 上的 65 个点近似。这个具体的统计量是我们为玩具实验选的，并非照搬 LeJEPA 的代码；确切使用的检验请查阅其代码。
+
+```python
+import torch
+
+torch.manual_seed(0)
+N, D_in, D = 2048, 16, 8
+X = torch.randn(N, D_in)                       # inputs
+W = torch.zeros(D_in, D)
+W[:, 0] = 0.05 * torch.randn(D_in)             # start dimensionally collapsed: every embedding lies on one line
+W += 1e-3 * torch.randn(D_in, D)
+W.requires_grad_(True)
+t = torch.linspace(-4, 4, 65)                  # frequencies for the characteristic function
+w = torch.exp(-t ** 2 / 2)                     # weight: compare mostly low frequencies
+
+
+def sigreg(Z, M=64):
+    """Mean over M random unit directions of a weighted distance between the empirical
+    characteristic function of u^T z and that of N(0, 1) (an Epps-Pulley-style test statistic)."""
+    U = torch.randn(Z.shape[1], M)
+    U = U / U.norm(dim=0, keepdim=True)
+    P = Z @ U                                  # (N, M) one-dimensional projections
+    arg = P[:, :, None] * t                    # (N, M, T)
+    re, im = torch.cos(arg).mean(0), torch.sin(arg).mean(0)
+    target = torch.exp(-t ** 2 / 2)
+    return (((re - target) ** 2 + im ** 2) * w).mean()
+
+
+opt = torch.optim.Adam([W], lr=1e-2)
+for it in range(201):
+    Z = X @ W
+    loss = sigreg(Z)
+    opt.zero_grad()
+    loss.backward()
+    opt.step()
+    if it in (0, 25, 50, 100, 200):
+        ev = torch.linalg.eigvalsh(torch.cov(Z.detach().T))
+        print(f"step {it:3d}  SIGReg {loss.item():.1e}  covariance eigenvalues "
+              + " ".join(f"{v:.2f}" for v in ev.flip(0)))
+```
+
+输出（CPU，不到一分钟）：
+
+```text
+step   0  SIGReg 4.8e-02  covariance eigenvalues 0.08 0.00 0.00 0.00 0.00 0.00 0.00 0.00
+step  25  SIGReg 9.7e-03  covariance eigenvalues 4.26 0.79 0.47 0.34 0.26 0.15 0.07 0.02
+step  50  SIGReg 3.5e-03  covariance eigenvalues 4.61 1.50 1.27 0.88 0.79 0.52 0.21 0.12
+step 100  SIGReg 2.2e-04  covariance eigenvalues 1.33 1.16 1.14 1.08 1.01 0.90 0.72 0.68
+step 200  SIGReg 3.7e-05  covariance eigenvalues 1.03 1.02 1.01 1.00 0.98 0.98 0.97 0.96
+```
+
+把嵌入协方差的特征值理解为"每个方向上有多少展开"。第 0 步只有一个方向有展开（0.08），其余七个为零：这就是维度坍缩。由于每个随机方向看到的投影几乎都是常数，损失中的每一项都在推动更多的展开。到第 200 步，八个特征值都与 1 相差不到 4%，也就是各向同性高斯这一目标。注意第 50 步的过冲（最大特征值 4.61）：损失每步只看到 64 个随机方向，所以它先放大已经展开的方向，等其他方向跟上后再把它纠正回来。在 LeJEPA 中，这一项以单个权重加到 JEPA 预测损失上，取代了第 4.1 节坍缩玩具实验所需的 EMA 教师和 stop-gradient。
+
+{% include blog_figure.liquid path="assets/img/blog/world-models/05-update-sigreg.svg" width="95%" caption="SIGReg 玩具实验。左：batch 在一个固定随机方向 $u$ 上的投影直方图，与标准正态密度（黑）对比。第 0 步（红）投影是一个窄尖峰，远远超出图的上沿；第 50 步（橙）已展开但过于尖；第 200 步（绿）与 $\mathcal{N}(0,1)$ 吻合。右：训练过程中嵌入协方差的八个特征值（对数坐标）。它们起始于 0.08 和几乎为零的值（坍缩），最大值过冲到约 4.6，最后都收敛到 1 处的虚线，即 LeJEPA 认为最优的各向同性高斯。" %}
+
 **预测式与生成式之争**（第 4 节）并没有结束，但争论的焦点变了。隐空间预测获得了稳定而更简单的训练配方（LeJEPA、LeWorldModel）和稠密特征（V-JEPA 2.1）。与此同时，生成式视频模型变得实时而可控（第 3 篇更新），而最大的工业模型（如 Cosmos 3）如今在一个系统中同时包含推理模型和生成器。
 
 ### 评测：从“看起来对不对”到“有没有用”

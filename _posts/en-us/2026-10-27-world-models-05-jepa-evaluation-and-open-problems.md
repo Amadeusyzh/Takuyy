@@ -316,6 +316,69 @@ This section adds JEPA and evaluation work from mid-2025 to early November 2026,
 - **VL-JEPA** (Chen et al., preprint, [arXiv:2512.10942](https://arxiv.org/abs/2512.10942), December 2025) carries the JEPA principle over to vision-language. The model predicts continuous *embeddings* of the target text instead of generating tokens, and decodes to text only when needed. In a controlled comparison it beats a token-space baseline with 50% fewer trainable parameters.
 - **DINO-world** (Baldassarre et al., preprint, [arXiv:2507.19468](https://arxiv.org/abs/2507.19468), July 2025) sits between the two camps of section 4. It is a generalist video world model that predicts future frames in the feature space of a frozen DINOv2 encoder, an "in-between" target that is neither pixels nor learned-from-scratch latents.
 
+#### A toy run: SIGReg un-collapses an encoder
+
+To see what SIGReg does, take the worst case of section 4.1, a **dimensionally collapsed** encoder, and train it with SIGReg *alone*: no predictor, no EMA, no stop-gradient. The encoder is linear, $z = W^\top x$ with $x \in \mathbb{R}^{16}$ and $z \in \mathbb{R}^{8}$, and it starts with almost all of $W$ in one column, so every embedding lies near one line. At each step we draw $M = 64$ random unit directions $u$, form the projections $u^\top z$ of the whole batch, and compare each projection's empirical characteristic function $\hat\varphi_u(t) = \frac{1}{N}\sum_i e^{\mathrm{i}\, t\, u^\top z_i}$ with that of a standard normal, $e^{-t^2/2}$:
+
+$$
+\mathcal{L}_{\text{SIGReg}} = \frac{1}{M}\sum_{m=1}^{M} \int \big\vert \hat\varphi_{u_m}(t) - e^{-t^2/2} \big\vert^2\, e^{-t^2/2}\, dt .
+$$
+
+Two distributions with the same characteristic function are equal, so this is zero only when the projection is exactly $\mathcal{N}(0, 1)$. The integral is approximated on 65 points in $[-4, 4]$. This particular statistic is our choice for the toy; it is not copied from the LeJEPA code, which you should consult for the exact test used.
+
+```python
+import torch
+
+torch.manual_seed(0)
+N, D_in, D = 2048, 16, 8
+X = torch.randn(N, D_in)                       # inputs
+W = torch.zeros(D_in, D)
+W[:, 0] = 0.05 * torch.randn(D_in)             # start dimensionally collapsed: every embedding lies on one line
+W += 1e-3 * torch.randn(D_in, D)
+W.requires_grad_(True)
+t = torch.linspace(-4, 4, 65)                  # frequencies for the characteristic function
+w = torch.exp(-t ** 2 / 2)                     # weight: compare mostly low frequencies
+
+
+def sigreg(Z, M=64):
+    """Mean over M random unit directions of a weighted distance between the empirical
+    characteristic function of u^T z and that of N(0, 1) (an Epps-Pulley-style test statistic)."""
+    U = torch.randn(Z.shape[1], M)
+    U = U / U.norm(dim=0, keepdim=True)
+    P = Z @ U                                  # (N, M) one-dimensional projections
+    arg = P[:, :, None] * t                    # (N, M, T)
+    re, im = torch.cos(arg).mean(0), torch.sin(arg).mean(0)
+    target = torch.exp(-t ** 2 / 2)
+    return (((re - target) ** 2 + im ** 2) * w).mean()
+
+
+opt = torch.optim.Adam([W], lr=1e-2)
+for it in range(201):
+    Z = X @ W
+    loss = sigreg(Z)
+    opt.zero_grad()
+    loss.backward()
+    opt.step()
+    if it in (0, 25, 50, 100, 200):
+        ev = torch.linalg.eigvalsh(torch.cov(Z.detach().T))
+        print(f"step {it:3d}  SIGReg {loss.item():.1e}  covariance eigenvalues "
+              + " ".join(f"{v:.2f}" for v in ev.flip(0)))
+```
+
+Output (CPU, under a minute):
+
+```text
+step   0  SIGReg 4.8e-02  covariance eigenvalues 0.08 0.00 0.00 0.00 0.00 0.00 0.00 0.00
+step  25  SIGReg 9.7e-03  covariance eigenvalues 4.26 0.79 0.47 0.34 0.26 0.15 0.07 0.02
+step  50  SIGReg 3.5e-03  covariance eigenvalues 4.61 1.50 1.27 0.88 0.79 0.52 0.21 0.12
+step 100  SIGReg 2.2e-04  covariance eigenvalues 1.33 1.16 1.14 1.08 1.01 0.90 0.72 0.68
+step 200  SIGReg 3.7e-05  covariance eigenvalues 1.03 1.02 1.01 1.00 0.98 0.98 0.97 0.96
+```
+
+Read the eigenvalues of the embedding covariance as "how much spread is there in each direction". At step 0 only one direction has any spread (0.08) and the other seven are zero: dimensional collapse. Because every random direction sees an almost constant projection, every term of the loss pushes toward more spread. By step 200 all eight eigenvalues are within 4% of 1, which is the isotropic Gaussian target. Notice the overshoot at step 50 (largest eigenvalue 4.61): the loss only sees 64 random directions per step, so it first inflates the already-spread direction and then corrects it as other directions catch up. In LeJEPA this term is added to the JEPA prediction loss with a single weight, and it replaces the EMA teacher and stop-gradient that the collapse toy of section 4.1 needed.
+
+{% include blog_figure.liquid path="assets/img/blog/world-models/05-update-sigreg.svg" width="95%" caption="The SIGReg toy run. Left: histogram of the batch projected on one fixed random direction $u$, against the standard normal density (black). At step 0 (red) the projection is a narrow spike that runs far off the top of the plot; at step 50 (orange) it is spread but too peaked; at step 200 (green) it matches $\mathcal{N}(0,1)$. Right: the eight eigenvalues of the embedding covariance (log scale) during training. They start at 0.08 and essentially zero (collapse), the largest overshoots to about 4.6, and all converge to the dashed line at 1, the isotropic Gaussian that LeJEPA argues is optimal." %}
+
 The **predictive-vs-generative debate** (section 4) did not end, but its terms shifted. Latent-space prediction gained stable, simpler training recipes (LeJEPA, LeWorldModel) and dense features (V-JEPA 2.1). Meanwhile, generative video models became real-time and controllable (post 3's update), and the largest industrial models, such as Cosmos 3, now combine a reasoning model and a generator in one system.
 
 ### Evaluation: from "does it look right" to "is it useful"

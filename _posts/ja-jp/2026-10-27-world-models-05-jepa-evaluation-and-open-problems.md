@@ -316,6 +316,69 @@ print("delta PSNR (model that ignores actions):",
 - **VL-JEPA**（Chen et al.、プレプリント、[arXiv:2512.10942](https://arxiv.org/abs/2512.10942)、2025 年 12 月）は、JEPA の原理を視覚言語に持ち込みます。トークンを生成するのではなく、目標テキストの連続的な*埋め込み*を予測し、必要なときだけテキストにデコードします。統制された比較では、学習可能なパラメータが 50% 少ないにもかかわらず、トークン空間のベースラインを上回りました。
 - **DINO-world**（Baldassarre et al.、プレプリント、[arXiv:2507.19468](https://arxiv.org/abs/2507.19468)、2025 年 7 月）は、第 4 節の 2 つの陣営の中間に位置します。凍結した DINOv2 エンコーダの特徴空間で将来のフレームを予測する汎用の動画世界モデルで、ピクセルでもゼロから学習した潜在表現でもない「中間の」ターゲットを使います。
 
+#### トイ実験：SIGReg が崩壊したエンコーダを広げ直す
+
+SIGReg の働きを見るために、第 4.1 節の最悪のケースである**次元崩壊**したエンコーダを取り上げ、SIGReg *だけ*で訓練します。予測器も EMA も stop-gradient も使いません。エンコーダは線形で $z = W^\top x$（$x \in \mathbb{R}^{16}$、$z \in \mathbb{R}^{8}$）です。初期状態では $W$ のほぼすべてが 1 列に集まっているので、すべての埋め込みが 1 本の直線の近くにあります。各ステップで $M = 64$ 個のランダムな単位方向 $u$ を引き、バッチ全体の射影 $u^\top z$ を作り、各射影の経験特性関数 $\hat\varphi_u(t) = \frac{1}{N}\sum_i e^{\mathrm{i}\, t\, u^\top z_i}$ を標準正規分布の特性関数 $e^{-t^2/2}$ と比べます。
+
+$$
+\mathcal{L}_{\text{SIGReg}} = \frac{1}{M}\sum_{m=1}^{M} \int \big\vert \hat\varphi_{u_m}(t) - e^{-t^2/2} \big\vert^2\, e^{-t^2/2}\, dt .
+$$
+
+特性関数が同じ 2 つの分布は等しいので、この損失は射影がちょうど $\mathcal{N}(0, 1)$ のときだけゼロになります。積分は $[-4, 4]$ 上の 65 点で近似します。この統計量はトイ実験のために私たちが選んだもので、LeJEPA のコードをそのまま写したものではありません。実際に使われている検定は LeJEPA のコードで確認してください。
+
+```python
+import torch
+
+torch.manual_seed(0)
+N, D_in, D = 2048, 16, 8
+X = torch.randn(N, D_in)                       # inputs
+W = torch.zeros(D_in, D)
+W[:, 0] = 0.05 * torch.randn(D_in)             # start dimensionally collapsed: every embedding lies on one line
+W += 1e-3 * torch.randn(D_in, D)
+W.requires_grad_(True)
+t = torch.linspace(-4, 4, 65)                  # frequencies for the characteristic function
+w = torch.exp(-t ** 2 / 2)                     # weight: compare mostly low frequencies
+
+
+def sigreg(Z, M=64):
+    """Mean over M random unit directions of a weighted distance between the empirical
+    characteristic function of u^T z and that of N(0, 1) (an Epps-Pulley-style test statistic)."""
+    U = torch.randn(Z.shape[1], M)
+    U = U / U.norm(dim=0, keepdim=True)
+    P = Z @ U                                  # (N, M) one-dimensional projections
+    arg = P[:, :, None] * t                    # (N, M, T)
+    re, im = torch.cos(arg).mean(0), torch.sin(arg).mean(0)
+    target = torch.exp(-t ** 2 / 2)
+    return (((re - target) ** 2 + im ** 2) * w).mean()
+
+
+opt = torch.optim.Adam([W], lr=1e-2)
+for it in range(201):
+    Z = X @ W
+    loss = sigreg(Z)
+    opt.zero_grad()
+    loss.backward()
+    opt.step()
+    if it in (0, 25, 50, 100, 200):
+        ev = torch.linalg.eigvalsh(torch.cov(Z.detach().T))
+        print(f"step {it:3d}  SIGReg {loss.item():.1e}  covariance eigenvalues "
+              + " ".join(f"{v:.2f}" for v in ev.flip(0)))
+```
+
+出力（CPU で 1 分以内）：
+
+```text
+step   0  SIGReg 4.8e-02  covariance eigenvalues 0.08 0.00 0.00 0.00 0.00 0.00 0.00 0.00
+step  25  SIGReg 9.7e-03  covariance eigenvalues 4.26 0.79 0.47 0.34 0.26 0.15 0.07 0.02
+step  50  SIGReg 3.5e-03  covariance eigenvalues 4.61 1.50 1.27 0.88 0.79 0.52 0.21 0.12
+step 100  SIGReg 2.2e-04  covariance eigenvalues 1.33 1.16 1.14 1.08 1.01 0.90 0.72 0.68
+step 200  SIGReg 3.7e-05  covariance eigenvalues 1.03 1.02 1.01 1.00 0.98 0.98 0.97 0.96
+```
+
+埋め込みの共分散の固有値は「各方向にどれだけ広がっているか」と読んでください。ステップ 0 では 1 つの方向にだけ広がりがあり（0.08）、残りの 7 つはゼロです。これが次元崩壊です。どのランダム方向から見ても射影はほぼ定数なので、損失のすべての項が広がりを増やす方向に働きます。ステップ 200 では 8 個の固有値がすべて 1 との差 4% 以内に収まり、等方的なガウス分布という目標に達しています。ステップ 50 の行き過ぎ（最大固有値 4.61）にも注目してください。損失は各ステップで 64 個のランダム方向しか見ないので、まずすでに広がっている方向をさらに膨らませ、他の方向が追いつくにつれて修正します。LeJEPA ではこの項が 1 つの重みで JEPA の予測損失に加えられ、第 4.1 節の崩壊トイ実験で必要だった EMA 教師と stop-gradient の代わりになります。
+
+{% include blog_figure.liquid path="assets/img/blog/world-models/05-update-sigreg.svg" width="95%" caption="SIGReg のトイ実験です。左：固定したランダム方向 $u$ へのバッチの射影のヒストグラムを、標準正規分布の密度（黒）と比べたものです。ステップ 0（赤）では射影は細いスパイクで、図の上端をはるかに超えています。ステップ 50（橙）では広がっていますが尖りすぎで、ステップ 200（緑）では $\mathcal{N}(0,1)$ と一致します。右：訓練中の埋め込み共分散の 8 個の固有値（対数軸）です。0.08 とほぼゼロ（崩壊）から始まり、最大のものは約 4.6 まで行き過ぎ、最後はすべて 1 の破線、つまり LeJEPA が最適だと論じる等方的ガウス分布に収束します。" %}
+
 **予測型と生成型の論争**（第 4 節）は終わっていませんが、論点は変わりました。潜在空間での予測は、安定したより簡単な学習レシピ（LeJEPA、LeWorldModel）と密な特徴（V-JEPA 2.1）を手に入れました。一方、生成型の動画モデルはリアルタイムで制御可能になり（第 3 回の更新）、Cosmos 3 のような最大級の産業モデルは、推論モデルと生成器を 1 つのシステムに組み合わせています。
 
 ### 評価：「見た目が正しいか」から「役に立つか」へ
