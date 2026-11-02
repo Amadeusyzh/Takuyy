@@ -130,3 +130,57 @@
 - [NVIDIA-RTX/NRD](https://github.com/NVIDIA-RTX/NRD)（实时降噪器）、[NVIDIA-RTX/RTXDI](https://github.com/NVIDIA-RTX/RTXDI)（生产级 ReSTIR）。
 - [InteractiveComputerGraphics/PositionBasedDynamics](https://github.com/InteractiveComputerGraphics/PositionBasedDynamics)、[NVIDIA/warp](https://github.com/NVIDIA/warp)、[taichi-dev/taichi](https://github.com/taichi-dev/taichi)、[google-deepmind/mujoco](https://github.com/google-deepmind/mujoco)。
 - 本站首页实验室（Lab）：GPU 路径追踪器（GGX、NEE+MIS、à-trous 降噪）与 XPBD 布料，源码见 `assets/js/lab-pathtracer.js`、`assets/js/lab.js`。
+
+## 2026 研究前沿（对应第 13 篇 graphics-13-research-frontiers-2026）
+
+截至 2026 年 11 月 2 日。状态：已发表 = 已在 2026 年召开的会议上发表或已刊出；已接收 = SIGGRAPH Asia 2026（2026 年 12 月 1-4 日，吉隆坡）待发表；预印本 = 仅 arXiv。每条均已对照 arXiv 摘要页、Crossref DOI 记录或官方项目页核实。完整数据（含主题、月份、前置章节）见 `bin/figures/graphics/data/13-frontiers.json`。
+
+| 论文 | 出处 | 状态 | 链接 | 说明 |
+| --- | --- | --- | --- | --- |
+| Xu et al., *A Generalizable Light Transport 3D Embedding for Global Illumination* | SIGGRAPH 2026 Conference Papers | 已发表 | [arXiv](https://arxiv.org/abs/2510.18189) | 点云 Transformer 嵌入 + 交叉注意力预测全局光照 |
+| Attimont et al., *Gaussian Light Transport* | SIGGRAPH Asia 2026 | 已接收 | [arXiv](https://arxiv.org/abs/2609.11430) | 用高斯混合求解渲染方程残差，实时显示 |
+| Shi et al., *Spatio-Temporal Control Variates with ReSTIR for Real-Time Rendering* | SIGGRAPH 2026 Conference Papers | 已发表 | [DOI](https://doi.org/10.1145/3799902.3811113) | ReSTIR 中的控制变量，消除彩色噪声 |
+| Kim et al., *ToF ReSTIR* | ACM TOG 45(4) | 已发表 | [arXiv](https://arxiv.org/abs/2605.11536) | 保持光程的 shift mapping，用于飞行时间渲染 |
+| Klepikov et al., *Neural Caching of Prefiltered Radiance for Specular Lighting* | arXiv | 预印本 | [arXiv](https://arxiv.org/abs/2610.11702) | 预滤波辐射度的神经缓存 + split sum |
+| Weier et al., *Beyond Positional Encoding: A 5D Spatio-Directional Hash Encoding* | arXiv | 预印本 | [arXiv](https://arxiv.org/abs/2603.05079) | 方向 + 空间的 5D 哈希编码，用于神经路径引导 |
+| Poirier-Ginter et al., *GRay: Ray Tracing 3D Gaussians Near the Speed of Splats* | I3D 2026 (PACMCGIT 9(1)) | 已发表 | [arXiv](https://arxiv.org/abs/2606.30869) | 快速高斯光线追踪 |
+| Rijsdijk et al., *Gaussian Point Splatting* | ACM TOG 45(4) | 已发表 | [DOI](https://doi.org/10.1145/3811272) | 无需排序的随机点泼溅，超大场景 |
+| Tojo et al., *Inverse Rendering for Modeling with Line Primitives* | SIGGRAPH Asia 2026 (ACM TOG) | 已接收 | [arXiv](https://arxiv.org/abs/2609.00625) | 线段图元的可微光栅化，适合毛发与织物 |
+| Belcour, *Neural Texture Compression using Hypernetworks* | EGSR 2026 | 已发表 | [arXiv](https://arxiv.org/abs/2606.26913) | 超网络直接预测潜变量与解码器权重 |
+| De Oliveira et al., *A Hybrid Neural-Microfacet BRDF Model for Real-Time Rendering* | EGSR 2026 (CGF) | 已发表 | [arXiv](https://arxiv.org/abs/2608.09604) | GGX + 小网络修正 |
+| Youwang et al., *Extracting Neural Materials from Images* | arXiv | 预印本 | [arXiv](https://arxiv.org/abs/2606.26715) | 前馈预测 + 可微路径追踪细化神经材质 |
+| Liu et al., *B-repLer: Language-guided Editing of CAD Models* | SIGGRAPH 2026 Conference Papers | 已发表 | [arXiv](https://arxiv.org/abs/2508.10201) | 无建模历史的 B-rep 文本编辑 |
+| Kong et al., *SQuadGen: Generating Simple Quad Layouts via Chart Distance Fields* | ACM TOG 45(4) | 已发表 | [arXiv](https://arxiv.org/abs/2604.27329) | 在图表距离场上做扩散，生成简洁四边形布局 |
+| Yang et al., *SAND: Spatially Adaptive Network Depth for Fast Sampling of Neural Implicit Surfaces* | ACM TOG 45(4) | 已发表 | [arXiv](https://arxiv.org/abs/2604.25936) | 提前退出的 MLP，加速神经 SDF 查询 |
+| Feng et al., *Points as Tori: Fast Pointwise Signed Distance for Point Clouds* | ACM TOG 45(4) | 已发表 | [DOI](https://doi.org/10.1145/3811385) | 每点拟合圆环，闭式 SDF 混合 |
+| Dodik et al., *Iskra: A System for Inverse Geometry Processing* | ACM TOG 45(4) | 已发表 | [arXiv](https://arxiv.org/abs/2602.12105) | 为现有几何求解器自动生成伴随 |
+| Tang et al., *YASPS: A Symbolic Framework for Extensible, High-Performance IPC Simulation* | ACM TOG 45(4) | 已发表 | [arXiv](https://arxiv.org/abs/2605.23088) | 符号能量 + JIT 生成 CUDA 的 IPC |
+| Mahmoud et al., *Locality-Aware Automatic Differentiation on the GPU for Mesh-Based Computations* | ACM TOG 45(4) | 已发表 | [arXiv](https://arxiv.org/abs/2509.00406) | 逐单元前向自动微分，GPU 上组装稀疏 Hessian |
+| Quan et al., *DiffSurFlow* | ACM TOG 45(4) | 已发表 | [DOI](https://doi.org/10.1145/3811337) | 流图上的代理梯度，可微流体优化 |
+| Gong et al., *Learnable Persistent Wrinkle Formation in Cloth Simulation* | SIGGRAPH Asia 2026 | 已接收 | [arXiv](https://arxiv.org/abs/2609.13707) | 实测织物数据拟合弹塑性布料模型 |
+| Pei et al., *Curly Hair Simulation using Curly Finite Elements* | arXiv | 预印本 | [arXiv](https://arxiv.org/abs/2607.22103) | 带解析波纹/螺旋细节的杆单元 |
+| Feng et al., *MPM Lite: Linear Kernels and Integration without Particles* | arXiv | 预印本 | [arXiv](https://arxiv.org/abs/2602.07853) | 固定积分点 + 线性核的隐式 MPM |
+| Zhao et al., *ARDY* | ACM TOG 45(4) | 已发表 | [arXiv](https://arxiv.org/abs/2607.08741) | 实时可控的自回归运动扩散 |
+| Shi et al., *GPC: Large-Scale Generative Pretraining for Transferable Motor Control* | SIGGRAPH 2026 Conference Papers | 已发表 | [arXiv](https://arxiv.org/abs/2606.29148) | 运动码本 + RL + GPT 式预训练 |
+| Choi et al., *InstantMimic* | SIGGRAPH Asia 2026 Conference Papers | 已接收 | [arXiv](https://arxiv.org/abs/2609.09821) | 全 GPU 执行流，数秒学会物理技能 |
+| Hong et al., *Skinned Motion Retargeting via Artifact-driven Kinematic Prior Refinement* | SIGGRAPH Asia 2026 (Journal Track) | 已接收 | [arXiv](https://arxiv.org/abs/2609.06517) | 用蒙皮网格上的穿插修正重定向 |
+| Iñesta et al., *Generalized Audio-Driven Synthesis of Precise Drummer Motion* | SCA 2026（最佳论文） | 已发表 | [arXiv](https://arxiv.org/abs/2608.19055) | 由真实音频生成精确的鼓手动作 |
+| Javanmardi et al., *Multi-View Face and Gesture Animation with Dynamic Gaussians* | SCA 2026 (CGF 45(8)) | 已发表 | [arXiv](https://arxiv.org/abs/2608.04722) | 面部 + 手部 + 上半身网格上的高斯化身 |
+| Zhou et al., *HoloPathTracer* | ACM TOG 45(4) | 已发表 | [arXiv](https://arxiv.org/abs/2606.14173) | 路径追踪同时求解光传输与波传播，生成全息图 |
+| Chen et al., *HoOPOE: A Holography-Optimized Perceptual ObjectivE function* | SIGGRAPH Asia 2026 | 已接收 | [arXiv](https://arxiv.org/abs/2610.17474) | 针对全息散斑的感知损失 |
+| Kam et al., *Dichoptic Foveation* | SIGGRAPH 2026 Conference Papers | 已发表 | [arXiv](https://arxiv.org/abs/2609.16385) | 双眼分别处理的注视点渲染感知模型 |
+| Chen et al., *PAColorHolo* | ACM TOG 45(2) | 已发表 | [arXiv](https://arxiv.org/abs/2601.14766) | 全息显示的感知色彩管理 |
+| Kleinbeck et al., *Hybrid Foveated Path Tracing with Peripheral Gaussians for Immersive Anatomy* | IEEE VR 2026 | 已发表 | [arXiv](https://arxiv.org/abs/2601.22026) | 注视区路径追踪 + 周边高斯 |
+| Cocco et al., *AtomSlicer* | ACM TOG 45(4) | 已发表 | [DOI](https://doi.org/10.1145/3811363) | 等厚非平面切片与连续刀路 |
+| Mitra et al., *Surface Power Diagrams for Knit Singularity Placement* | ACM TOG 45(4) | 已发表 | [DOI](https://doi.org/10.1145/3811401) | 曲面幂图放置针织奇异点 |
+| Han et al., *IsoGami: Rigid-Deployable Kirigami Materials From Isohedral Tilings* | SIGGRAPH 2026 Conference Papers | 已发表 | [DOI](https://doi.org/10.1145/3799902.3811127) | 单自由度可展开剪纸 |
+| Huang et al., *Shellular Metamaterial Design via Compact Electric Potential Parametrization* | SIGGRAPH 2026 Conference Papers | 已发表 | [arXiv](https://arxiv.org/abs/2511.04025) | 电荷参数化 + GPU 均匀化的壳超材料设计 |
+| Cao et al., *Learning Sewing Patterns via Latent Flow Matching of Implicit Fields* | SIGGRAPH 2026 Conference Papers | 已发表 | [arXiv](https://arxiv.org/abs/2601.17740) | 隐式场潜空间中的流匹配生成版型 |
+| Wang et al., *Nexus: Native Mesh Generation with Diffusion* | ACM TOG 45(4) | 已发表 | [arXiv](https://arxiv.org/abs/2607.13563) | 直接扩散顶点与连接关系 |
+| Yan et al., *Generative 3D Gaussians with Learned Density Control* | SIGGRAPH 2026 Conference Papers | 已发表 | [arXiv](https://arxiv.org/abs/2605.16355) | 学习八叉树密度控制高斯数量 |
+| Wu et al., *CasLayout* | ACM TOG 45(4) | 已发表 | [arXiv](https://arxiv.org/abs/2604.27361) | 四级级联扩散生成室内布局 |
+| Zhang et al., *SIMART* | SIGGRAPH 2026 Conference Papers | 已发表 | [arXiv](https://arxiv.org/abs/2603.23386) | 多模态大模型把整体网格拆成可仿真的铰接资产 |
+| Wu et al., *R-DMesh: Video-Guided 3D Animation via Rectified Dynamic Mesh Flow* | SIGGRAPH 2026 Conference Papers | 已发表 | [arXiv](https://arxiv.org/abs/2605.13838) | 视频驱动的网格动画（含起始姿态校正） |
+| Wang et al., *GaussiAnimate: Rig Animatable Categories with Level of Dynamics* | SIGGRAPH Asia 2026 | 已接收 | [arXiv](https://arxiv.org/abs/2604.08547) | 4D 序列压缩为自由骨骼，再做运动匹配 |
+
+跟踪渠道：[Ke-Sen Huang 论文列表](https://kesen.realtimerendering.com/)、[ACM TOG](https://dl.acm.org/journal/tog)、[arXiv cs.GR](https://arxiv.org/list/cs.GR/recent)、[Eurographics 数字图书馆](https://diglib.eg.org/)。

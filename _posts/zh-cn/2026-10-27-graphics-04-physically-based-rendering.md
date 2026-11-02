@@ -589,6 +589,10 @@ void main() {
 | Heitz, *Understanding the Masking-Shadowing Function in Microfacet-Based BRDFs* | JCGT 3(2) | 2014 | [JCGT](https://jcgt.org/published/0003/02/03/) | 严格推导 Smith $G_1$ 与高度相关 $G_2$ |
 | Heitz, *Sampling the GGX Distribution of Visible Normals* | JCGT 7(4) | 2018 | [JCGT](https://jcgt.org/published/0007/04/01/) | 低方差的 GGX 采样，所有现代路径追踪器都在用 |
 | Kulla & Conty, *Revisiting Physically Based Shading at Imageworks* | SIGGRAPH 课程 | 2017 | — | 针对多次散射的能量补偿 |
+| Portsmouth, Kutz & Hill, *EON: A practical energy-preserving rough diffuse BRDF* | JCGT 14(1) | 2025 | [arXiv](https://arxiv.org/abs/2410.18026) | 能量守恒的 Oren-Nayar 变体，被 OpenPBR 用作粗糙漫反射模型 |
+| Raghavan et al., *Generative Neural Materials* | SIGGRAPH Conference Papers | 2025 | [DOI](https://doi.org/10.1145/3721238.3730746) | 一个共享网络生成多种神经材质，用于实时渲染 |
+
+基于本文微表面模型的神经材质与混合材质在 2026 年的工作，请见[第 13 篇：2026 图形学研究前沿]({{ '/blog/2026/graphics-13-research-frontiers-2026/' | relative_url }})。
 
 ## 学习资源
 

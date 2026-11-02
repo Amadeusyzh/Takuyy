@@ -507,6 +507,11 @@ vec3 taaResolve(sampler2D cur, vec3 history, vec2 uv, vec2 texel) {
 | Müller, Rousselle, Novák, Keller. *Real-time Neural Radiance Caching for Path Tracing* | SIGGRAPH / ACM TOG 40(4) | 2021 | [arXiv](https://arxiv.org/abs/2106.12372) | 在线训练的 MLP 缓存；通往神经渲染的桥梁 |
 | Lin et al. *Generalized Resampled Importance Sampling: Foundations of ReSTIR* | SIGGRAPH / ACM TOG 41(4) | 2022 | [DOI](https://doi.org/10.1145/3528223.3530158) | 为跨域复用与相关样本提供严格理论（GRIS） |
 | Wyman et al. *A Gentle Introduction to ReSTIR: Path Reuse in Real-time* | SIGGRAPH Courses | 2023 | [DOI](https://doi.org/10.1145/3587423.3595511) | 讲解 ReSTIR 理论与实践的最佳教程 |
+| Liu, Lin, Kettunen, Wyman, Ramamoorthi. *Reservoir Splatting for Temporal Path Resampling and Motion Blur* | SIGGRAPH Conference Papers | 2025 | [DOI](https://doi.org/10.1145/3721238.3730646) | 把蓄水池前向投影以做时间复用，同时得到运动模糊 |
+| Zeng et al. *ReSTIR PG: Path Guiding with Spatiotemporally Resampled Paths* | SIGGRAPH Asia Conference Papers | 2025 | [DOI](https://doi.org/10.1145/3757377.3763813) | 用重采样得到的路径构建路径引导分布，改进 ReSTIR 的候选样本 |
+| Hong et al. *Multi-Layer Reservoir Splatting for Temporal Reuse under Disocclusion* | SIGGRAPH Conference Papers | 2026 | [DOI](https://doi.org/10.1145/3799902.3811232) | 在多个屏幕空间层中保留蓄水池，降低去遮挡处的噪声 |
+
+2026 年的 ReSTIR 变体（控制变量、飞行时间）与神经缓存，请见[第 13 篇：2026 图形学研究前沿]({{ '/blog/2026/graphics-13-research-frontiers-2026/' | relative_url }})。
 
 ## 学习资源
 

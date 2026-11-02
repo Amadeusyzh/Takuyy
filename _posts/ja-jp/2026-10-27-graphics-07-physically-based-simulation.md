@@ -481,6 +481,10 @@ $$
 | Macklin, Müller & Chentanez, *XPBD: Position-Based Simulation of Compliant Constrained Dynamics* | MIG | 2016 | [DOI](https://doi.org/10.1145/2994258.2994272) | コンプライアンス + ラグランジュ乗数：反復回数に依存しない剛性 |
 | Macklin, Storey, Lu, Terdiman, Chentanez, Jeschke & Müller, *Small Steps in Physics Simulation* | SCA | 2019 | [DOI](https://doi.org/10.1145/3309486.3340247) | 多数のサブステップ × 1 回の反復が多数回の反復に勝る |
 | Müller, Macklin, Chentanez, Jeschke & Kim, *Detailed Rigid Body Simulation with Extended Position Based Dynamics* | SCA / CGF | 2020 | [DOI](https://doi.org/10.1111/cgf.14105) | 剛体・関節・接触への XPBD の適用 |
+| Giles, Diaz & Yuksel, *Augmented Vertex Block Descent* | ACM TOG 44(4) (SIGGRAPH) | 2025 | [DOI](https://doi.org/10.1145/3731195) | Vertex Block Descent に拡張ラグランジュ法による硬い拘束の扱いを加え、GPU で硬い接触や関節体を扱います |
+| Diaz, Hsu, Montalvo-Ruiz, Giles & Yuksel, *Implicit Position-Based Fluids* | SIGGRAPH Asia Conference Papers | 2025 | [DOI](https://doi.org/10.1145/3757377.3764005) | Position Based Fluids を完全陰的にし、非圧縮の粒子流体を安定に扱います |
+
+IPC による接触、微分可能な流体、布、髪、MPM に関する 2026 年の研究は、[第 13 回「2026 年のグラフィックス研究フロンティア」]({{ '/blog/2026/graphics-13-research-frontiers-2026/' | relative_url }})をご覧ください。
 
 ## 学習リソース
 

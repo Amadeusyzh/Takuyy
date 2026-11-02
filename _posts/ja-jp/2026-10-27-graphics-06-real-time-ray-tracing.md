@@ -507,6 +507,11 @@ vec3 taaResolve(sampler2D cur, vec3 history, vec2 uv, vec2 texel) {
 | Müller, Rousselle, Novák, Keller. *Real-time Neural Radiance Caching for Path Tracing* | SIGGRAPH / ACM TOG 40(4) | 2021 | [arXiv](https://arxiv.org/abs/2106.12372) | オンライン学習する MLP キャッシュ。ニューラルレンダリングへの架け橋 |
 | Lin et al. *Generalized Resampled Importance Sampling: Foundations of ReSTIR* | SIGGRAPH / ACM TOG 41(4) | 2022 | [DOI](https://doi.org/10.1145/3528223.3530158) | 領域をまたぐ再利用と相関サンプルのための厳密な理論（GRIS） |
 | Wyman et al. *A Gentle Introduction to ReSTIR: Path Reuse in Real-time* | SIGGRAPH Courses | 2023 | [DOI](https://doi.org/10.1145/3587423.3595511) | ReSTIR の理論と実践についての最良のチュートリアル |
+| Liu, Lin, Kettunen, Wyman, Ramamoorthi. *Reservoir Splatting for Temporal Path Resampling and Motion Blur* | SIGGRAPH Conference Papers | 2025 | [DOI](https://doi.org/10.1145/3721238.3730646) | リザーバを前方投影して時間方向に再利用し、同時にモーションブラーも得ます |
+| Zeng et al. *ReSTIR PG: Path Guiding with Spatiotemporally Resampled Paths* | SIGGRAPH Asia Conference Papers | 2025 | [DOI](https://doi.org/10.1145/3757377.3763813) | 再サンプリングしたパスからパスガイディングの分布を作り、ReSTIR の候補を改善します |
+| Hong et al. *Multi-Layer Reservoir Splatting for Temporal Reuse under Disocclusion* | SIGGRAPH Conference Papers | 2026 | [DOI](https://doi.org/10.1145/3799902.3811232) | 複数のスクリーン空間レイヤーにリザーバを保持し、ディスオクルージョンでのノイズを減らします |
+
+2026 年の ReSTIR の派生（制御変量、Time-of-Flight）やニューラルキャッシュについては、[第 13 回「2026 年のグラフィックス研究フロンティア」]({{ '/blog/2026/graphics-13-research-frontiers-2026/' | relative_url }})をご覧ください。
 
 ## 学習リソース
 

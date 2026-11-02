@@ -601,6 +601,10 @@ if __name__ == "__main__":
 | Möller, Trumbore, "Fast, Minimum Storage Ray-Triangle Intersection" | Journal of Graphics Tools | 1997 | [DOI](https://doi.org/10.1080/10867651.1997.10487468) | 標準的なレイと三角形の交差判定 |
 | Veach, "Robust Monte Carlo Methods for Light Transport Simulation" | 博士論文、Stanford | 1997 | [プロジェクトページ](https://graphics.stanford.edu/papers/veach_thesis/) | パス空間による定式化、MIS、BDPT、MLT |
 | Heitz, "Sampling the GGX Distribution of Visible Normals" | JCGT 7(4) | 2018 | [論文](https://jcgt.org/published/0007/04/01/) | 厳密で安価な GGX の VNDF サンプリング |
+| Hua, Grittmann, Slusallek, "Correct your balance heuristic: Optimizing balance-style multiple importance sampling weights" | ACM TOG 44(4) (SIGGRAPH) | 2025 | [DOI](https://doi.org/10.1145/3730819) | 古典的な balance heuristic を超えて MIS の重みを最適化します |
+| Fan et al., "Multiple Importance Reweighting for Path Guiding" | ACM TOG 44(4) (SIGGRAPH) | 2025 | [DOI](https://doi.org/10.1145/3731144) | ガイドありとガイドなしのサンプルを MIS 風の再重み付けで組み合わせ、パスガイディングを頑健にします |
+
+パスガイディング、ガウシアンのレイトレーシング、パストレーシングによるホログラムの 2026 年の研究は、[第 13 回「2026 年のグラフィックス研究フロンティア」]({{ '/blog/2026/graphics-13-research-frontiers-2026/' | relative_url }})をご覧ください。
 
 ## 学習リソース
 

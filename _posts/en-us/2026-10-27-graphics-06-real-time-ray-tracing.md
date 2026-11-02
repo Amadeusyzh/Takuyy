@@ -507,6 +507,11 @@ The **path tracer** in the [lab on the home page]({{ '/' | relative_url }}#lab) 
 | Müller, Rousselle, Novák, Keller. *Real-time Neural Radiance Caching for Path Tracing* | SIGGRAPH / ACM TOG 40(4) | 2021 | [arXiv](https://arxiv.org/abs/2106.12372) | Online-trained MLP cache; bridge to neural rendering |
 | Lin et al. *Generalized Resampled Importance Sampling: Foundations of ReSTIR* | SIGGRAPH / ACM TOG 41(4) | 2022 | [DOI](https://doi.org/10.1145/3528223.3530158) | Rigorous theory (GRIS) for reuse across domains and correlated samples |
 | Wyman et al. *A Gentle Introduction to ReSTIR: Path Reuse in Real-time* | SIGGRAPH Courses | 2023 | [DOI](https://doi.org/10.1145/3587423.3595511) | The best tutorial on ReSTIR theory and practice |
+| Liu, Lin, Kettunen, Wyman, Ramamoorthi. *Reservoir Splatting for Temporal Path Resampling and Motion Blur* | SIGGRAPH Conference Papers | 2025 | [DOI](https://doi.org/10.1145/3721238.3730646) | Forward-projects reservoirs for temporal reuse, which also yields motion blur |
+| Zeng et al. *ReSTIR PG: Path Guiding with Spatiotemporally Resampled Paths* | SIGGRAPH Asia Conference Papers | 2025 | [DOI](https://doi.org/10.1145/3757377.3763813) | Builds path-guiding distributions from resampled paths to improve ReSTIR's candidates |
+| Hong et al. *Multi-Layer Reservoir Splatting for Temporal Reuse under Disocclusion* | SIGGRAPH Conference Papers | 2026 | [DOI](https://doi.org/10.1145/3799902.3811232) | Keeps reservoirs in several screen-space layers to cut noise at disocclusions |
+
+For the 2026 ReSTIR variants (control variates, time-of-flight) and neural caches, see [chapter 13, graphics research frontiers 2026]({{ '/blog/2026/graphics-13-research-frontiers-2026/' | relative_url }}).
 
 ## Learning resources
 

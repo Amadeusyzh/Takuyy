@@ -477,6 +477,10 @@ Two threads leave from here. First, differentiable versions of these solvers (Di
 | Macklin, Müller & Chentanez, *XPBD: Position-Based Simulation of Compliant Constrained Dynamics* | MIG | 2016 | [DOI](https://doi.org/10.1145/2994258.2994272) | Compliance + Lagrange multipliers: iteration-independent stiffness |
 | Macklin, Storey, Lu, Terdiman, Chentanez, Jeschke & Müller, *Small Steps in Physics Simulation* | SCA | 2019 | [DOI](https://doi.org/10.1145/3309486.3340247) | Many substeps with one iteration beat many iterations |
 | Müller, Macklin, Chentanez, Jeschke & Kim, *Detailed Rigid Body Simulation with Extended Position Based Dynamics* | SCA / CGF | 2020 | [DOI](https://doi.org/10.1111/cgf.14105) | XPBD for rigid bodies, joints and contact |
+| Giles, Diaz & Yuksel, *Augmented Vertex Block Descent* | ACM TOG 44(4) (SIGGRAPH) | 2025 | [DOI](https://doi.org/10.1145/3731195) | Adds an augmented-Lagrangian treatment of hard constraints to Vertex Block Descent for stiff contact and articulated bodies on the GPU |
+| Diaz, Hsu, Montalvo-Ruiz, Giles & Yuksel, *Implicit Position-Based Fluids* | SIGGRAPH Asia Conference Papers | 2025 | [DOI](https://doi.org/10.1145/3757377.3764005) | A fully implicit take on Position Based Fluids for stable incompressible particle fluids |
+
+For 2026 research on IPC contact, differentiable fluids, cloth, hair and MPM, see [chapter 13, graphics research frontiers 2026]({{ '/blog/2026/graphics-13-research-frontiers-2026/' | relative_url }}).
 
 ## Learning resources
 
