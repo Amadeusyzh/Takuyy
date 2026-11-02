@@ -1,44 +1,6 @@
 {
   "workers": [
-    {
-      "id": "gfx-c",
-      "budget": 6,
-      "mode": "continue"
-    },
-    {
-      "id": "gfx-d",
-      "budget": 6,
-      "mode": "continue"
-    },
-    {
-      "id": "eng-a",
-      "budget": 7,
-      "mode": "continue"
-    },
-    {
-      "id": "eng-b",
-      "budget": 7,
-      "mode": "continue"
-    },
-    {
-      "id": "eng-c",
-      "budget": 7,
-      "mode": "continue"
-    },
-    {
-      "id": "wm-up",
-      "budget": 5,
-      "mode": "continue"
-    },
-    {
-      "id": "eai-up",
-      "budget": 5,
-      "mode": "continue"
-    },
-    {
-      "id": "digest",
-      "budget": 6,
-      "mode": "continue"
-    }
+    {"id": "gfx-a", "budget": 9, "mode": "continue"},
+    {"id": "gfx-b", "budget": 9, "mode": "continue"}
   ]
 }
