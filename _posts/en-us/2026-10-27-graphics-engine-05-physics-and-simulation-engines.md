@@ -73,6 +73,7 @@ lo, hi = c - r, c + r
 cand = sweep_and_prune(lo, hi)
 true = [(a, b) for a, b in cand if lo[a, 1] <= hi[b, 1] and lo[b, 1] <= hi[a, 1]]
 print(n * (n - 1) // 2, len(cand), len(true))   # all pairs, x-candidates, true AABB overlaps
+# -> 79800 2468 93
 ```
 
 Why does this help? If the boxes are spread uniformly over a world of width $L$ and have mean half-width $\bar r$, two intervals overlap on $x$ with probability about $4\bar r / L$. So the expected number of candidates is about $\tfrac{n^2}{2}\cdot\tfrac{4\bar r}{L}$. If the world grows with the number of objects at constant density ($L \propto \sqrt{n}$ in 2D), candidates grow like $n^{1.5}$ instead of $n^2$, and true overlaps grow like $n$.
@@ -220,7 +221,7 @@ def epa(A, B, simplex, tol=1e-9, max_iter=64):
 
 hit, s = gjk(A, B)
 n, depth = epa(A, B, s)
-print(n, depth)
+print(n, depth)   # -> [ 0.9701425  -0.24253563] 0.7276068751089989
 ```
 
 Check the sign convention on a simple case. If $A$ is on the left and $B$ overlaps it from the right, $A\ominus B$ lies mostly at negative $x$ and pokes past the origin a little on the $+x$ side. EPA returns $\mathbf{n} = (+1, 0)$, and pushing $B$ by $d\,\mathbf{n}$ moves it to the right, out of $A$.
@@ -302,11 +303,14 @@ def stack(n=10, top_mass=10.0, iters=10, substeps=1, warm=False, frames=120, dt=
 
 for kw in [dict(iters=10), dict(iters=10, warm=True), dict(iters=1, substeps=10, warm=True)]:
     print(kw, f"{stack(**kw) * 1000:.3f} mm")
+# -> {'iters': 10} 22.307 mm
+#    {'iters': 10, 'warm': True} 0.000 mm
+#    {'iters': 1, 'substeps': 10, 'warm': True} 0.000 mm
 ```
 
 Why is a stack hard? Gauss–Seidel moves information one contact per sweep. The weight of the top box must reach the ground through every contact below it, so a stack of $n$ boxes needs on the order of $n$ sweeps, or many more when masses differ. With a heavy box on light ones, the effective-mass ratios make each sweep transmit only a small part of the needed correction. Whatever is left over shows up as sinking, which Baumgarte then pushes back. The figure measures it.
 
-{% include blog_figure.liquid path="assets/img/blog/graphics-engine/05-stack-solvers.svg" caption="Toy 10-box stack, all solvers at the same cost of 10 constraint sweeps per 1/60 s frame (script output). Left: worst penetration over 2 s with the top box 10 times heavier. Right: penetration at rest, averaged over the last 0.5 s, for mass ratios 1:1, 1:10 and 1:100 (log scale). Compare plain PGS (red) with warm starting (orange), with substepping (blue, one sweep per substep, like TGS and Box2D's soft step) and with XPBD (purple): warm starting and substepping are the two tools engines use against slow propagation." %}
+{% include blog_figure.liquid path="assets/img/blog/graphics-engine/05-stack-solvers.svg" caption="Toy 10-box stack, all solvers at the same cost of 10 constraint sweeps per 1/60 s frame (script output). Left: worst penetration over 2 s with the top box 10 times heavier. Right: penetration at rest, averaged over the last 0.5 s, for mass ratios 1:1, 1:10 and 1:100 (log scale). Compare plain PGS (red) with warm starting (orange), with substepping (blue, one sweep per substep, like TGS and Box2D's soft step) and with XPBD (purple): warm starting and substepping are the two tools engines use against slow propagation. In this run plain PGS leaves 10, 22 and 142 mm of penetration; warm starting and substepping both settle to zero (bars marked 0); XPBD, which corrects positions directly but sees only one sweep per substep, leaves 0.25 to 2.6 mm." %}
 
 ### TGS, soft step and XPBD: small steps again
 
@@ -367,7 +371,7 @@ with the configuration-dependent mass matrix $\mathbf{M}(\mathbf{q}) = \sum_i m_
 
 The figure runs both formulations on a 4-link pendulum with light links and a heavy end mass.
 
-{% include blog_figure.liquid path="assets/img/blog/graphics-engine/05-articulated-chain.svg" caption="A 4-link chain (link masses 1, 1, 1 and 50 kg at the end), released straight at 69° from vertical. Purple circles: reduced coordinates (joint angles, RK4, so link lengths are exact). Orange squares: maximal coordinates (point masses and distance constraints, XPBD with zero compliance, one step and one iteration per frame) at the same times. Right: the worst relative link-length error of the maximal chain for 1, 4 and 32 iterations per step. The reduced chain has zero error by construction, and the maximal chain needs many iterations to approach it." %}
+{% include blog_figure.liquid path="assets/img/blog/graphics-engine/05-articulated-chain.svg" caption="A 4-link chain (link masses 1, 1, 1 and 50 kg at the end), released straight at 69° from vertical. Purple circles: reduced coordinates (joint angles, RK4, so link lengths are exact). Orange squares: maximal coordinates (point masses and distance constraints, XPBD with zero compliance, one step and one iteration per frame) at the same times. Right: the worst relative link-length error of the maximal chain for 1, 4 and 32 iterations per step. The reduced chain has zero error by construction, and the maximal chain needs many iterations to approach it: over 3 s its worst error is 31% with 1 iteration, 7.8% with 4 and 0.87% with 32." %}
 
 That is why robot simulators differ from game engines. MuJoCo and Drake work in generalized coordinates; PhysX has a separate **reduced-coordinate articulation** type, which Isaac Sim uses for robots; and Unity exposes it as `ArticulationBody`. Game characters, meanwhile, rarely need exact joints: a ragdoll that stretches by 1 % is invisible. Robot learning needs the opposite trade-off: exact joints, accurate actuators and contacts, and the ability to compute $\mathbf{M}(\mathbf{q})$ and its derivatives. [Embodied-ai 01]({{ '/blog/2026/embodied-ai-01-robotics-foundations/' | relative_url }}) covers the robot kinematics behind this.
 
@@ -474,7 +478,7 @@ def random_scene(rng):
 
 rng = np.random.default_rng(0)
 for i in range(3):
-    print({k: np.round(v, 2) for k, v in random_scene(rng).items()})
+    print({k: np.round(v, 2).tolist() for k, v in random_scene(rng).items()})
 ```
 
 In Isaac Sim this is **Replicator**: randomizers attached to USD prims (materials, poses, lights, camera parameters) driven per frame, with "writers" that export images plus labels. On the physics side, the same idea randomizes masses, friction, motor gains, latencies and pushes. That is **dynamics randomization**, and it is the main sim-to-real tool for locomotion. See [embodied-ai 02]({{ '/blog/2026/embodied-ai-02-reinforcement-learning-for-robots/' | relative_url }}) for the reinforcement-learning side, and [embodied-ai 03]({{ '/blog/2026/embodied-ai-03-simulation-platforms/' | relative_url }}) for the platforms. The [next post]({{ '/blog/2026/graphics-engine-06-ai-meets-graphics-engines/' | relative_url }}) shows how generative models (Cosmos-style "world foundation models") are now used to make rendered data look real, and even to replace the renderer.

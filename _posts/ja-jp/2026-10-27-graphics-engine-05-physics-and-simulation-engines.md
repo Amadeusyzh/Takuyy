@@ -73,6 +73,7 @@ lo, hi = c - r, c + r
 cand = sweep_and_prune(lo, hi)
 true = [(a, b) for a, b in cand if lo[a, 1] <= hi[b, 1] and lo[b, 1] <= hi[a, 1]]
 print(n * (n - 1) // 2, len(cand), len(true))   # all pairs, x-candidates, true AABB overlaps
+# -> 79800 2468 93
 ```
 
 なぜ効果があるのでしょうか。箱が幅 $L$ の世界に一様に散らばり、平均半幅が $\bar r$ なら、2 つの区間が $x$ 上で重なる確率は約 $4\bar r / L$ です。したがって候補数の期待値は約 $\tfrac{n^2}{2}\cdot\tfrac{4\bar r}{L}$ になります。物体数とともに世界が密度一定で大きくなる場合（2D では $L \propto \sqrt{n}$）、候補は $n^2$ ではなく $n^{1.5}$ で増え、本当の重なりは $n$ に比例して増えます。
@@ -220,7 +221,7 @@ def epa(A, B, simplex, tol=1e-9, max_iter=64):
 
 hit, s = gjk(A, B)
 n, depth = epa(A, B, s)
-print(n, depth)
+print(n, depth)   # -> [ 0.9701425  -0.24253563] 0.7276068751089989
 ```
 
 符号の約束を簡単な場合で確かめましょう。$A$ が左にあり、$B$ が右から重なっているとき、$A\ominus B$ の大部分は $x$ が負の側にあり、$+x$ 側でわずかに原点を越えています。EPA は $\mathbf{n} = (+1, 0)$ を返し、$B$ を $d\,\mathbf{n}$ だけ押すと右へ動いて $A$ から抜け出します。
@@ -302,11 +303,14 @@ def stack(n=10, top_mass=10.0, iters=10, substeps=1, warm=False, frames=120, dt=
 
 for kw in [dict(iters=10), dict(iters=10, warm=True), dict(iters=1, substeps=10, warm=True)]:
     print(kw, f"{stack(**kw) * 1000:.3f} mm")
+# -> {'iters': 10} 22.307 mm
+#    {'iters': 10, 'warm': True} 0.000 mm
+#    {'iters': 1, 'substeps': 10, 'warm': True} 0.000 mm
 ```
 
 なぜ積み重ねは難しいのでしょうか。ガウス・ザイデル法は 1 回の走査で情報を接触 1 つ分しか伝えません。一番上の箱の重さは、その下のすべての接触を通って地面に届かなければならないので、$n$ 個の積み重ねにはおよそ $n$ 回の走査が必要で、質量が異なるとさらに多く必要です。軽い箱の上に重い箱があると、有効質量の比のせいで 1 回の走査では必要な修正のごく一部しか伝わりません。残りは沈み込みとして現れ、それを Baumgarte が押し戻します。図はそれを測ったものです。
 
-{% include blog_figure.liquid path="assets/img/blog/graphics-engine/05-stack-solvers.svg" caption="10 個の箱のトイ積み重ね。どのソルバも 1/60 秒のフレームあたり 10 回の拘束走査という同じコストです（スクリプトの出力）。左：一番上の箱が 10 倍重いときの 2 秒間の最大貫通。右：静止時の貫通（最後の 0.5 秒の平均）、質量比 1:1、1:10、1:100（対数軸）。素の PGS（赤）、ウォームスタート付き（橙）、サブステップ（青。サブステップごとに 1 回走査し、TGS や Box2D の soft step に相当）、XPBD（紫）を比べてください。ウォームスタートとサブステップは、伝播の遅さに対抗するためにエンジンが使う 2 つの道具です。" %}
+{% include blog_figure.liquid path="assets/img/blog/graphics-engine/05-stack-solvers.svg" caption="10 個の箱のトイ積み重ね。どのソルバも 1/60 秒のフレームあたり 10 回の拘束走査という同じコストです（スクリプトの出力）。左：一番上の箱が 10 倍重いときの 2 秒間の最大貫通。右：静止時の貫通（最後の 0.5 秒の平均）、質量比 1:1、1:10、1:100（対数軸）。素の PGS（赤）、ウォームスタート付き（橙）、サブステップ（青。サブステップごとに 1 回走査し、TGS や Box2D の soft step に相当）、XPBD（紫）を比べてください。ウォームスタートとサブステップは、伝播の遅さに対抗するためにエンジンが使う 2 つの道具です。この実行では、素の PGS は 10、22、142 mm の貫通を残し、ウォームスタートとサブステップはどちらも 0 に収束します（0 と記した棒）。XPBD は位置を直接修正しますが、サブステップごとに 1 回しか走査しないため 0.25〜2.6 mm が残ります。" %}
 
 ### TGS、soft step、XPBD：ここでも小さなステップ
 
@@ -367,7 +371,7 @@ $$
 
 図は、軽いリンクと重い先端質量を持つ 4 リンクの振り子で、両方の定式化を動かしたものです。
 
-{% include blog_figure.liquid path="assets/img/blog/graphics-engine/05-articulated-chain.svg" caption="4 リンクの連鎖（リンクの質量は 1、1、1、先端が 50 kg）を、鉛直から 69° の伸びた状態で放します。紫の丸：縮約座標（関節角、RK4 なのでリンク長は厳密）。橙の四角：最大座標（質点と距離拘束、コンプライアンス 0 の XPBD、1 フレームに 1 ステップ・1 反復）を同じ時刻で表示。右：最大座標の連鎖について、1 ステップあたり 1、4、32 回反復したときのリンク長の最大相対誤差。縮約座標の連鎖は構成上誤差 0 で、最大座標の連鎖がそれに近づくには多くの反復が必要です。" %}
+{% include blog_figure.liquid path="assets/img/blog/graphics-engine/05-articulated-chain.svg" caption="4 リンクの連鎖（リンクの質量は 1、1、1、先端が 50 kg）を、鉛直から 69° の伸びた状態で放します。紫の丸：縮約座標（関節角、RK4 なのでリンク長は厳密）。橙の四角：最大座標（質点と距離拘束、コンプライアンス 0 の XPBD、1 フレームに 1 ステップ・1 反復）を同じ時刻で表示。右：最大座標の連鎖について、1 ステップあたり 1、4、32 回反復したときのリンク長の最大相対誤差。縮約座標の連鎖は構成上誤差 0 で、最大座標の連鎖がそれに近づくには多くの反復が必要です。3 秒間の最大誤差は、1 反復で 31%、4 反復で 7.8%、32 反復で 0.87% です。" %}
 
 これがロボットシミュレータとゲームエンジンが異なる理由です。MuJoCo や Drake は一般化座標で動作し、PhysX には別の**縮約座標多関節体**（reduced-coordinate articulation）型があり、Isaac Sim はそれをロボットに使います。Unity はそれを `ArticulationBody` として公開しています。一方、ゲームのキャラクターに厳密な関節が必要になることはまれで、1% 伸びるラグドールは見ても分かりません。ロボット学習には逆のトレードオフが必要です。厳密な関節、正確なアクチュエータと接触、そして $\mathbf{M}(\mathbf{q})$ とその微分を計算できることです。背景となるロボットの運動学は[身体性 AI 第 01 回]({{ '/blog/2026/embodied-ai-01-robotics-foundations/' | relative_url }})で扱っています。
 
@@ -474,7 +478,7 @@ def random_scene(rng):
 
 rng = np.random.default_rng(0)
 for i in range(3):
-    print({k: np.round(v, 2) for k, v in random_scene(rng).items()})
+    print({k: np.round(v, 2).tolist() for k, v in random_scene(rng).items()})
 ```
 
 Isaac Sim ではこれが **Replicator** です。ランダマイザを USD の prim（マテリアル、姿勢、ライト、カメラパラメータ）に付けてフレームごとに駆動し、「ライター」が画像とラベルを書き出します。物理の側では、同じ考え方で質量、摩擦、モータゲイン、遅延、外乱をランダム化します。これが**ダイナミクスランダム化**（dynamics randomization）で、歩行の sim-to-real の主要な道具です。強化学習の側は[身体性 AI 第 02 回]({{ '/blog/2026/embodied-ai-02-reinforcement-learning-for-robots/' | relative_url }})、プラットフォームは[身体性 AI 第 03 回]({{ '/blog/2026/embodied-ai-03-simulation-platforms/' | relative_url }})を参照してください。[次の記事]({{ '/blog/2026/graphics-engine-06-ai-meets-graphics-engines/' | relative_url }})では、生成モデル（Cosmos 型の「世界基盤モデル」）がレンダリングデータを本物らしく見せるため、さらにはレンダラを置き換えるために使われている様子を見ます。

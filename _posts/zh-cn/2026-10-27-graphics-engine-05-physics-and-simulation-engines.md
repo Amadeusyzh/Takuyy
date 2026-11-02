@@ -73,6 +73,7 @@ lo, hi = c - r, c + r
 cand = sweep_and_prune(lo, hi)
 true = [(a, b) for a, b in cand if lo[a, 1] <= hi[b, 1] and lo[b, 1] <= hi[a, 1]]
 print(n * (n - 1) // 2, len(cand), len(true))   # all pairs, x-candidates, true AABB overlaps
+# -> 79800 2468 93
 ```
 
 为什么这样有效？若盒子均匀分布在宽度为 $L$ 的世界中，平均半宽为 $\bar r$，则两个区间在 $x$ 上重叠的概率约为 $4\bar r / L$，候选对的期望数量约为 $\tfrac{n^2}{2}\cdot\tfrac{4\bar r}{L}$。如果世界随物体数量增长而保持密度不变（二维中 $L \propto \sqrt{n}$），候选对的增长是 $n^{1.5}$ 而不是 $n^2$，而真正的重叠只随 $n$ 线性增长。
@@ -220,7 +221,7 @@ def epa(A, B, simplex, tol=1e-9, max_iter=64):
 
 hit, s = gjk(A, B)
 n, depth = epa(A, B, s)
-print(n, depth)
+print(n, depth)   # -> [ 0.9701425  -0.24253563] 0.7276068751089989
 ```
 
 用一个简单情形检查符号约定。若 $A$ 在左，$B$ 从右侧与它重叠，则 $A\ominus B$ 大部分位于 $x$ 负半轴，只在 $+x$ 一侧稍稍越过原点。EPA 返回 $\mathbf{n} = (+1, 0)$，把 $B$ 推动 $d\,\mathbf{n}$ 就是把它向右推出 $A$。
@@ -302,11 +303,14 @@ def stack(n=10, top_mass=10.0, iters=10, substeps=1, warm=False, frames=120, dt=
 
 for kw in [dict(iters=10), dict(iters=10, warm=True), dict(iters=1, substeps=10, warm=True)]:
     print(kw, f"{stack(**kw) * 1000:.3f} mm")
+# -> {'iters': 10} 22.307 mm
+#    {'iters': 10, 'warm': True} 0.000 mm
+#    {'iters': 1, 'substeps': 10, 'warm': True} 0.000 mm
 ```
 
 为什么堆叠很难？Gauss–Seidel 每扫描一遍只把信息传递一个接触。顶部盒子的重量必须穿过下面的每一个接触才能到达地面，所以 $n$ 个盒子的堆叠大约需要 $n$ 遍扫描；质量不同时还要多得多。重盒子压在轻盒子上时，有效质量之比让每一遍扫描只能传递所需修正的一小部分。剩下的部分表现为下沉，然后 Baumgarte 再把它推回去。下图对此做了测量。
 
-{% include blog_figure.liquid path="assets/img/blog/graphics-engine/05-stack-solvers.svg" caption="10 个盒子的玩具堆叠，所有求解器都使用相同的代价：每个 1/60 秒的帧扫描约束 10 遍（脚本输出）。左：顶部盒子重 10 倍时，2 秒内的最大穿透。右：静止时的穿透（最后 0.5 秒的平均值），质量比分别为 1:1、1:10、1:100（对数坐标）。比较普通 PGS（红）、加热启动（橙）、子步（蓝，每个子步扫描一遍，类似 TGS 和 Box2D 的 soft step）与 XPBD（紫）：热启动和子步是引擎对付信息传播缓慢的两种工具。" %}
+{% include blog_figure.liquid path="assets/img/blog/graphics-engine/05-stack-solvers.svg" caption="10 个盒子的玩具堆叠，所有求解器都使用相同的代价：每个 1/60 秒的帧扫描约束 10 遍（脚本输出）。左：顶部盒子重 10 倍时，2 秒内的最大穿透。右：静止时的穿透（最后 0.5 秒的平均值），质量比分别为 1:1、1:10、1:100（对数坐标）。比较普通 PGS（红）、加热启动（橙）、子步（蓝，每个子步扫描一遍，类似 TGS 和 Box2D 的 soft step）与 XPBD（紫）：热启动和子步是引擎对付信息传播缓慢的两种工具。在这次运行中，普通 PGS 留下 10、22 和 142 mm 的穿透；热启动和子步都收敛到零（标为 0 的柱）；XPBD 直接修正位置，但每个子步只扫描一遍，留下 0.25 到 2.6 mm。" %}
 
 ### TGS、soft step 与 XPBD：又是小步长
 
@@ -367,7 +371,7 @@ $$
 
 下图在一个连杆轻、末端质量重的 4 连杆摆上运行两种表述。
 
-{% include blog_figure.liquid path="assets/img/blog/graphics-engine/05-articulated-chain.svg" caption="4 连杆链（连杆质量 1、1、1，末端 50 kg），从与竖直方向成 69° 的伸直状态释放。紫色圆点：降维坐标（关节角，RK4，连杆长度精确）。橙色方块：最大坐标（质点加距离约束，零柔度 XPBD，每帧一步、一次迭代），时刻相同。右：最大坐标链在每步 1、4、32 次迭代下的最大相对连杆长度误差。降维链的误差从构造上就是零，而最大坐标链需要很多次迭代才能接近它。" %}
+{% include blog_figure.liquid path="assets/img/blog/graphics-engine/05-articulated-chain.svg" caption="4 连杆链（连杆质量 1、1、1，末端 50 kg），从与竖直方向成 69° 的伸直状态释放。紫色圆点：降维坐标（关节角，RK4，连杆长度精确）。橙色方块：最大坐标（质点加距离约束，零柔度 XPBD，每帧一步、一次迭代），时刻相同。右：最大坐标链在每步 1、4、32 次迭代下的最大相对连杆长度误差。降维链的误差从构造上就是零，而最大坐标链需要很多次迭代才能接近它：3 秒内的最大误差在 1 次迭代时为 31%，4 次时为 7.8%，32 次时为 0.87%。" %}
 
 这就是机器人模拟器与游戏引擎不同的原因。MuJoCo 和 Drake 在广义坐标下工作；PhysX 有单独的**降维坐标关节体**（reduced-coordinate articulation）类型，Isaac Sim 用它表示机器人；Unity 则以 `ArticulationBody` 的形式提供它。而游戏角色很少需要精确的关节：伸长 1% 的布娃娃（ragdoll）是看不出来的。机器人学习需要相反的取舍：精确的关节、准确的执行器与接触，以及计算 $\mathbf{M}(\mathbf{q})$ 及其导数的能力。其背后的机器人运动学见[具身智能第 01 篇]({{ '/blog/2026/embodied-ai-01-robotics-foundations/' | relative_url }})。
 
@@ -474,7 +478,7 @@ def random_scene(rng):
 
 rng = np.random.default_rng(0)
 for i in range(3):
-    print({k: np.round(v, 2) for k, v in random_scene(rng).items()})
+    print({k: np.round(v, 2).tolist() for k, v in random_scene(rng).items()})
 ```
 
 在 Isaac Sim 中，这就是 **Replicator**：随机化器挂在 USD prim 上（材质、位姿、灯光、相机参数），逐帧驱动，再由"writer"导出图像和标注。在物理方面，同样的思路随机化质量、摩擦、电机增益、延迟和外部推力，这就是**动力学随机化**（dynamics randomization），它是足式运动 sim-to-real 的主要工具。强化学习方面见[具身智能第 02 篇]({{ '/blog/2026/embodied-ai-02-reinforcement-learning-for-robots/' | relative_url }})，平台方面见[具身智能第 03 篇]({{ '/blog/2026/embodied-ai-03-simulation-platforms/' | relative_url }})。[下一篇]({{ '/blog/2026/graphics-engine-06-ai-meets-graphics-engines/' | relative_url }})会介绍生成模型（Cosmos 式的"世界基础模型"）如何被用来让渲染数据看起来更真实，甚至取代渲染器。

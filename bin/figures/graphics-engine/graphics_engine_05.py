@@ -41,12 +41,12 @@ def fig_pipeline():
     fig, ax = plt.subplots(figsize=(10, 6.4))
     ax.set_xlim(0, 10); ax.set_ylim(0, 6.6); ax.axis("off")
     # two rows of four boxes, snake order
-    pos = [(0.15 + 2.5 * i, 4.3) for i in range(4)] + [(0.15 + 2.5 * (3 - i), 1.5) for i in range(4)]
-    bw, bh = 2.1, 1.35
+    pos = [(0.05 + 2.5 * i, 4.3) for i in range(4)] + [(0.05 + 2.5 * (3 - i), 1.5) for i in range(4)]
+    bw, bh = 2.3, 1.35
     for (name, sub, col), (x, y) in zip(stages, pos):
         ax.add_patch(FancyBboxPatch((x, y), bw, bh, boxstyle="round,pad=0.04,rounding_size=0.12",
                                     fc="white", ec=col, lw=2.6))
-        ax.text(x + bw / 2, y + bh * 0.64, name, ha="center", va="center", fontsize=12.5,
+        ax.text(x + bw / 2, y + bh * 0.64, name, ha="center", va="center", fontsize=11,
                 family="monospace", color=C["dark"])
         ax.text(x + bw / 2, y + bh * 0.28, sub, ha="center", va="center", fontsize=11, color=col)
     kw = dict(arrowstyle="-|>", color=C["dark"], lw=1.8, mutation_scale=18)
@@ -404,9 +404,9 @@ def fig_stack():
     t = np.arange(1, 121) / 60
     for name, kw, col in SOLVERS:
         p = stack_sim(top_mass=10.0, **kw)
-        a1.semilogy(t, np.maximum(p, 1e-7) * 1000, color=col, label=name)
+        a1.semilogy(t, np.maximum(p * 1000, 1e-3), color=col, label=name)
     a1.set_xlabel("$t$ (s)"); a1.set_ylabel("max penetration (mm)")
-    a1.set_title("10 boxes, top box 10x heavier", fontsize=14)
+    a1.set_title("10 boxes, top box 10x heavier", fontsize=14); a1.set_ylim(1e-3, 1e3)
     a1.legend(fontsize=11, loc="lower right")
     ratios = [1, 10, 100]
     width = 0.2
@@ -414,8 +414,12 @@ def fig_stack():
         vals = [stack_sim(top_mass=float(r), **kw)[-30:].mean() * 1000 for r in ratios]
         print(f"  {name:34s} mean penetration (mm) over last 0.5 s for ratios {ratios}: "
               + ", ".join(f"{v:.3g}" for v in vals))
-        a2.bar(np.arange(3) + (j - 1.5) * width, np.maximum(vals, 1e-7), width, color=col)
-    a2.set_yscale("log")
+        xs = np.arange(3) + (j - 1.5) * width
+        a2.bar(xs, np.maximum(vals, 1e-3), width, color=col, label=name)
+        for xv, v in zip(xs, vals):
+            if v < 1e-3:
+                a2.text(xv, 1.4e-3, "0", ha="center", fontsize=12, color=col)
+    a2.set_yscale("log"); a2.set_ylim(1e-3, 1e3)
     a2.set_xticks(range(3)); a2.set_xticklabels([f"1 : {r}" for r in ratios])
     a2.set_xlabel("mass ratio  (box : top box)"); a2.set_ylabel("penetration at rest (mm)")
     fig.tight_layout()
@@ -554,7 +558,7 @@ def fig_chain():
         a1.plot(*red[f][-1], "o", color=C["a"], ms=12, alpha=alpha)
         a1.plot(*trajs[1][0][f][-1], "s", color=C["b"], ms=11, alpha=alpha)
     a1.plot(0, 0, "k^", ms=12)
-    a1.set_aspect("equal"); a1.set_xlim(-4.6, 4.6); a1.set_ylim(-5.4, 1.0)
+    a1.set_aspect("equal"); a1.set_xlim(-0.6, 4.6); a1.set_ylim(-4.2, 0.6)
     a1.set_title("t = 0, 1/3, 2/3 s: reduced (o) vs maximal 1 iter (s)", fontsize=13)
     t = np.arange(1, frames + 1) * dt
     for it, col in [(1, C["b"]), (4, C["x"]), (32, C["y"])]:
