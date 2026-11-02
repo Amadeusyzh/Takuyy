@@ -118,7 +118,7 @@
     root.style.fontFamily = "system-ui, -apple-system, Segoe UI, sans-serif";
     root.style.color = "#222";
     root.innerHTML = "";
-    var D = 20, tau = 1, naive = false;
+    var D = 30, tau = 1, naive = false; // at 30 m the cut mixes levels 0 and 1
 
     var ctrl = document.createElement("div");
     ctrl.style.cssText = "display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center;padding:8px 10px 0;font-size:13.5px";

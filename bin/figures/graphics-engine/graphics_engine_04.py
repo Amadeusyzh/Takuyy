@@ -140,7 +140,8 @@ def draw_cut(ax_top, ax_tree, D):
 
 def fig_lod_cut():
     fig, axs = plt.subplots(2, 2, figsize=(14, 8), gridspec_kw=dict(height_ratios=[1.1, 1]))
-    for j, D in enumerate((5.0, 60.0)):
+    # 25 m: levels 0 and 1 mixed; 100 m: coarser levels (at 5 m every cluster is level 0)
+    for j, D in enumerate((25.0, 100.0)):
         draw_cut(axs[0, j], axs[1, j], D)
     save(fig, out("lod-cut"))
 
@@ -352,7 +353,7 @@ def fig_cards():
     cards = []
     for axis in range(3):
         for sgn in (1, -1):
-            o_ax = [a for a in range(3) if a != axis]
+            o_ax = {0: [2, 1], 1: [0, 2], 2: [0, 1]}[axis]   # keep y (up) vertical on the side cards
             g0 = BB_LO[o_ax[0]] + (np.arange(N) + 0.5) / N * (BB_HI[o_ax[0]] - BB_LO[o_ax[0]])  # cell centers
             g1 = BB_LO[o_ax[1]] + (np.arange(N) + 0.5) / N * (BB_HI[o_ax[1]] - BB_LO[o_ax[1]])
             G0, G1 = np.meshgrid(g0, g1)
@@ -381,7 +382,8 @@ def fig_cards():
     cmap = plt.cm.gray.copy(); cmap.set_bad("white")
     for k, (axis, sgn, o_ax, t) in enumerate(cards):
         a2 = fig.add_subplot(2, 6, [4, 5, 6, 10, 11, 12][k])      # right half: 2 rows x 3 cards
-        a2.imshow(t, origin="lower", cmap=cmap, vmin=0, vmax=np.nanmax(t),
+        # vmax above the farthest hit so that every hit stays gray and only misses are white
+        a2.imshow(t, origin="lower", cmap=cmap, vmin=0, vmax=1.6 * np.nanmax(t) + 0.05,
                   extent=[BB_LO[o_ax[0]], BB_HI[o_ax[0]], BB_LO[o_ax[1]], BB_HI[o_ax[1]]])
         a2.set_title(("+" if sgn > 0 else "−") + names[axis], fontsize=14, color=C["a"])
         a2.set_xticks([]); a2.set_yticks([]); a2.grid(False)

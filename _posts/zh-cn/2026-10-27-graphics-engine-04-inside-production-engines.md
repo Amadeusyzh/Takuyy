@@ -118,7 +118,7 @@ for D in (5.0, 60.0, 500.0):                     # camera to the left of the ter
 
 对于一维玩具，我们从根开始遍历；GPU 版本则并行地对每个簇求值同一个不等式。运行这段脚本：近处的相机会在靠近它的地方保留细的簇，而在远端保留粗的簇，随着相机远离，线段数量下降。
 
-{% include blog_figure.liquid path="assets/img/blog/graphics-engine/04-lod-cut.svg" caption="`select_cut` 在相机位于地形左侧 5 m（左）和 60 m（右）、τ = 1 px 时选出的切割。上：被绘制的折线，按每个被选簇所在的层级着色（深色 = 细）。下：高亮显示切割的层级结构；每条从根到叶的路径恰好穿过它一次。靠近相机时切割下探到第 0 层，远处则停留在较高的层级。" %}
+{% include blog_figure.liquid path="assets/img/blog/graphics-engine/04-lod-cut.svg" caption="`select_cut` 在相机位于地形左侧 25 m（左）和 100 m（右）、τ = 1 px 时选出的切割。上：被绘制的折线，按每个被选簇所在的层级着色（深色 = 细）。下：高亮显示切割的层级结构；每条从根到叶的路径恰好穿过它一次。较远的相机在各处都使用更粗的层级（13 个簇、104 条线段，对比 5 个簇、40 条线段）。在同一视图内，层级取决于每个簇自身的误差，而不只是距离：在 25 m 时，x = 6-8 处平坦的一段已经简化到第 1 层，而更远处更崎岖的几段（x = 8-10、12-14）仍需要第 0 层。" %}
 
 {% include blog_figure.liquid path="assets/img/blog/graphics-engine/04-error-distance.svg" caption="左：各层最大误差的投影误差 $\varepsilon K / d$ 随距离的变化（双对数坐标，因此每一层是一条斜率为 −1 的直线）；当某一层的直线降到 τ = 1 px（虚线）以下时，该层变得可以接受。右：所选切割中的线段数随相机距离的变化，由 `select_cut` 计算得出。细节随距离平滑下降，而不是在几个大的离散 LOD 台阶上突变。" %}
 
@@ -132,7 +132,7 @@ for D in (5.0, 60.0, 500.0):                     # camera to the left of the ter
 
 光栅化被一分为二。GPU 硬件光栅化器对大三角形很高效，但对微小三角形会浪费工作：它们以 2x2 像素的四元组（quad）着色，并且每个三角形都有设置开销，因此一个只覆盖一个像素的三角形，其开销几乎与覆盖许多像素的三角形相当。因此 Nanite 用**计算着色器中的软件光栅化器**来光栅化含**小三角形**的簇（使用 64 位原子操作写入可见性缓冲），并把含大三角形的簇送往硬件路径。演讲中描述了 32 像素的边长阈值（[摘要](https://www.thecandidstartup.org/2023/04/03/nanite-graphics-pipeline.html)），我们在下一幅图中使用它。
 
-{% include blog_figure.liquid path="assets/img/blog/graphics-engine/04-triangle-sizes.svg" caption="一个被细分成约 26 万个三角形的球体在屏幕上的三角形大小，距离分别为 3、10 和 30 m（1080 p，60° 视场角），通过投影每一个正面三角形计算得出。直方图显示最长边的像素长度（对数刻度）；虚线为 32 px。在几何密集时，几乎所有三角形都落在这条线以下，而这正是计算着色器光栅化器胜过固定功能光栅化器的地方。" %}
+{% include blog_figure.liquid path="assets/img/blog/graphics-engine/04-triangle-sizes.svg" caption="一个被细分成约 26 万个三角形的球体在屏幕上的三角形大小，距离分别为 3、10 和 30 m（1080 p，60° 视场角），通过投影每一个正面三角形计算得出。直方图显示最长边的像素长度（对数刻度）；虚线为 32 px。在几何密集时，即使在 3 m 处，所有三角形也都落在这条线以下（大多为 1-10 px，在 30 m 处大多小于 1 个像素），而这正是计算着色器光栅化器胜过固定功能光栅化器的地方。" %}
 
 最后，Nanite 会对其数据进行**流送**（streaming）：DAG 被切成页，只有当前切割所需的页才驻留在 GPU 内存中，更粗的数据则始终存在作为后备。这就是名字中的“虚拟化”，类比于虚拟内存。[Nanite 文档](https://dev.epicgames.com/documentation/en-us/unreal-engine/nanite-virtualized-geometry-in-unreal-engine)列出了它当前的限制（例如只支持不透明和遮罩材质，不支持前向渲染器、MSAA 或变形目标）以及自 2021 年以来新增的功能，比如骨骼网格。
 
