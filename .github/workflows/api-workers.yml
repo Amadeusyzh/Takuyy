@@ -1,0 +1,96 @@
+# Runs the blog-writing workers (headless Claude Code) on GitHub-hosted runners.
+# Billing goes to the API key stored in the repository secret ANTHROPIC_API_KEY.
+# Triggered only by pushes to the branch ops/api-run; the worker list and budgets are in ops/workers.json.
+name: API workers
+
+on:
+  push:
+    branches: ["ops/api-run"]
+
+permissions:
+  contents: write
+
+concurrency:
+  group: api-workers
+  cancel-in-progress: false
+
+env:
+  PYTHONDONTWRITEBYTECODE: "1"
+
+jobs:
+  setup:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.matrix.outputs.matrix }}
+      ok: ${{ steps.probe.outputs.ok }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - id: matrix
+        run: echo "matrix=$(jq -c '.workers' ops/workers.json)" >> "$GITHUB_OUTPUT"
+      - id: probe
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: bash ops/probe.sh
+
+  worker:
+    needs: setup
+    if: needs.setup.outputs.ok == 'true'
+    name: ${{ matrix.id }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 350
+    strategy:
+      fail-fast: false
+      max-parallel: 10
+      matrix:
+        include: ${{ fromJSON(needs.setup.outputs.matrix) }}
+    steps:
+      - name: Checkout ops
+        uses: actions/checkout@v4
+        with:
+          path: ops-src
+          persist-credentials: false
+      - name: Checkout site (main)
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          path: site
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Setup Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: "3.3.5"
+          bundler-cache: true
+          working-directory: site
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Install tools
+        run: bash ops-src/ops/setup_runner.sh
+      - name: Run worker
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          WORKER_ID: ${{ matrix.id }}
+          WORKER_BUDGET: ${{ matrix.budget }}
+        run: bash ops-src/ops/run_worker.sh
+      - name: Commit leftovers, push branch and report
+        if: always()
+        env:
+          WORKER_ID: ${{ matrix.id }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: bash ops-src/ops/finish_worker.sh
+      - name: Upload transcript
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: transcript-${{ matrix.id }}
+          path: ${{ runner.temp }}/out
+          retention-days: 5
+          if-no-files-found: ignore

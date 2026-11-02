@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+# Builds the site (imagemagick off) and prints errors plus the tail of the log.
+set -o pipefail
+cd "$SITE_DIR"
+printf 'imagemagick:\n  enabled: false\n' > /tmp/local.yml
+LANG=C.UTF-8 bundle exec jekyll build --config _config.yml,/tmp/local.yml > /tmp/site-build.log 2>&1
+code=$?
+grep -iE 'error|liquid|kramdown|warning: ' /tmp/site-build.log | grep -viE 'deprecation|sass' | head -40
+tail -5 /tmp/site-build.log
+echo "site-build exit code: $code"
+exit $code
