@@ -78,7 +78,7 @@ Symbols: $t_{\text{gpu}}$ is the total GPU time per rendered frame; $t_{\text{fr
 
 The latency $L$ (in ms) counts the CPU work for the input, the GPU work, the extra frame held back for interpolation when $k > 1$, and on average half a display interval. It ignores the OS, the display and techniques such as NVIDIA Reflex, so take it as an illustration, not a measurement.
 
-**Worked example.** Take $t_n = 20$ ms (50 fps native), $t_f = 2$ ms, $t_c = 4$ ms, $t_u = t_g = 1$ ms, and no refresh cap:
+**Worked example.** Take $t_n = 20$ ms (50 fps native), $t_f = 2$ ms, $t_c = 4$ ms, $t\_u = t\_g = 1$ ms, and no refresh cap:
 
 - Native, $k=1$: $t_{\text{gpu}} = 20$ ms, so 50 fps and $L = 4 + 20 + 10 = 34$ ms.
 - $s = 0.67$, $k = 1$: $t_{\text{gpu}} = 2 + 18 \times 0.4489 + 1 = 11.08$ ms, so 90 fps and $L = 4 + 11.08 + 5.54 = 20.6$ ms. Upscaling makes the game both smoother *and* more responsive.
@@ -199,7 +199,7 @@ $$
 \mathbf{o}_{t+1} \sim p_\theta\big(\mathbf{o}_{t+1} \,\big\vert\, \mathbf{o}_{t-c+1:t},\ \mathbf{a}_{t-c+1:t}\big),
 $$
 
-where $\mathbf{o}_t$ is a frame (usually a latent from an autoencoder), $\mathbf{a}_t$ the action (keys, mouse, camera pose or text) $c$ the context length, and $p_\theta$ the conditional distribution represented by a network with parameters $\theta$ ($\sim$ means sampling from it, so the same input can yield different next frames). Most models are **autoregressive video diffusion** models: a diffusion or flow model generates the next latent frame conditioned on a window of past latents and actions, and it is distilled to a few denoising steps to reach real time. [World-models 03]({{ '/blog/2026/world-models-03-video-world-simulators/' | relative_url }}) explains the generative machinery, and [world-models 04]({{ '/blog/2026/world-models-04-3d-and-4d-world-generation/' | relative_url }}) covers 3D-consistent world generation. Here we look at them as *engines*.
+where $\mathbf{o}\_t$ is a frame (usually a latent from an autoencoder), $\mathbf{a}\_t$ the action (keys, mouse, camera pose or text), $c$ the context length, and $p\_\theta$ the conditional distribution represented by a network with parameters $\theta$ ($\sim$ means sampling from it, so the same input can yield different next frames). Most models are **autoregressive video diffusion** models: a diffusion or flow model generates the next latent frame conditioned on a window of past latents and actions, and it is distilled to a few denoising steps to reach real time. [World-models 03]({{ '/blog/2026/world-models-03-video-world-simulators/' | relative_url }}) explains the generative machinery, and [world-models 04]({{ '/blog/2026/world-models-04-3d-and-4d-world-generation/' | relative_url }}) covers 3D-consistent world generation. Here we look at them as *engines*.
 
 The figure below first orders these systems by first public date; note how dense the releases become from the second half of 2025:
 

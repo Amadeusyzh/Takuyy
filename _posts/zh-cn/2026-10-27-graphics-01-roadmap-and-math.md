@@ -62,7 +62,7 @@ flowchart LR
 
 ## 向量：位置、方向与两种乘积
 
-在图形学中，一个三维向量 $\mathbf{v} = (v_x, v_y, v_z)$ 可以表示两种不同的东西：**点**（位置）或**方向**（位移、速度、表面法线）。它们的存储方式相同，但变换方式不同。齐次坐标会让这种区别变得明确。
+在图形学中，一个三维向量 $\mathbf{v} = (v\_x, v\_y, v\_z)$ 可以表示两种不同的东西：**点**（位置）或**方向**（位移、速度、表面法线）。它们的存储方式相同，但变换方式不同。齐次坐标会让这种区别变得明确。
 
 ### 点积
 
@@ -89,7 +89,7 @@ $$
 \lVert\mathbf{a}\times\mathbf{b}\rVert = \lVert\mathbf{a}\rVert\,\lVert\mathbf{b}\rVert\sin\theta .
 $$
 
-叉积（cross product）的结果同时垂直于两个输入，遵循右手定则，其长度等于 $\mathbf{a}$ 和 $\mathbf{b}$ 张成的平行四边形面积。因此三角形 $(\mathbf{p}_0,\mathbf{p}_1,\mathbf{p}_2)$ 的法线是 $(\mathbf{p}_1-\mathbf{p}_0)\times(\mathbf{p}_2-\mathbf{p}_0)$，其长度的一半就是三角形的面积。顶点的顺序（**环绕顺序**，winding order）决定法线指向哪一侧，GPU 正是据此判断哪些面是“正面”。
+叉积（cross product）的结果同时垂直于两个输入，遵循右手定则，其长度等于 $\mathbf{a}$ 和 $\mathbf{b}$ 张成的平行四边形面积。因此三角形 $(\mathbf{p}\_0,\mathbf{p}\_1,\mathbf{p}\_2)$ 的法线是 $(\mathbf{p}\_1-\mathbf{p}\_0)\times(\mathbf{p}\_2-\mathbf{p}\_0)$，其长度的一半就是三角形的面积。顶点的顺序（**环绕顺序**，winding order）决定法线指向哪一侧，GPU 正是据此判断哪些面是“正面”。
 
 下图画出了下面代码中的三角形。交换两个顶点会反转绕序并翻转法线，点 $\mathbf{q}$ 的半空间测试的符号也随之翻转。
 
@@ -119,9 +119,9 @@ q = np.array([0.2, 0.2, 0.5])
 print("q above the triangle plane:", (q - p0) @ c > 0)         # True
 ```
 
-一个之后会用到的恒等式：三重积 $\mathbf{a}\cdot(\mathbf{b}\times\mathbf{c}) = \det[\mathbf{a}\ \mathbf{b}\ \mathbf{c}]$ 是平行六面体的有向体积。它的二维版本 $(b_x-a_x)(c_y-a_y)-(b_y-a_y)(c_x-a_x)$ 就是第 02 篇的光栅化器用来测试像素是否在三角形内部的**边函数**（edge function）。
+一个之后会用到的恒等式：三重积 $\mathbf{a}\cdot(\mathbf{b}\times\mathbf{c}) = \det[\mathbf{a}\ \mathbf{b}\ \mathbf{c}]$ 是平行六面体的有向体积。它的二维版本 $(b\_x-a\_x)(c\_y-a\_y)-(b\_y-a\_y)(c\_x-a\_x)$ 就是第 02 篇的光栅化器用来测试像素是否在三角形内部的**边函数**（edge function）。
 
-你可以亲手试试这两种乘积。下面的小工具中两个向量都在 $xy$ 平面内，所以 $\mathbf{a}\times\mathbf{b} = (0, 0, a_x b_y - a_y b_x)$，它唯一的非零分量正是这个二维边函数：把 $\mathbf{b}$ 拖过 $\mathbf{a}$ 所在的直线，观察符号的翻转。
+你可以亲手试试这两种乘积。下面的小工具中两个向量都在 $xy$ 平面内，所以 $\mathbf{a}\times\mathbf{b} = (0, 0, a\_x b\_y - a\_y b\_x)$，它唯一的非零分量正是这个二维边函数：把 $\mathbf{b}$ 拖过 $\mathbf{a}$ 所在的直线，观察符号的翻转。
 
 {% include widget.liquid name="graphics-dot-cross" height="400" caption="拖动 **a** 和 **b** 的端点。深色线段是 a 在 b 上的投影；阴影平行四边形的面积为 ‖a × b‖，a × b 指向屏幕外（+z）时为蓝色，指向屏幕内时为红色。" %}
 
@@ -137,7 +137,7 @@ $$
 
 基本的线性变换有：
 
-- **缩放（scale）**：$S = \operatorname{diag}(s_x, s_y, s_z)$。如果各个 $s_i$ 不相等，就是**非均匀**缩放，这对法线很重要（见下文）。
+- **缩放（scale）**：$S = \operatorname{diag}(s\_x, s\_y, s\_z)$。如果各个 $s_i$ 不相等，就是**非均匀**缩放，这对法线很重要（见下文）。
 - **绕坐标轴旋转（rotation）**：$R_x$、$R_y$、$R_z$（下面写出）。
 - **切变（shear）**：例如 $x' = x + k\,y$。
 
@@ -250,7 +250,7 @@ $$
 
 它们直观，也是动画工具在界面中显示的形式。但它们有一个**奇异点**。在 $\theta = \pm 90^\circ$ 时，第一个和最后一个旋转轴重合，公式只依赖于 $\psi - \phi$（$+90^\circ$ 时）或 $\psi + \phi$（$-90^\circ$ 时）。一个自由度消失了。这就是**万向节锁**（gimbal lock），名字来自惯性导航装置中的物理万向节：三个嵌套的环可能对齐，从而失去一个旋转轴。在奇异点附近，朝向的微小变化可能需要角度的巨大变化，所以对欧拉角插值会产生剧烈的旋转。此外还有 12 种合法的轴顺序（XYZ、ZYX、ZXZ……），把它们搞混是经典的 bug。
 
-下图用三个嵌套的环把这一点具体化：每个环对应 $R_z(\psi)R_y(\theta)R_x(\phi)$ 中的一次旋转，并垂直于它所绕的轴。
+下图用三个嵌套的环把这一点具体化：每个环对应 $R\_z(\psi)R\_y(\theta)R\_x(\phi)$ 中的一次旋转，并垂直于它所绕的轴。
 
 {% include blog_figure.liquid path="assets/img/blog/graphics/01-gimbal-lock.svg" width="90%" caption="Z-Y-X 顺序的万向节环，偏航 30°、滚转 10°。蓝色：偏航环绕世界 z 轴转动；绿色：俯仰环绕偏航之后的 y 轴转动；红色：滚转环绕 Rz Ry x 即机头方向的轴转动（黑色小飞机）。俯仰为 40° 时（左），三个轴相互独立，雅可比矩阵的秩为 3。俯仰为 90° 时（右），滚转轴转到了偏航轴上（夹角 180°，即同一条直线），红环落在蓝环所在的平面内，秩降为 2。" %}
 
@@ -344,7 +344,7 @@ $$
 
 展开这个“夹心”，又会得到罗德里格斯公式。这就是半角出现的原因：$q$ 作用了两次。一些值得记住的事实：
 
-- **复合**就是乘法：“先 $q_a$，再 $q_b$”是 $q_b q_a$，与矩阵一样是从右往左的顺序。它需要 16 次乘法，而 $3\times 3$ 矩阵需要 27 次。
+- **复合**就是乘法：“先 $q_a$，再 $q_b$”是 $q\_b q\_a$，与矩阵一样是从右往左的顺序。它需要 16 次乘法，而 $3\times 3$ 矩阵需要 27 次。
 - **双重覆盖**（double cover）：$q$ 和 $-q$ 表示同一个旋转，因为 $\theta$ 和 $\theta + 2\pi$ 给出互为相反数的四元数。插值时必须选对符号。
 - **漂移**：多次相乘之后，舍入误差会使 $\lVert q\rVert \neq 1$。重新归一化四元数很简单，而重新正交化一个矩阵则不然。
 - **没有万向节锁**：单位四元数构成三维球面 $S^3$，这是一个没有奇异点的光滑空间。
@@ -356,7 +356,7 @@ $$
 \qquad \cos\Omega = q_0\cdot q_1 .
 $$
 
-如果 $q_0\cdot q_1 < 0$，先把 $q_1$ 取反，以便走较短的那条路。当 $\Omega$ 很小时，$\sin\Omega\to 0$，公式在数值上变得不稳定，因此实现会退回到归一化线性插值（**nlerp**）。nlerp 的速度不恒定，但它廉价、满足交换律，用于混合多个旋转（例如蒙皮）时仍然是好选择。
+如果 $q\_0\cdot q\_1 < 0$，先把 $q_1$ 取反，以便走较短的那条路。当 $\Omega$ 很小时，$\sin\Omega\to 0$，公式在数值上变得不稳定，因此实现会退回到归一化线性插值（**nlerp**）。nlerp 的速度不恒定，但它廉价、满足交换律，用于混合多个旋转（例如蒙皮）时仍然是好选择。
 
 下图用下面代码中的例子比较两者。由于两个四元数都位于 $(w, y)$ 平面内，经过它们的 $S^3$ 大圆在这个平面中就是普通的单位圆。
 
@@ -456,7 +456,7 @@ flowchart LR
 
 {% include blog_figure.liquid path="assets/img/blog/graphics/01-coordinate-spaces.svg" localized="true" caption="同一个单位立方体在各个空间中的样子（橙色点标出 (+,+,+) 角）。物体空间：以自身支点为中心。世界空间：由 M = T(1,0,0) Ry(45°) 放置，相机位于 (2,2,5) 并看向原点（灰色视锥，坐标轴 r、u、−f）。观察空间：相机位于原点，看向 −z。NDC：经过 P 和除以 w 之后，视锥变成立方体 [−1,1]³，靠近相机的部分被放大，并且 z 改为指向远离相机的方向（OpenGL 的 NDC 是左手系）。屏幕空间：视口变换把 NDC 映射到 240×240 像素的图像，第 0 行在最上方。" %}
 
-顶点着色器计算 $\mathbf{p}_{\text{clip}} = P\,V\,M\,\mathbf{p}_{\text{obj}}$，因此 $P V M$ 被称为 **MVP 矩阵**。第 02 篇会构造 $P$ 和视口变换。**视图矩阵** $V$ 是相机自身世界变换的逆。如果相机位于 $\mathbf{e}$，其正交归一的右/上/后方向轴为 $\mathbf{r}, \mathbf{u}, -\mathbf{f}$，那么它的世界矩阵是 $C = \begin{pmatrix} \mathbf{r} & \mathbf{u} & -\mathbf{f} & \mathbf{e} \\ 0 & 0 & 0 & 1 \end{pmatrix}$。由于旋转部分是正交的，其逆为
+顶点着色器计算 $\mathbf{p}\_{\text{clip}} = P\,V\,M\,\mathbf{p}\_{\text{obj}}$，因此 $P V M$ 被称为 **MVP 矩阵**。第 02 篇会构造 $P$ 和视口变换。**视图矩阵** $V$ 是相机自身世界变换的逆。如果相机位于 $\mathbf{e}$，其正交归一的右/上/后方向轴为 $\mathbf{r}, \mathbf{u}, -\mathbf{f}$，那么它的世界矩阵是 $C = \begin{pmatrix} \mathbf{r} & \mathbf{u} & -\mathbf{f} & \mathbf{e} \\ 0 & 0 & 0 & 1 \end{pmatrix}$。由于旋转部分是正交的，其逆为
 
 $$
 V = C^{-1} = \begin{pmatrix} \mathbf{r}^\top & -\mathbf{r}\cdot\mathbf{e} \\ \mathbf{u}^\top & -\mathbf{u}\cdot\mathbf{e} \\ -\mathbf{f}^\top & \mathbf{f}\cdot\mathbf{e} \\ \mathbf{0}^\top & 1 \end{pmatrix}.
@@ -567,7 +567,7 @@ print("cofactor = det * inv^T:", np.allclose(cofactor(M), np.linalg.det(M) * np.
 1. 证明对单位四元数，$q\,(0,\mathbf{v})\,q^*$ 重现了罗德里格斯公式。再证明 $-q$ 给出相同的结果。
 2. 实现 `matrix_to_quaternion(R)`。使用按最大对角元素分支的数值稳定版本，并在 10,000 个随机旋转上检查 `q_to_matrix(matrix_to_quaternion(R)) == R` 来测试它。
 3. 用两种方式制作从 yaw/pitch/roll $(0^\circ, 0^\circ, 0^\circ)$ 到 $(170^\circ, 89^\circ, -170^\circ)$ 的旋转动画：线性插值欧拉角，以及对相应的四元数做 slerp。画出与起点的角距离随时间的变化，并解释差异。
-4. 证明 $M = R\,S$（其中 $S = \operatorname{diag}(s_x, s_y, s_z)$）的逆转置等于 $R\,S^{-1}$。从几何上解释为什么表面被拉伸的地方法线会被“压扁”。
+4. 证明 $M = R\,S$（其中 $S = \operatorname{diag}(s\_x, s\_y, s\_z)$）的逆转置等于 $R\,S^{-1}$。从几何上解释为什么表面被拉伸的地方法线会被“压扁”。
 5. 写一个函数，把 OpenCV 相机位姿（朝 $+z$ 看、$y$ 朝下）转换为 OpenGL 视图矩阵（朝 $-z$ 看、$y$ 朝上），并用 `look_at` 验证。
 
 下一篇：[光栅化]({{ '/blog/2026/graphics-02-rasterization/' | relative_url }})把 MVP 流水线变成像素。我们会推导透视投影矩阵，并写出一个完整的软件光栅化器。

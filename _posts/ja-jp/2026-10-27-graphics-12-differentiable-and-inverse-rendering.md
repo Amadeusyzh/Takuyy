@@ -76,7 +76,7 @@ $$
 I(\theta) = \int_0^1 f(x,\theta)\,dx = f_{\rm out} + (f_{\rm in} - f_{\rm out})\,\theta \qquad (0 \le \theta \le 1).
 $$
 
-これは完全に滑らかなランプ（傾斜）で、微分は $dI/d\theta = f_{\rm in}-f_{\rm out}$ です。今度は、代わりに積分記号の*内側*で微分してみます。
+これは完全に滑らかなランプ（傾斜）で、微分は $dI/d\theta = f\_{\rm in}-f\_{\rm out}$ です。今度は、代わりに積分記号の*内側*で微分してみます。
 
 $$
 \frac{dI}{d\theta} = \int_0^1 \frac{\partial f}{\partial\theta}\,dx = (f_{\rm in}-f_{\rm out})\int_0^1 \delta(\theta - x)\,dx = f_{\rm in}-f_{\rm out}.
@@ -169,7 +169,7 @@ $$
 D_j^i = \operatorname{sigmoid}\!\Big(\delta_j^i\,\frac{d^2(i,j)}{\sigma}\Big),
 $$
 
-ここで $d(i,j)$ はピクセル中心から三角形の境界までの距離、$\delta_j^i$ は内側で $+1$、外側で $-1$、$\sigma$（正規化デバイス座標の 2 乗単位）はぼかしの量を制御します。シルエットは $1-\prod_j(1-D_j^i)$ で、色は重み $w_j^i \propto D_j^i \exp(z_j^i/\gamma)$（正規化された逆深度 $z$、温度 $\gamma$）に背景項を加えてブレンドされます。これはハードな z テストの代わりに深度に関するソフトマックスを使うものです。$\sigma,\gamma \to 0$ では通常のラスタライザになり、$\sigma>0$ ではエッジ付近のすべてのピクセルがゼロでない勾配を持ちます。
+ここで $d(i,j)$ はピクセル中心から三角形の境界までの距離、$\delta_j^i$ は内側で $+1$、外側で $-1$、$\sigma$（正規化デバイス座標の 2 乗単位）はぼかしの量を制御します。シルエットは $1-\prod\_j(1-D\_j^i)$ で、色は重み $w\_j^i \propto D\_j^i \exp(z\_j^i/\gamma)$（正規化された逆深度 $z$、温度 $\gamma$）に背景項を加えてブレンドされます。これはハードな z テストの代わりに深度に関するソフトマックスを使うものです。$\sigma,\gamma \to 0$ では通常のラスタライザになり、$\sigma>0$ ではエッジ付近のすべてのピクセルがゼロでない勾配を持ちます。
 
 {% include blog_figure.liquid path="assets/img/blog/graphics/12-softras-sigma.svg" caption="$64\times64$ 画像（正規化座標 $[-1,1]$）における 1 つの三角形の SoftRas 確率マップ $D(x)$。$\sigma$ の 4 つの値について示します。上：$\sigma$ が大きくなると、ハードなシルエット（シアンの輪郭）は溶けて滑らかな盛り上がりになり、その勾配はエッジから遠いピクセルにも届きます。下：点線に沿ったプロファイル。$\sigma=10^{-5}$ では遷移がピクセル（$2/64$）より狭くなるため、勾配はまたほとんどどこでも消えます。" %}
 
@@ -247,7 +247,7 @@ $$
 \mathbf{u} = (\mathbf{I} + \lambda \mathbf{L})\,\mathbf{x},
 $$
 
-ここで $\mathbf{L}$ はメッシュのラプラシアン、$\lambda$ は平滑化の重みで、$\mathbf{x}$ の代わりに $\mathbf{u}$ を最適化します。$\mathbf{M} = \mathbf{I}+\lambda\mathbf{L}$（対称）とおくと、連鎖律から $\nabla_{\mathbf{u}} = \mathbf{M}^{-1}\nabla_{\mathbf{x}}$ となるので、$\mathbf{u}$ に対する勾配ステップ $\Delta\mathbf{u} = -\eta\,\nabla_{\mathbf{u}}\mathcal{L}$（$\eta$ はステップ幅）は頂点を次のように動かします。
+ここで $\mathbf{L}$ はメッシュのラプラシアン、$\lambda$ は平滑化の重みで、$\mathbf{x}$ の代わりに $\mathbf{u}$ を最適化します。$\mathbf{M} = \mathbf{I}+\lambda\mathbf{L}$（対称）とおくと、連鎖律から $\nabla\_{\mathbf{u}} = \mathbf{M}^{-1}\nabla\_{\mathbf{x}}$ となるので、$\mathbf{u}$ に対する勾配ステップ $\Delta\mathbf{u} = -\eta\,\nabla_{\mathbf{u}}\mathcal{L}$（$\eta$ はステップ幅）は頂点を次のように動かします。
 
 $$
 \Delta\mathbf{x} = \mathbf{M}^{-1}\Delta\mathbf{u} = -\eta\,(\mathbf{I}+\lambda\mathbf{L})^{-2}\,\nabla_{\mathbf{x}}\mathcal{L}.
@@ -265,7 +265,7 @@ $\mathbf{L}$ の固有基底（固有値 $\mu_k \ge 0$。小さい $\mu_k$ は�
 - 正則化する：ラプラシアンの滑らかさ、法線の一貫性、エッジ長の項、あるいは Large Steps のパラメータ化。
 - 多数のビューを使う。これにより多くの曖昧性と局所最小値が一度に取り除かれます。
 
-{% include blog_figure.liquid path="assets/img/blog/graphics/12-loss-landscape.svg" caption="左：円板（半径 6 px。目標は 32 px の位置が中心）の水平位置に対する損失。各曲線はその最大値で正規化しています。ハードな損失は、2 つの円板が重なる網掛けの帯の外側では平坦で、勾配のないプラトーです。より大きな $\sigma$ でのソフトレンダリング、あるいは両方の画像をぼかすと、盆地が広がります。右：目標が左に大きな円板、右に小さな円板（点線）を含むときの、半径 6.5 の円板の 2 次元位置 $(c_x,c_y)$ に対するソフトな損失（$\sigma=1.5$、色が濃いほど低い）。2 回の Adam の実行（点：開始、星：終了、白とオレンジ）は異なる盆地に落ち着き、右の小さい円板で止まるオレンジのものは局所最小値です。" %}
+{% include blog_figure.liquid path="assets/img/blog/graphics/12-loss-landscape.svg" caption="左：円板（半径 6 px。目標は 32 px の位置が中心）の水平位置に対する損失。各曲線はその最大値で正規化しています。ハードな損失は、2 つの円板が重なる網掛けの帯の外側では平坦で、勾配のないプラトーです。より大きな $\sigma$ でのソフトレンダリング、あるいは両方の画像をぼかすと、盆地が広がります。右：目標が左に大きな円板、右に小さな円板（点線）を含むときの、半径 6.5 の円板の 2 次元位置 $(c\_x,c\_y)$ に対するソフトな損失（$\sigma=1.5$、色が濃いほど低い）。2 回の Adam の実行（点：開始、星：終了、白とオレンジ）は異なる盆地に落ち着き、右の小さい円板で止まるオレンジのものは局所最小値です。" %}
 
 ## 6. ボリュームとスプラット：可視性を回避する
 
@@ -279,7 +279,7 @@ $$
 
 ここで $\sigma$ は密度、$\mathbf{c}$ は色、$T$ は透過率です。$\sigma$ がネットワークの重みやグリッド値の滑らかな関数なら、$C$ もそうです。遮蔽物は突然現れるのではなく、その光学的深さが連続的に増えていきます。可視性は積分の指数関数になり、これはきれいに微分できます。下の左のパネルは、不透明なボックスとガウス密度のかたまりがレイを横切って滑るときの、ピクセル値を比べています。
 
-[3D Gaussian Splatting]({{ '/blog/2026/neural-rendering-04-3d-gaussian-splatting/' | relative_url }})では、各ガウシアンは、射影された中心からのオフセットが $\mathbf{d}$ のピクセルに $\alpha_i = o_i \exp\!\big(-\tfrac12 \mathbf{d}^\top \Sigma_i'^{-1}\mathbf{d}\big)$ を寄与します（不透明度 $o_i$、2 次元共分散 $\Sigma_i'$）。ピクセルは前から後ろへの合成 $C = \sum_i \mathbf{c}_i\,\alpha_i \prod_{j<i}(1-\alpha_j)$ です。すべての $\alpha_i$ は平均、共分散、不透明度の滑らかな関数なので、勾配は境界項なしにそれらすべてに届きます。
+[3D Gaussian Splatting]({{ '/blog/2026/neural-rendering-04-3d-gaussian-splatting/' | relative_url }})では、各ガウシアンは、射影された中心からのオフセットが $\mathbf{d}$ のピクセルに $\alpha\_i = o\_i \exp\!\big(-\tfrac12 \mathbf{d}^\top \Sigma\_i'^{-1}\mathbf{d}\big)$ を寄与します（不透明度 $o_i$、2 次元共分散 $\Sigma_i'$）。ピクセルは前から後ろへの合成 $C = \sum\_i \mathbf{c}\_i\,\alpha\_i \prod\_{j<i}(1-\alpha\_j)$ です。すべての $\alpha_i$ は平均、共分散、不透明度の滑らかな関数なので、勾配は境界項なしにそれらすべてに届きます。
 
 **なお不連続のまま残るもの。**
 
@@ -311,7 +311,7 @@ def coverage(cx, cy, r, ss=8):
 
 ### 7.1 ソフトラスタライザでシルエットをフィッティングする
 
-未知数は円板の $\theta = (c_x, c_y, r)$ で、目標はハードな円板です。ソフトレンダラーは、ステップ $H(r-d)$ を $\operatorname{sigmoid}((r-d)/\sigma)$ に置き換えます。ここで $d$ はピクセル中心から $(c_x,c_y)$ までの距離です。これは SoftRas の 1 次元版で、SoftRas の 2 乗距離の代わりに符号付き距離を使っています。$\sigma$ は 3 ピクセルから 0.5 ピクセルまで幾何級数的にアニーリングします。
+未知数は円板の $\theta = (c\_x, c\_y, r)$ で、目標はハードな円板です。ソフトレンダラーは、ステップ $H(r-d)$ を $\operatorname{sigmoid}((r-d)/\sigma)$ に置き換えます。ここで $d$ はピクセル中心から $(c\_x,c\_y)$ までの距離です。これは SoftRas の 1 次元版で、SoftRas の 2 乗距離の代わりに符号付き距離を使っています。$\sigma$ は 3 ピクセルから 0.5 ピクセルまで幾何級数的にアニーリングします。
 
 ```python
 def render_soft(p, sigma):
@@ -333,7 +333,7 @@ print(p.detach())                                   # tensor([39.9993, 26.0007, 
 
 ### 7.2 エッジサンプリング勾配を持つハードラスタライザ
 
-今度は、順方向パスではハードでスーパーサンプリングされたレンダラーをそのまま使い、その逆方向パスを境界項で手書きします。円板の境界は $\mathbf{x}(\phi) = (c_x,c_y) + r(\cos\phi,\sin\phi)$ で、外向き法線は $\mathbf{n} = (\cos\phi,\sin\phi)$ です。$\mathbf{x}(\phi)$ を微分すると法線方向の速度 $\mathbf{v}\cdot\mathbf{n}$ が得られます。$c_x$ については $\cos\phi$、$c_y$ については $\sin\phi$、$r$ については $1$ です。$f^{-}-f^{+} = 1$ で、ピクセルの面積を 1 とすると、境界項は次のようになります。
+今度は、順方向パスではハードでスーパーサンプリングされたレンダラーをそのまま使い、その逆方向パスを境界項で手書きします。円板の境界は $\mathbf{x}(\phi) = (c\_x,c\_y) + r(\cos\phi,\sin\phi)$ で、外向き法線は $\mathbf{n} = (\cos\phi,\sin\phi)$ です。$\mathbf{x}(\phi)$ を微分すると法線方向の速度 $\mathbf{v}\cdot\mathbf{n}$ が得られます。$c_x$ については $\cos\phi$、$c_y$ については $\sin\phi$、$r$ については $1$ です。$f^{-}-f^{+} = 1$ で、ピクセルの面積を 1 とすると、境界項は次のようになります。
 
 $$
 \frac{\partial\mathcal{L}}{\partial\theta} = \oint \frac{\partial\mathcal{L}}{\partial I_{j(\mathbf{x})}}\,(\mathbf{v}\cdot\mathbf{n})\,d\ell \;\approx\; \frac{2\pi r}{M}\sum_{k=1}^{M} \frac{\partial\mathcal{L}}{\partial I_{j(\mathbf{x}_k)}}\,(\mathbf{v}\cdot\mathbf{n})_k ,
@@ -387,7 +387,7 @@ $$
 f_r = \frac{\boldsymbol{\rho}}{\pi} + \frac{D(\mathbf{h})\,G(\mathbf{l},\mathbf{v})\,F(\mathbf{v},\mathbf{h})}{4\,(\mathbf{n}\cdot\mathbf{l})(\mathbf{n}\cdot\mathbf{v})}, \qquad L_o = f_r\,E\,\max(0,\mathbf{n}\cdot\mathbf{l}) + 0.05\,\boldsymbol{\rho},
 $$
 
-GGX 分布 $D$（$\alpha = $ roughness$^2$）、Smith のマスキング $G = G_1(\mathbf{l})G_1(\mathbf{v})$、$F_0 = 0.04$ の Schlick フレネル、そして小さな環境光項を使います。未知数は RGB のアルベド $\boldsymbol{\rho}$ と粗さで、シグモイドで範囲内に収めます。下のコードがフィッティングの全体で、コードの後の図がその収束の様子を示します。
+GGX 分布 $D$（$\alpha = $ roughness$^2$）、Smith のマスキング $G = G\_1(\mathbf{l})G\_1(\mathbf{v})$、$F_0 = 0.04$ の Schlick フレネル、そして小さな環境光項を使います。未知数は RGB のアルベド $\boldsymbol{\rho}$ と粗さで、シグモイドで範囲内に収めます。下のコードがフィッティングの全体で、コードの後の図がその収束の様子を示します。
 
 ```python
 import torch
@@ -488,13 +488,13 @@ print(torch.sigmoid(a_raw).detach(), (0.05 + 0.95 * torch.sigmoid(r_raw)).item()
    この直線は $(0.707, 0)$ と $(0, 0.707)$ を通るので、被覆された領域は 2 辺が $0.707$ の直角三角形で、$A = 0.25$ です。ピクセル内のエッジの長さは $\ell = 0.707\sqrt2 = 1$ なので、$dA/d\theta = \ell = 1$ です（確認：この角度では $A(\theta) = \theta^2$ で、$2\theta = 1$）。
    </details>
 
-2. **有限差分のバイアス。** 1 次元の例で $N$ 個の層化サンプルがあるとき、前進差分は、一様ランダムなエッジ位置 $\theta$ について平均する（ピクセルの両端は無視する）と真の微分に等しい一方で、固定した $\theta$ では $0$ と $(f_{\rm in}-f_{\rm out})/(Nh)$ の倍数の値しか取らないことを示してください。これは、SGD の中で FD 勾配を使うことについて何を意味しますか。
+2. **有限差分のバイアス。** 1 次元の例で $N$ 個の層化サンプルがあるとき、前進差分は、一様ランダムなエッジ位置 $\theta$ について平均する（ピクセルの両端は無視する）と真の微分に等しい一方で、固定した $\theta$ では $0$ と $(f\_{\rm in}-f\_{\rm out})/(Nh)$ の倍数の値しか取らないことを示してください。これは、SGD の中で FD 勾配を使うことについて何を意味しますか。
 
    <details markdown="1"><summary>ヒント</summary>
-   各サンプルは、ちょうど $(\theta, \theta+h]$ の中にあるときに $(f_{\rm in}-f_{\rm out})/N$ の跳びを寄与し、そのとき差分商は $(f_{\rm in}-f_{\rm out})/(Nh)$ になります。$N$ 個の層別サンプルは $1/N$ 間隔なので、一様ランダムな $\theta$（$h \le 1/N$）に対してこれが起こる確率は $h$ ではなく $Nh$ です。したがって平均は $f_{\rm in}-f_{\rm out}$ となり、推定量は $\theta$ について平均すれば不偏ですが、2 次モーメントは $(f_{\rm in}-f_{\rm out})^2/(Nh)$ なので、分散は $1/(Nh)$ のように大きくなります。
+   各サンプルは、ちょうど $(\theta, \theta+h]$ の中にあるときに $(f\_{\rm in}-f\_{\rm out})/N$ の跳びを寄与し、そのとき差分商は $(f\_{\rm in}-f\_{\rm out})/(Nh)$ になります。$N$ 個の層別サンプルは $1/N$ 間隔なので、一様ランダムな $\theta$（$h \le 1/N$）に対してこれが起こる確率は $h$ ではなく $Nh$ です。したがって平均は $f\_{\rm in}-f\_{\rm out}$ となり、推定量は $\theta$ について平均すれば不偏ですが、2 次モーメントは $(f\_{\rm in}-f\_{\rm out})^2/(Nh)$ なので、分散は $1/(Nh)$ のように大きくなります。
    </details>
 
-3. **三角形のエッジサンプリング。** `HardDiscEdgeSampled` を、頂点 $\mathbf{p}_0,\mathbf{p}_1,\mathbf{p}_2$ を持つ三角形に拡張してください。エッジ $ab$ 上の点 $\mathbf{x} = (1-t)\mathbf{p}_a + t\,\mathbf{p}_b$ について、$\mathbf{p}_a$ の各座標に関する $\mathbf{v}\cdot\mathbf{n}$ はいくらですか。
+3. **三角形のエッジサンプリング。** `HardDiscEdgeSampled` を、頂点 $\mathbf{p}\_0,\mathbf{p}\_1,\mathbf{p}\_2$ を持つ三角形に拡張してください。エッジ $ab$ 上の点 $\mathbf{x} = (1-t)\mathbf{p}\_a + t\,\mathbf{p}\_b$ について、$\mathbf{p}_a$ の各座標に関する $\mathbf{v}\cdot\mathbf{n}$ はいくらですか。
 
    <details markdown="1"><summary>ヒント</summary>
    $\partial\mathbf{x}/\partial\mathbf{p}_a = (1-t)\mathbf{I}$ なので、$\mathbf{p}_a$ の $x$ 座標に関する法線方向の速度は $(1-t)\,n_x$、$y$ 座標については $(1-t)\,n_y$ です。$t$ は一様にサンプリングし、エッジは長さに比例してサンプリングします。

@@ -76,7 +76,7 @@ $$
 I(\theta) = \int_0^1 f(x,\theta)\,dx = f_{\rm out} + (f_{\rm in} - f_{\rm out})\,\theta \qquad (0 \le \theta \le 1).
 $$
 
-This is a perfectly smooth ramp, with derivative $dI/d\theta = f_{\rm in}-f_{\rm out}$. Now differentiate *under* the integral sign instead:
+This is a perfectly smooth ramp, with derivative $dI/d\theta = f\_{\rm in}-f\_{\rm out}$. Now differentiate *under* the integral sign instead:
 
 $$
 \frac{dI}{d\theta} = \int_0^1 \frac{\partial f}{\partial\theta}\,dx = (f_{\rm in}-f_{\rm out})\int_0^1 \delta(\theta - x)\,dx = f_{\rm in}-f_{\rm out}.
@@ -169,7 +169,7 @@ $$
 D_j^i = \operatorname{sigmoid}\!\Big(\delta_j^i\,\frac{d^2(i,j)}{\sigma}\Big),
 $$
 
-where $d(i,j)$ is the distance from the pixel center to the triangle's boundary, $\delta_j^i = +1$ inside and $-1$ outside, and $\sigma$ (in squared normalized-device-coordinate units) controls the blur. The silhouette is $1-\prod_j(1-D_j^i)$, and colors are blended with weights $w_j^i \propto D_j^i \exp(z_j^i/\gamma)$ (normalized inverse depth $z$, temperature $\gamma$) plus a background term, a softmax over depth instead of a hard z-test. As $\sigma,\gamma \to 0$ it becomes the ordinary rasterizer, and for $\sigma>0$ every pixel near an edge has a nonzero gradient.
+where $d(i,j)$ is the distance from the pixel center to the triangle's boundary, $\delta_j^i = +1$ inside and $-1$ outside, and $\sigma$ (in squared normalized-device-coordinate units) controls the blur. The silhouette is $1-\prod\_j(1-D\_j^i)$, and colors are blended with weights $w\_j^i \propto D\_j^i \exp(z\_j^i/\gamma)$ (normalized inverse depth $z$, temperature $\gamma$) plus a background term, a softmax over depth instead of a hard z-test. As $\sigma,\gamma \to 0$ it becomes the ordinary rasterizer, and for $\sigma>0$ every pixel near an edge has a nonzero gradient.
 
 {% include blog_figure.liquid path="assets/img/blog/graphics/12-softras-sigma.svg" caption="SoftRas probability map $D(x)$ of one triangle in a $64\times64$ image (normalized coordinates $[-1,1]$) for four values of $\sigma$. Top: as $\sigma$ grows, the hard silhouette (cyan outline) melts into a smooth bump whose gradient reaches pixels far from the edge. Bottom: the profiles along the dotted line. For $\sigma=10^{-5}$ the transition is narrower than a pixel ($2/64$), so gradients again vanish almost everywhere." %}
 
@@ -247,7 +247,7 @@ $$
 \mathbf{u} = (\mathbf{I} + \lambda \mathbf{L})\,\mathbf{x},
 $$
 
-where $\mathbf{L}$ is the mesh Laplacian and $\lambda$ a smoothing weight, and optimize $\mathbf{u}$ instead of $\mathbf{x}$. With $\mathbf{M} = \mathbf{I}+\lambda\mathbf{L}$ (symmetric), the chain rule gives $\nabla_{\mathbf{u}} = \mathbf{M}^{-1}\nabla_{\mathbf{x}}$, so a gradient step $\Delta\mathbf{u} = -\eta\,\nabla_{\mathbf{u}}\mathcal{L}$ on $\mathbf{u}$ (with step size $\eta$) moves the vertices by
+where $\mathbf{L}$ is the mesh Laplacian and $\lambda$ a smoothing weight, and optimize $\mathbf{u}$ instead of $\mathbf{x}$. With $\mathbf{M} = \mathbf{I}+\lambda\mathbf{L}$ (symmetric), the chain rule gives $\nabla\_{\mathbf{u}} = \mathbf{M}^{-1}\nabla\_{\mathbf{x}}$, so a gradient step $\Delta\mathbf{u} = -\eta\,\nabla_{\mathbf{u}}\mathcal{L}$ on $\mathbf{u}$ (with step size $\eta$) moves the vertices by
 
 $$
 \Delta\mathbf{x} = \mathbf{M}^{-1}\Delta\mathbf{u} = -\eta\,(\mathbf{I}+\lambda\mathbf{L})^{-2}\,\nabla_{\mathbf{x}}\mathcal{L}.
@@ -265,7 +265,7 @@ In the eigenbasis of $\mathbf{L}$ (eigenvalues $\mu_k \ge 0$; small $\mu_k$ are 
 - regularize: Laplacian smoothness, normal consistency, edge-length terms, or the Large Steps parameterization;
 - use many views, which removes many ambiguities and local minima at once.
 
-{% include blog_figure.liquid path="assets/img/blog/graphics/12-loss-landscape.svg" caption="Left: loss versus the horizontal position of a disc (radius 6 px; target centered at 32 px), each curve scaled to its maximum. The hard loss is flat outside the shaded band where the two discs overlap, a plateau with no gradient; soft rendering with a larger $\sigma$, or blurring both images, widens the basin. Right: soft loss ($\sigma=1.5$; darker is lower) over the 2D position $(c_x,c_y)$ of a disc of radius 6.5 when the target contains a big disc on the left and a small disc on the right (dotted). Two Adam runs (dots: starts; stars: ends; white and orange) settle in different basins, and the orange one, which stops at the small disc on the right, is a local minimum." %}
+{% include blog_figure.liquid path="assets/img/blog/graphics/12-loss-landscape.svg" caption="Left: loss versus the horizontal position of a disc (radius 6 px; target centered at 32 px), each curve scaled to its maximum. The hard loss is flat outside the shaded band where the two discs overlap, a plateau with no gradient; soft rendering with a larger $\sigma$, or blurring both images, widens the basin. Right: soft loss ($\sigma=1.5$; darker is lower) over the 2D position $(c\_x,c\_y)$ of a disc of radius 6.5 when the target contains a big disc on the left and a small disc on the right (dotted). Two Adam runs (dots: starts; stars: ends; white and orange) settle in different basins, and the orange one, which stops at the small disc on the right, is a local minimum." %}
 
 ## 6. Volumes and splats: side-stepping visibility
 
@@ -279,7 +279,7 @@ $$
 
 with density $\sigma$, color $\mathbf{c}$ and transmittance $T$. If $\sigma$ is a smooth function of the network weights or grid values, $C$ is too: an occluder does not appear suddenly; its optical depth grows continuously. Visibility has become an exponential of an integral, which differentiates nicely. The left panel below compares the pixel value as an opaque box and as a Gaussian density blob slide across a ray.
 
-In [3D Gaussian Splatting]({{ '/blog/2026/neural-rendering-04-3d-gaussian-splatting/' | relative_url }}), each Gaussian contributes $\alpha_i = o_i \exp\!\big(-\tfrac12 \mathbf{d}^\top \Sigma_i'^{-1}\mathbf{d}\big)$ to a pixel at offset $\mathbf{d}$ from its projected center, with opacity $o_i$ and 2D covariance $\Sigma_i'$, and the pixel is the front-to-back composite $C = \sum_i \mathbf{c}_i\,\alpha_i \prod_{j<i}(1-\alpha_j)$. Every $\alpha_i$ is a smooth function of the mean, covariance and opacity, so gradients reach all of them without any boundary term.
+In [3D Gaussian Splatting]({{ '/blog/2026/neural-rendering-04-3d-gaussian-splatting/' | relative_url }}), each Gaussian contributes $\alpha\_i = o\_i \exp\!\big(-\tfrac12 \mathbf{d}^\top \Sigma\_i'^{-1}\mathbf{d}\big)$ to a pixel at offset $\mathbf{d}$ from its projected center, with opacity $o_i$ and 2D covariance $\Sigma_i'$, and the pixel is the front-to-back composite $C = \sum\_i \mathbf{c}\_i\,\alpha\_i \prod\_{j<i}(1-\alpha\_j)$. Every $\alpha_i$ is a smooth function of the mean, covariance and opacity, so gradients reach all of them without any boundary term.
 
 **What remains discontinuous.**
 
@@ -311,7 +311,7 @@ def coverage(cx, cy, r, ss=8):
 
 ### 7.1 A soft rasterizer fits a silhouette
 
-The unknowns are $\theta = (c_x, c_y, r)$ of a disc; the target is a hard disc. The soft renderer replaces the step $H(r-d)$ by $\operatorname{sigmoid}((r-d)/\sigma)$, where $d$ is the distance from the pixel center to $(c_x,c_y)$: the 1D version of SoftRas with a signed distance instead of SoftRas's squared distance. We anneal $\sigma$ geometrically from 3 to 0.5 pixels.
+The unknowns are $\theta = (c\_x, c\_y, r)$ of a disc; the target is a hard disc. The soft renderer replaces the step $H(r-d)$ by $\operatorname{sigmoid}((r-d)/\sigma)$, where $d$ is the distance from the pixel center to $(c\_x,c\_y)$: the 1D version of SoftRas with a signed distance instead of SoftRas's squared distance. We anneal $\sigma$ geometrically from 3 to 0.5 pixels.
 
 ```python
 def render_soft(p, sigma):
@@ -333,7 +333,7 @@ print(p.detach())                                   # tensor([39.9993, 26.0007, 
 
 ### 7.2 A hard rasterizer with an edge-sampling gradient
 
-Now keep the hard, supersampled renderer in the forward pass and write its backward pass by hand with the boundary term. The boundary of the disc is $\mathbf{x}(\phi) = (c_x,c_y) + r(\cos\phi,\sin\phi)$ with outward normal $\mathbf{n} = (\cos\phi,\sin\phi)$. Differentiating $\mathbf{x}(\phi)$ gives the normal velocities $\mathbf{v}\cdot\mathbf{n}$: $\cos\phi$ for $c_x$, $\sin\phi$ for $c_y$ and $1$ for $r$. With $f^{-}-f^{+} = 1$ and unit pixel area, the boundary term is
+Now keep the hard, supersampled renderer in the forward pass and write its backward pass by hand with the boundary term. The boundary of the disc is $\mathbf{x}(\phi) = (c\_x,c\_y) + r(\cos\phi,\sin\phi)$ with outward normal $\mathbf{n} = (\cos\phi,\sin\phi)$. Differentiating $\mathbf{x}(\phi)$ gives the normal velocities $\mathbf{v}\cdot\mathbf{n}$: $\cos\phi$ for $c_x$, $\sin\phi$ for $c_y$ and $1$ for $r$. With $f^{-}-f^{+} = 1$ and unit pixel area, the boundary term is
 
 $$
 \frac{\partial\mathcal{L}}{\partial\theta} = \oint \frac{\partial\mathcal{L}}{\partial I_{j(\mathbf{x})}}\,(\mathbf{v}\cdot\mathbf{n})\,d\ell \;\approx\; \frac{2\pi r}{M}\sum_{k=1}^{M} \frac{\partial\mathcal{L}}{\partial I_{j(\mathbf{x}_k)}}\,(\mathbf{v}\cdot\mathbf{n})_k ,
@@ -387,7 +387,7 @@ $$
 f_r = \frac{\boldsymbol{\rho}}{\pi} + \frac{D(\mathbf{h})\,G(\mathbf{l},\mathbf{v})\,F(\mathbf{v},\mathbf{h})}{4\,(\mathbf{n}\cdot\mathbf{l})(\mathbf{n}\cdot\mathbf{v})}, \qquad L_o = f_r\,E\,\max(0,\mathbf{n}\cdot\mathbf{l}) + 0.05\,\boldsymbol{\rho},
 $$
 
-with GGX distribution $D$ ($\alpha = $ roughness$^2$), Smith masking $G = G_1(\mathbf{l})G_1(\mathbf{v})$, Schlick Fresnel with $F_0 = 0.04$, and a small ambient term. The unknowns are the RGB albedo $\boldsymbol{\rho}$ and the roughness, kept in range by sigmoids. The code below is the complete fit; the figure after it shows how it converges.
+with GGX distribution $D$ ($\alpha = $ roughness$^2$), Smith masking $G = G\_1(\mathbf{l})G\_1(\mathbf{v})$, Schlick Fresnel with $F_0 = 0.04$, and a small ambient term. The unknowns are the RGB albedo $\boldsymbol{\rho}$ and the roughness, kept in range by sigmoids. The code below is the complete fit; the figure after it shows how it converges.
 
 ```python
 import torch
@@ -488,13 +488,13 @@ As of November 2026, three directions are especially active. Statuses below were
    The line passes through $(0.707, 0)$ and $(0, 0.707)$, so the covered region is a right triangle with legs $0.707$: $A = 0.25$. The edge length inside the pixel is $\ell = 0.707\sqrt2 = 1$, so $dA/d\theta = \ell = 1$ (check: $A(\theta) = \theta^2$ for this angle, and $2\theta = 1$).
    </details>
 
-2. **Bias of finite differences.** In the 1D example with $N$ stratified samples, show that the forward difference, averaged over a uniformly random edge position $\theta$ (ignore the ends of the pixel), equals the true derivative, yet for a fixed $\theta$ it takes only the values $0$ and multiples of $(f_{\rm in}-f_{\rm out})/(Nh)$. What does this say about using FD gradients inside SGD?
+2. **Bias of finite differences.** In the 1D example with $N$ stratified samples, show that the forward difference, averaged over a uniformly random edge position $\theta$ (ignore the ends of the pixel), equals the true derivative, yet for a fixed $\theta$ it takes only the values $0$ and multiples of $(f\_{\rm in}-f\_{\rm out})/(Nh)$. What does this say about using FD gradients inside SGD?
 
    <details markdown="1"><summary>Hint</summary>
-   Each sample contributes a jump of $(f_{\rm in}-f_{\rm out})/N$ exactly when it lies in $(\theta, \theta+h]$, and the difference quotient is then $(f_{\rm in}-f_{\rm out})/(Nh)$. The $N$ stratified samples are $1/N$ apart, so for a uniformly random $\theta$ (and $h \le 1/N$) this has probability $Nh$ (not $h$). The mean is therefore $f_{\rm in}-f_{\rm out}$, i.e. the estimator is unbiased on average over $\theta$, but its second moment is $(f_{\rm in}-f_{\rm out})^2/(Nh)$, so its variance grows like $1/(Nh)$.
+   Each sample contributes a jump of $(f\_{\rm in}-f\_{\rm out})/N$ exactly when it lies in $(\theta, \theta+h]$, and the difference quotient is then $(f\_{\rm in}-f\_{\rm out})/(Nh)$. The $N$ stratified samples are $1/N$ apart, so for a uniformly random $\theta$ (and $h \le 1/N$) this has probability $Nh$ (not $h$). The mean is therefore $f\_{\rm in}-f\_{\rm out}$, i.e. the estimator is unbiased on average over $\theta$, but its second moment is $(f\_{\rm in}-f\_{\rm out})^2/(Nh)$, so its variance grows like $1/(Nh)$.
    </details>
 
-3. **Edge sampling for a triangle.** Extend `HardDiscEdgeSampled` to a triangle with vertices $\mathbf{p}_0,\mathbf{p}_1,\mathbf{p}_2$. For a point $\mathbf{x} = (1-t)\mathbf{p}_a + t\,\mathbf{p}_b$ on edge $ab$, what is $\mathbf{v}\cdot\mathbf{n}$ with respect to each coordinate of $\mathbf{p}_a$?
+3. **Edge sampling for a triangle.** Extend `HardDiscEdgeSampled` to a triangle with vertices $\mathbf{p}\_0,\mathbf{p}\_1,\mathbf{p}\_2$. For a point $\mathbf{x} = (1-t)\mathbf{p}\_a + t\,\mathbf{p}\_b$ on edge $ab$, what is $\mathbf{v}\cdot\mathbf{n}$ with respect to each coordinate of $\mathbf{p}_a$?
 
    <details markdown="1"><summary>Hint</summary>
    $\partial\mathbf{x}/\partial\mathbf{p}_a = (1-t)\mathbf{I}$, so the normal velocity for the $x$-coordinate of $\mathbf{p}_a$ is $(1-t)\,n_x$, and $(1-t)\,n_y$ for its $y$-coordinate. Sample $t$ uniformly and edges proportionally to their length.

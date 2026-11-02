@@ -76,7 +76,7 @@ $$
 I(\theta) = \int_0^1 f(x,\theta)\,dx = f_{\rm out} + (f_{\rm in} - f_{\rm out})\,\theta \qquad (0 \le \theta \le 1).
 $$
 
-这是一条完全光滑的斜坡，导数为 $dI/d\theta = f_{\rm in}-f_{\rm out}$。现在改为在积分号*内部*求导：
+这是一条完全光滑的斜坡，导数为 $dI/d\theta = f\_{\rm in}-f\_{\rm out}$。现在改为在积分号*内部*求导：
 
 $$
 \frac{dI}{d\theta} = \int_0^1 \frac{\partial f}{\partial\theta}\,dx = (f_{\rm in}-f_{\rm out})\int_0^1 \delta(\theta - x)\,dx = f_{\rm in}-f_{\rm out}.
@@ -169,7 +169,7 @@ $$
 D_j^i = \operatorname{sigmoid}\!\Big(\delta_j^i\,\frac{d^2(i,j)}{\sigma}\Big),
 $$
 
-其中 $d(i,j)$ 是像素中心到三角形边界的距离，$\delta_j^i$ 在内部为 $+1$、外部为 $-1$，$\sigma$（单位为归一化设备坐标的平方）控制模糊程度。轮廓为 $1-\prod_j(1-D_j^i)$，颜色按权重 $w_j^i \propto D_j^i \exp(z_j^i/\gamma)$（归一化的逆深度 $z$，温度 $\gamma$）再加上一个背景项来混合，也就是在深度上做 softmax，取代了硬的深度测试。当 $\sigma,\gamma \to 0$ 时它退化为普通光栅化器，而当 $\sigma>0$ 时，边缘附近的每个像素都有非零梯度。
+其中 $d(i,j)$ 是像素中心到三角形边界的距离，$\delta_j^i$ 在内部为 $+1$、外部为 $-1$，$\sigma$（单位为归一化设备坐标的平方）控制模糊程度。轮廓为 $1-\prod\_j(1-D\_j^i)$，颜色按权重 $w\_j^i \propto D\_j^i \exp(z\_j^i/\gamma)$（归一化的逆深度 $z$，温度 $\gamma$）再加上一个背景项来混合，也就是在深度上做 softmax，取代了硬的深度测试。当 $\sigma,\gamma \to 0$ 时它退化为普通光栅化器，而当 $\sigma>0$ 时，边缘附近的每个像素都有非零梯度。
 
 {% include blog_figure.liquid path="assets/img/blog/graphics/12-softras-sigma.svg" caption="$64\times64$ 图像（归一化坐标 $[-1,1]$）中单个三角形的 SoftRas 概率图 $D(x)$，取四个 $\sigma$ 值。上：随着 $\sigma$ 增大，硬轮廓（青色轮廓线）融化成一个光滑的凸起，其梯度可以到达远离边缘的像素。下：沿点线的剖面。当 $\sigma=10^{-5}$ 时，过渡区比一个像素（$2/64$）还窄，因此梯度几乎处处再次消失。" %}
 
@@ -247,7 +247,7 @@ $$
 \mathbf{u} = (\mathbf{I} + \lambda \mathbf{L})\,\mathbf{x},
 $$
 
-其中 $\mathbf{L}$ 是网格拉普拉斯算子，$\lambda$ 是平滑权重，并改为优化 $\mathbf{u}$ 而非 $\mathbf{x}$。记 $\mathbf{M} = \mathbf{I}+\lambda\mathbf{L}$（对称），由链式法则得 $\nabla_{\mathbf{u}} = \mathbf{M}^{-1}\nabla_{\mathbf{x}}$，所以对 $\mathbf{u}$ 的一步梯度更新 $\Delta\mathbf{u} = -\eta\,\nabla_{\mathbf{u}}\mathcal{L}$（$\eta$ 为步长）会使顶点移动
+其中 $\mathbf{L}$ 是网格拉普拉斯算子，$\lambda$ 是平滑权重，并改为优化 $\mathbf{u}$ 而非 $\mathbf{x}$。记 $\mathbf{M} = \mathbf{I}+\lambda\mathbf{L}$（对称），由链式法则得 $\nabla\_{\mathbf{u}} = \mathbf{M}^{-1}\nabla\_{\mathbf{x}}$，所以对 $\mathbf{u}$ 的一步梯度更新 $\Delta\mathbf{u} = -\eta\,\nabla_{\mathbf{u}}\mathcal{L}$（$\eta$ 为步长）会使顶点移动
 
 $$
 \Delta\mathbf{x} = \mathbf{M}^{-1}\Delta\mathbf{u} = -\eta\,(\mathbf{I}+\lambda\mathbf{L})^{-2}\,\nabla_{\mathbf{x}}\mathcal{L}.
@@ -265,7 +265,7 @@ $$
 - 加正则：拉普拉斯光滑项、法线一致性、边长项，或 Large Steps 参数化；
 - 使用多个视角，这能同时消除许多歧义和局部极小值。
 
-{% include blog_figure.liquid path="assets/img/blog/graphics/12-loss-landscape.svg" caption="左：损失随圆盘水平位置的变化（半径 6 px；目标中心位于 32 px），每条曲线都按其最大值缩放。硬损失在两个圆盘重叠的阴影带之外是平的，那是一块没有梯度的高原；用更大的 $\sigma$ 做软渲染，或对两幅图像做模糊，会让吸引域（basin of attraction）变宽。右：当目标包含左侧一个大圆盘和右侧一个小圆盘（点线）时，半径为 6.5 的圆盘在二维位置 $(c_x,c_y)$ 上的软损失（$\sigma=1.5$，颜色越深损失越低）。两次 Adam 运行（圆点：起点；星号：终点；白色与橙色）落入不同的吸引域，停在右侧小圆盘处的橙色那条是局部极小值。" %}
+{% include blog_figure.liquid path="assets/img/blog/graphics/12-loss-landscape.svg" caption="左：损失随圆盘水平位置的变化（半径 6 px；目标中心位于 32 px），每条曲线都按其最大值缩放。硬损失在两个圆盘重叠的阴影带之外是平的，那是一块没有梯度的高原；用更大的 $\sigma$ 做软渲染，或对两幅图像做模糊，会让吸引域（basin of attraction）变宽。右：当目标包含左侧一个大圆盘和右侧一个小圆盘（点线）时，半径为 6.5 的圆盘在二维位置 $(c\_x,c\_y)$ 上的软损失（$\sigma=1.5$，颜色越深损失越低）。两次 Adam 运行（圆点：起点；星号：终点；白色与橙色）落入不同的吸引域，停在右侧小圆盘处的橙色那条是局部极小值。" %}
 
 ## 6. 体与点云：绕开可见性
 
@@ -279,7 +279,7 @@ $$
 
 其中 $\sigma$ 是密度，$\mathbf{c}$ 是颜色，$T$ 是透射率（transmittance）。如果 $\sigma$ 是网络权重或网格值的光滑函数，那么 $C$ 也是：遮挡物不会突然出现，它的光学深度（optical depth）是连续增长的。可见性变成了一个积分的指数，这很容易求导。下图左半部分比较了一个不透明的盒子和一个高斯密度团滑过一条光线时的像素值。
 
-在 [3D Gaussian Splatting]({{ '/blog/2026/neural-rendering-04-3d-gaussian-splatting/' | relative_url }}) 中，对于与其投影中心偏移 $\mathbf{d}$ 的像素，每个高斯贡献 $\alpha_i = o_i \exp\!\big(-\tfrac12 \mathbf{d}^\top \Sigma_i'^{-1}\mathbf{d}\big)$，其中 $o_i$ 为不透明度，$\Sigma_i'$ 为二维协方差，像素则是由前到后的合成 $C = \sum_i \mathbf{c}_i\,\alpha_i \prod_{j<i}(1-\alpha_j)$。每个 $\alpha_i$ 都是均值、协方差和不透明度的光滑函数，所以梯度无需任何边界项就能传到所有这些参数。
+在 [3D Gaussian Splatting]({{ '/blog/2026/neural-rendering-04-3d-gaussian-splatting/' | relative_url }}) 中，对于与其投影中心偏移 $\mathbf{d}$ 的像素，每个高斯贡献 $\alpha\_i = o\_i \exp\!\big(-\tfrac12 \mathbf{d}^\top \Sigma\_i'^{-1}\mathbf{d}\big)$，其中 $o_i$ 为不透明度，$\Sigma_i'$ 为二维协方差，像素则是由前到后的合成 $C = \sum\_i \mathbf{c}\_i\,\alpha\_i \prod\_{j<i}(1-\alpha\_j)$。每个 $\alpha_i$ 都是均值、协方差和不透明度的光滑函数，所以梯度无需任何边界项就能传到所有这些参数。
 
 **仍然不连续的地方。**
 
@@ -311,7 +311,7 @@ def coverage(cx, cy, r, ss=8):
 
 ### 7.1 软光栅化器拟合轮廓
 
-未知量是圆盘的 $\theta = (c_x, c_y, r)$；目标是一个硬边圆盘。软渲染器把阶跃 $H(r-d)$ 替换为 $\operatorname{sigmoid}((r-d)/\sigma)$，其中 $d$ 是像素中心到 $(c_x,c_y)$ 的距离：这是 SoftRas 的简化版：它只用一维的符号距离，而不是 SoftRas 的距离平方。我们把 $\sigma$ 从 3 个像素按几何级数退火到 0.5 个像素。
+未知量是圆盘的 $\theta = (c\_x, c\_y, r)$；目标是一个硬边圆盘。软渲染器把阶跃 $H(r-d)$ 替换为 $\operatorname{sigmoid}((r-d)/\sigma)$，其中 $d$ 是像素中心到 $(c\_x,c\_y)$ 的距离：这是 SoftRas 的简化版：它只用一维的符号距离，而不是 SoftRas 的距离平方。我们把 $\sigma$ 从 3 个像素按几何级数退火到 0.5 个像素。
 
 ```python
 def render_soft(p, sigma):
@@ -333,7 +333,7 @@ print(p.detach())                                   # tensor([39.9993, 26.0007, 
 
 ### 7.2 带边缘采样梯度的硬光栅化器
 
-现在在前向传播中保留硬的、超采样的渲染器，并用边界项手写它的反向传播。圆盘的边界是 $\mathbf{x}(\phi) = (c_x,c_y) + r(\cos\phi,\sin\phi)$，外法线为 $\mathbf{n} = (\cos\phi,\sin\phi)$。对 $\mathbf{x}(\phi)$ 求导，得到法向速度 $\mathbf{v}\cdot\mathbf{n}$：对 $c_x$ 为 $\cos\phi$，对 $c_y$ 为 $\sin\phi$，对 $r$ 为 $1$。取 $f^{-}-f^{+} = 1$ 和单位像素面积，边界项为
+现在在前向传播中保留硬的、超采样的渲染器，并用边界项手写它的反向传播。圆盘的边界是 $\mathbf{x}(\phi) = (c\_x,c\_y) + r(\cos\phi,\sin\phi)$，外法线为 $\mathbf{n} = (\cos\phi,\sin\phi)$。对 $\mathbf{x}(\phi)$ 求导，得到法向速度 $\mathbf{v}\cdot\mathbf{n}$：对 $c_x$ 为 $\cos\phi$，对 $c_y$ 为 $\sin\phi$，对 $r$ 为 $1$。取 $f^{-}-f^{+} = 1$ 和单位像素面积，边界项为
 
 $$
 \frac{\partial\mathcal{L}}{\partial\theta} = \oint \frac{\partial\mathcal{L}}{\partial I_{j(\mathbf{x})}}\,(\mathbf{v}\cdot\mathbf{n})\,d\ell \;\approx\; \frac{2\pi r}{M}\sum_{k=1}^{M} \frac{\partial\mathcal{L}}{\partial I_{j(\mathbf{x}_k)}}\,(\mathbf{v}\cdot\mathbf{n})_k ,
@@ -387,7 +387,7 @@ $$
 f_r = \frac{\boldsymbol{\rho}}{\pi} + \frac{D(\mathbf{h})\,G(\mathbf{l},\mathbf{v})\,F(\mathbf{v},\mathbf{h})}{4\,(\mathbf{n}\cdot\mathbf{l})(\mathbf{n}\cdot\mathbf{v})}, \qquad L_o = f_r\,E\,\max(0,\mathbf{n}\cdot\mathbf{l}) + 0.05\,\boldsymbol{\rho},
 $$
 
-其中 GGX 分布为 $D$（$\alpha = $ roughness$^2$），Smith 遮蔽为 $G = G_1(\mathbf{l})G_1(\mathbf{v})$，Schlick 菲涅尔项取 $F_0 = 0.04$，另有一个很小的环境光项。未知量是 RGB 反照率 $\boldsymbol{\rho}$ 和粗糙度，并用 sigmoid 将其限制在取值范围内。下面的代码给出了完整的拟合过程，代码之后的图展示了它的收敛情况。
+其中 GGX 分布为 $D$（$\alpha = $ roughness$^2$），Smith 遮蔽为 $G = G\_1(\mathbf{l})G\_1(\mathbf{v})$，Schlick 菲涅尔项取 $F_0 = 0.04$，另有一个很小的环境光项。未知量是 RGB 反照率 $\boldsymbol{\rho}$ 和粗糙度，并用 sigmoid 将其限制在取值范围内。下面的代码给出了完整的拟合过程，代码之后的图展示了它的收敛情况。
 
 ```python
 import torch
@@ -488,13 +488,13 @@ print(torch.sigmoid(a_raw).detach(), (0.05 + 0.95 * torch.sigmoid(r_raw)).item()
    这条直线经过 $(0.707, 0)$ 和 $(0, 0.707)$，所以被覆盖的区域是一个直角边为 $0.707$ 的直角三角形：$A = 0.25$。边缘落在像素内的长度为 $\ell = 0.707\sqrt2 = 1$，所以 $dA/d\theta = \ell = 1$（验证：对这个角度，$A(\theta) = \theta^2$，而 $2\theta = 1$）。
    </details>
 
-2. **有限差分的偏差。** 在带有 $N$ 个分层采样的一维例子中，证明前向差分在边缘位置 $\theta$ 均匀随机的平均下（忽略像素两端）等于真实导数，然而对固定的 $\theta$，它只取 $0$ 和 $(f_{\rm in}-f_{\rm out})/(Nh)$ 的整数倍这些值。这对在 SGD 中使用 FD 梯度意味着什么？
+2. **有限差分的偏差。** 在带有 $N$ 个分层采样的一维例子中，证明前向差分在边缘位置 $\theta$ 均匀随机的平均下（忽略像素两端）等于真实导数，然而对固定的 $\theta$，它只取 $0$ 和 $(f\_{\rm in}-f\_{\rm out})/(Nh)$ 的整数倍这些值。这对在 SGD 中使用 FD 梯度意味着什么？
 
    <details markdown="1"><summary>提示</summary>
-   当且仅当某个采样点落在 $(\theta, \theta+h]$ 内时，它贡献一个大小为 $(f_{\rm in}-f_{\rm out})/N$ 的跳变，此时差分商为 $(f_{\rm in}-f_{\rm out})/(Nh)$。$N$ 个分层采样点的间距为 $1/N$，所以对均匀随机的 $\theta$（$h \le 1/N$），这个概率为 $Nh$（而不是 $h$）。于是均值为 $f_{\rm in}-f_{\rm out}$，即该估计量在对 $\theta$ 取平均时是无偏的；但它的二阶矩为 $(f_{\rm in}-f_{\rm out})^2/(Nh)$，方差按 $1/(Nh)$ 增长。
+   当且仅当某个采样点落在 $(\theta, \theta+h]$ 内时，它贡献一个大小为 $(f\_{\rm in}-f\_{\rm out})/N$ 的跳变，此时差分商为 $(f\_{\rm in}-f\_{\rm out})/(Nh)$。$N$ 个分层采样点的间距为 $1/N$，所以对均匀随机的 $\theta$（$h \le 1/N$），这个概率为 $Nh$（而不是 $h$）。于是均值为 $f\_{\rm in}-f\_{\rm out}$，即该估计量在对 $\theta$ 取平均时是无偏的；但它的二阶矩为 $(f\_{\rm in}-f\_{\rm out})^2/(Nh)$，方差按 $1/(Nh)$ 增长。
    </details>
 
-3. **三角形的边缘采样。** 把 `HardDiscEdgeSampled` 扩展到顶点为 $\mathbf{p}_0,\mathbf{p}_1,\mathbf{p}_2$ 的三角形。对于边 $ab$ 上的点 $\mathbf{x} = (1-t)\mathbf{p}_a + t\,\mathbf{p}_b$，关于 $\mathbf{p}_a$ 的每个坐标，$\mathbf{v}\cdot\mathbf{n}$ 是多少？
+3. **三角形的边缘采样。** 把 `HardDiscEdgeSampled` 扩展到顶点为 $\mathbf{p}\_0,\mathbf{p}\_1,\mathbf{p}\_2$ 的三角形。对于边 $ab$ 上的点 $\mathbf{x} = (1-t)\mathbf{p}\_a + t\,\mathbf{p}\_b$，关于 $\mathbf{p}_a$ 的每个坐标，$\mathbf{v}\cdot\mathbf{n}$ 是多少？
 
    <details markdown="1"><summary>提示</summary>
    $\partial\mathbf{x}/\partial\mathbf{p}_a = (1-t)\mathbf{I}$，所以 $\mathbf{p}_a$ 的 $x$ 坐标的法向速度是 $(1-t)\,n_x$，$y$ 坐标则是 $(1-t)\,n_y$。均匀地采样 $t$，并按边的长度成比例地选边。

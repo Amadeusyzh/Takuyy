@@ -62,7 +62,7 @@ Neural rendering builds directly on this. NeRF is volume rendering along camera 
 
 ## Vectors: positions, directions and the two products
 
-A 3D vector $\mathbf{v} = (v_x, v_y, v_z)$ can mean two different things in graphics: a **point** (a position) or a **direction** (a displacement, a velocity, a surface normal). They are stored the same way, but they transform differently. Homogeneous coordinates will make that difference explicit.
+A 3D vector $\mathbf{v} = (v\_x, v\_y, v\_z)$ can mean two different things in graphics: a **point** (a position) or a **direction** (a displacement, a velocity, a surface normal). They are stored the same way, but they transform differently. Homogeneous coordinates will make that difference explicit.
 
 ### Dot product
 
@@ -89,7 +89,7 @@ $$
 \lVert\mathbf{a}\times\mathbf{b}\rVert = \lVert\mathbf{a}\rVert\,\lVert\mathbf{b}\rVert\sin\theta .
 $$
 
-The result is perpendicular to both inputs, follows the right-hand rule, and its length is the area of the parallelogram spanned by $\mathbf{a}$ and $\mathbf{b}$. So the normal of a triangle $(\mathbf{p}_0,\mathbf{p}_1,\mathbf{p}_2)$ is $(\mathbf{p}_1-\mathbf{p}_0)\times(\mathbf{p}_2-\mathbf{p}_0)$, and half its length is the triangle's area. The order of the vertices (the **winding order**) decides which way the normal points, which is how GPUs decide which faces are "front".
+The result is perpendicular to both inputs, follows the right-hand rule, and its length is the area of the parallelogram spanned by $\mathbf{a}$ and $\mathbf{b}$. So the normal of a triangle $(\mathbf{p}\_0,\mathbf{p}\_1,\mathbf{p}\_2)$ is $(\mathbf{p}\_1-\mathbf{p}\_0)\times(\mathbf{p}\_2-\mathbf{p}\_0)$, and half its length is the triangle's area. The order of the vertices (the **winding order**) decides which way the normal points, which is how GPUs decide which faces are "front".
 
 The figure shows the triangle from the code below. Swapping two vertices reverses the winding and flips the normal, and the same sign flip appears in the side test for the point $\mathbf{q}$.
 
@@ -119,9 +119,9 @@ q = np.array([0.2, 0.2, 0.5])
 print("q above the triangle plane:", (q - p0) @ c > 0)         # True
 ```
 
-A useful identity for later: the triple product $\mathbf{a}\cdot(\mathbf{b}\times\mathbf{c}) = \det[\mathbf{a}\ \mathbf{b}\ \mathbf{c}]$ is the signed volume of the parallelepiped. Its 2D version, $(b_x-a_x)(c_y-a_y)-(b_y-a_y)(c_x-a_x)$, is the **edge function** that the rasterizer in post 02 uses to test whether a pixel is inside a triangle.
+A useful identity for later: the triple product $\mathbf{a}\cdot(\mathbf{b}\times\mathbf{c}) = \det[\mathbf{a}\ \mathbf{b}\ \mathbf{c}]$ is the signed volume of the parallelepiped. Its 2D version, $(b\_x-a\_x)(c\_y-a\_y)-(b\_y-a\_y)(c\_x-a\_x)$, is the **edge function** that the rasterizer in post 02 uses to test whether a pixel is inside a triangle.
 
-Try both products yourself. In the widget below the vectors lie in the $xy$-plane, so $\mathbf{a}\times\mathbf{b} = (0, 0, a_x b_y - a_y b_x)$ and its single nonzero component is exactly that 2D edge function: drag $\mathbf{b}$ across the line of $\mathbf{a}$ and watch the sign flip.
+Try both products yourself. In the widget below the vectors lie in the $xy$-plane, so $\mathbf{a}\times\mathbf{b} = (0, 0, a\_x b\_y - a\_y b\_x)$ and its single nonzero component is exactly that 2D edge function: drag $\mathbf{b}$ across the line of $\mathbf{a}$ and watch the sign flip.
 
 {% include widget.liquid name="graphics-dot-cross" height="400" caption="Drag the tips of **a** and **b**. The dark segment is the projection of a onto b; the shaded parallelogram has area ‖a × b‖, blue when a × b points out of the screen (+z), red when it points into it." %}
 
@@ -137,7 +137,7 @@ So if you want a matrix that sends the $x$-axis to some vector $\mathbf{r}$, the
 
 The basic linear transforms are:
 
-- **Scale**: $S = \operatorname{diag}(s_x, s_y, s_z)$. If the $s_i$ differ, the scale is **non-uniform**, which matters for normals (see below).
+- **Scale**: $S = \operatorname{diag}(s\_x, s\_y, s\_z)$. If the $s_i$ differ, the scale is **non-uniform**, which matters for normals (see below).
 - **Rotation about a coordinate axis**: $R_x$, $R_y$, $R_z$ (written out below).
 - **Shear**: for example $x' = x + k\,y$.
 
@@ -250,7 +250,7 @@ $$
 
 They are intuitive and are what animation tools show in the UI. But they have a **singularity**. At $\theta = \pm 90^\circ$ the first and last rotation axes line up, and the formula depends only on $\psi - \phi$ (for $+90^\circ$) or $\psi + \phi$ (for $-90^\circ$). One degree of freedom disappears. This is **gimbal lock**, named after the physical gimbals of inertial navigation units, where three nested rings can align and lose a rotational axis. Near the singularity, a small change in orientation can need a huge change in the angles, so interpolating Euler angles produces wild spins. There are also 12 valid axis orders (XYZ, ZYX, ZXZ, ...), and mixing them up is a classic bug.
 
-The figure makes this concrete with three nested rings, one per rotation in $R_z(\psi)R_y(\theta)R_x(\phi)$, each drawn perpendicular to the axis it turns about.
+The figure makes this concrete with three nested rings, one per rotation in $R\_z(\psi)R\_y(\theta)R\_x(\phi)$, each drawn perpendicular to the axis it turns about.
 
 {% include blog_figure.liquid path="assets/img/blog/graphics/01-gimbal-lock.svg" width="90%" caption="Gimbal rings for the Z-Y-X order with yaw 30° and roll 10°. Blue: the yaw ring turns about the world z axis; green: the pitch ring turns about the yawed y axis; red: the roll ring turns about Rz Ry x, the body's nose axis (black airplane). At pitch 40° (left) the three axes are independent and the Jacobian has rank 3. At pitch 90° (right) the roll axis has swung onto the yaw axis (180° apart, i.e. the same line), the red ring lies in the plane of the blue one, and the rank drops to 2." %}
 
@@ -344,7 +344,7 @@ $$
 
 Expanding the sandwich gives Rodrigues' formula again. That is why the half angle appears: $q$ acts twice. Some facts worth remembering:
 
-- **Composition** is multiplication: "first $q_a$, then $q_b$" is $q_b q_a$, with the same right-to-left order as matrices. It costs 16 multiplications instead of 27 for $3\times 3$ matrices.
+- **Composition** is multiplication: "first $q_a$, then $q_b$" is $q\_b q\_a$, with the same right-to-left order as matrices. It costs 16 multiplications instead of 27 for $3\times 3$ matrices.
 - **Double cover**: $q$ and $-q$ represent the same rotation, because $\theta$ and $\theta + 2\pi$ give opposite quaternions. Interpolation must pick the right sign.
 - **Drift**: after many multiplications, round-off makes $\lVert q\rVert \neq 1$. Renormalizing a quaternion is trivial. Re-orthogonalizing a matrix is not.
 - **No gimbal lock**: the unit quaternions form the 3-sphere $S^3$, a smooth space without singular points.
@@ -356,7 +356,7 @@ $$
 \qquad \cos\Omega = q_0\cdot q_1 .
 $$
 
-If $q_0\cdot q_1 < 0$, negate $q_1$ first so that you take the short way around. When $\Omega$ is tiny, $\sin\Omega\to 0$ and the formula becomes numerically unstable, so implementations fall back to normalized linear interpolation (**nlerp**). Nlerp does not have constant speed but it is cheap, commutative and still a good choice for blending many rotations, as in skinning.
+If $q\_0\cdot q\_1 < 0$, negate $q_1$ first so that you take the short way around. When $\Omega$ is tiny, $\sin\Omega\to 0$ and the formula becomes numerically unstable, so implementations fall back to normalized linear interpolation (**nlerp**). Nlerp does not have constant speed but it is cheap, commutative and still a good choice for blending many rotations, as in skinning.
 
 The figure compares the two on the example from the code below. Because both quaternions lie in the $(w, y)$ plane, the great circle of $S^3$ through them is an ordinary unit circle there.
 
@@ -456,7 +456,7 @@ The figure follows one cube through the whole chain, using the `look_at` from be
 
 {% include blog_figure.liquid path="assets/img/blog/graphics/01-coordinate-spaces.svg" localized="true" caption="One unit cube in every space (the orange dot marks its (+,+,+) corner). Object: centered at its pivot. World: placed by M = T(1,0,0) Ry(45°), with the camera at (2,2,5) looking at the origin (gray frustum, axes r, u, −f). View: the camera sits at the origin and looks down −z. NDC: after P and the divide by w, the frustum has become the cube [−1,1]³; nearby parts are enlarged, and z now points away from the camera (OpenGL NDC is left-handed). Screen: the viewport maps NDC to a 240×240 pixel image with row 0 at the top." %}
 
-The vertex shader computes $\mathbf{p}_{\text{clip}} = P\,V\,M\,\mathbf{p}_{\text{obj}}$. That is why $P V M$ is called the **MVP matrix**. Post 02 builds $P$ and the viewport transform. The **view matrix** $V$ is the inverse of the camera's own world transform. If the camera sits at $\mathbf{e}$ with orthonormal right/up/back axes $\mathbf{r}, \mathbf{u}, -\mathbf{f}$, its world matrix is $C = \begin{pmatrix} \mathbf{r} & \mathbf{u} & -\mathbf{f} & \mathbf{e} \\ 0 & 0 & 0 & 1 \end{pmatrix}$. Because the rotation part is orthogonal, the inverse is
+The vertex shader computes $\mathbf{p}\_{\text{clip}} = P\,V\,M\,\mathbf{p}\_{\text{obj}}$. That is why $P V M$ is called the **MVP matrix**. Post 02 builds $P$ and the viewport transform. The **view matrix** $V$ is the inverse of the camera's own world transform. If the camera sits at $\mathbf{e}$ with orthonormal right/up/back axes $\mathbf{r}, \mathbf{u}, -\mathbf{f}$, its world matrix is $C = \begin{pmatrix} \mathbf{r} & \mathbf{u} & -\mathbf{f} & \mathbf{e} \\ 0 & 0 & 0 & 1 \end{pmatrix}$. Because the rotation part is orthogonal, the inverse is
 
 $$
 V = C^{-1} = \begin{pmatrix} \mathbf{r}^\top & -\mathbf{r}\cdot\mathbf{e} \\ \mathbf{u}^\top & -\mathbf{u}\cdot\mathbf{e} \\ -\mathbf{f}^\top & \mathbf{f}\cdot\mathbf{e} \\ \mathbf{0}^\top & 1 \end{pmatrix}.
@@ -567,7 +567,7 @@ The home page has an [interactive lab]({{ '/' | relative_url }}#lab). Every demo
 1. Prove that for unit quaternions, $q\,(0,\mathbf{v})\,q^*$ reproduces Rodrigues' formula. Then show that $-q$ gives the same result.
 2. Implement `matrix_to_quaternion(R)`. Use the numerically stable version that branches on the largest diagonal element, and test it on 10,000 random rotations by checking `q_to_matrix(matrix_to_quaternion(R)) == R`.
 3. Animate a rotation from yaw/pitch/roll $(0^\circ, 0^\circ, 0^\circ)$ to $(170^\circ, 89^\circ, -170^\circ)$ in two ways: by linearly interpolating the Euler angles, and by slerping the corresponding quaternions. Plot the angular distance from the start over time and explain the difference.
-4. Show that the inverse transpose of $M = R\,S$ with $S = \operatorname{diag}(s_x, s_y, s_z)$ equals $R\,S^{-1}$. Explain geometrically why normals get "squashed" where the surface gets stretched.
+4. Show that the inverse transpose of $M = R\,S$ with $S = \operatorname{diag}(s\_x, s\_y, s\_z)$ equals $R\,S^{-1}$. Explain geometrically why normals get "squashed" where the surface gets stretched.
 5. Write a function that converts an OpenCV camera pose (looking down $+z$, $y$ down) to an OpenGL view matrix (looking down $-z$, $y$ up), and verify it with `look_at`.
 
 Next: [Rasterization]({{ '/blog/2026/graphics-02-rasterization/' | relative_url }}) turns the MVP pipeline into pixels. We derive the perspective projection matrix and write a complete software rasterizer.
