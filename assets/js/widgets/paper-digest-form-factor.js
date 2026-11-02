@@ -7,12 +7,12 @@
   var TXT = {
     en: { help: "Drag patch j (red). Use the slider to tilt it.", tilt: "tilt of j", reset: "Reset",
       away: "a patch faces away: F = 0", ratio: "relative to the start position" },
-    zh: { help: "@62d6@52a8@9762@7247 j@ff08@7ea2@8272@ff09@3002@7528@6ed1@5757@8c03@6574@5b83@7684@503e@659c@3002",
-      tilt: "j @7684@503e@659c", reset: "@91cd@7f6e",
-      away: "@6709@9762@7247@80cc@5bf9@5bf9@65b9@ff1a F = 0", ratio: "@76f8@5bf9@4e8e@521d@59cb@4f4d@7f6e" },
-    ja: { help: "@30d1@30c3@30c1 j@ff08@8d64@ff09@3092@30c9@30e9@30c3@30b0@3057@3001@30b9@30e9@30a4@30c0@30fc@3067@50be@3051@307e@3059@3002",
-      tilt: "j @306e@50be@304d", reset: "@30ea@30bb@30c3@30c8",
-      away: "@30d1@30c3@30c1@304c@80cc@3092@5411@3051@3066@3044@307e@3059@ff1a F = 0", ratio: "@521d@671f@4f4d@7f6e@3068@306e@6bd4" }
+    zh: { help: "\u62d6\u52a8\u9762\u7247 j\uff08\u7ea2\u8272\uff09\u3002\u7528\u6ed1\u5757\u8c03\u6574\u5b83\u7684\u503e\u659c\u3002",
+      tilt: "j \u7684\u503e\u659c", reset: "\u91cd\u7f6e",
+      away: "\u6709\u9762\u7247\u80cc\u5bf9\u5bf9\u65b9\uff1a F = 0", ratio: "\u76f8\u5bf9\u4e8e\u521d\u59cb\u4f4d\u7f6e" },
+    ja: { help: "\u30d1\u30c3\u30c1 j\uff08\u8d64\uff09\u3092\u30c9\u30e9\u30c3\u30b0\u3057\u3001\u30b9\u30e9\u30a4\u30c0\u30fc\u3067\u50be\u3051\u307e\u3059\u3002",
+      tilt: "j \u306e\u50be\u304d", reset: "\u30ea\u30bb\u30c3\u30c8",
+      away: "\u30d1\u30c3\u30c1\u304c\u80cc\u3092\u5411\u3051\u3066\u3044\u307e\u3059\uff1a F = 0", ratio: "\u521d\u671f\u4f4d\u7f6e\u3068\u306e\u6bd4" }
   };
   function dec(s) {
     return s.replace(/@([0-9a-f]{4})/g, function (m, h) { return String.fromCharCode(parseInt(h, 16)); });
@@ -126,10 +126,10 @@
       var pct = F0 > 0 ? (100 * res.F / F0) : 0;
       out.innerHTML = "";
       var line1 = document.createElement("div");
-      line1.textContent = "r = " + res.r.toFixed(2) + dec("   cos@03b8i = ") + res.ci.toFixed(3) + dec("   cos@03b8j = ") + res.cj.toFixed(3);
+      line1.textContent = "r = " + res.r.toFixed(2) + ", cos\u03b8i = " + res.ci.toFixed(3) + ", cos\u03b8j = " + res.cj.toFixed(3);
       var line2 = document.createElement("div");
       line2.style.cssText = "font-weight:bold;color:#7b4fa8";
-      line2.textContent = dec("F(i@2192j) = ") + res.F.toFixed(5) + "   (" + pct.toFixed(0) + "% " + T.ratio + ")";
+      line2.textContent = dec("F(i\u2192j) = ") + res.F.toFixed(5) + "   (" + pct.toFixed(0) + "% " + T.ratio + ")";
       out.appendChild(line1); out.appendChild(line2);
       if (res.F === 0) {
         var line3 = document.createElement("div");
@@ -137,7 +137,7 @@
         line3.textContent = T.away;
         out.appendChild(line3);
       }
-      deg.textContent = st.tilt + dec("@00b0");
+      deg.textContent = st.tilt + dec("\u00b0");
     }
     function setFromEvent(ev) {
       var r = canvas.getBoundingClientRect();

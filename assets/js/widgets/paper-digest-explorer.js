@@ -18,7 +18,7 @@
       s: "A neural time integrator for hair strands, trained with the simulator in the loop over random unroll horizons." },
     { n: 4, c: 0, t: "PhysSkin++: Real-Time and Generalizable Physics-Based Animation via Self-Supervised Neural Skinning", a: "Y. Lei et al.", v: "preprint", d: "2026-10-19", g: "RSA", u: AX + "2610.26067", proj: "https://zju3dv.github.io/PhysSkin_plus/",
       s: "Predicts a neural skinning field, and so a reduced elastic subspace, for unseen shapes in one forward pass." },
-    { n: 5, c: 0, t: "Total Deformation-based MPM for Perfectly Elastic Solid Simulation with Strong Deformations", a: "T. B@00f6ttcher et al.", v: "preprint", d: "2026-10-27", g: "S", u: AX + "2610.36945",
+    { n: 5, c: 0, t: "Total Deformation-based MPM for Perfectly Elastic Solid Simulation with Strong Deformations", a: "T. B\u00f6ttcher et al.", v: "preprint", d: "2026-10-27", g: "S", u: AX + "2610.36945",
       s: "MPM that derives deformation from particle positions against a reference grid, avoiding numerical fracture." },
     { n: 6, c: 0, t: "Walk on Multiscale Media: Compiling Editable and Composable Transport Medium Prefabs for Monte Carlo PDE Solvers", a: "Y. Liao et al.", v: "preprint", d: "2026-10-24", g: "GS", u: AX + "2610.35952",
       s: "Precompiled medium prefabs let Walk-on-Spheres jump across fine-scale heterogeneous media and support interactive edits." },
@@ -113,27 +113,27 @@
     // Non-ASCII text is written as @XXXX (hex UTF-16 code unit) and decoded by dec() below,
     // which keeps this file ASCII-only.
     zh: {
-      help: "@70b9@51fb@7c7b@522b@6216 CG @5173@8054@8fdb@884c@7b5b@9009@ff1b@70b9@51fb@6216@6ed1@8fc7@5706@70b9@3001@6216@70b9@51fb@6807@9898@67e5@770b@6458@8981@3002",
-      all: "@5168@90e8", cg: "CG @5173@8054@ff1a", none: "@6ca1@6709@7b26@5408@7b5b@9009@7684@8bba@6587@3002",
-      shown: "@7bc7@8bba@6587", jump: "@8df3@5230@6b63@6587@6761@76ee", code: "@4ee3@7801",
-      proj: "@9879@76ee@9875", paper: "@8bba@6587",
-      cats: ["@56fe@5f62@5b66", "@5f15@64ce@4e0e@5b9e@65f6", "@795e@7ecf@6e32@67d3", "@4e16@754c@6a21@578b",
-        "@5177@8eab@667a@80fd", "HCI / XR"],
-      tags: ["@8868@793a", "@6e32@67d3", "@51e0@4f55", "@4eff@771f", "@52a8@753b", "@4ea4@4e92"]
+      help: "\u70b9\u51fb\u7c7b\u522b\u6216 CG \u5173\u8054\u8fdb\u884c\u7b5b\u9009\uff1b\u70b9\u51fb\u6216\u6ed1\u8fc7\u5706\u70b9\u3001\u6216\u70b9\u51fb\u6807\u9898\u67e5\u770b\u6458\u8981\u3002",
+      all: "\u5168\u90e8", cg: "CG \u5173\u8054\uff1a", none: "\u6ca1\u6709\u7b26\u5408\u7b5b\u9009\u7684\u8bba\u6587\u3002",
+      shown: "\u7bc7\u8bba\u6587", jump: "\u8df3\u5230\u6b63\u6587\u6761\u76ee", code: "\u4ee3\u7801",
+      proj: "\u9879\u76ee\u9875", paper: "\u8bba\u6587",
+      cats: ["\u56fe\u5f62\u5b66", "\u5f15\u64ce\u4e0e\u5b9e\u65f6", "\u795e\u7ecf\u6e32\u67d3", "\u4e16\u754c\u6a21\u578b",
+        "\u5177\u8eab\u667a\u80fd", "HCI / XR"],
+      tags: ["\u8868\u793a", "\u6e32\u67d3", "\u51e0\u4f55", "\u4eff\u771f", "\u52a8\u753b", "\u4ea4\u4e92"]
     },
     ja: {
-      help: "@30ab@30c6@30b4@30ea@3084 CG @3068@306e@95a2@4fc2@3092@30bf@30c3@30d7@3057@3066@7d5e@308a@8fbc@307f@307e@3059@3002" +
-        "@70b9@3092@30bf@30c3@30d7@307e@305f@306f@30c9@30e9@30c3@30b0@3059@308b@304b@3001@30bf@30a4@30c8@30eb@3092" +
-        "@30bf@30c3@30d7@3059@308b@3068@8981@7d04@304c@8868@793a@3055@308c@307e@3059@3002",
-      all: "@3059@3079@3066", cg: "CG @3068@306e@95a2@4fc2@ff1a",
-      none: "@6761@4ef6@306b@5408@3046@8ad6@6587@306f@3042@308a@307e@305b@3093@3002", shown: "@672c@3092@8868@793a",
-      jump: "@672c@6587@306e@9805@76ee@3078", code: "@30b3@30fc@30c9", proj: "@30d7@30ed@30b8@30a7@30af@30c8",
-      paper: "@8ad6@6587",
-      cats: ["@30b0@30e9@30d5@30a3@30c3@30af@30b9", "@30a8@30f3@30b8@30f3@30fb@30ea@30a2@30eb@30bf@30a4@30e0",
-        "@30cb@30e5@30fc@30e9@30eb@30ec@30f3@30c0@30ea@30f3@30b0", "@4e16@754c@30e2@30c7@30eb",
-        "@8eab@4f53@6027 AI", "HCI / XR"],
-      tags: ["@8868@73fe", "@30ec@30f3@30c0@30ea@30f3@30b0", "@5e7e@4f55", "@30b7@30df@30e5@30ec@30fc@30b7@30e7@30f3",
-        "@30a2@30cb@30e1@30fc@30b7@30e7@30f3", "@30a4@30f3@30bf@30e9@30af@30b7@30e7@30f3"]
+      help: "\u30ab\u30c6\u30b4\u30ea\u3084 CG \u3068\u306e\u95a2\u4fc2\u3092\u30bf\u30c3\u30d7\u3057\u3066\u7d5e\u308a\u8fbc\u307f\u307e\u3059\u3002" +
+        "\u70b9\u3092\u30bf\u30c3\u30d7\u307e\u305f\u306f\u30c9\u30e9\u30c3\u30b0\u3059\u308b\u304b\u3001\u30bf\u30a4\u30c8\u30eb\u3092" +
+        "\u30bf\u30c3\u30d7\u3059\u308b\u3068\u8981\u7d04\u304c\u8868\u793a\u3055\u308c\u307e\u3059\u3002",
+      all: "\u3059\u3079\u3066", cg: "CG \u3068\u306e\u95a2\u4fc2\uff1a",
+      none: "\u6761\u4ef6\u306b\u5408\u3046\u8ad6\u6587\u306f\u3042\u308a\u307e\u305b\u3093\u3002", shown: "\u672c\u3092\u8868\u793a",
+      jump: "\u672c\u6587\u306e\u9805\u76ee\u3078", code: "\u30b3\u30fc\u30c9", proj: "\u30d7\u30ed\u30b8\u30a7\u30af\u30c8",
+      paper: "\u8ad6\u6587",
+      cats: ["\u30b0\u30e9\u30d5\u30a3\u30c3\u30af\u30b9", "\u30a8\u30f3\u30b8\u30f3\u30fb\u30ea\u30a2\u30eb\u30bf\u30a4\u30e0",
+        "\u30cb\u30e5\u30fc\u30e9\u30eb\u30ec\u30f3\u30c0\u30ea\u30f3\u30b0", "\u4e16\u754c\u30e2\u30c7\u30eb",
+        "\u8eab\u4f53\u6027 AI", "HCI / XR"],
+      tags: ["\u8868\u73fe", "\u30ec\u30f3\u30c0\u30ea\u30f3\u30b0", "\u5e7e\u4f55", "\u30b7\u30df\u30e5\u30ec\u30fc\u30b7\u30e7\u30f3",
+        "\u30a2\u30cb\u30e1\u30fc\u30b7\u30e7\u30f3", "\u30a4\u30f3\u30bf\u30e9\u30af\u30b7\u30e7\u30f3"]
     }
   };
   function dec(s) {
@@ -148,7 +148,7 @@
   }
   decAll(TXT);
   P.forEach(function (p) { p.a = dec(p.a); });
-  var DOT = dec(" @00b7 ");
+  var DOT = dec(" \u00b7 ");
   var SVGNS = "http://www.w3.org/2000/svg";
 
   function dayIndex(s) {

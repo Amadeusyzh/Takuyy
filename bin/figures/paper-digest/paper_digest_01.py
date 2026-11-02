@@ -67,7 +67,7 @@ def fig_overview():
         ax.set_xlabel(label(lang, "entries in this issue", "本期条目数", "本号の掲載数"))
         ax.set_xlim(0, max(acc + pre) + 1.2)
         ax.grid(axis="y", visible=False)
-        ax.legend(loc="lower right", fontsize=12, frameon=False)
+        ax.legend(loc="lower center", bbox_to_anchor=(0.45, 1.02), ncol=3, fontsize=11, frameon=False)
         save(fig, OUT / f"01-overview_{lang}.svg")
 
 
@@ -89,7 +89,7 @@ def fig_matrix():
     ax.set_ylim(-0.6, m - 0.4)
     ax.set_aspect("equal")
     ax.set_xticks(range(len(TAGS)))
-    ax.set_xticklabels(TAG_SHORT, fontsize=13)
+    ax.set_xticklabels(TAG_SHORT, fontsize=13, rotation=60, ha="left", rotation_mode="anchor")
     ax.xaxis.tick_top()
     ax.set_yticks([m - 1 - i for i in range(m)])
     ax.set_yticklabels([f"{p['n']:02d} {p['short']}" for p in rows], fontsize=11)
@@ -159,7 +159,7 @@ def fig_form_factor():
     a0.plot(0.5 * np.sin(t), 0.5 * np.cos(t), color=C["b"])
     a0.plot(2 - 0.5 * np.sin(t), 2 - 0.5 * np.cos(t), color=C["b"])
     for x, y, s in [(-0.75, 0.0, "$i$"), (2.45, 2.05, "$j$"), (-0.45, 0.85, "$n_i$"), (2.1, 1.0, "$n_j$"),
-                    (0.25, 0.65, r"$\theta_i$"), (1.45, 1.45, r"$\theta_j$"), (1.15, 0.85, "$r$"), (2.45, 1.7, "$A_j=0.1$")]:
+                    (0.25, 0.65, r"$\theta_i$"), (1.45, 1.45, r"$\theta_j$"), (1.15, 0.85, "$r$"), (1.3, 2.25, "$A_j=0.1$")]:
         a0.text(x, y, s, fontsize=15)
     a0.set_xlim(-1.2, 3.4)
     a0.set_ylim(-0.4, 2.6)
@@ -221,7 +221,7 @@ def fig_engine_vs_generator():
     arrow(ax, (6.375, 0.1), (6.375, 0.7))
     ax.text(6.5, 0.15, r"$x_{\leq t}$", fontsize=15)
     arrow(ax, (2.5, 1.8), (6.1, 1.8), color=C["a"], ls="--", rad=-0.25)
-    ax.text(4.3, 2.3, "$s_{t+1}$", color=C["a"], ha="center", fontsize=15)
+    ax.text(4.3, 2.48, "$s_{t+1}$", color=C["a"], ha="center", fontsize=15)
     save(fig, OUT / "01-engine-vs-generator.svg")
 
 
