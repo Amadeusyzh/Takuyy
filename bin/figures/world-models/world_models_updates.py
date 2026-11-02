@@ -10,8 +10,9 @@ Writes assets/img/blog/world-models/0N-update-*.svg. All text inside the figures
   - 04-update-memory-growth: toy model (illustrative numbers, not from any paper).
   - 05-update-benchmarks: which of the five questions of post 5, Section 5, each benchmark names as an
     evaluation dimension in its arXiv abstract (checked November 2026).
-Note: the SVGs committed with the update were hand-written stand-ins with the same content, because the
-authoring session had no Python runtime. Running this script replaces them with matplotlib output.
+  - 02-update-exposure, 05-update-sigreg: real toy runs (PyTorch, CPU, about a minute in total); they are the
+    code snippets printed in the update sections of posts 2 and 5, and the numbers quoted in those posts are
+    the values this script prints.
 """
 import pathlib
 import sys
