@@ -300,6 +300,56 @@ MSE BC:    mean y 0.022 (collapses to the average, i.e. into the obstacle)
 主页上的演示都不是模仿学习器，但 **[Lab]({{ '/' | relative_url }}#lab)** 中的布料演示是一个很好的思想实验：用鼠标拖动布料，就是对
 可变形物体操作轨迹的一次"示范"。记录鼠标路径和粒子位置，就能得到训练叠布策略所需的 $(o_t, a_t)$ 数据对。
 
+## 2025–2026 年进展（截至 2026 年 11 月）
+
+2026 年初以来的三项进展改变了本文思想的实际用法：数据集开始以数千**小时**而不是数千条片段计量；UMI 式手持采集已经大到足以预训练基础模型；“大行为模型”（Large Behavior Models，在多任务上训练的 Diffusion Policy 式模型）接受了格外严谨的统计评测。以下状态均截至 2026 年 11 月。
+
+### 数据集：具体数字
+
+下表汇总了各论文或官方页面给出的数字。不同数据集统计的对象不同（轨迹、小时、场景），请在同一列内比较，不要跨列比较。
+
+| 数据集 | 状态 | 规模 | 本体 | 多样性 |
+| --- | --- | --- | --- | --- |
+| BridgeData V2 | CoRL 2023 | 60,096 条轨迹 | 1（WidowX 250） | 24 个环境，13 种技能 |
+| Open X-Embodiment | ICRA 2024 | 来自 60 个数据集的 100 万条以上轨迹 | 22 种机器人 | 527 种技能，21 个机构 |
+| DROID | RSS 2024 | 7.6 万条轨迹，350 小时 | 1（Franka） | 564 个场景，86 个任务 |
+| RoboMIND | RSS 2025 | 约 10.7 万条轨迹 | 4 | 479 个任务，含 5 千条失败示范 |
+| AgiBot World | arXiv 预印本（2025 年 3 月） | 100 万条以上轨迹 | AgiBot G1 平台 | 217 个任务，5 类部署场景 |
+| Galaxea Open-World | arXiv 预印本（2025 年 8 月） | 500 小时以上 | 1（R1 Lite 移动操作机器人） | 11 个真实场所（家庭、商店等） |
+| TRI LBM 预训练混合数据 | Science Robotics 2026 | 约 1,700 小时（自有遥操作 468 小时、仿真 45 小时、UMI 32 小时、OXE 约 1,150 小时） | 多种 | 29 个评测任务 |
+| Being-H0.5 / UniHand-2.0 | arXiv 预印本（2026 年 1 月） | 3.5 万小时以上，主要是人手交互 | 人 + 30 种机器人本体 | 以人为中心的预训练 |
+| 双臂家务数据（Xu 等） | arXiv 预印本（2026 年 9 月） | 1,500 小时（已开源） | 双臂 | 专家数据加同策略纠正数据 |
+
+{% comment %} 运行 bin/figures/embodied-ai/embodied_ai_updates.py 生成 SVG 后再启用：
+{% include blog_figure.liquid path="assets/img/blog/embodied-ai/04-update-dataset-scale.svg" localized="true" caption="左：各数据来源的小时数（对数坐标；论文写“以上”的取下限）。蓝色 = 机器人遥操作，橙色 = 手持 UMI 数据，绿色 = 人类第一人称视频。人类语料要大一到两个数量级。右：同时报告两项数字的数据集的轨迹数与机器人本体数。只有 Open X-Embodiment 在两个方向上都很大。" %}
+{% endcomment %}
+
+有两个明显趋势。第一，**场景多样性胜过重复**：DROID 的 564 个场景以及 Galaxea 的真实家庭和商店，正是为[第 5 篇]({{ '/blog/2026/embodied-ai-05-vision-language-action-models/' | relative_url }})中的泛化维度而设计的。第二，最大的数字现在来自**人类数据**：UniHand-2.0 和 EgoScale（见[第 6 篇]({{ '/blog/2026/embodied-ai-06-embodied-ai-meets-xr-and-hci/' | relative_url }})）以数万小时计，比任何机器人遥操作语料都多一个数量级。Xu 等人 2026 年的论文还有一个有益的转折：它在专家示范之外同时扩展 **DAgger 式的同策略纠正数据**（第 1 节），并研究两者如何随规模变化。即使有 1,500 小时，协变量偏移仍然是敌人。
+
+### UMI 式采集走向成熟
+
+第 4 节的手持夹爪已经发展成一个家族：
+
+- **UMI on Legs**（Ha 等，arXiv 预印本，2024 年 7 月）通过在仿真中训练的全身控制器，让用 UMI 训练的操作策略在四足机器人上运行。策略输出世界坐标系下的末端执行器目标，因此不关心是谁带着夹爪。
+- **FastUMI**（Zhaxizhuoma 等，arXiv 预印本，2024 年 9 月）用现成的跟踪方案取代 UMI 的视觉 SLAM，使硬件更容易复现，并发布了 1 万条以上的轨迹。
+- **DexUMI**（Xu 等，CoRL 2025）以人手为接口：外骨骼匹配机器人手的运动学，再在视频中把人手修复（inpaint）成机器人手，从而消除视觉差距。
+- **ViTaMIn**（Liu 等，arXiv 预印本，2025 年 4 月）及其双臂后继版本为手持夹爪加入**触觉**；**UMI-FT**（Choi 等，arXiv 预印本，2026 年 1 月）在每根手指上加装六轴力/力矩传感器，用于柔顺、接触密集的任务。
+- **RDT2**（Liu 等，ICML 2026）是规模化的检验：在 1 万小时以上的 UMI 数据上训练 7B VLA，并零样本部署到从未见过的机器人上（见第 5 篇）。
+
+### 扩散与流策略：更快、更平滑
+
+- **实时分块**（Black 等，NeurIPS 2025）解决了第 2 节动作分块在块边界处的停顿和抖动：在执行当前块的同时，以冻结已提交动作的修复方式生成下一块。后续工作把这种条件化移到了训练阶段。
+- **Streaming Flow Policy**（Jiang 等，CoRL 2025）把动作轨迹本身当作流的轨迹，采样尚未结束时就能把动作流式发送给机器人。
+- **One-Step Flow Policy**（Li 等，arXiv 预印本，2026 年 3 月）把流策略自蒸馏为一次网络前向计算；在 56 个仿真任务上，它以 100 倍以上的速度达到或超过 100 步的扩散和流策略。这是把蒸馏推到极限：每个动作块只需一次网络计算。
+
+### 大行为模型
+
+**A careful examination of large behavior models for multitask dexterous manipulation**（TRI LBM Team，arXiv 2025 年 7 月；据项目页面已于 2026 年发表在 *Science Robotics*）在上表中约 1,700 小时的混合数据上预训练 Diffusion Policy 式 Transformer，再在新任务上微调。对学习者最有用的是它的方法论：评测是盲测且随机化的，使用约 1,800 次真实和 4.7 万次仿真执行，并报告置信区间。在这一协议下，多任务预训练让微调后的策略更成功、更鲁棒，新任务只需单任务基线的一小部分数据，而且性能随预训练数据规模和多样性的增长而提高。第 5 篇的练习 5 正是要你设计这样的协议。
+
+随后 Boston Dynamics 与 TRI 为电动 **Atlas** 人形机器人训练了 LBM。据 Boston Dynamics 2025 年的博客，它是约 4.5 亿参数、用流匹配训练的扩散 Transformer，以 30 Hz 输出 48 步的动作块（执行 24 步后重新规划），控制包括手和脚在内的全身。这就是第 2 节的动作分块在人形机器人规模上的应用。
+
+*与前文相比的变化：*第 5 节用轨迹数描述数据集；对 2026 年规模的语料来说，小时数和不同场景的数量是更有信息量的单位，而且人类数据在原始规模上已超过机器人数据。
+
 ## 代表性论文
 
 | 论文 | 会议/期刊 | 年份 | 链接 | 意义 |
@@ -320,6 +370,21 @@ MSE BC:    mean y 0.022 (collapses to the average, i.e. into the obstacle)
 | Ze et al., *3D Diffusion Policy* | RSS | 2024 | [arXiv](https://arxiv.org/abs/2403.03954) | 以点云为条件 |
 | Fu, Zhao, Finn, *Mobile ALOHA* | CoRL | 2024 | [arXiv](https://arxiv.org/abs/2401.02117) | 移动双臂模仿，联合训练 |
 | Zhao et al., *ALOHA Unleashed: a simple recipe for robot dexterity* | CoRL | 2024 | [arXiv](https://arxiv.org/abs/2410.13126) | 扩展双臂灵巧性 |
+| Ha et al., *UMI on Legs: making manipulation policies mobile with manipulation-centric whole-body controllers* | arXiv 预印本（2024 年 7 月） | 2024 | [arXiv](https://arxiv.org/abs/2407.10353) | 四足机器人上的 UMI 策略 |
+| Zhaxizhuoma et al., *FastUMI: a scalable and hardware-independent universal manipulation interface with dataset* | arXiv 预印本（2024 年 9 月） | 2024 | [arXiv](https://arxiv.org/abs/2409.19499) | 更简单的 UMI 硬件，1 万条以上轨迹 |
+| Wu et al., *RoboMIND: benchmark on multi-embodiment intelligence normative data for robot manipulation* | RSS | 2025 | [arXiv](https://arxiv.org/abs/2412.13877) | 含失败示范的多本体数据 |
+| AgiBot World Contributors, *AgiBot World Colosseo: a large-scale manipulation platform for scalable and intelligent embodied systems* | arXiv 预印本（2025 年 3 月） | 2025 | [arXiv](https://arxiv.org/abs/2503.06669) | 100 万条以上轨迹 |
+| Liu et al., *ViTaMIn: learning contact-rich tasks through robot-free visuo-tactile manipulation interface* | arXiv 预印本（2025 年 4 月） | 2025 | [arXiv](https://arxiv.org/abs/2504.06156) | 触觉手持采集 |
+| Xu et al., *DexUMI: using human hand as the universal manipulation interface for dexterous manipulation* | CoRL | 2025 | [arXiv](https://arxiv.org/abs/2505.21864) | 外骨骼 + 手部修复 |
+| Jiang et al., *Streaming flow policy* | CoRL | 2025 | [arXiv](https://arxiv.org/abs/2505.21851) | 采样过程中流式输出动作 |
+| Black et al., *Real-time execution of action chunking flow policies* | NeurIPS | 2025 | [arXiv](https://arxiv.org/abs/2506.07339) | 异步分块 |
+| TRI LBM Team, *A careful examination of large behavior models for multitask dexterous manipulation* | Science Robotics | 2026 | [arXiv](https://arxiv.org/abs/2507.05331) | 统计严谨的 LBM 评测 |
+| Jiang et al., *Galaxea Open-World dataset and G0 dual-system VLA model* | arXiv 预印本（2025 年 8 月） | 2025 | [arXiv](https://arxiv.org/abs/2509.00576) | 真实家庭和商店中的 500 小时以上数据 |
+| Choi et al., *In-the-wild compliant manipulation with UMI-FT* | arXiv 预印本（2026 年 1 月） | 2026 | [arXiv](https://arxiv.org/abs/2601.09988) | 手指力/力矩传感 |
+| Luo et al., *Being-H0.5: scaling human-centric robot learning for cross-embodiment generalization* | arXiv 预印本（2026 年 1 月） | 2026 | [arXiv](https://arxiv.org/abs/2601.12993) | 3.5 万小时以上以人为中心的数据 |
+| Li et al., *One-step flow policy: self-distillation for fast visuomotor policies* | arXiv 预印本（2026 年 3 月） | 2026 | [arXiv](https://arxiv.org/abs/2603.12480) | 一步生成式策略 |
+| Xu et al., *Scaling bimanual household manipulation from 1,500 hours of demonstrations to on-policy corrections* | arXiv 预印本（2026 年 9 月） | 2026 | [arXiv](https://arxiv.org/abs/2609.03591) | 扩展专家数据与纠正数据 |
+| Boston Dynamics, [*Large behavior models and Atlas find new footing*](https://bostondynamics.com/blog/large-behavior-models-atlas-find-new-footing/) | 博客 | 2025 | 见链接 | Atlas 上的全身 LBM |
 
 ## 学习资源
 

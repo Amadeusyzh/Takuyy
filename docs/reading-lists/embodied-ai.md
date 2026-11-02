@@ -234,3 +234,101 @@ MANO（https://mano.is.tue.mpg.de）、AMASS（https://amass.is.tue.mpg.de）、
 3. 第 5–6 周：ACT、Diffusion Policy、UMI；用 LeRobot 在仿真（如 ALOHA sim / LIBERO）里复现一个任务（第 4 篇）。
 4. 第 7–8 周：RT-2、OpenVLA、pi0、pi0.5；用 openpi 或 LeRobot 在 LIBERO 上微调一个 VLA（第 5 篇）。
 5. 第 9–10 周：Open-TeleVision、EgoMimic、Aria 数据；搭一个用头显采集示范的小系统，并做一个小型用户研究（第 6 篇）。
+
+---
+
+## 2025–2026（截至 2026 年 11 月；对应第 1–6 篇的“2025–2026 年进展”一节）
+
+状态说明：只写经核实的会议/期刊；未录用的一律标“arXiv 预印本（年月）”；工业界模型只引官方页面。CoRL 2026（11 月 9–12 日，奥斯汀）尚未召开。
+
+### 人形机器人全身控制与 RL（第 1、2 篇）
+
+| 论文 | 会议/期刊 | 年份 | 链接 | 一句话说明 |
+| --- | --- | --- | --- | --- |
+| HOVER（He et al.） | ICRA | 2025 | [arXiv](https://arxiv.org/abs/2410.21229) | 多指令模式蒸馏进一个全身控制器 |
+| ★ ASAP（He et al.） | RSS | 2025 | [arXiv](https://arxiv.org/abs/2502.01143) | 增量动作模型对齐仿真与真实动力学 |
+| KungfuBot（Xie et al.） | NeurIPS | 2025 | [arXiv](https://arxiv.org/abs/2506.12851) | 自适应跟踪容差，高动态技能 |
+| GMT（Chen et al.） | arXiv 预印本（2025-06） | 2025 | [arXiv](https://arxiv.org/abs/2506.14770) | 通用动作跟踪，MoE |
+| ★ BeyondMimic（Liao et al.） | arXiv 预印本（2025-08） | 2025 | [arXiv](https://arxiv.org/abs/2508.08241) | 开源跟踪管线 + 引导扩散 |
+| Any2Track（Zhang et al.） | arXiv 预印本（2025-09） | 2025 | [arXiv](https://arxiv.org/abs/2509.13833) | 跟踪 + 在线自适应 |
+| ★ SONIC（Luo et al.） | Science Robotics | 2026 | [arXiv](https://arxiv.org/abs/2511.07820) | 动作跟踪作为基础任务 |
+| X-WBC（Zhang et al.） | CoRL 2026（已录用） | 2026 | [arXiv](https://arxiv.org/abs/2609.15213) | 跨本体全身控制 |
+| HIL-SERL（Luo et al.） | arXiv（2024-10） | 2024 | [arXiv](https://arxiv.org/abs/2410.21845) | 真实世界人在回路 RL |
+| ConRFT（Chen et al.） | RSS | 2025 | [arXiv](https://arxiv.org/abs/2502.05450) | 一致性策略做 VLA 离线到在线微调 |
+| RL4VLA（Liu et al.） | NeurIPS | 2025 | [arXiv](https://arxiv.org/abs/2505.19789) | PPO 微调 VLA 的实证研究 |
+| SimpleVLA-RL（Li et al.） | arXiv 预印本（2025-09） | 2025 | [arXiv](https://arxiv.org/abs/2509.09674) | 结果奖励 RL |
+| ★ pi_RL（Chen et al.） | arXiv 预印本（2025-10） | 2025 | [arXiv](https://arxiv.org/abs/2510.25889) | 流策略的 PPO/GRPO（Flow-Noise / Flow-SDE） |
+| ★ pi\*0.6 / Recap（Physical Intelligence） | arXiv 预印本（2025-11） | 2025 | [arXiv](https://arxiv.org/abs/2511.14759) | 优势条件 RL |
+| RL Token（Xu et al.） | arXiv 预印本（2026-04） | 2026 | [arXiv](https://arxiv.org/abs/2604.23073) | 冻结 VLA 上的小型在线 actor-critic |
+| Real-time EXPO-FT（Dong et al.） | arXiv 预印本（2026-09） | 2026 | [arXiv](https://arxiv.org/abs/2609.18207) | 慢 VLA + 快 RL 编辑策略 |
+
+### 仿真平台与生成式仿真（第 3 篇）
+
+| 论文 / 项目 | 会议/期刊 | 年份 | 链接 | 一句话说明 |
+| --- | --- | --- | --- | --- |
+| Isaac Lab 论文（Mittal et al.） | arXiv 预印本（2025-11） | 2025 | [arXiv](https://arxiv.org/abs/2511.04831) | Isaac Lab 参考论文；软件最新 v3.0.0（2026-10-20） |
+| Newton | 软件（1.x，最新 v1.7.0，2026-10-14） | 2025–2026 | [GitHub](https://github.com/newton-physics/newton) | Warp + OpenUSD，多求解器 |
+| MuJoCo Warp | 软件（3.17.0，2026-10-22） | 2025–2026 | [GitHub](https://github.com/google-deepmind/mujoco_warp) | MuJoCo 的 GPU 后端 |
+| mjlab（Zakka et al.） | arXiv 预印本（2026-01） | 2026 | [arXiv](https://arxiv.org/abs/2601.22074) | MuJoCo Warp 上的 Isaac Lab 式 API |
+| RoboVerse（Geng et al.） | RSS | 2025 | [arXiv](https://arxiv.org/abs/2504.18904) | 跨仿真器统一平台 |
+| RoboCasa365（Nasiriany et al.） | ICLR | 2026 | [arXiv](https://arxiv.org/abs/2603.04356) | 365 任务、2,500 场景 |
+| GenManip | CVPR | 2025 | [arXiv](https://arxiv.org/abs/2506.10966) | LLM 生成桌面任务 |
+| Cosmos-Predict2.5 / Transfer2.5（NVIDIA） | arXiv 预印本（2025-10） | 2025 | [arXiv](https://arxiv.org/abs/2511.00062) | 开放视频世界模型，sim2real 增强 |
+| WorldGym（Quevedo et al.） | ICLR | 2026 | [arXiv](https://arxiv.org/abs/2506.00613) | 世界模型做策略评测 |
+| Veo 世界模拟器评测（Gemini Robotics Team） | arXiv 预印本（2025-12） | 2025 | [arXiv](https://arxiv.org/abs/2512.10675) | 策略排名与安全探测 |
+| BEHAVIOR Challenge 2025 / 2026 | NeurIPS 2025 / CoRL 2026 | 2025–2026 | [官网](https://behavior.stanford.edu/challenge) | 50 / 100 个完整家务任务 |
+
+### 模仿学习与数据（第 4 篇）
+
+| 论文 | 会议/期刊 | 年份 | 链接 | 一句话说明 |
+| --- | --- | --- | --- | --- |
+| RoboMIND（Wu et al.） | RSS | 2025 | [arXiv](https://arxiv.org/abs/2412.13877) | 约 10.7 万轨迹、4 种本体 |
+| ★ AgiBot World Colosseo | arXiv 预印本（2025-03） | 2025 | [arXiv](https://arxiv.org/abs/2503.06669) | 100 万+ 轨迹、217 任务 |
+| Galaxea Open-World / G0（Jiang et al.） | arXiv 预印本（2025-08） | 2025 | [arXiv](https://arxiv.org/abs/2509.00576) | 500+ 小时真实场所数据 |
+| ★ TRI LBM（TRI LBM Team） | Science Robotics | 2026 | [arXiv](https://arxiv.org/abs/2507.05331) | 统计严谨的大行为模型评测 |
+| DexUMI（Xu et al.） | CoRL | 2025 | [arXiv](https://arxiv.org/abs/2505.21864) | 人手作为 UMI |
+| UMI-FT（Choi et al.） | arXiv 预印本（2026-01） | 2026 | [arXiv](https://arxiv.org/abs/2601.09988) | 手指力/力矩传感 |
+| Streaming Flow Policy（Jiang et al.） | CoRL | 2025 | [arXiv](https://arxiv.org/abs/2505.21851) | 采样中流式输出动作 |
+| ★ Real-time chunking（Black et al.） | NeurIPS | 2025 | [arXiv](https://arxiv.org/abs/2506.07339) | 修复式异步分块 |
+| One-Step Flow Policy（Li et al.） | arXiv 预印本（2026-03） | 2026 | [arXiv](https://arxiv.org/abs/2603.12480) | 一步流策略 |
+| Being-H0.5（Luo et al.） | arXiv 预印本（2026-01） | 2026 | [arXiv](https://arxiv.org/abs/2601.12993) | 3.5 万+ 小时以人为中心数据 |
+| 1,500 小时双臂家务数据（Xu et al.） | arXiv 预印本（2026-09） | 2026 | [arXiv](https://arxiv.org/abs/2609.03591) | 专家数据 + 同策略纠正的扩展 |
+
+### VLA 与世界动作模型（第 5 篇；交互浏览器 `embodied-ai-vla-explorer`）
+
+| 论文 | 会议/期刊 | 年份 | 链接 | 一句话说明 |
+| --- | --- | --- | --- | --- |
+| ★ Knowledge Insulation（Driess et al.） | NeurIPS | 2025 | [arXiv](https://arxiv.org/abs/2505.23705) | 停止梯度保护 VLM |
+| UniVLA（Bu et al.） | RSS | 2025 | [arXiv](https://arxiv.org/abs/2505.06111) | 任务中心潜在动作 |
+| ★ DreamGen（Jang et al.） | CoRL | 2025 | [arXiv](https://arxiv.org/abs/2505.12705) | 视频模型生成神经轨迹 |
+| ★ RoboArena（Atreya et al.） | CoRL | 2025 | [arXiv](https://arxiv.org/abs/2506.18123) | 分布式成对真实评测 |
+| WorldVLA（Cen et al.） | arXiv 预印本（2025-06） | 2025 | [arXiv](https://arxiv.org/abs/2506.21539) | 自回归动作世界模型 |
+| GR-3（ByteDance Seed） | arXiv 预印本（2025-07） | 2025 | [arXiv](https://arxiv.org/abs/2507.15493) | 网络 + VR 人类 + 机器人联合训练 |
+| Genie Envisioner（Liao et al.） | arXiv 预印本（2025-08） | 2025 | [arXiv](https://arxiv.org/abs/2508.05635) | 视频世界模型 + 动作解码器 |
+| WALL-OSS（Zhai et al.） | arXiv 预印本（2025-09） | 2025 | [arXiv](https://arxiv.org/abs/2509.11766) | 开放 VLA，跨层级 CoT |
+| ★ X-VLA（Zheng et al.） | ICLR | 2026 | [arXiv](https://arxiv.org/abs/2510.10274) | 软提示跨本体 |
+| Unified VLA（Wang et al.） | ICLR | 2026 | [arXiv](https://arxiv.org/abs/2506.19850) | 统一自回归 VLA |
+| RoboChallenge（Yakefu et al.） | arXiv 预印本（2025-10） | 2025 | [arXiv](https://arxiv.org/abs/2510.17950) | 托管式真实机器人基准 |
+| ★ Cosmos Policy（Kim et al.） | ICLR | 2026 | [arXiv](https://arxiv.org/abs/2601.16163) | 视频模型兼任策略/世界模型/价值 |
+| ★ DreamZero（Ye et al.） | arXiv 预印本（2026-02） | 2026 | [arXiv](https://arxiv.org/abs/2602.15922) | 世界动作模型即零样本策略；GR00T N2 基础 |
+| RDT2（Liu et al.） | ICML | 2026 | [arXiv](https://arxiv.org/abs/2602.03310) | 1 万+ 小时 UMI 数据 |
+| OAT（Liu et al.） | RSS | 2026 | [arXiv](https://arxiv.org/abs/2602.04215) | 有序动作分词 |
+| pi0.7（Physical Intelligence） | arXiv 预印本（2026-04） | 2026 | [arXiv](https://arxiv.org/abs/2604.15483) | 元数据丰富的提示 |
+| MolmoAct2（Fang et al.） | arXiv 预印本（2026-05） | 2026 | [arXiv](https://arxiv.org/abs/2605.02881) | 完全开放 |
+| 官方页面 | 公告 | 2025–2026 | [Helix](https://www.figure.ai/news/helix) · [Helix 02](https://www.figure.ai/news/helix-02) · [Gemini Robotics 2](https://deepmind.google/blog/gemini-robotics-2-brings-whole-body-intelligence-to-robots/) · [GR00T N1.6](https://research.nvidia.com/labs/gear/gr00t-n1_6/) · [Isaac-GR00T](https://github.com/NVIDIA/Isaac-GR00T) | 无论文的工业界模型 |
+
+### XR / HCI / 第一人称数据（第 6 篇）
+
+| 论文 | 会议/期刊 | 年份 | 链接 | 一句话说明 |
+| --- | --- | --- | --- | --- |
+| HOT3D（Banerjee et al.） | CVPR | 2025 | [arXiv](https://arxiv.org/abs/2411.19167) | Aria + Quest 3 手-物 3D 姿态 |
+| ★ EgoDex（Hoque et al.） | ICLR | 2026 | [arXiv](https://arxiv.org/abs/2505.11709) | 829 小时 Vision Pro 第一人称数据 |
+| ★ EgoScale（Zheng et al.） | arXiv 预印本（2026-02） | 2026 | [arXiv](https://arxiv.org/abs/2602.16710) | 2 万+ 小时人类视频，对数线性扩展 |
+| ★ Phantom（Lepert et al.） | CoRL | 2025 | [arXiv](https://arxiv.org/abs/2503.00779) | 无机器人数据，编辑人类视频 |
+| ZeroMimic（Shi et al.） | ICRA | 2025 | [arXiv](https://arxiv.org/abs/2503.23877) | 从网络视频蒸馏技能 |
+| EgoVLA（Yang et al.） | arXiv 预印本（2025-07） | 2025 | [arXiv](https://arxiv.org/abs/2507.12440) | 人手动作预训练 VLA |
+| Humanoid policy ~ human policy（Qiu et al.） | arXiv 预印本（2025-03） | 2025 | [arXiv](https://arxiv.org/abs/2503.13441) | 人与人形共享动作空间 |
+| ★ TWIST2（Ze et al.） | arXiv 预印本（2025-11） | 2025 | [arXiv](https://arxiv.org/abs/2511.02832) | 无动捕 VR 全身遥操作 |
+| ARMADA（Nechyporenko et al.） | arXiv 预印本（2024-12） | 2024 | [arXiv](https://arxiv.org/abs/2412.10631) | Vision Pro 虚拟机器人叠加 |
+| LLM 时代 HRI 系统综述（Wang et al.） | arXiv 预印本（2026-02） | 2026 | [arXiv](https://arxiv.org/abs/2602.15063) | 86 篇论文的 PRISMA 综述 |
+| Aria Gen 2 | 官方博客 + arXiv 数据集（2025-10） | 2025 | [博客](https://www.meta.com/blog/project-aria-gen-2-next-generation-egocentric-research-glasses-reality-labs-ai-robotics/) · [arXiv](https://arxiv.org/abs/2510.16134) | 第二代研究眼镜 |

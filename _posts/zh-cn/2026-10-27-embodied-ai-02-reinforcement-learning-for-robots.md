@@ -392,6 +392,49 @@ flowchart LR
 **[Lab]({{ '/' | relative_url }}#lab)** 中的 XPBD 布料演示是一个带子步与约束投影的物理仿真器，正是 RL 智能体在其中训练的那类引擎。
 拖动布料就是一个稳健策略必须抵抗的扰动；把随机化布料的刚度和质量想象成域随机化即可。
 
+## 2025–2026 年进展（截至 2026 年 11 月）
+
+2026 年初以来有两条研究线发展很快：一是**基于动作跟踪的人形机器人全身控制**，把第 5 节的仿真到现实方法带到人形机器人上；二是**在预训练基础策略之上做 RL**，把第 6 节最后一条变成了一个研究领域。ICRA 2026、RSS 2026 和 IROS 2026 已召开；CoRL 2026（11 月 9–12 日）和 Humanoids 2026（12 月）尚未举行，所以相关论文以预印本或“已录用”标注。同样思想在角色动画一侧的版本（DeepMimic 式跟踪、动作捕捉、motion matching）见[动画与角色]({{ '/blog/2026/graphics-09-animation-and-characters/' | relative_url }})。
+
+### 人形机器人动作跟踪：一个策略，很多动作
+
+这一方法可以追溯到 DeepMimic（见下表）。先把人体动作捕捉片段重定向（retarget）到机器人上，得到参考轨迹 $\hat q_t$（关节角）和 $\hat x_t$（身体部位位置），再在 GPU 仿真器中用 PPO 训练策略去跟随它，奖励的形式为
+
+$$
+r_t = \sum_k w_k \exp\!\left(-\frac{\lVert e_{k,t}\rVert^2}{\sigma_k^2}\right),
+\qquad e_{k,t} \in \lbrace q_t-\hat q_t,\; x_t-\hat x_t,\; \dot q_t-\dot{\hat q}_t,\;\dots \rbrace
+$$
+
+其中 $w_k$ 是各误差项的权重，$\sigma_k$ 是其容差。完美跟踪时每一项为 1，误差增大时平滑衰减。再加上域随机化和教师-学生划分，策略就能迁移到真实机器人上。2025–2026 年的论文区别在于跟踪*什么*、一个策略覆盖*多少*动作，以及*如何*缩小仿真与现实的差距：
+
+{% comment %} 运行 bin/figures/embodied-ai/embodied_ai_updates.py 生成 SVG 后再启用：
+{% include blog_figure.liquid path="assets/img/blog/embodied-ai/02-update-tracking-reward.svg" caption="左：三种容差 $\sigma$ 下的跟踪奖励项 $r = \exp(-e^2/\sigma^2)$。右：一个玩具示例，关节以 40 ms 的滞后和少量噪声跟随 $\hat q(t) = 0.6\sin(1.5\pi t)$。灰色曲线是误差，彩色曲线是每一步的奖励。小的 $\sigma$（红色）对同样的滞后惩罚重得多，信号稀疏而尖锐；大的 $\sigma$（蓝色）很宽容，却几乎区分不出好的和一般的跟踪。KungfuBot 正因如此在训练中自适应调整 $\sigma$。" %}
+{% endcomment %}
+
+- **HOVER**（He 等，ICRA 2025）把多种指令模式（关节角、根部速度、手部关键点）蒸馏进一个全身控制器，上层规划器或遥操作者切换模式时无需切换策略。
+- **ASAP**（He 等，RSS 2025）直接处理动力学差距：先在仿真中训练跟踪策略并在真实机器人上运行以记录轨迹，再拟合一个**增量动作模型**（delta action model）$\Delta_\phi$，使仿真器复现这些真实轨迹，$s_{t+1} = f_{\text{sim}}(s_t, a_t + \Delta_\phi(s_t,a_t))$，最后在修正后的仿真器中微调策略。可与第 5 节的系统辨识对比：它不是拟合少数物理参数，而是学习动作上的残差。
+- **KungfuBot**（Xie 等，NeurIPS 2025）从视频中提取动作并按物理可行性过滤，训练中通过双层优化自适应调整容差 $\sigma_k$，让 Unitree G1 学会高动态技能。
+- **GMT**（Chen 等，arXiv 预印本，2025 年 6 月）用困难片段自适应采样和混合专家策略，为大型动作库训练*通用*跟踪器。**Any2Track**（Zhang 等，arXiv 预印本，2025 年 9 月）加入类似 RMA 的在线自适应模块，以应对推搡、负载和不平地面。
+- **BeyondMimic**（Liao 等，arXiv 预印本，2025 年 8 月）开源了高动态技能的跟踪管线，并把跟踪器蒸馏成潜在**扩散**模型，测试时可用分类器引导（摇杆、路径点、避障）控制。这是把[第 4 篇]({{ '/blog/2026/embodied-ai-04-imitation-learning/' | relative_url }})的扩散模型作为 RL 跟踪器之上的动作先验。
+- **SONIC**（Luo 等，NVIDIA；发表于 *Science Robotics*，2026）把动作跟踪当作**基础任务**：扩大模型、动作捕捉数据和算力，并把 VR 遥操作、人类视频和 VLA 输出映射到同一个指令 token 空间。公开的 GR00T 全身控制代码和权重便于他人在其上开发。
+- **X-WBC**（Zhang 等，已被 CoRL 2026 录用）在多个人形机器人上训练一个 Transformer，加上小的机器人专属模块，报告联合训练提升了每个机器人的跟踪表现。
+
+能跟随*任意*人体动作的跟踪器，就成了其上一切的底层。**TWIST** 和 **TWIST2**（Ze 等，arXiv 预印本，2025）用全身遥操作驱动它来采集数据（见[第 6 篇]({{ '/blog/2026/embodied-ai-06-embodied-ai-meets-xr-and-hci/' | relative_url }})）；Figure 的 Helix 02 则在 VLA 之下放了一个这样的 1 kHz 学习型控制器（见[第 5 篇]({{ '/blog/2026/embodied-ai-05-vision-language-action-models/' | relative_url }})）。
+
+### 真实世界 RL 与基础策略的 RL 微调
+
+- **HIL-SERL**（Luo 等，arXiv，2024 年 10 月）直接在真实机器人上运行离策略 RL（RLPD 式的 SAC 变体，见第 3 节），用人的纠正加速探索，在一到数小时的真实交互中学会精密装配、动态翻转和双臂任务。它是“真实世界 RL 是可行的”的参照点。
+- **ConRFT**（Chen 等，RSS 2025）通过一致性策略头并结合人工干预，先离线、再在真实机器人上在线微调 VLA。
+- **RL4VLA**（Liu 等，NeurIPS 2025）、**VLA-RL**（Lu 等，arXiv 预印本，2025 年 5 月）和 **SimpleVLA-RL**（Li 等，arXiv 预印本，2025 年 9 月）在仿真中用稀疏成功奖励对基于 token 或回归的 VLA 做 PPO 式 RL，报告了比监督微调更好的泛化；RL4VLA 还发现在该设置下 PPO 优于 DPO 和 GRPO。
+- **pi_RL**（Chen 等，arXiv 预印本，2025 年 10 月）解决了 pi0 这类**流策略**的一个技术障碍：PPO 需要 $\log \pi_\theta(a\mid s)$，而确定性的流 ODE 没有可计算的似然。在每个积分步注入噪声（Flow-Noise）或把 ODE 变成 SDE（Flow-SDE）后，每个去噪步都是高斯分布，对数似然就是高斯对数密度之和，于是 PPO 和 GRPO 可以用于 pi0 和 pi0.5。
+- pi\*0.6 中的 **Recap**（Physical Intelligence，arXiv 预印本，2025 年 11 月）完全避开策略梯度：学习价值函数 $V(s)$，为数据的每一段标注优势估计（最简单的形式是第 2 节的 $A = r + \gamma V(s') - V(s)$），再以 $A > 0$ 与否为条件训练 VLA；测试时要求模型输出“优势为正”的动作。
+- **RL Token**（Xu 等，arXiv 预印本，2026 年 4 月）从冻结的 VLA 中引出一个紧凑的“RL token”，在其上在线训练小型 actor-critic，任务中的精细阶段在真实机器人上几小时内就能改进。
+- **Real-time EXPO-FT**（Dong 等，arXiv 预印本，2026 年 9 月）保留慢速 VLA 作为动作块的提议者，再训练一个轻量的 RL“编辑”策略，以高频率修正动作块，用于动态操作。
+
+共同的主线是**分工**：模仿学习或大规模预训练提供先验和语义，RL 负责最后一公里的精度和可靠性，方式可以是策略梯度（pi_RL、SimpleVLA-RL），也可以是基于价值的重新标注（Recap）。
+
+*与前文相比的变化：*第 6 节说“模仿学习主导了今天的操作任务”，就预训练而言仍然成立；但对最终的可靠性来说，RL 微调已成为工业界的标准做法，而且直接使用真实机器人，不再只用仿真器。
+
 ## 代表性论文
 
 | 论文 | 会议/期刊 | 年份 | 链接 | 意义 |
@@ -415,6 +458,23 @@ flowchart LR
 | Kaufmann et al., *Champion-level drone racing using deep reinforcement learning* | Nature | 2023 | [DOI](https://doi.org/10.1038/s41586-023-06419-4) | RL 击败人类冠军 |
 | Ma et al., *Eureka: human-level reward design via coding large language models* | ICLR | 2024 | [arXiv](https://arxiv.org/abs/2310.12931) | LLM 编写奖励 |
 | Radosavovic et al., *Real-world humanoid locomotion with reinforcement learning* | Science Robotics | 2024 | [arXiv](https://arxiv.org/abs/2303.03381) | 人形机器人的 Transformer 策略 |
+| He et al., *HOVER: versatile neural whole-body controller for humanoid robots* | ICRA | 2025 | [arXiv](https://arxiv.org/abs/2410.21229) | 多种指令模式，一个策略 |
+| Luo et al., *Precise and dexterous robotic manipulation via human-in-the-loop reinforcement learning*（HIL-SERL） | arXiv（2024 年 10 月） | 2024 | [arXiv](https://arxiv.org/abs/2410.21845) | 可行的真实世界 RL |
+| He et al., *ASAP: aligning simulation and real-world physics for learning agile humanoid whole-body skills* | RSS | 2025 | [arXiv](https://arxiv.org/abs/2502.01143) | 增量动作模型缩小动力学差距 |
+| Chen et al., *ConRFT: a reinforced fine-tuning method for VLA models via consistency policy* | RSS | 2025 | [arXiv](https://arxiv.org/abs/2502.05450) | 离线到在线的真实机器人 VLA 微调 |
+| Xie et al., *KungfuBot: physics-based humanoid whole-body control for learning highly-dynamic skills* | NeurIPS | 2025 | [arXiv](https://arxiv.org/abs/2506.12851) | 自适应跟踪容差 |
+| Liu et al., *What can RL bring to VLA generalization? An empirical study* | NeurIPS | 2025 | [arXiv](https://arxiv.org/abs/2505.19789) | VLA 的 PPO 与 SFT 对比 |
+| Lu et al., *VLA-RL: towards masterful and general robotic manipulation with scalable reinforcement learning* | arXiv 预印本（2025 年 5 月） | 2025 | [arXiv](https://arxiv.org/abs/2505.18719) | 对预训练 VLA 做在线 RL |
+| Chen et al., *GMT: general motion tracking for humanoid whole-body control* | arXiv 预印本（2025 年 6 月） | 2025 | [arXiv](https://arxiv.org/abs/2506.14770) | 面向大型动作库的单一跟踪器 |
+| Liao et al., *BeyondMimic: from motion tracking to versatile humanoid control via guided diffusion* | arXiv 预印本（2025 年 8 月） | 2025 | [arXiv](https://arxiv.org/abs/2508.08241) | 开源跟踪管线 + 引导扩散 |
+| Zhang et al., *Track any motions under any disturbances*（Any2Track） | arXiv 预印本（2025 年 9 月） | 2025 | [arXiv](https://arxiv.org/abs/2509.13833) | 带在线自适应的跟踪 |
+| Li et al., *SimpleVLA-RL: scaling VLA training via reinforcement learning* | arXiv 预印本（2025 年 9 月） | 2025 | [arXiv](https://arxiv.org/abs/2509.09674) | VLA 的结果奖励 RL |
+| Chen et al., *pi_RL: online RL fine-tuning for flow-based vision-language-action models* | arXiv 预印本（2025 年 10 月） | 2025 | [arXiv](https://arxiv.org/abs/2510.25889) | 为流策略提供似然 |
+| Luo et al., *SONIC: supersizing motion tracking for natural humanoid whole-body control* | Science Robotics | 2026 | [arXiv](https://arxiv.org/abs/2511.07820) | 动作跟踪作为基础任务 |
+| Physical Intelligence, *pi\*0.6: a VLA that learns from experience* | arXiv 预印本（2025 年 11 月） | 2025 | [arXiv](https://arxiv.org/abs/2511.14759) | 优势条件 RL（Recap） |
+| Xu et al., *RL Token: bootstrapping online RL with vision-language-action models* | arXiv 预印本（2026 年 4 月） | 2026 | [arXiv](https://arxiv.org/abs/2604.23073) | 冻结 VLA 上的小型在线 actor-critic |
+| Zhang et al., *X-WBC: a cross-embodiment foundation model for humanoid whole-body control* | CoRL（已录用） | 2026 | [arXiv](https://arxiv.org/abs/2609.15213) | 跨人形机器人的单一控制器 |
+| Dong et al., *Reinforcement learning for real-time vision-language-action policies* | arXiv 预印本（2026 年 9 月） | 2026 | [arXiv](https://arxiv.org/abs/2609.18207) | 在慢速 VLA 动作块上做快速 RL 编辑 |
 
 ## 学习资源
 

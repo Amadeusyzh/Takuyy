@@ -549,6 +549,48 @@ constraints by projecting positions, much like the IK iterations above project a
 target" constraint; dragging a cloth particle is literally an IK problem for a very redundant chain.
 A good exercise is to port `ik_dls` to JavaScript and drag the end effector of a 3-link arm on a canvas.
 
+## 2025-2026 update (as of November 2026)
+
+The mathematics of this post (SE(3), Jacobians, IK, PD control, planning) has not changed. What changed by November
+2026 is *where* it sits in a modern humanoid stack. Statuses and dates below come from papers, official announcements or
+the projects' repositories.
+
+### Learned whole-body control on top of classical interfaces
+
+For humanoids, the hand-designed whole-body controller (a QP over task Jacobians, section 6) is increasingly replaced by
+a **learned whole-body controller**. This is a neural policy trained with RL in simulation to track any human-like
+motion. Examples are HOVER (ICRA 2025), SONIC (*Science Robotics*, 2026) and the learned 1 kHz "System 0" in Figure's
+Helix 02 (announcement, January 2026). [Post 2]({{ '/blog/2026/embodied-ai-02-reinforcement-learning-for-robots/' | relative_url }})
+explains how they are trained. The classical pieces of this post did not disappear; they moved:
+
+- The policy usually outputs **joint position targets** $q^{\text{des}}$, and a PD loop like the one in section 6 turns
+  them into torques, $\tau = K_p (q^{\text{des}} - q) - K_d \dot q$, at a high rate on the robot.
+- The commands it tracks (hand poses, root velocity, keypoints) come from teleoperation or a VLA and are expressed with
+  the SE(3) machinery of section 1. Retargeting human motion to the robot is an IK problem (section 4).
+- Planners (section 7) still decide *where* to go. Learned controllers decide *how* the body moves to get there.
+
+### Hardware milestones (official sources only)
+
+- **Boston Dynamics** unveiled the product version of its electric **Atlas** at CES on 5 January 2026, with 56 degrees
+  of freedom. According to the announcement, all 2026 units are committed to Hyundai and Google DeepMind.
+- **Figure** introduced **Figure 03** on 9 October 2025, the hardware for Helix 02 and Helix 2.5
+  ([post 5]({{ '/blog/2026/embodied-ai-05-vision-language-action-models/' | relative_url }})).
+- **Google DeepMind's Gemini Robotics 2** (July 2026) was demonstrated on Apptronik's Apollo 2 humanoid with 22-DoF
+  hands.
+
+### Open-source stacks
+
+- **GR00T Whole-Body Control** (NVIDIA, GitHub, November 2025) releases decoupled whole-body controllers and later the
+  SONIC checkpoints with a C++ deployment stack.
+- **Holosoma** (Amazon FAR, GitHub, Apache-2.0, December 2025) covers training, motion retargeting and deployment for
+  Unitree G1 and Booster T1 humanoids.
+- **mjlab** (arXiv preprint, January 2026) and **Isaac Lab 3.0** (October 2026) are the training frameworks underneath
+  ([post 3]({{ '/blog/2026/embodied-ai-03-simulation-platforms/' | relative_url }})).
+
+A practical tip for learners: before training any policy, use the IK-arm widget above to build intuition for
+singularities and joint limits. Learned controllers fail in exactly those places, and retargeting code must handle them
+explicitly.
+
 ## Representative papers
 
 | Paper | Venue | Year | Link | Why it matters |
@@ -563,6 +605,9 @@ A good exercise is to port `ik_dls` to JavaScript and drag the end effector of a
 | Karaman and Frazzoli, *Sampling-based algorithms for optimal motion planning* | IJRR | 2011 | [arXiv](https://arxiv.org/abs/1105.1186) | RRT\*, PRM\*, asymptotic optimality |
 | Schulman et al., *Finding locally optimal, collision-free trajectories with sequential convex optimization* | RSS | 2013 | [PDF](https://www.roboticsproceedings.org/rss09/p31.pdf) | TrajOpt |
 | Zhou et al., *On the continuity of rotation representations in neural networks* | CVPR | 2019 | [arXiv](https://arxiv.org/abs/1812.07035) | The 6-D rotation representation used by many policies |
+| He et al., *HOVER: versatile neural whole-body controller for humanoid robots* | ICRA | 2025 | [arXiv](https://arxiv.org/abs/2410.21229) | Learned whole-body controller with many command modes |
+| Luo et al., *SONIC: supersizing motion tracking for natural humanoid whole-body control* | Science Robotics | 2026 | [arXiv](https://arxiv.org/abs/2511.07820) | Motion tracking as the low-level layer of a humanoid |
+| Open stacks and hardware: [GR00T-WholeBodyControl](https://github.com/NVlabs/GR00T-WholeBodyControl), [Holosoma](https://github.com/amazon-far/holosoma), [Atlas announcement](https://bostondynamics.com/blog/boston-dynamics-unveils-new-atlas-robot-to-revolutionize-industry/), [Figure 03](https://www.figure.ai/news/introducing-figure-03) | release / announcement | 2025-2026 | see links | Official sources |
 
 ## Learning resources
 

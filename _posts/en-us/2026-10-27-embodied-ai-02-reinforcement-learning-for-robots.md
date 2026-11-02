@@ -424,6 +424,98 @@ The **[Lab]({{ '/' | relative_url }}#lab)** XPBD cloth demo is a physics simulat
 projection, the same kind of engine an RL agent trains inside. Dragging the cloth is a perturbation that a robust
 policy would have to reject; imagine randomizing the cloth's stiffness and mass as domain randomization.
 
+## 2025-2026 update (as of November 2026)
+
+Two lines of work grew quickly after early 2026. One is **humanoid whole-body control by motion tracking**, which
+carries the sim-to-real recipe of section 5 over to humanoids. The other is **RL on top of pre-trained foundation
+policies**, which turns the last bullet of section 6 into a research field. ICRA 2026, RSS 2026 and IROS 2026 have
+taken place. CoRL 2026 (9-12 November) and Humanoids 2026 (December) have not, so their papers appear as preprints or
+"accepted". The character-animation side of the same ideas (DeepMimic-style tracking, motion capture, motion matching)
+is covered in [Animation and characters]({{ '/blog/2026/graphics-09-animation-and-characters/' | relative_url }}).
+
+### Humanoid motion tracking: one policy, many motions
+
+The recipe goes back to DeepMimic (in the table below). Retarget a human motion-capture clip to the robot, giving a
+reference trajectory $\hat q_t$ (joint angles) and $\hat x_t$ (body positions). Then train a policy with PPO in a GPU
+simulator to follow it, using a reward of the form
+
+$$
+r_t = \sum_k w_k \exp\!\left(-\frac{\lVert e_{k,t}\rVert^2}{\sigma_k^2}\right),
+\qquad e_{k,t} \in \lbrace q_t-\hat q_t,\; x_t-\hat x_t,\; \dot q_t-\dot{\hat q}_t,\;\dots \rbrace
+$$
+
+Here $w_k$ weights each error term and $\sigma_k$ is its tolerance. Each term is 1 when tracking is perfect and decays
+smoothly with the error. Add domain randomization and a teacher-student split, and the policy transfers to the real
+robot. The 2025-2026 papers differ in *what* they track, *how many* motions one policy covers, and *how* they close the
+sim-to-real gap:
+
+{% comment %} Enable after running bin/figures/embodied-ai/embodied_ai_updates.py (the SVG is not generated yet):
+{% include blog_figure.liquid path="assets/img/blog/embodied-ai/02-update-tracking-reward.svg" caption="Left: the tracking reward term $r = \exp(-e^2/\sigma^2)$ for three tolerances $\sigma$. Right: a toy run where a joint follows $\hat q(t) = 0.6\sin(1.5\pi t)$ with a 40 ms lag and small noise. The grey curve is the error; the coloured curves are the per-step rewards. A small $\sigma$ (red) punishes the same lag much harder and gives a sparse, peaky signal; a large $\sigma$ (blue) is forgiving but hardly distinguishes good from mediocre tracking. KungfuBot adapts $\sigma$ during training for exactly this reason." %}
+{% endcomment %}
+
+- **HOVER** (He et al., ICRA 2025) distils several command modes (joint angles, root velocity, hand keypoints) into one
+  whole-body controller, so a higher-level planner or a teleoperator can switch modes without switching policies.
+- **ASAP** (He et al., RSS 2025) attacks the dynamics gap directly. First it trains a tracking policy in simulation and
+  runs it on the real robot to record trajectories. Then it fits a **delta action model** $\Delta_\phi$ so that the
+  simulator reproduces those real trajectories, $s_{t+1} = f_{\text{sim}}(s_t, a_t + \Delta_\phi(s_t,a_t))$. Finally
+  it fine-tunes the policy in this corrected simulator. Compare it with system identification (section 5): instead of
+  fitting a few physical parameters, it learns a residual on the actions.
+- **KungfuBot** (Xie et al., NeurIPS 2025) filters motions extracted from video for physical feasibility and adapts the
+  tolerance $\sigma_k$ during training through a bi-level optimization, which lets the Unitree G1 learn highly dynamic
+  skills.
+- **GMT** (Chen et al., arXiv preprint, June 2025) trains a *general* tracker for a large motion library with adaptive
+  sampling of hard clips and a mixture-of-experts policy. **Any2Track** (Zhang et al., arXiv preprint, September 2025)
+  adds an online adaptation module, in the spirit of RMA, for pushes, loads and uneven ground.
+- **BeyondMimic** (Liao et al., arXiv preprint, August 2025) releases an open tracking pipeline for highly dynamic
+  skills. It then distils the trackers into a latent **diffusion** model that can be steered at test time with classifier
+  guidance (joystick, waypoints, obstacle avoidance). This is diffusion from
+  [post 4]({{ '/blog/2026/embodied-ai-04-imitation-learning/' | relative_url }}) used as a motion prior on top of RL
+  trackers.
+- **SONIC** (Luo et al., NVIDIA; published in *Science Robotics*, 2026) treats motion tracking as a **foundation task**.
+  It scales the model, the motion-capture data and the compute, and it maps VR teleoperation, human video and VLA
+  outputs into one shared command-token space. The released GR00T whole-body-control code and checkpoints let others
+  build on it.
+- **X-WBC** (Zhang et al., accepted to CoRL 2026) trains one transformer across several humanoids with small per-robot
+  modules and reports that joint training improves tracking on each robot.
+
+A tracker that can follow *any* human motion becomes the low-level layer for everything above it. **TWIST** and
+**TWIST2** (Ze et al., arXiv preprints, 2025) drive it by whole-body teleoperation to collect data
+([post 6]({{ '/blog/2026/embodied-ai-06-embodied-ai-meets-xr-and-hci/' | relative_url }})). Figure's Helix 02 puts a
+learned 1 kHz controller of this kind under a VLA
+([post 5]({{ '/blog/2026/embodied-ai-05-vision-language-action-models/' | relative_url }})).
+
+### Real-world RL and RL fine-tuning of foundation policies
+
+- **HIL-SERL** (Luo et al., arXiv, October 2024) runs off-policy RL (an RLPD-style SAC variant, section 3) directly on
+  real robots. Human corrections speed up exploration, and precise assembly, dynamic flipping and dual-arm tasks are
+  learned in one to a few hours of real interaction. It is the reference point for "RL in the real world is practical".
+- **ConRFT** (Chen et al., RSS 2025) fine-tunes a VLA first offline, then online on the real robot, through a
+  consistency-policy head with human interventions.
+- **RL4VLA** (Liu et al., NeurIPS 2025), **VLA-RL** (Lu et al., arXiv preprint, May 2025) and **SimpleVLA-RL** (Li et
+  al., arXiv preprint, September 2025) apply PPO-style RL with sparse success rewards to token-based or regression VLAs
+  in simulation. They report better generalization than supervised fine-tuning, and RL4VLA finds that PPO beats DPO and
+  GRPO there.
+- **pi_RL** (Chen et al., arXiv preprint, October 2025) solves a technical obstacle for **flow policies** such as pi0.
+  PPO needs $\log \pi_\theta(a\mid s)$, but a deterministic flow ODE has no tractable likelihood. Injecting noise at
+  each integration step (Flow-Noise) or turning the ODE into an SDE (Flow-SDE) makes every denoising step a Gaussian,
+  and the log-likelihood becomes a sum of Gaussian log-densities. PPO and GRPO then apply to pi0 and pi0.5.
+- **Recap** in pi\*0.6 (Physical Intelligence, arXiv preprint, November 2025) avoids policy gradients altogether. It
+  learns a value function $V(s)$, labels every segment of the data with an advantage estimate (in the simplest form
+  $A = r + \gamma V(s') - V(s)$, section 2), and trains the VLA conditioned on whether $A > 0$. At test time the model is asked for "advantage
+  positive" actions.
+- **RL Token** (Xu et al., arXiv preprint, April 2026) exposes a compact "RL token" from a frozen VLA and trains a small
+  actor-critic on it online. Precise phases of a task improve in hours on the real robot.
+- **Real-time EXPO-FT** (Dong et al., arXiv preprint, September 2026) keeps the slow VLA as the proposer of action
+  chunks and trains a light RL "edit" policy that corrects them at a high rate for dynamic manipulation.
+
+The common thread is the **division of labour**: imitation or large-scale pre-training supplies the prior and the
+semantics, and RL supplies the last mile of precision and reliability, either with policy gradients (pi_RL,
+SimpleVLA-RL) or with value-based relabelling (Recap).
+
+*What changed since the earlier sections:* the remark in section 6 that "imitation learning dominates manipulation
+today" is still true for pre-training. For the final reliability, RL fine-tuning is now standard in industry, and real
+robots are used directly, not only simulators.
+
 ## Representative papers
 
 | Paper | Venue | Year | Link | Why it matters |
@@ -447,6 +539,23 @@ policy would have to reject; imagine randomizing the cloth's stiffness and mass 
 | Kaufmann et al., *Champion-level drone racing using deep reinforcement learning* | Nature | 2023 | [DOI](https://doi.org/10.1038/s41586-023-06419-4) | RL beats human champions |
 | Ma et al., *Eureka: human-level reward design via coding large language models* | ICLR | 2024 | [arXiv](https://arxiv.org/abs/2310.12931) | LLM-written rewards |
 | Radosavovic et al., *Real-world humanoid locomotion with reinforcement learning* | Science Robotics | 2024 | [arXiv](https://arxiv.org/abs/2303.03381) | Transformer policy for a humanoid |
+| He et al., *HOVER: versatile neural whole-body controller for humanoid robots* | ICRA | 2025 | [arXiv](https://arxiv.org/abs/2410.21229) | Many command modes, one policy |
+| Luo et al., *Precise and dexterous robotic manipulation via human-in-the-loop reinforcement learning* (HIL-SERL) | arXiv (Oct 2024) | 2024 | [arXiv](https://arxiv.org/abs/2410.21845) | Practical real-world RL |
+| He et al., *ASAP: aligning simulation and real-world physics for learning agile humanoid whole-body skills* | RSS | 2025 | [arXiv](https://arxiv.org/abs/2502.01143) | Delta action model closes the dynamics gap |
+| Chen et al., *ConRFT: a reinforced fine-tuning method for VLA models via consistency policy* | RSS | 2025 | [arXiv](https://arxiv.org/abs/2502.05450) | Offline-to-online real-robot VLA fine-tuning |
+| Xie et al., *KungfuBot: physics-based humanoid whole-body control for learning highly-dynamic skills* | NeurIPS | 2025 | [arXiv](https://arxiv.org/abs/2506.12851) | Adaptive tracking tolerance |
+| Liu et al., *What can RL bring to VLA generalization? An empirical study* | NeurIPS | 2025 | [arXiv](https://arxiv.org/abs/2505.19789) | PPO vs. SFT for VLAs |
+| Lu et al., *VLA-RL: towards masterful and general robotic manipulation with scalable reinforcement learning* | arXiv preprint (May 2025) | 2025 | [arXiv](https://arxiv.org/abs/2505.18719) | Online RL on a pre-trained VLA |
+| Chen et al., *GMT: general motion tracking for humanoid whole-body control* | arXiv preprint (Jun 2025) | 2025 | [arXiv](https://arxiv.org/abs/2506.14770) | One tracker for a large motion library |
+| Liao et al., *BeyondMimic: from motion tracking to versatile humanoid control via guided diffusion* | arXiv preprint (Aug 2025) | 2025 | [arXiv](https://arxiv.org/abs/2508.08241) | Open tracking pipeline + guided diffusion |
+| Zhang et al., *Track any motions under any disturbances* (Any2Track) | arXiv preprint (Sep 2025) | 2025 | [arXiv](https://arxiv.org/abs/2509.13833) | Tracking with online adaptation |
+| Li et al., *SimpleVLA-RL: scaling VLA training via reinforcement learning* | arXiv preprint (Sep 2025) | 2025 | [arXiv](https://arxiv.org/abs/2509.09674) | Outcome-reward RL for VLAs |
+| Chen et al., *pi_RL: online RL fine-tuning for flow-based vision-language-action models* | arXiv preprint (Oct 2025) | 2025 | [arXiv](https://arxiv.org/abs/2510.25889) | Likelihoods for flow policies |
+| Luo et al., *SONIC: supersizing motion tracking for natural humanoid whole-body control* | Science Robotics | 2026 | [arXiv](https://arxiv.org/abs/2511.07820) | Motion tracking as a foundation task |
+| Physical Intelligence, *pi\*0.6: a VLA that learns from experience* | arXiv preprint (Nov 2025) | 2025 | [arXiv](https://arxiv.org/abs/2511.14759) | Advantage-conditioned RL (Recap) |
+| Xu et al., *RL Token: bootstrapping online RL with vision-language-action models* | arXiv preprint (Apr 2026) | 2026 | [arXiv](https://arxiv.org/abs/2604.23073) | Small online actor-critic on a frozen VLA |
+| Zhang et al., *X-WBC: a cross-embodiment foundation model for humanoid whole-body control* | CoRL (accepted) | 2026 | [arXiv](https://arxiv.org/abs/2609.15213) | One controller across humanoids |
+| Dong et al., *Reinforcement learning for real-time vision-language-action policies* | arXiv preprint (Sep 2026) | 2026 | [arXiv](https://arxiv.org/abs/2609.18207) | Fast RL edits on slow VLA chunks |
 
 ## Learning resources
 

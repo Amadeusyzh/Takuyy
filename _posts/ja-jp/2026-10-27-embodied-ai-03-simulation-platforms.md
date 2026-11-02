@@ -370,6 +370,45 @@ print(final.shape)                           # (1024, 9)
 シミュレータが小さな時間刻みを好むのと同じ理由です。隣のタブにはレンダリング側の例として、パストレーサとガウシアンスプラッティング
 の世界があります。
 
+## 2025〜2026 年の進展（2026 年 11 月時点）
+
+シミュレータは論文より速く変わるので、この節はバージョンから始めます。以下のバージョンと日付は、2026 年 10 月下旬に各プロジェクトの GitHub リリースページか公式発表から読み取ったものです。ICRA 2026（6 月、ウィーン）、RSS 2026（7 月、シドニー）、IROS 2026（9〜10 月、ピッツバーグ）は開催済みで、CoRL 2026（11 月 9〜12 日、オースティン）と Humanoids 2026（12 月、サンタクララ）はこれからです。ゲーム的な物理パイプライン（ブロードフェーズ、ナローフェーズ、ソルバー）がこれらのロボットシミュレータにどう対応するか、また OpenUSD と合成データについては、姉妹記事[物理・シミュレーションエンジン]({{ '/blog/2026/graphics-engine-05-physics-and-simulation-engines/' | relative_url }})を参照してください。
+
+### GPU スタックの合流：Isaac Lab 3、Newton、MuJoCo Warp
+
+| プロジェクト | 最新リリース（2026 年 11 月） | 2025〜2026 年の変化 |
+| --- | --- | --- |
+| Isaac Lab | v3.0.0（2026-10-20） | マルチバックエンドの物理（PhysX または Newton）とレンダリング。多くのワークフローが Isaac Sim なしで動作。クォータニオンは `xyzw` 順に変更 |
+| Isaac Sim | v6.2.0（2026-10-14） | Isaac Lab 3.0 の対象バージョン。7.0 のアルファ版も公開 |
+| Newton | v1.7.0（2026-10-14） | 2025 年 9 月にベータ、2026 年 3 月の GTC で 1.0 を発表。ソルバーは MuJoCo Warp、Kamino（Disney）、VBD 変形体、陰的 MPM など |
+| MuJoCo / MuJoCo Warp | 3.17.0（2026-10-22）、同時にバージョン付け | MuJoCo Warp は NVIDIA ハードウェア上の MuJoCo の GPU バックエンドで、Newton のソルバーの一つ |
+| mjlab | arXiv プレプリント、2026 年 1 月 | MuJoCo Warp 上に Isaac Lab のマネージャ型 API を実装 |
+
+起きたことは三つです。第一に、**Isaac Lab に参照論文ができました**（Mittal ら、arXiv プレプリント、2025 年 11 月）。第 2 節で描いた設計、つまり GPU 上に常駐するテンソル、アクチュエータモデル、センサー、ドメインランダム化、大規模な RL と模倣学習のワークフローを説明しています。第二に、**Newton** は 2025 年の発表から公開済みのエンジンになりました。NVIDIA Warp と OpenUSD の上に作られた Linux Foundation のプロジェクトで、一つのモデル記述の背後に複数のソルバーを持ちます。そのため同じロボットを、MuJoCo Warp のソフト接触の剛体でも、変形体ソルバーでもシミュレーションできます。第三に、Isaac Lab 3.0 は PhysX の代わりに **Newton を物理バックエンドとして**使えるようになりました。第 2 節の表の「NVIDIA スタック」と「MuJoCo スタック」の境界はぼやけつつあり、同じ環境コードでエンジンを切り替えられます。これは安上がりな頑健性チェックにもなります。一つのエンジンでしか動かない方策は、おそらくそのエンジンの接触モデルを悪用しています。
+
+**MuJoCo Playground**（Zakka ら、RSS 2025、優秀デモ論文賞）と **mjlab**（Zakka ら、arXiv プレプリント、2026 年 1 月）は MuJoCo 側の対応物です。Playground は Sim-to-Real のレシピ付きの GPU 環境（移動と器用な操作）をまとめたもので、mjlab は Isaac Lab のマネージャ API をなぞっているため、コードを両者の間でほとんど変更せずに移せます。
+
+### その他のプラットフォームとベンチマーク
+
+- **Genesis**：2026 年 11 月時点で、プロジェクトは GitHub で 1.x のリリースを出しています。arXiv の技術レポートは見つからなかったので、リポジトリを引用してください。第 2 節の「生成的データエンジン」は、プロジェクトの説明では今も完成したシステムではなく方向性として書かれています。
+- **ManiSkill3**（Tao ら、RSS 2025）と **RoboVerse**（Geng ら、RSS 2025）。RoboVerse の MetaSim 層は一つのタスク定義を複数のシミュレータで動かし、大規模な合成データセットと模倣学習・RL のベンチマークを提供します。
+- **RoboCasa365**（Nasiriany ら、ICLR 2026）は RoboCasa を 2,500 シーンの 365 のキッチンタスクに拡張し、家庭の分布全体で方策をテストできるようにしました。
+- **BEHAVIOR チャレンジ**：第 1 回（NeurIPS 2025、2025 年 12 月）では、OmniGibson で BEHAVIOR-1K の 50 の家事活動を最後までこなすことが課題でした。第 2 回は CoRL 2026 で行われ、100 タスクです。提出は 2026 年 10 月 16 日に締め切られ、結果は 2026 年 11 月 4 日に発表予定です。
+- **GenManip**（CVPR 2025）は LLM とシーングラフで卓上の指示追従タスクを生成します。
+
+### 生成的シミュレーション：世界モデルをシミュレータとして使う
+
+[第 5 回]({{ '/blog/2026/embodied-ai-05-vision-language-action-models/' | relative_url }})で挙げた世界モデルの 4 番目の使い方（方策評価）は、2025〜2026 年に具体化しました。
+
+- **Cosmos-Predict2.5 と Cosmos-Transfer2.5**（NVIDIA、arXiv プレプリント、2025 年 10 月）は、2B と 14B パラメータのオープンなフローベース動画世界モデルです。Transfer モデルは、シミュレータの出力（深度、セグメンテーション、エッジ）を写実的な動画に描き直す制御ネットワークです。この「sim2real 拡張」は、第 1 節の見た目のギャップを、より良いレンダラではなく生成モデルで埋めようとするものです。
+- **WorldGym**（Quevedo ら、ICLR 2026）は行動条件付き動画モデルの中で方策をロールアウトし、VLM で採点することで、ロボットなしにおおよその成功率を求めます。
+- **Veo 世界シミュレータでの Gemini Robotics 方策の評価**（Gemini Robotics Team、arXiv プレプリント、2025 年 12 月）は、ロボットデータで Veo を微調整し、方策の順位付け、分布外シーンの検査、安全性のレッドチーミングに使い、その順位を実機試行と比較しています。
+- **Genie 3**（Google DeepMind、ブログ、2025 年 8 月）はインタラクティブな世界をリアルタイムに生成し（720p、24 fps、数分間一貫）、エージェントの学習とテストに使われました。DeepMind の Genie のページには現在、信頼できるテスター向けの研究プレビューとして **Genie 4** が載っており、ロボティクスへの初期の応用にも触れています。
+
+第 4 節の注意はここで二重に当てはまります。学習したシミュレータは、その順位付けが実世界の順位と一致すると示されて初めて役に立ちますし、成功を「幻覚」することもあります。接触の多い RL には今も物理エンジンが使われ、見た目の多様性と安価な方策の選別には動画世界モデルが使われるようになりつつあります。
+
+*前の節からの変化：*第 2 節の表の Newton の行は、今では発表だけでなく公開済みの 1.x エンジンを指します。Isaac Lab は Newton 上で動かせます。Genesis の行はそのままです。
+
 ## 代表的な論文
 
 | 論文 | 会議・論文誌 | 年 | リンク | 意義 |
@@ -393,6 +432,15 @@ print(final.shape)                           # (1024, 9)
 | Tao et al., *ManiSkill3: GPU parallelized robotics simulation and rendering for generalizable embodied AI* | RSS (demo) | 2025 | [arXiv](https://arxiv.org/abs/2410.00425) | GPU 並列のシミュレーションとレンダリング |
 | Zakka et al., *MuJoCo Playground* | RSS (demo) | 2025 | [arXiv](https://arxiv.org/abs/2502.08844) | Sim-to-Real のレシピ付き MJX 環境 |
 | Mittal et al., *Isaac Lab: a GPU-accelerated simulation framework for multi-modal robot learning* | arXiv | 2025 | [arXiv](https://arxiv.org/abs/2511.04831) | Isaac Lab の設計 |
+| Geng et al., *RoboVerse: towards a unified platform, dataset and benchmark for scalable and generalizable robot learning* | RSS | 2025 | [arXiv](https://arxiv.org/abs/2504.18904) | 一つのタスク定義を複数のシミュレータで |
+| *GenManip: LLM-driven simulation for generalizable instruction-following manipulation* | CVPR | 2025 | [arXiv](https://arxiv.org/abs/2506.10966) | LLM による卓上タスク生成 |
+| Quevedo et al., *WorldGym: world model as an environment for policy evaluation* | ICLR | 2026 | [arXiv](https://arxiv.org/abs/2506.00613) | 評価器としての動画世界モデル |
+| NVIDIA, *World simulation with video foundation models for physical AI*（Cosmos-Predict2.5 / Transfer2.5） | arXiv プレプリント（2025 年 10 月） | 2025 | [arXiv](https://arxiv.org/abs/2511.00062) | オープン世界モデル、sim2real 拡張 |
+| Mittal et al., *Isaac Lab: a GPU-accelerated simulation framework for multi-modal robot learning* | arXiv プレプリント（2025 年 11 月） | 2025 | [arXiv](https://arxiv.org/abs/2511.04831) | Isaac Lab の参照論文 |
+| Gemini Robotics Team, *Evaluating Gemini Robotics policies in a Veo world simulator* | arXiv プレプリント（2025 年 12 月） | 2025 | [arXiv](https://arxiv.org/abs/2512.10675) | 世界モデルでの方策順位付けと安全性検査 |
+| Zakka et al., *mjlab: a lightweight framework for GPU-accelerated robot learning* | arXiv プレプリント（2026 年 1 月） | 2026 | [arXiv](https://arxiv.org/abs/2601.22074) | MuJoCo Warp 上の Isaac Lab 型 API |
+| Nasiriany et al., *RoboCasa365: a large-scale simulation framework for training and benchmarking generalist robots* | ICLR | 2026 | [arXiv](https://arxiv.org/abs/2603.04356) | 365 タスク、2,500 のキッチンシーン |
+| ソフトウェア：[Isaac Lab releases](https://github.com/isaac-sim/IsaacLab/releases)、[Newton](https://github.com/newton-physics/newton)、[MuJoCo Warp](https://github.com/google-deepmind/mujoco_warp)、[BEHAVIOR Challenge](https://behavior.stanford.edu/challenge)、[Genie 3](https://deepmind.google/blog/genie-3-a-new-frontier-for-world-models/) | リリース / ブログ | 2025〜2026 | リンク参照 | 2026 年 11 月時点のバージョン |
 
 ## 学習リソース
 
