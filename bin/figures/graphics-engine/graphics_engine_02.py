@@ -111,7 +111,7 @@ def fig_api_objects():
         "Surface /\nSwapchain": (4.0, 6.2, "#dddddd"),
         "CommandPool /\nAllocator": (6.8, 6.2, "#fde9d2"), "CommandBuffer /\nEncoder": (9.6, 6.2, "#fde9d2"),
         "ShaderModule\n(SPIR-V, DXIL,\nMSL, WGSL)": (6.8, 4.7, "#dff2df"),
-        "PipelineLayout /\nRootSignature": (9.6, 4.7, "#dff2df"), "Pipeline (PSO)": (9.6, 3.1, "#dff2df"),
+        "PipelineLayout /\nRootSignature": (9.6, 3.1, "#dff2df"), "Pipeline (PSO)": (9.6, 4.7, "#dff2df"),
         "DescriptorSetLayout /\nBindGroupLayout": (6.8, 3.1, "#dbeaf7"),
         "DescriptorSet /\nBindGroup": (6.8, 1.5, "#dbeaf7"),
         "Buffer / Texture\n+ Memory (heap)": (4.0, 1.5, "#fff6cc"),
@@ -121,7 +121,7 @@ def fig_api_objects():
     for name, (x, y, fc) in nodes.items():
         ax.add_patch(FancyBboxPatch((x - W / 2, y - H / 2), W, H, boxstyle="round,pad=0.02,rounding_size=0.08",
                                     fc=fc, ec=C["dark"], lw=1.2))
-        ax.text(x, y, name, ha="center", va="center", fontsize=10.5)
+        ax.text(x, y, name, ha="center", va="center", fontsize=12)
     edges = [("Instance", "Adapter /\nPhysicalDevice"), ("Adapter /\nPhysicalDevice", "Device"),
              ("Instance", "Surface /\nSwapchain"), ("Device", "Surface /\nSwapchain"),
              ("Device", "Queue\n(graphics, compute,\ncopy)"), ("Device", "CommandPool /\nAllocator"),
@@ -133,11 +133,20 @@ def fig_api_objects():
              ("Buffer / Texture\n+ Memory (heap)", "DescriptorSet /\nBindGroup"),
              ("Device", "Buffer / Texture\n+ Memory (heap)"),
              ("Queue\n(graphics, compute,\ncopy)", "Fence / Semaphore /\nTimeline")]
+
+    def exit_point(cx, cy, dx, dy):
+        # where the ray from the box centre along (dx, dy) leaves the box (plus a small gap)
+        t = min((W / 2 + 0.06) / abs(dx) if dx else 1e9, (H / 2 + 0.06) / abs(dy) if dy else 1e9)
+        return cx + t * dx, cy + t * dy
+
     for a, b in edges:
         (x0, y0, _), (x1, y1, _) = nodes[a], nodes[b]
-        ax.annotate("", xy=(x1, y1), xytext=(x0, y0),
-                    arrowprops=dict(arrowstyle="-|>", color=C["gray"], lw=1.2, shrinkA=40, shrinkB=40,
-                                    connectionstyle="arc3,rad=0.12"))
+        dx, dy = x1 - x0, y1 - y0
+        p0 = exit_point(x0, y0, dx, dy)
+        p1 = exit_point(x1, y1, -dx, -dy)
+        ax.annotate("", xy=p1, xytext=p0,
+                    arrowprops=dict(arrowstyle="-|>", color=C["dark"], lw=1.4, shrinkA=0, shrinkB=0,
+                                    mutation_scale=16))
     ax.text(0.1, 0.3, "Vulkan / D3D12 / WebGPU names; arrows: 'creates', 'is built from' or 'signals'",
             fontsize=11, color=C["gray"])
     save(fig, out("02-api-objects.svg"))
@@ -224,40 +233,50 @@ def fig_barrier_states():
 def fig_graph_dag():
     order, life, placed, barriers = compile_graph(PASSES, ["backbuffer"])
     alive = {p.name for p in order}
-    pos = {"shadow": (0, 1.6), "gbuffer": (0, -0.4), "ssao": (1.5, -1.0), "debug_normals": (1.5, -2.2),
-           "lighting": (3.0, 1.1), "taa": (4.5, 0.6), "bloom": (6.0, -0.6), "tonemap": (7.5, 0.6),
-           "backbuffer": (9.0, 0.6), "unused": (3.0, -2.2)}
-    edges = [("shadow", "lighting", "shadow_map"), ("gbuffer", "ssao", "depth\ngbuf_normal"),
-             ("gbuffer", "lighting", "gbuf_*\ndepth"), ("ssao", "lighting", "ssao"),
-             ("gbuffer", "taa", "depth"),
-             ("gbuffer", "debug_normals", "gbuf_normal"), ("debug_normals", "unused", "debug_view"),
-             ("lighting", "taa", "hdr"), ("taa", "bloom", "taa_out"), ("taa", "tonemap", "taa_out"),
-             ("bloom", "tonemap", "bloom"), ("tonemap", "backbuffer", "")]
-    fig, ax = plt.subplots(figsize=(13, 5.2))
-    ax.axis("off"); ax.set_xlim(-0.8, 9.8); ax.set_ylim(-2.9, 2.4)
-    for a, b, lab in edges:
+    pos = {"shadow": (0, 2.1), "gbuffer": (0, -0.6), "ssao": (3.2, -0.6), "debug_normals": (3.2, -2.4),
+           "lighting": (5.8, 1.2), "taa": (8.2, 1.2), "bloom": (10.2, -0.6), "tonemap": (12.2, 1.2),
+           "backbuffer": (12.2, -2.4), "unused": (6.4, -2.4)}
+    edges = [("shadow", "lighting", "shadow_map", 0.5), ("gbuffer", "ssao", "depth,\ngbuf_normal", 0.5),
+             ("gbuffer", "lighting", "gbuf_*, depth", 0.3), ("ssao", "lighting", "ssao", 0.25),
+             ("gbuffer", "taa", "depth", 0.86),
+             ("gbuffer", "debug_normals", "gbuf_normal", 0.5), ("debug_normals", "unused", "debug_view", 0.5),
+             ("lighting", "taa", "hdr", 0.5), ("taa", "bloom", "taa_out", 0.5), ("taa", "tonemap", "taa_out", 0.5),
+             ("bloom", "tonemap", "bloom", 0.5), ("tonemap", "backbuffer", "", 0.5)]
+    HW, HH = 0.8, 0.34
+
+    def exit_point(cx, cy, dx, dy):
+        t = min((HW + 0.05) / abs(dx) if dx else 1e9, (HH + 0.05) / abs(dy) if dy else 1e9)
+        return cx + t * dx, cy + t * dy
+
+    fig, ax = plt.subplots(figsize=(14, 5.8))
+    ax.axis("off"); ax.set_xlim(-0.9, 13.1); ax.set_ylim(-2.9, 2.6)
+    for a, b, lab, f in edges:
         dead = (a not in alive and a != "backbuffer") or b == "unused" or (b not in alive and b not in ("backbuffer",))
-        ax.annotate("", xy=pos[b], xytext=pos[a],
+        (x0, y0), (x1, y1) = pos[a], pos[b]
+        dx, dy = x1 - x0, y1 - y0
+        p0, p1 = exit_point(x0, y0, dx, dy), exit_point(x1, y1, -dx, -dy)
+        ax.annotate("", xy=p1, xytext=p0,
                     arrowprops=dict(arrowstyle="-|>", color="#bbbbbb" if dead else C["dark"], lw=1.6,
-                                    ls="--" if dead else "-", shrinkA=44, shrinkB=44))
+                                    ls="--" if dead else "-", shrinkA=0, shrinkB=0, mutation_scale=16))
         if lab:
-            f = {"depth": 0.72, "ssao": 0.45, "depth\ngbuf_normal": 0.62}.get(lab, 0.5)   # avoid label collisions
-            mx, my = pos[a][0] + f * (pos[b][0] - pos[a][0]), pos[a][1] + f * (pos[b][1] - pos[a][1])
-            ax.text(mx, my + 0.12, lab, ha="center", va="bottom", fontsize=10,
-                    color=C["gray"] if dead else C["z"])
+            mx, my = p0[0] + f * (p1[0] - p0[0]), p0[1] + f * (p1[1] - p0[1])
+            ax.text(mx, my, lab, ha="center", va="center", fontsize=11,
+                    color=C["gray"] if dead else C["z"],
+                    bbox=dict(boxstyle="round,pad=0.15", fc="white", ec="none"))
     for name, (x, y) in pos.items():
         if name in ("backbuffer", "unused"):
-            ax.text(x, y, name if name == "backbuffer" else "(nobody reads)", ha="center", va="center",
-                    fontsize=11, color=C["dark"] if name == "backbuffer" else C["gray"],
-                    bbox=dict(boxstyle="round", fc="#fff6cc" if name == "backbuffer" else "white",
-                              ec=C["dark"] if name == "backbuffer" else "#bbbbbb",
-                              ls="-" if name == "backbuffer" else "--"))
+            ax.add_patch(FancyBboxPatch((x - HW, y - HH), 2 * HW, 2 * HH, boxstyle="round,pad=0.02,rounding_size=0.1",
+                                        fc="#fff6cc" if name == "backbuffer" else "white",
+                                        ec=C["dark"] if name == "backbuffer" else "#bbbbbb",
+                                        ls="-" if name == "backbuffer" else "--"))
+            ax.text(x, y, "backbuffer\n(imported)" if name == "backbuffer" else "(nobody reads)", ha="center",
+                    va="center", fontsize=12, color=C["dark"] if name == "backbuffer" else C["gray"])
             continue
         on = name in alive
-        ax.add_patch(FancyBboxPatch((x - 0.62, y - 0.3), 1.24, 0.6, boxstyle="round,pad=0.02,rounding_size=0.1",
+        ax.add_patch(FancyBboxPatch((x - HW, y - HH), 2 * HW, 2 * HH, boxstyle="round,pad=0.02,rounding_size=0.1",
                                     fc=C["fill"] if on else "white", ec=C["a"] if on else "#bbbbbb",
                                     lw=2 if on else 1.2, ls="-" if on else "--"))
-        ax.text(x, y, name if on else name + "\nculled", ha="center", va="center", fontsize=10.5,
+        ax.text(x, y, name if on else name + "\nculled", ha="center", va="center", fontsize=12.5,
                 color=C["dark"] if on else C["gray"])
     save(fig, out("02-graph-dag.svg"))
 
@@ -428,20 +447,20 @@ def fig_hzb():
     n_true = sum(r[1] for r in res)
     assert all(r[1] for r in res if r[0]), "HZB must be conservative"
     print(f"HZB: {n_cull} culled of {len(objs)}, {n_true} truly hidden, max texels read {max(r[3] for r in res)}")
-    fig = plt.figure(figsize=(13, 6.0))
-    gs = fig.add_gridspec(2, 4, width_ratios=[2.2, 1, 1, 1])
-    ax = fig.add_subplot(gs[:, 0])
+    fig = plt.figure(figsize=(9, 12.5))
+    gs = fig.add_gridspec(4, 3, height_ratios=[1.25, 1.25, 1, 1])
+    ax = fig.add_subplot(gs[0:2, :])
     ax.imshow(D, cmap="gray", vmin=0, vmax=1, origin="upper")
     for (x, y, w, h, z), (culled, truly, _, _) in zip(objs, res):
         col = C["x"] if culled else (C["b"] if truly else C["y"])
         ax.add_patch(Rectangle((x - 0.5, y - 0.5), w, h, fc="none", ec=col, lw=2))
     ax.set_title(f"depth buffer + 60 boxes: {n_cull} culled by HZB (red),\n"
-                 f"{n_true - n_cull} hidden but kept (orange), {len(objs) - n_true} visible (green)", fontsize=12)
+                 f"{n_true - n_cull} hidden but kept (orange), {len(objs) - n_true} visible (green)", fontsize=15)
     ax.set_xticks([]); ax.set_yticks([]); ax.grid(False)
     for k, lvl in enumerate([1, 2, 3, 4, 5, 6]):
-        a = fig.add_subplot(gs[k // 3, 1 + k % 3])
+        a = fig.add_subplot(gs[2 + k // 3, k % 3])
         a.imshow(mips[lvl], cmap="gray", vmin=0, vmax=1, interpolation="nearest")
-        a.set_title(f"mip {lvl}: {mips[lvl].shape[0]}x{mips[lvl].shape[1]}", fontsize=11)
+        a.set_title(f"mip {lvl}: {mips[lvl].shape[0]}x{mips[lvl].shape[1]}", fontsize=15)
         a.set_xticks([]); a.set_yticks([]); a.grid(False)
     fig.tight_layout()
     save(fig, out("02-hzb-culling.svg"))

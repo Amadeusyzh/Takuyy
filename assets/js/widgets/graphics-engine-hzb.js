@@ -8,16 +8,15 @@
   var TXT = {
     en: { depth: "box depth z_min", size: "box size (px)", culled: "CULLED by the HZB test", drawn: "DRAWN",
           hid: "exact: hidden", vis: "exact: visible", hint: "drag the box", level: "level", reads: "texels read" },
-    zh: { depth: "~7269~4f53~6df1~5ea6 z_min", size: "~76d2~5b50~5c3a~5bf8 (px)", culled: "~88ab HZB ~6d4b~8bd5~5254~9664",
-          drawn: "~7ed8~5236", hid: "~5b9e~9645~ff1a~88ab~906e~6321", vis: "~5b9e~9645~ff1a~53ef~89c1",
-          hint: "~62d6~52a8~76d2~5b50", level: "~7ea7~522b", reads: "~8bfb~53d6~7684~7eb9~7d20" },
-    ja: { depth: "~7269~4f53~306e~6df1~5ea6 z_min", size: "~7bb1~306e~30b5~30a4~30ba (px)",
-          culled: "HZB ~30c6~30b9~30c8~3067~30ab~30ea~30f3~30b0", drawn: "~63cf~753b",
-          hid: "~5b9f~969b~ff1a~96a0~308c~3066~3044~308b", vis: "~5b9f~969b~ff1a~898b~3048~308b",
-          hint: "~7bb1~3092~30c9~30e9~30c3~30b0", level: "~30ec~30d9~30eb", reads: "~8aad~3080~30c6~30af~30bb~30eb" }
+    zh: { depth: "\u7269\u4f53\u6df1\u5ea6 z_min", size: "\u76d2\u5b50\u5c3a\u5bf8 (px)", culled: "\u88ab HZB \u6d4b\u8bd5\u5254\u9664",
+          drawn: "\u7ed8\u5236", hid: "\u5b9e\u9645\uff1a\u88ab\u906e\u6321", vis: "\u5b9e\u9645\uff1a\u53ef\u89c1",
+          hint: "\u62d6\u52a8\u76d2\u5b50", level: "\u7ea7\u522b", reads: "\u8bfb\u53d6\u7684\u7eb9\u7d20" },
+    ja: { depth: "\u7269\u4f53\u306e\u6df1\u5ea6 z_min", size: "\u7bb1\u306e\u30b5\u30a4\u30ba (px)",
+          culled: "HZB \u30c6\u30b9\u30c8\u3067\u30ab\u30ea\u30f3\u30b0", drawn: "\u63cf\u753b",
+          hid: "\u5b9f\u969b\uff1a\u96a0\u308c\u3066\u3044\u308b", vis: "\u5b9f\u969b\uff1a\u898b\u3048\u308b",
+          hint: "\u7bb1\u3092\u30c9\u30e9\u30c3\u30b0", level: "\u30ec\u30d9\u30eb", reads: "\u8aad\u3080\u30c6\u30af\u30bb\u30eb" }
   };
-  // Non-ASCII text is written as ~hhhh (4 hex digits) so that this file stays ASCII-only.
-  function U(s) { return s.replace(/~([0-9a-f]{4})/g, function (m, h) { return String.fromCharCode(parseInt(h, 16)); }); }
+  // Non-ASCII text is written as \u escapes so that this file stays ASCII-only.
   var N = 64;
   var OCC = [[4, 8, 30, 40, 0.30], [26, 30, 60, 52, 0.40], [40, 4, 58, 26, 0.35], [10, 46, 24, 62, 0.50]];
 
@@ -42,7 +41,7 @@
   function setup(el) {
     var lang = TXT[el.dataset.lang] ? el.dataset.lang : "en";
     var T = {};
-    for (var key in TXT[lang]) T[key] = U(TXT[lang][key]);
+    for (var key in TXT[lang]) T[key] = (TXT[lang][key]);
     el.style.background = "#fcfcfd";
     var mips = buildDepth();
     var box = { x: 28, y: 18, s: 10, z: 0.6 };
@@ -133,7 +132,7 @@
       var lines = [
         [T.level + " L = ceil(log2 " + box.s + ") = " + r.L + "  (" + r.n + "\xd7" + r.n + ")", "#222"],
         [T.reads + ": " + ((r.tx1 - r.tx0 + 1) * (r.ty1 - r.ty0 + 1)) + "   max = " + r.hz.toFixed(2), "#1f77b4"],
-        ["z_min = " + box.z.toFixed(2) + (r.culled ? " > " : U(" ~2264 ")) + r.hz.toFixed(2), "#222"],
+        ["z_min = " + box.z.toFixed(2) + (r.culled ? " > " : (" \u2264 ")) + r.hz.toFixed(2), "#222"],
         [r.culled ? T.culled : T.drawn, col],
         [r.hidden ? T.hid : T.vis, "#555"]
       ];

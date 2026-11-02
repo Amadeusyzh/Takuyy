@@ -9,18 +9,17 @@
     en: { hint: "Tap a pass: on / off", out: "debug_view is an output", culled: "culled", off: "off",
           life: "lifetimes", mem: "memory (MB)", noalias: "no aliasing", heap: "aliased heap", bar: "barriers",
           run: "executed" },
-    zh: { hint: "~70b9~51fb pass~ff1a~5f00 / ~5173", out: "debug_view ~4f5c~4e3a~8f93~51fa",
-          culled: "~88ab~5254~9664", off: "~5df2~5173~95ed", life: "~751f~547d~5468~671f",
-          mem: "~5185~5b58 (MB)", noalias: "~65e0~590d~7528", heap: "~590d~7528~540e~7684~5806",
-          bar: "barrier", run: "~6267~884c" },
-    ja: { hint: "~30d1~30b9~3092~30bf~30c3~30d7~ff1a~30aa~30f3 / ~30aa~30d5",
-          out: "debug_view ~3092~51fa~529b~306b~3059~308b", culled: "~30ab~30ea~30f3~30b0",
-          off: "~30aa~30d5", life: "~30e9~30a4~30d5~30bf~30a4~30e0", mem: "~30e1~30e2~30ea (MB)",
-          noalias: "~30a8~30a4~30ea~30a2~30b9~306a~3057", heap: "~30a8~30a4~30ea~30a2~30b9~5f8c~306e~30d2~30fc~30d7",
-          bar: "~30d0~30ea~30a2", run: "~5b9f~884c" }
+    zh: { hint: "\u70b9\u51fb pass\uff1a\u5f00 / \u5173", out: "debug_view \u4f5c\u4e3a\u8f93\u51fa",
+          culled: "\u88ab\u5254\u9664", off: "\u5df2\u5173\u95ed", life: "\u751f\u547d\u5468\u671f",
+          mem: "\u5185\u5b58 (MB)", noalias: "\u65e0\u590d\u7528", heap: "\u590d\u7528\u540e\u7684\u5806",
+          bar: "barrier", run: "\u6267\u884c" },
+    ja: { hint: "\u30d1\u30b9\u3092\u30bf\u30c3\u30d7\uff1a\u30aa\u30f3 / \u30aa\u30d5",
+          out: "debug_view \u3092\u51fa\u529b\u306b\u3059\u308b", culled: "\u30ab\u30ea\u30f3\u30b0",
+          off: "\u30aa\u30d5", life: "\u30e9\u30a4\u30d5\u30bf\u30a4\u30e0", mem: "\u30e1\u30e2\u30ea (MB)",
+          noalias: "\u30a8\u30a4\u30ea\u30a2\u30b9\u306a\u3057", heap: "\u30a8\u30a4\u30ea\u30a2\u30b9\u5f8c\u306e\u30d2\u30fc\u30d7",
+          bar: "\u30d0\u30ea\u30a2", run: "\u5b9f\u884c" }
   };
-  // Non-ASCII text is written as ~hhhh (4 hex digits) so that this file stays ASCII-only.
-  function U(s) { return s.replace(/~([0-9a-f]{4})/g, function (m, h) { return String.fromCharCode(parseInt(h, 16)); }); }
+  // Non-ASCII text is written as \u escapes so that this file stays ASCII-only.
   var SIZES = { shadow_map: 16, depth: 8, gbuf_albedo: 8, gbuf_normal: 8, ssao: 2, hdr: 16, taa_out: 16, bloom: 4, debug_view: 8 };
   var DEPTH_LIKE = { shadow_map: 1, depth: 1 };
   var COLS = { shadow_map: "#8c564b", depth: "#7f7f7f", gbuf_albedo: "#ff7f0e", gbuf_normal: "#9467bd", ssao: "#17becf",
@@ -99,7 +98,7 @@
   function setup(el) {
     var lang = TXT[el.dataset.lang] ? el.dataset.lang : "en";
     var T = {};
-    for (var key in TXT[lang]) T[key] = U(TXT[lang][key]);
+    for (var key in TXT[lang]) T[key] = (TXT[lang][key]);
     el.style.background = "#fcfcfd";
     var enabled = {}, debugOut = false;
     PASSES.forEach(function (p) { enabled[p.name] = true; });
@@ -140,8 +139,8 @@
         b.style.textDecoration = on ? "none" : "line-through";
         b.style.background = on && used ? "#f3eefb" : "#fff";
       });
-      info.textContent = T.run + ": " + R.order.length + " / " + PASSES.length + "   " + T.bar + ": " + R.barriers +
-        "   " + T.noalias + ": " + R.total + " MB -> " + T.heap + ": " + R.heap + " MB   (" + T.hint + ")";
+      info.textContent = T.run + ": " + R.order.length + " / " + PASSES.length + " · " + T.bar + ": " + R.barriers +
+        " · " + T.noalias + ": " + R.total + " MB → " + T.heap + ": " + R.heap + " MB · (" + T.hint + ")";
       draw();
     }
 

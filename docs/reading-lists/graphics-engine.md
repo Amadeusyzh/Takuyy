@@ -22,7 +22,7 @@
 
 | 课程 | 讲授方 | 链接 | 说明 |
 | --- | --- | --- | --- |
-| GAMES104 现代游戏引擎：从入门到实践 | 王希等（Booming Tech；讲师信息未在课程页核实） | [课程主页](https://games104.boomingtech.com/) | 中文引擎课程，覆盖分层架构、渲染、动画、物理、工具链；配套 Piccolo 引擎 |
+| GAMES104 现代游戏引擎：从入门到实践 | Booming Tech（课程主页未列出讲师姓名） | [课程主页](https://games104.boomingtech.com/) | 中文引擎课程，覆盖分层架构、渲染、动画、物理、工具链；配套 Piccolo 引擎 |
 | WebGPU Fundamentals | 社区教程 | [webgpufundamentals.org](https://webgpufundamentals.org/) | 从零学习 WebGPU（第 02、03 篇的基础） |
 | Learn Wgpu | 社区教程（Rust） | [sotrh.github.io/learn-wgpu](https://sotrh.github.io/learn-wgpu/) | 用 Rust 的 wgpu 学习同一套 API |
 | Vulkan Guide | 社区教程（C++20、Vulkan 1.3） | [vkguide.dev](https://vkguide.dev/) | 从零写一个现代 Vulkan 引擎 |
