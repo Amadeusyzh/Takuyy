@@ -458,7 +458,119 @@ print(f"Flow matching 50 Euler steps: {100 * frac:.1f}% near a mode, {modes}/8 m
 | Sora (2024) | video compression network | diffusion Transformer over spacetime patches | text, images, video |
 | Cosmos (2025) | Cosmos tokenizers | diffusion and autoregressive world foundation models | text, video, (post-trained) actions |
 
-Post 3 looks inside these video world simulators.
+Post 3 looks inside these video world simulators. (*Update, November 2026:* the 2025-2026 update below extends this table with causal, few-step video diffusion models.)
+
+## 2025-2026 update (as of November 2026)
+
+This section adds the generative-modeling developments of 2025 to early November 2026 that matter for world models. It is not a survey of video generation, which moved too fast to cover here. The biggest change for world models is that **causal, few-step video diffusion became the standard backbone of interactive simulators**. Its key problem, and the most important new idea, is about *what the model sees as context during training*. "Preprint" means an arXiv paper not yet published at a venue.
+
+### Causal video diffusion and the train-test gap
+
+An interactive world model must generate frame $t$ from frames $\lt t$ and the action, then condition on its *own* output for frame $t+1$ (the factorization of post 3, section 4). Write $x_{\lt t}$ for real frames and $\hat x_{\lt t}$ for generated ones. Standard **teacher forcing** (TF) trains $p_\theta(x_t \mid x_{\lt t})$ on real context, but at test time the model receives $\hat x_{\lt t}$. Errors in $\hat x$ are inputs it has never seen, so they compound. This is the exposure-bias version of the compounding-error problem from post 1. The figure compares three ways to choose the training context.
+
+{% include blog_figure.liquid path="assets/img/blog/world-models/02-update-forcing.svg" width="90%" caption="What a causal video model is conditioned on during training. TF (teacher forcing): the clean real past $x_{1:5}$, with only the frame being learned noised. DF (Diffusion Forcing, post 3): every frame gets an independent noise level $\sigma$ (grey level), so the model learns to work with uncertain context. SF (Self Forcing): the context is the model's own autoregressive rollout $\hat x_{1:5}$ (arrows, generated with a KV cache exactly as at test time), and the loss is applied to the whole generated clip by a distribution-matching (DMD) or adversarial objective. Only SF trains on the same inputs the model will see when deployed." %}
+
+- **CausVid** (Yin et al., "From Slow Bidirectional to Fast Autoregressive Video Diffusion Models", CVPR 2025, [arXiv:2412.07772](https://arxiv.org/abs/2412.07772)) distills a high-quality *bidirectional* video diffusion teacher into a *causal* student that needs only a few denoising steps. Generation becomes streaming with a KV cache. The distillation uses distribution matching distillation (DMD): the student is trained so that its output distribution matches the teacher's, rather than copying individual samples.
+- **Self Forcing** (Huang et al., NeurIPS 2025, [arXiv:2506.08009](https://arxiv.org/abs/2506.08009)) closes the train-test gap directly. During training the model generates the clip autoregressively, frame by frame with KV caching, exactly as at inference. A holistic, video-level loss (DMD, score-identity or GAN) is then applied to its own outputs. Unrolling a rollout during training is affordable only because each frame takes a few denoising steps. The result runs in real time on one GPU and became the default recipe for open interactive world models such as Matrix-Game 2.0 (post 3's update).
+- Successors fix the remaining weaknesses. **Self-Forcing++** (Cui et al., preprint, [arXiv:2510.02283](https://arxiv.org/abs/2510.02283)) reduces drift over long rollouts without long-video teachers and reaches videos of up to 4 min 15 s. **LongLive** (preprint, [arXiv:2509.22622](https://arxiv.org/abs/2509.22622)) adds prompt switching during generation. **Causal Forcing** (Zhu et al., ICML 2026, [arXiv:2602.02214](https://arxiv.org/abs/2602.02214)) observes that distilling from a *bidirectional* teacher leaves an architectural gap. It initializes the student with an *autoregressive* teacher before DMD and reports clear gains over Self Forcing in motion dynamics. **Causal Forcing++** (preprint, [arXiv:2605.15141](https://arxiv.org/abs/2605.15141)) and **Causal-rCM** (Zheng et al., preprint, [arXiv:2606.25473](https://arxiv.org/abs/2606.25473)) push to 2 sampling steps per frame. Causal-rCM combines teacher-forcing consistency distillation with self-forcing DMD.
+- Two related ideas. **History-Guided Video Diffusion** (Song et al., ICML 2025, [arXiv:2502.06764](https://arxiv.org/abs/2502.06764)) trains a Diffusion Forcing Transformer that accepts a variable-length history. It applies classifier-free guidance (section 7) *to the history*, comparing predictions with and without past frames to strengthen long-range consistency. **MAGI-1** (Sand AI, preprint, [arXiv:2505.13211](https://arxiv.org/abs/2505.13211)) scales autoregressive, chunk-by-chunk video diffusion to a large open model.
+
+### A toy run: teacher forcing vs training on your own rollouts
+
+The train-test gap is easy to reproduce without any video. The script below learns a damped pendulum, with state $x = (\theta, \dot\theta)$ and the true one-step map $x_{t+1} = F(x_t)$ (Euler integration of $\ddot\theta = -\sin\theta - 0.1\,\dot\theta$ with $\Delta t = 0.1$). The model is deliberately too small to fit $F$ exactly: $\hat x_{t+1} = \hat x_t + f_\phi(\hat x_t)$ with an MLP $f_\phi$ of 8 hidden units, so some error is unavoidable. We train it in two ways:
+
+- **teacher forcing (TF):** minimize the one-step loss $\frac{1}{N}\sum_t \Vert x_t + f_\phi(x_t) - x_{t+1} \Vert^2$, always starting from the *real* state;
+- **self forcing (SF):** start from a real state $x_s$, roll the model out for $H = 20$ steps *on its own predictions*, and minimize $\frac{1}{H+1}\sum_{k=0}^{H} \Vert \hat x_{s+k} - x_{s+k} \Vert^2$, back-propagating through the whole rollout.
+
+Both models see the same 256 training trajectories. We then test on 256 new starting states and roll out 60 steps.
+
+```python
+import torch
+
+torch.manual_seed(0)
+dt = 0.1
+
+
+def true_step(x):                       # damped pendulum, state = (angle, angular velocity)
+    th, om = x[..., 0], x[..., 1]
+    return torch.stack([th + dt * om, om + dt * (-torch.sin(th) - 0.1 * om)], -1)
+
+
+def rollout(step, x0, T):
+    xs = [x0]
+    for _ in range(T):
+        xs.append(step(xs[-1]))
+    return torch.stack(xs, 1)            # (batch, T+1, 2)
+
+
+x0_train = (torch.rand(256, 2) - 0.5) * torch.tensor([5.0, 3.0])
+x0_test = (torch.rand(256, 2) - 0.5) * torch.tensor([5.0, 3.0])
+X = rollout(true_step, x0_train, 40)
+
+
+def make_model():                        # a small model that cannot fit the dynamics exactly
+    return torch.nn.Sequential(torch.nn.Linear(2, 8), torch.nn.Tanh(), torch.nn.Linear(8, 2))
+
+
+def train(mode, H=20, iters=1500):
+    torch.manual_seed(1)
+    f = make_model()
+    step = lambda x: x + f(x)
+    opt = torch.optim.Adam(f.parameters(), lr=3e-3)
+    for _ in range(iters):
+        if mode == "teacher":            # context = real previous state, one-step target
+            loss = ((step(X[:, :-1]) - X[:, 1:]) ** 2).mean()
+        else:                            # context = the model's own rollout, loss on the whole clip
+            s = torch.randint(0, 40 - H, (1,)).item()
+            loss = ((rollout(step, X[:, s], H) - X[:, s:s + H + 1]) ** 2).mean()
+        opt.zero_grad()
+        loss.backward()
+        opt.step()
+    return step
+
+
+with torch.no_grad():
+    Y = rollout(true_step, x0_test, 60)
+models = {m: train(m) for m in ("teacher", "self")}
+for m, step in models.items():
+    with torch.no_grad():
+        one = ((step(Y[:, :-1]) - Y[:, 1:]) ** 2).sum(-1).sqrt().mean().item()
+        err = (rollout(step, x0_test, 60) - Y).pow(2).sum(-1).sqrt().mean(0)
+    print(f"{m:8s} one-step error {one:.4f}   rollout error at t=10: {err[10]:.3f}  t=30: {err[30]:.3f}  t=60: {err[60]:.3f}")
+```
+
+Output (CPU, a few seconds):
+
+```text
+teacher  one-step error 0.0131   rollout error at t=10: 0.086  t=30: 0.302  t=60: 0.863
+self     one-step error 0.0139   rollout error at t=10: 0.068  t=30: 0.144  t=60: 0.644
+```
+
+The numbers show the whole story in miniature. TF is slightly *better* at the task it was trained on (one-step error 0.0131 vs 0.0139). But once the model feeds on its own outputs, SF's error is half of TF's after 30 steps (0.144 vs 0.302) and still 25% lower after 60. SF has learned to stay in states from which its own small errors do not grow. It sacrifices a little one-step accuracy to do so. Self Forcing applies exactly this trade, with a video diffusion model in place of $f_\phi$ and a distribution-matching loss in place of the squared error (a single sample cannot be matched pixel by pixel to one "true" future video).
+
+{% include blog_figure.liquid path="assets/img/blog/world-models/02-update-exposure.svg" width="95%" caption="Left: mean rollout error $\Vert \hat x_t - x_t \Vert$ over 256 test trajectories for the teacher-forced (TF, blue) and self-forced (SF, orange) models of the script. Both start at zero error. TF's error grows faster even though its one-step error is lower. Right: phase portrait ($\theta$, $\dot\theta$) of the test trajectory where the two models differ most. The true pendulum (black) swings over the top ($\theta$ passes $\pi$). The SF model follows it; the TF model's small errors push it to the wrong side of the hilltop and it swings back. SF has the lower error at $t = 60$ on 79% of the test trajectories." %}
+
+### Few-step samplers: shortcut models and MeanFlow
+
+Real-time world models need one to four network evaluations per frame. Section 8 met reflow. Two newer ideas train few-step samplers directly.
+
+- **Shortcut models** (Frans et al., "One Step Diffusion via Shortcut Models", [arXiv:2410.12557](https://arxiv.org/abs/2410.12557), 2024) condition the network on the desired *step size* $d$ as well as the noise level. They train it so that one step of size $2d$ equals two consecutive steps of size $d$, a self-consistency target. One model can then sample with 1, 2, 4, ... steps. Dreamer 4's *shortcut forcing* (post 1's update) combines this with Diffusion Forcing.
+- **MeanFlow** (Geng et al., "Mean Flows for One-step Generative Modeling", preprint, [arXiv:2505.13447](https://arxiv.org/abs/2505.13447)) learns the *average* velocity $u(x_t, r, t) = \frac{1}{t - r}\int_r^t v(x_\tau, \tau)\, d\tau$ over an interval instead of the instantaneous velocity $v$ of flow matching. A single evaluation then jumps from noise to data: $x_r = x_t - (t - r)\, u(x_t, r, t)$. (This uses the paper's convention, data at $t = 0$ and noise at $t = 1$, which is the opposite of section 8.) Compare this with the curved exact paths in the flow-paths widget above, where a large Euler step overshoots because it uses the instantaneous velocity.
+
+### Open backbones and tokenizers
+
+- **Wan** (Team Wan, preprint, [arXiv:2503.20314](https://arxiv.org/abs/2503.20314), March 2025) is an open family of large video diffusion transformers (flow matching, a causal 3D VAE). Many 2025-2026 world models start from it, including several in post 3's update and models built on Wan2.1/2.2.
+- **Representation autoencoders** (Zheng et al., "Diffusion Transformers with Representation Autoencoders", technical report, [arXiv:2510.11690](https://arxiv.org/abs/2510.11690)) replace the VAE of latent diffusion (section 6) with a frozen *pretrained representation encoder* (such as DINOv2) plus a trained decoder. The diffusion model then works in a semantic feature space. This is the same "predict in feature space" choice that JEPA and DINO-world make (post 5), now used for generation.
+- The **Cosmos tokenizers** (section 11 table) remain a common open choice for video. NVIDIA's later Cosmos releases are covered in post 3's update.
+
+### The table in section 11, extended
+
+| System | Compressor | Dynamics / generator | Conditioning |
+| --- | --- | --- | --- |
+| Self Forcing / CausVid students (2025) | video VAE (Wan) | causal few-step video diffusion with KV cache | text (and actions when fine-tuned) |
+| Matrix-Game 2.0 (2025) | video VAE | causal few-step diffusion (Self-Forcing-style) | keyboard and mouse |
+| Dreamer 4 (2025) | learned video tokenizer | transformer with shortcut forcing | actions (few labels) |
+| Cosmos 3 (2026) | not detailed in the announcement | mixture of transformers: reasoning + generation | text, image, video, sound, actions |
 
 ## Representative papers
 
@@ -481,6 +593,17 @@ Post 3 looks inside these video world simulators.
 | Scalable Diffusion Models with Transformers (DiT, Peebles, Xie) | ICCV | 2023 | [arXiv:2212.09748](https://arxiv.org/abs/2212.09748) | Transformer denoiser, adaLN-Zero, scaling |
 | Scaling Rectified Flow Transformers for High-Resolution Image Synthesis (Esser et al.) | ICML | 2024 | [arXiv:2403.03206](https://arxiv.org/abs/2403.03206) | Rectified flow + Transformers at scale (SD3) |
 | Language Model Beats Diffusion: Tokenizer is Key to Visual Generation (MAGVIT-v2, Yu et al.) | ICLR | 2024 | [arXiv:2310.05737](https://arxiv.org/abs/2310.05737) | Lookup-free quantization video tokenizer |
+| One Step Diffusion via Shortcut Models (Frans et al.) | arXiv | 2024 | [arXiv:2410.12557](https://arxiv.org/abs/2410.12557) | Step-size-conditioned few-step sampling |
+| From Slow Bidirectional to Fast Autoregressive Video Diffusion Models (CausVid, Yin et al.) | CVPR | 2025 | [arXiv:2412.07772](https://arxiv.org/abs/2412.07772) | Bidirectional teacher to causal few-step student |
+| History-Guided Video Diffusion (Song et al.) | ICML | 2025 | [arXiv:2502.06764](https://arxiv.org/abs/2502.06764) | Guidance on variable-length history |
+| Wan: Open and Advanced Large-Scale Video Generative Models (Team Wan) | preprint | 2025 | [arXiv:2503.20314](https://arxiv.org/abs/2503.20314) | Open backbone of many world models |
+| MAGI-1: Autoregressive Video Generation at Scale (Sand AI) | preprint | 2025 | [arXiv:2505.13211](https://arxiv.org/abs/2505.13211) | Chunk-wise autoregressive diffusion at scale |
+| Mean Flows for One-step Generative Modeling (Geng et al.) | preprint | 2025 | [arXiv:2505.13447](https://arxiv.org/abs/2505.13447) | Average-velocity flows for one-step sampling |
+| Self Forcing: Bridging the Train-Test Gap in Autoregressive Video Diffusion (Huang et al.) | NeurIPS | 2025 | [arXiv:2506.08009](https://arxiv.org/abs/2506.08009) | Train on own rollouts; real-time causal video |
+| Self-Forcing++: Towards Minute-Scale High-Quality Video Generation (Cui et al.) | preprint | 2025 | [arXiv:2510.02283](https://arxiv.org/abs/2510.02283) | Minute-scale rollouts without long teachers |
+| Diffusion Transformers with Representation Autoencoders (Zheng et al.) | technical report | 2025 | [arXiv:2510.11690](https://arxiv.org/abs/2510.11690) | Diffusion in a pretrained feature space |
+| Causal Forcing (Zhu et al.) | ICML | 2026 | [arXiv:2602.02214](https://arxiv.org/abs/2602.02214) | Autoregressive teacher for causal distillation |
+| Causal-rCM (Zheng et al.) | technical report | 2026 | [arXiv:2606.25473](https://arxiv.org/abs/2606.25473) | Teacher-forcing consistency + self-forcing DMD |
 
 ## Learning resources
 
@@ -496,5 +619,12 @@ Post 3 looks inside these video world simulators.
 3. In the DDPM script, compare DDIM with 10, 50 and 200 steps and $\eta \in \lbrace 0, 1 \rbrace$. Which one degrades first when you reduce steps?
 4. Add a class label (the mode index) and train with 15% label dropout. Implement classifier-free guidance and plot samples for $w \in \lbrace 1, 3, 7 \rbrace$. What happens to the spread of each mode?
 5. Show that for the linear path $x_t = (1-t)x_0 + t x_1$, a velocity predictor $v_\theta$ and a noise predictor are related by $\hat\epsilon = x_t - t\,v_\theta(x_t, t)$.
+6. (2025-2026 update) A causal video model uses $S$ denoising steps per frame and generates $F$ frames. Count the network evaluations needed to unroll one Self Forcing training clip, and explain why Self Forcing is practical with $S = 4$ but not with $S = 50$. Which part of the gap between teacher forcing and test time does Diffusion Forcing close, and which part does it leave open?
+
+<details markdown="1"><summary>Hint</summary>
+
+Unrolling needs $F \cdot S$ evaluations (a KV cache keeps each one roughly constant in cost), for example 80 for $F = 20$, $S = 4$, against 1,000 for $S = 50$. In practice, gradients are kept only through part of the unroll to save memory. Diffusion Forcing teaches the model to tolerate *noisy* context, but the noise is Gaussian, while real test-time context contains the model's own structured errors (blur, drift). Only training on its own rollouts exposes the model to those.
+
+</details>
 
 **Next:** [post 3]({{ '/blog/2026/world-models-03-video-world-simulators/' | relative_url }}) uses these tools to build video world simulators: Sora, Genie 1-3, GameNGen, UniSim, GAIA-1 and Cosmos.

@@ -111,6 +111,8 @@ $$
 
 论文报告了在两个不在训练数据中的实验室里，用 Franka 机械臂仅凭图像目标实现零样本（zero-shot）抓取与放置。这是迄今为止 JEPA 纲领最完整的形态：一个主要从被动视频中学到的世界模型，借助少量交互数据适配到控制任务，并用于在隐空间中进行规划。
 
+*更新（2026 年 11 月）：*V-JEPA 2.1（2026 年 3 月）加入了稠密特征，并报告真实机器人抓取成功率比 V-JEPA 2-AC 高 20 个百分点；LeWorldModel（2026 年 3 月）从像素端到端地训练 JEPA 世界模型。参见本文末尾的 2025–2026 年进展一节。
+
 下图在一个玩具二维隐空间中运行同样的流程，其中 L1 目标的等值线是菱形的。
 
 {% include blog_figure.liquid path="assets/img/blog/world-models/05-latent-planning.svg" caption="用上面的目标进行玩具隐空间规划。预测器为 $\hat s_k = \hat s_{k-1} + a_k$（每个动作分量截断到 $\pm 0.45$），状态不能进入灰色圆盘；灰色菱形是到目标（星号）的 L1 距离等值线。左：对 $H = 8$ 个动作做 CEM（200 个样本、20 个精英、8 次迭代），终点离目标的 L1 距离为 0.23。右：MPC 只执行第一个动作然后重新规划；25 步之后离目标 0.15。" %}
@@ -300,6 +302,120 @@ print("delta PSNR (model that ignores actions):",
 
 在动作会在物理世界中产生后果的地方，世界模型最为重要。本博客的下一个系列[具身智能]({{ '/blog/category/embodied-ai/' | relative_url }})将从机器人学基础和仿真讲起，然后从机器人的角度回到本系列的思想：世界模型作为用于仿真到现实迁移（sim-to-real transfer）的模拟器、作为策略评估器、作为规划器（如 V-JEPA 2-AC 和 DINO-WM），以及作为视觉-语言-动作模型（vision-language-action models）内部的“想象”。
 
+## 2025–2026 年进展（截至 2026 年 11 月）
+
+本节补充 2025 年年中至 2026 年 11 月初的 JEPA 与评测工作，并附上一份标注清楚的公开主张清单。所有工作都已在 2026 年 11 月对照其 arXiv 页面或官方文章核实。“预印本”指尚未在会议或期刊发表。时间线小部件（筛选“JEPA”和“评测”）列出了所有条目。
+
+{% include widget.liquid name="world-models-timeline" height="560" caption="动手试试：用“JEPA”和“评测”按钮查看本篇的条目；点击圆点查看摘要、状态和链接。注意 2026 年评测论文的集中出现：基准大约比它们所衡量的系统晚一年到来。" %}
+
+### V-JEPA 2 之后的 JEPA 路线
+
+- **V-JEPA 2.1**（Mur-Labadia et al.，预印本，[arXiv:2603.14482](https://arxiv.org/abs/2603.14482)，2026 年 3 月）针对 V-JEPA 2 的一个已知弱点：它的特征擅长全局理解，但在*稠密*的逐位置任务上较弱。解决办法是加入稠密预测损失，并在图像和视频上联合训练。论文报告了更好的稠密特征，以及从 1B 到 2B 参数的扩展效果。与 3.2 节相关的是，它还报告真实机器人抓取成功率比 V-JEPA 2-AC 高出 20 个百分点。稠密特征对规划很重要，因为操作取决于物体*在哪里*，而不只是场景里有什么。
+- **LeJEPA**（Balestriero and LeCun，预印本，[arXiv:2511.08544](https://arxiv.org/abs/2511.08544)，2025 年 11 月）从理论上处理 4.1 节的坍缩问题。论文认为，使下游预测风险最小的嵌入分布是**各向同性高斯分布**（isotropic Gaussian），并用 **SIGReg**（Sketched Isotropic Gaussian Regularization）来强制这一分布：把一批嵌入投影到随机方向 $u$ 上，再用一个一维统计检验来惩罚每个一维投影 $u^\top z$ 偏离标准正态分布的程度。由于一个分布由它所有的一维投影唯一确定（Cramér-Wold 定理），匹配足够多的随机投影就会把整个分布推向目标。这样就去掉了坍缩玩具实验所需的那些启发式技巧：不需要 EMA 教师，不需要停止梯度，只有一个权衡超参数。可以把它与 4.1 节的 VICReg 对比：VICReg 只匹配前两阶矩（方差和协方差），而 SIGReg 在每个采样方向上匹配整个分布。
+- **LeWorldModel**（Maes et al.，预印本，[arXiv:2603.19312](https://arxiv.org/abs/2603.19312)，2026 年 3 月）把同样的思想用在*世界模型*上。它是一个从原始像素端到端训练的 JEPA，只有两个损失项，损失超参数从六个减少到一个。它约有 1500 万参数，在单块 GPU 上几小时即可训练完成；作者报告其规划速度比基于大型预训练编码器的世界模型快最多 48 倍。早期的隐空间规划器（DINO-WM，3.3 节）依赖冻结的基础编码器，因为端到端的 JEPA 训练不稳定；LeWorldModel 声称已经不再需要这根拐杖。
+- **VL-JEPA**（Chen et al.，预印本，[arXiv:2512.10942](https://arxiv.org/abs/2512.10942)，2025 年 12 月）把 JEPA 原则带到视觉语言领域。模型预测目标文本的连续*嵌入*，而不是生成 token，只在需要时才解码为文本。在受控比较中，它以少 50% 的可训练参数胜过一个 token 空间的基线。
+- **DINO-world**（Baldassarre et al.，预印本，[arXiv:2507.19468](https://arxiv.org/abs/2507.19468)，2025 年 7 月）位于第 4 节两大阵营之间。它是一个通用视频世界模型，在冻结的 DINOv2 编码器的特征空间中预测未来帧。这是一个“中间”目标，既不是像素，也不是从零学习的隐变量。
+
+#### 一个玩具实验：SIGReg 让坍缩的编码器重新展开
+
+为了看清 SIGReg 的作用，取第 4.1 节中最坏的情形，即**维度坍缩**的编码器，并*只*用 SIGReg 训练它：没有预测器，没有 EMA，没有 stop-gradient。编码器是线性的，$z = W^\top x$，其中 $x \in \mathbb{R}^{16}$、$z \in \mathbb{R}^{8}$。初始时 $W$ 几乎全部集中在一列上，所以所有嵌入都落在一条直线附近。每一步我们抽取 $M = 64$ 个随机单位方向 $u$，计算整个 batch 的投影 $u^\top z$，并把每个投影的经验特征函数 $\hat\varphi_u(t) = \frac{1}{N}\sum_i e^{\mathrm{i}\, t\, u^\top z_i}$ 与标准正态的特征函数 $e^{-t^2/2}$ 比较：
+
+$$
+\mathcal{L}_{\text{SIGReg}} = \frac{1}{M}\sum_{m=1}^{M} \int \big\vert \hat\varphi_{u_m}(t) - e^{-t^2/2} \big\vert^2\, e^{-t^2/2}\, dt .
+$$
+
+特征函数相同的两个分布完全相同，所以只有当投影恰好服从 $\mathcal{N}(0, 1)$ 时损失才为零。积分用 $[-4, 4]$ 上的 65 个点近似。这个具体的统计量是我们为玩具实验选的，并非照搬 LeJEPA 的代码；确切使用的检验请查阅其代码。
+
+```python
+import torch
+
+torch.manual_seed(0)
+N, D_in, D = 2048, 16, 8
+X = torch.randn(N, D_in)                       # inputs
+W = torch.zeros(D_in, D)
+W[:, 0] = 0.05 * torch.randn(D_in)             # start dimensionally collapsed: every embedding lies on one line
+W += 1e-3 * torch.randn(D_in, D)
+W.requires_grad_(True)
+t = torch.linspace(-4, 4, 65)                  # frequencies for the characteristic function
+w = torch.exp(-t ** 2 / 2)                     # weight: compare mostly low frequencies
+
+
+def sigreg(Z, M=64):
+    """Mean over M random unit directions of a weighted distance between the empirical
+    characteristic function of u^T z and that of N(0, 1) (an Epps-Pulley-style test statistic)."""
+    U = torch.randn(Z.shape[1], M)
+    U = U / U.norm(dim=0, keepdim=True)
+    P = Z @ U                                  # (N, M) one-dimensional projections
+    arg = P[:, :, None] * t                    # (N, M, T)
+    re, im = torch.cos(arg).mean(0), torch.sin(arg).mean(0)
+    target = torch.exp(-t ** 2 / 2)
+    return (((re - target) ** 2 + im ** 2) * w).mean()
+
+
+opt = torch.optim.Adam([W], lr=1e-2)
+for it in range(201):
+    Z = X @ W
+    loss = sigreg(Z)
+    opt.zero_grad()
+    loss.backward()
+    opt.step()
+    if it in (0, 25, 50, 100, 200):
+        ev = torch.linalg.eigvalsh(torch.cov(Z.detach().T))
+        print(f"step {it:3d}  SIGReg {loss.item():.1e}  covariance eigenvalues "
+              + " ".join(f"{v:.2f}" for v in ev.flip(0)))
+```
+
+输出（CPU，不到一分钟）：
+
+```text
+step   0  SIGReg 4.8e-02  covariance eigenvalues 0.08 0.00 0.00 0.00 0.00 0.00 0.00 0.00
+step  25  SIGReg 9.7e-03  covariance eigenvalues 4.26 0.79 0.47 0.34 0.26 0.15 0.07 0.02
+step  50  SIGReg 3.5e-03  covariance eigenvalues 4.61 1.50 1.27 0.88 0.79 0.52 0.21 0.12
+step 100  SIGReg 2.2e-04  covariance eigenvalues 1.33 1.16 1.14 1.08 1.01 0.90 0.72 0.68
+step 200  SIGReg 3.7e-05  covariance eigenvalues 1.03 1.02 1.01 1.00 0.98 0.98 0.97 0.96
+```
+
+把嵌入协方差的特征值理解为"每个方向上有多少展开"。第 0 步只有一个方向有展开（0.08），其余七个为零：这就是维度坍缩。由于每个随机方向看到的投影几乎都是常数，损失中的每一项都在推动更多的展开。到第 200 步，八个特征值都与 1 相差不到 4%，也就是各向同性高斯这一目标。注意第 50 步的过冲（最大特征值 4.61）：损失每步只看到 64 个随机方向，所以它先放大已经展开的方向，等其他方向跟上后再把它纠正回来。在 LeJEPA 中，这一项以单个权重加到 JEPA 预测损失上，取代了第 4.1 节坍缩玩具实验所需的 EMA 教师和 stop-gradient。
+
+{% include blog_figure.liquid path="assets/img/blog/world-models/05-update-sigreg.svg" width="95%" caption="SIGReg 玩具实验。左：batch 在一个固定随机方向 $u$ 上的投影直方图，与标准正态密度（黑）对比。第 0 步（红）投影是一个窄尖峰，远远超出图的上沿；第 50 步（橙）已展开但过于尖；第 200 步（绿）与 $\mathcal{N}(0,1)$ 吻合。右：训练过程中嵌入协方差的八个特征值（对数坐标）。它们起始于 0.08 和几乎为零的值（坍缩），最大值过冲到约 4.6，最后都收敛到 1 处的虚线，即 LeJEPA 认为最优的各向同性高斯。" %}
+
+**预测式与生成式之争**（第 4 节）并没有结束，但争论的焦点变了。隐空间预测获得了稳定而更简单的训练配方（LeJEPA、LeWorldModel）和稠密特征（V-JEPA 2.1）。与此同时，生成式视频模型变得实时而可控（第 3 篇更新），而最大的工业模型（如 Cosmos 3）如今在一个系统中同时包含推理模型和生成器。
+
+### 评测：从“看起来对不对”到“有没有用”
+
+第 5 节把评测分成五个问题。2025–2026 年的基准大多针对 5.2（物理）、5.3（控制）和 5.4（记忆），首批闭环基准则针对 5.5。下图把每个基准对应到它明确衡量的问题上。
+
+{% include blog_figure.liquid path="assets/img/blog/world-models/05-update-benchmarks.svg" width="85%" caption="根据各基准的摘要，它们明确评分的是第 5 节五个问题中的哪些（列 5.1 质量、5.2 物理、5.3 控制、5.4 记忆、5.5 有用性）。实心点是有名称的评测维度；空心点表示部分覆盖（WorldModelBench 中的文本指令遵循、WorldScore 中的“动态”）。虚线以上的基准来自 2024–2025 年，以下的来自 2026 年。物理（5.2 列）十分拥挤，记忆和有用性各只有两个基准。" %}
+
+**物理（5.2）。** *WorldModelBench*（Li et al.，预印本，[arXiv:2502.20694](https://arxiv.org/abs/2502.20694)）把视频生成器当作世界模型来评判，考察指令遵循和物理一致性，并使用一个微调过的视觉语言评判模型。*VideoPhy-2*（Bansal et al.，预印本，[arXiv:2503.06800](https://arxiv.org/abs/2503.06800)）聚焦以动作为中心的物理常识。*IntPhys 2*（Bordes et al.，预印本，[arXiv:2506.09849](https://arxiv.org/abs/2506.09849)）把违背预期测试（5.2 节）带到复杂的合成场景中，报告模型的表现接近随机水平。*World Models' Last Exam in Physics*（Gao et al.，预印本，[arXiv:2610.08791](https://arxiv.org/abs/2610.08791)，2026 年 10 月）使用 40 个基于测量的任务，涵盖力学、光学、流体、热学、电磁学和表面张力。每个任务把起始图像和提示与物理判据配对，因此不需要参考视频。在八个视频生成器、1,280 段视频上，最好的模型得分为 57.76（满分 100）。
+
+**控制（5.3）。** *WorldScore*（Duan et al.，ICCV 2025，[arXiv:2504.00983](https://arxiv.org/abs/2504.00983)）把世界生成视为沿指定相机路径的一系列“下一场景生成”，并对可控性、质量和动态评分。*WorldMark*（Xu et al.，预印本，[arXiv:2604.21686](https://arxiv.org/abs/2604.21686)，2026 年 4 月）在评测层面解决了第 6 节提到的“没有共享动作接口”的问题：用逐模型的适配器，把同样的 WASD 式输入转换给十个交互模型，覆盖 500 个用例。它加入了控制系统式的指标（方向准确率、响应延迟、运动稳定性），并发现响应最快的模型往往最不稳定。
+
+**记忆与持久状态（5.4）。** *WBench*（Ying et al.，预印本，[arXiv:2605.25874](https://arxiv.org/abs/2605.25874)，2026 年 5 月）是多轮的：289 个用例、1,058 个交互轮次、22 个自动子指标，涵盖质量、设定与交互遵循、一致性和物理。在 20 个模型中，没有一个在所有维度上都领先。*WRBench*（"Current World Models Lack a Persistent State Core"，Lu et al.，预印本，[arXiv:2606.20545](https://arxiv.org/abs/2606.20545)，2026 年 6 月）利用相机运动把一个正在进行的事件*藏起来*，检查它在看不见时是否继续演化。在 23 个模型的 9,600 段视频上，模型通常会让事件从离开时的状态继续，而不是向前推进。这是 5.4 节重访测试的更尖锐版本：记住外观并不等于模拟状态。
+
+**有用性（5.5）。** *World-in-World*（Zhang et al.，ICLR 2026 口头报告，[arXiv:2510.18135](https://arxiv.org/abs/2510.18135)）把世界模型放进与具身智能体构成的闭环中，按任务成功率而非视觉质量来评分。*WorldArena 2.0*（Li et al.，预印本，[arXiv:2605.17912](https://arxiv.org/abs/2605.17912)，2026 年 5 月）把具身世界模型基准扩展到视触觉输入、作为强化学习环境的世界模型，以及多种仿真和真实机器人。闭环分数正是第 6 节第 6 项所要求的：能预测有用性的评测。
+
+一个互补的探针：*Video models are zero-shot learners and reasoners*（Wiedemer et al.，预印本，[arXiv:2509.20328](https://arxiv.org/abs/2509.20328)）在 Veo 3 从未训练过的感知、建模、操控和推理任务上测试它，并认为视频模型可能会像 LLM 之于语言那样，成为通用的视觉基础模型。
+
+### 实验室与初创公司的公开主张（公司自述，未经同行评审）
+
+以下是来自官方公告的主张。列出它们是为了让你能辨认这些说法，而不是因为它们已被独立验证。
+
+- **Google DeepMind，Genie 4**（[2026 年 10 月 27 日](https://deepmind.google/blog/genie-4-a-new-generation-of-world-simulation/)）：物理和人物角色优于 Genie 3，原生音频，实时语言操控。未公布基准表、分辨率或帧率。
+- **NVIDIA，Cosmos 3**（[2026 年 6 月 1 日](https://investor.nvidia.com/news/press-release-details/2026/NVIDIA-Launches-Cosmos-3-the-Open-Frontier-Foundation-Model-for-Physical-AI/default.aspx)）：在多个世界生成排行榜（包括 Physics-IQ）、动作策略排行榜和视觉理解排行榜上位列开放模型第一。
+- **World Labs，Atlas**（[2026 年 9 月 1 日](https://worldlabs.ai/blog/atlas)）：在与五个视频模型的比较中，人类评审有 75% 到 94% 的比例更偏好 Atlas；在文章的图表中，其 3D 重建误差低于各基线。
+- **Wayve，GAIA-4**（[2026 年 8 月 3 日](https://wayve.ai/thinking/gaia-4/)）：为场景重建训练 GAIA，使其对记录世界的保真度提高了 2.5 倍。
+- **AMI Labs。** 2025 年 12 月，Yann LeCun 确认创立新的世界模型初创公司 Advanced Machine Intelligence（AMI Labs），并亲任执行董事长（[TechCrunch，2025 年 12 月 19 日](https://techcrunch.com/2025/12/19/yann-lecun-confirms-his-new-world-model-startup-reportedly-seeks-5b-valuation)）。其宣称的目标是以世界模型替代 LLM，与第 1 节的立场论文一致。截至 2026 年 11 月，尚无公开的技术成果。
+
+### 第 5、6 节有哪些变化
+
+- 开放问题 1（记忆）成为视频世界模型最主要的研究前沿（第 3 篇更新），而 WRBench 表明*动态*的持久性仍然缺失。
+- 开放问题 3（共享动作接口）在评测中借助适配器被部分绕开（WorldMark）；在机器人方面，则由视频与动作联合模型来应对（第 1 篇更新）。
+- 开放问题 6（能预测有用性的评测）如今有了首批闭环基准（World-in-World、WorldArena 2.0）。它们的分数能否在不同任务和机器人之间保持相关，是下一个问题。
+- 帮助你定位的综述与立场论文：*A Definition and Roadmap for World Models*（Chen et al.，[arXiv:2607.06401](https://arxiv.org/abs/2607.06401)）和 *A Tutorial on World Models and Physical AI*（Oh，[arXiv:2606.12783](https://arxiv.org/abs/2606.12783)），均为 2026 年的预印本。
+
+关于 JEPA 式和生成式世界模型如何在机器人中使用，请继续阅读[具身智能系列]({{ '/blog/category/embodied-ai/' | relative_url }})；关于引擎和模拟器如何充当这些基准所依赖的真值，参见[图形引擎第 5 篇]({{ '/blog/2026/graphics-engine-05-physics-and-simulation-engines/' | relative_url }})。
+
 ## 代表性论文
 
 | 论文 | 发表 | 年份 | 链接 | 为什么重要 |
@@ -317,6 +433,22 @@ print("delta PSNR (model that ignores actions):",
 | Physion: Evaluating Physical Prediction from Vision in Humans and Machines (Bear et al.) | NeurIPS Datasets and Benchmarks | 2021 | [arXiv:2106.08261](https://arxiv.org/abs/2106.08261) | 带有人类数据的物理预测基准 |
 | VBench: Comprehensive Benchmark Suite for Video Generative Models (Huang et al.) | CVPR | 2024 | [arXiv:2311.17982](https://arxiv.org/abs/2311.17982) | 多维度的视频质量评估 |
 | Do generative video models understand physical principles? (Physics-IQ, Motamed et al.) | WACV | 2026 | [arXiv:2501.09038](https://arxiv.org/abs/2501.09038) | 视觉真实感并不意味着物理理解 |
+| WorldModelBench: Judging Video Generation Models As World Models (Li et al.) | 预印本 | 2025 | [arXiv:2502.20694](https://arxiv.org/abs/2502.20694) | 指令遵循与物理一致性 |
+| VideoPhy-2: A Challenging Action-Centric Physical Commonsense Evaluation in Video Generation (Bansal et al.) | 预印本 | 2025 | [arXiv:2503.06800](https://arxiv.org/abs/2503.06800) | 以动作为中心的物理常识 |
+| WorldScore: A Unified Evaluation Benchmark for World Generation (Duan et al.) | ICCV | 2025 | [arXiv:2504.00983](https://arxiv.org/abs/2504.00983) | 指定相机的下一场景生成 |
+| IntPhys 2: Benchmarking Intuitive Physics Understanding In Complex Synthetic Environments (Bordes et al.) | 预印本 | 2025 | [arXiv:2506.09849](https://arxiv.org/abs/2506.09849) | 复杂场景中的违背预期测试 |
+| Back to the Features: DINO as a Foundation for Video World Models (Baldassarre et al.) | 预印本 | 2025 | [arXiv:2507.19468](https://arxiv.org/abs/2507.19468) | 在冻结的 DINOv2 特征空间中预测 |
+| Video models are zero-shot learners and reasoners (Wiedemer et al.) | 预印本 | 2025 | [arXiv:2509.20328](https://arxiv.org/abs/2509.20328) | 在未训练过的视觉任务上探测 Veo 3 |
+| World-in-World: World Models in a Closed-Loop World (Zhang et al.) | ICLR（口头报告） | 2026 | [arXiv:2510.18135](https://arxiv.org/abs/2510.18135) | 闭环、以任务成功率评测 |
+| LeJEPA: Provable and Scalable Self-Supervised Learning Without the Heuristics (Balestriero, LeCun) | 预印本 | 2025 | [arXiv:2511.08544](https://arxiv.org/abs/2511.08544) | 用 SIGReg 取代 EMA 和停止梯度 |
+| VL-JEPA: Joint Embedding Predictive Architecture for Vision-language (Chen et al.) | 预印本 | 2025 | [arXiv:2512.10942](https://arxiv.org/abs/2512.10942) | 预测文本嵌入而非 token |
+| LeWorldModel: Stable End-to-End Joint-Embedding Predictive Architecture from Pixels (Maes et al.) | 预印本 | 2026 | [arXiv:2603.19312](https://arxiv.org/abs/2603.19312) | 端到端 JEPA 世界模型，两个损失项 |
+| V-JEPA 2.1: Unlocking Dense Features in Video Self-Supervised Learning (Mur-Labadia et al.) | 预印本 | 2026 | [arXiv:2603.14482](https://arxiv.org/abs/2603.14482) | 稠密特征；机器人抓取更好 |
+| WorldMark: A Unified Benchmark Suite for Interactive Video World Models (Xu et al.) | 预印本 | 2026 | [arXiv:2604.21686](https://arxiv.org/abs/2604.21686) | 用适配器统一控制；控制指标 |
+| WorldArena 2.0 (Li et al.) | 预印本 | 2026 | [arXiv:2605.17912](https://arxiv.org/abs/2605.17912) | 具身、多平台的世界模型基准 |
+| WBench: A Comprehensive Multi-turn Benchmark for Interactive Video World Model Evaluation (Ying et al.) | 预印本 | 2026 | [arXiv:2605.25874](https://arxiv.org/abs/2605.25874) | 多轮交互式评测 |
+| Current World Models Lack a Persistent State Core (WRBench, Lu et al.) | 预印本 | 2026 | [arXiv:2606.20545](https://arxiv.org/abs/2606.20545) | 画面外的动态没有被模拟 |
+| World Models' Last Exam in Physics (Gao et al.) | 预印本 | 2026 | [arXiv:2610.08791](https://arxiv.org/abs/2610.08791) | 基于测量的物理任务 |
 
 ## 学习资源
 
@@ -332,5 +464,12 @@ print("delta PSNR (model that ignores actions):",
 3. 把 V-JEPA 2-AC 的规划目标写成一个 CEM 循环（采样、用预测器展开、以到目标嵌入的 L1 距离打分、重新拟合）。可复用第 1 篇中对 CEM 的描述。
 4. 为视频世界模型设计一个重访一致性指标：指定相机路径、比较指标，以及一个能靠作弊拿到满分的基线。你如何排除这种作弊？
 5. 从第 6 节中选一个开放问题，写一份半页的研究提案：假设、最小实验，以及你将如何评估它。
+6. （2025–2026 年更新）在 4.1 节的坍缩玩具实验中，完全坍缩的编码器把每个输入都映射到同一个向量 $c$。说明此时每个一维投影 $u^\top z$ 是什么样子，以及为什么 SIGReg 式的惩罚（把每个投影与 $\mathcal{N}(0, 1)$ 比较）会很大。再考虑一种“维度坍缩”：嵌入只沿一个方向 $e_1$ 变化。哪些随机方向 $u$ 能检测到它？为什么足够多的随机方向总能发现它？
+
+<details markdown="1"><summary>提示</summary>
+
+完全坍缩时，每个投影都是常数 $u^\top c$，即方差为零的点质量，对任何 $u$ 都远离单位高斯。维度坍缩时，$u^\top z = (u^\top e_1)\, z_1$ 的方差为 $(u^\top e_1)^2 \operatorname{Var}(z_1)$。在高维中，对大多数随机的 $u$ 它都接近零，因此大多数方向看到的是近乎常数的投影，从而受到惩罚。根据 Cramér-Wold 定理，如果所有一维投影都与 $\mathcal{N}(0,1)$ 一致，那么分布就恰好是 $\mathcal{N}(0, I)$。
+
+</details>
 
 **下一篇：** 这是世界模型系列的最后一篇。请继续阅读[具身智能]({{ '/blog/category/embodied-ai/' | relative_url }})系列，或回到[第 1 篇]({{ '/blog/2026/world-models-01-what-is-a-world-model/' | relative_url }})复习基础。

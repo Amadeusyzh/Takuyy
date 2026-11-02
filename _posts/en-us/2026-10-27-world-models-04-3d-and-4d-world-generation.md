@@ -154,6 +154,8 @@ Instead of fighting the 2D prior's lack of 3D awareness, one can fine-tune it on
 
 The general lesson: **generate in 2D where the data is, reconstruct in 3D where consistency is needed**. That is also how scene generators work.
 
+*Update (November 2026):* DUSt3R's successors (VGGT, π³, MapAnything, Depth Anything 3) now predict cameras and geometry for many views in one pass. Several 2025-2026 generators decode 3D Gaussians or triangles directly from video-model latents. See the 2025-2026 update section near the end of this post.
+
 ## 4. Scene generation by iterative inpainting and lifting
 
 ### 4.1 The loop
@@ -254,6 +256,8 @@ Generation again borrows priors, now including **video** diffusion models:
 
 World Labs released **Marble** as a limited beta in September 2025 and made it publicly available on [November 12, 2025](https://www.worldlabs.ai/blog/marble-world-model). Marble generates **persistent, downloadable 3D worlds** from text, images, video or coarse 3D layouts, rather than generating frames on the fly. According to the launch post, Gaussian splats are the highest-fidelity representation of a Marble world, and worlds can also be exported as meshes (low-fidelity collider meshes for physics and high-quality meshes). An experimental editor called **Chisel** lets users block out structure with simple shapes or imported assets and have the model fill in the appearance. No technical paper describes the model, so how it works internally is not public.
 
+*Update (November 2026):* World Labs added a World API (January 2026) and the Spark 2.0 web renderer (April 2026). In September 2026 it announced **Atlas**, a multimodal model that will power future Marble versions. See the update section.
+
 Marble is useful as a reference point because it embodies the explicit route end to end: generation produces an asset (splats + meshes) that is then consumed by ordinary graphics and game tooling. The pixel-space route (Genie 3) instead produces an *experience* that exists only while the model runs.
 
 ## 7. Trade-offs: pixels vs. explicit 3D/4D
@@ -285,6 +289,67 @@ A static analogue of the demo shows why edits are local:
 
 {% include blog_figure.liquid path="assets/img/blog/world-models/04-terrain-edit.svg" caption="A procedural terrain made of 3200 Gaussian splats (height from a sum of sinusoid octaves, coloured by height), before and after a sculpt edit that raises a Gaussian bump. Only the 334 splats near the brush (red, 10%) change; everything else, and therefore every view of it, stays exactly as it was." %}
 
+## 2025-2026 update (as of November 2026)
+
+This section covers 3D and 4D world generation from 2025 to early November 2026. The headline is that section 7's prediction came true faster than expected. The two routes converged: video models now output geometry, and explicit generators now use video models as their engine. A second shift is that **feed-forward reconstruction** became good enough to serve as the bridge between them. Status labels follow the same rules as in post 3's update: "preprint" means not yet published at a venue, and company posts are announcements. The interactive timeline (filter "3D/4D generation") lists every work below.
+
+{% include widget.liquid name="world-models-timeline" height="560" caption="Try it: tap the '3D/4D generation' button to see only this post's entries, then tap a dot for its summary, status and link. Filled dots are papers, hollow dots are company announcements or products. Compare the dates with the 'interactive video' lane: explicit-memory video models appear right after fast feed-forward 3D generators." %}
+
+### Feed-forward geometry became the backbone
+
+Section 3 ended with DUSt3R: point maps from image pairs without known cameras. In 2025 this idea scaled into general **feed-forward geometry models**. Their output is exactly what scene generators need to turn generated pixels into a persistent 3D state.
+
+- **VGGT** (Wang et al., CVPR 2025, [arXiv:2503.11651](https://arxiv.org/abs/2503.11651)) is one large transformer that, given one to hundreds of views, predicts cameras, depth maps, point maps and point tracks in a single forward pass. It needs no test-time optimization.
+- **π³** (Wang et al., preprint, [arXiv:2507.13347](https://arxiv.org/abs/2507.13347)) makes the network permutation-equivariant, so no input view is privileged as the reference frame. **MapAnything** (Keetha et al., 3DV 2026, [arXiv:2509.13414](https://arxiv.org/abs/2509.13414)) predicts *metric* geometry and can use optional extra inputs such as intrinsics, poses or depth. **Depth Anything 3** (Lin et al., preprint, [arXiv:2511.10647](https://arxiv.org/abs/2511.10647)) shows that a plain transformer predicting depth and ray maps from any number of views is enough for consistent geometry.
+
+Why this matters for world generation: the depth-alignment step of section 4.2 (fitting monocular depth to the existing scene) can now be replaced by one network call that returns consistent cameras and geometry for all generated views at once. **Gen3R** (Huang et al., preprint, [arXiv:2601.04090](https://arxiv.org/abs/2601.04090), January 2026) goes one step further. It adapts VGGT to produce *geometry latents* aligned with the appearance latents of a pretrained video diffusion model. The generator then outputs RGB video together with cameras, depth and point clouds. Generation and reconstruction become one model.
+
+### From video priors to 3D Gaussians in seconds
+
+The "generate in 2D, reconstruct in 3D" lesson of section 3 was turned into fast, single-pass pipelines:
+
+- **Stable Virtual Camera** (Zhou et al., preprint, [arXiv:2503.14489](https://arxiv.org/abs/2503.14489)) is a generalist novel-view diffusion model. It takes any number of input views and target cameras and produces consistent views along long camera paths. It is the CAT3D idea as an open model.
+- **GEN3C** (Ren et al., CVPR 2025, [arXiv:2503.03751](https://arxiv.org/abs/2503.03751)) keeps a **3D cache**: point clouds unprojected from predicted depth. It renders the cache along the requested camera path and uses the renders to condition video generation. This gives precise camera control and consistency, which is section 4's loop with a video model inside.
+- **Bolt3D** (Szymanowicz et al., ICCV 2025, [arXiv:2503.14445](https://arxiv.org/abs/2503.14445)) is a latent diffusion model that directly generates Gaussian "splatter images" of a scene in seconds, with no per-scene optimization.
+- **Lyra** (Bahmani et al., preprint, [arXiv:2509.19296](https://arxiv.org/abs/2509.19296)) self-distills a camera-controlled video diffusion model into a decoder that outputs 3D Gaussians from the video latents. It therefore needs no multi-view training data, and the same trick extends to dynamic (4D) scenes. **FlashWorld** (Li et al., preprint, [arXiv:2510.13678](https://arxiv.org/abs/2510.13678)) generates 3D Gaussian scenes directly within seconds by distilling the quality of multi-view-oriented generation into a 3D-oriented generator.
+- **FLAT** (Kupyn et al., preprint, [arXiv:2606.24876](https://arxiv.org/abs/2606.24876), June 2026) decodes **triangle splats** instead of Gaussians directly from video-diffusion latents in one pass. It reports better geometric accuracy, and a short refinement gives an opaque representation that game engines can use. This matters because opaque triangles plug into ordinary rasterizers ([graphics post 2]({{ '/blog/2026/graphics-02-rasterization/' | relative_url }})) and physics, unlike semi-transparent Gaussians.
+
+### Panorama-first world generators
+
+A different 2025 recipe generates a **360° panorama** first, because a panorama fixes the whole surround at once, and then lifts it to 3D:
+
+- **HunyuanWorld 1.0** (HunyuanWorld Team, preprint, [arXiv:2507.21809](https://arxiv.org/abs/2507.21809), July 2025) generates a panoramic proxy from text or an image and splits it into semantic layers (sky, background, objects). It lifts the layers to 3D and exports meshes, so worlds are explorable and editable in standard tools. **HunyuanWorld-Voyager** (Huang et al., preprint, [arXiv:2506.04225](https://arxiv.org/abs/2506.04225)) jointly generates RGB *and depth* video along a user camera path and keeps a world cache, which lets it extend scenes over long ranges with direct 3D reconstruction.
+- **Matrix-3D** (Yang et al., technical report, [arXiv:2508.08086](https://arxiv.org/abs/2508.08086)) generates panoramic video along a trajectory, then reconstructs 3D either with a fast feed-forward model or with optimization.
+- **HY-World 2.0** (Team HY-World, preprint, [arXiv:2604.14268](https://arxiv.org/abs/2604.14268), April 2026) unifies reconstruction, generation and simulation. It produces navigable 3DGS worlds from text or a single image through a four-stage pipeline, and it uses its feed-forward reconstruction model WorldMirror 2.0 for multi-view input. The authors describe it as an *offline* world model and report results comparable to Marble; that comparison is the authors' own.
+
+### Marble becomes a platform, and Atlas
+
+Section 6 described Marble's public release (12 November 2025). Its 2026 trajectory is a good example of how a world generator turns into infrastructure. The sources are all World Labs posts:
+
+- The **World API** ([21 January 2026](https://worldlabs.ai/blog/announcing-the-world-api)) exposes world generation programmatically.
+- **Spark 2.0** ([14 April 2026](https://worldlabs.ai/blog/spark-2.0)) is World Labs' web renderer for streaming large 3DGS worlds in the browser. Gaussian splats became a delivery format, not just a research representation (compare [neural-rendering post 4]({{ '/blog/2026/neural-rendering-04-3d-gaussian-splatting/' | relative_url }})).
+- **Atlas** ([1 September 2026](https://worldlabs.ai/blog/atlas)) is a new model, in early access for selected partners. It is described as a multimodal autoregressive diffusion transformer, pretrained from scratch on text, images, video and 3D. Each input image is anchored at a 3D pose in a shared spatial context. The model generates camera-controlled video (up to one minute at 1440p, according to the post), panoramas, and explicit point clouds or Gaussian splats. World Labs says Atlas will power future versions of Marble. Architecturally, Atlas is the hybrid of section 7: posed frames (as in RTFM, post 3) plus explicit 3D outputs (as in Marble).
+- On 28 September 2026 World Labs announced that it is [joining AMD](https://worldlabs.ai/blog/amd-announcement). World Labs also wrote about generating worlds for robot training ("Building Worlds That Train Robots", July 2026), which links this post to simulation for embodied AI ([graphics-engine post 5]({{ '/blog/2026/graphics-engine-05-physics-and-simulation-engines/' | relative_url }})).
+
+### 4D and objects
+
+- **4DNeX** (Chen et al., preprint, [arXiv:2508.13154](https://arxiv.org/abs/2508.13154)) is a feed-forward image-to-4D model. It fine-tunes a video diffusion model to output, for each frame, RGB plus an XYZ point map, which is a "6D video" that converts directly into dynamic point clouds or Gaussians. Compare it with the per-scene SDS optimization of section 5.
+- **Aether** (Aether Team, preprint, [arXiv:2503.18945](https://arxiv.org/abs/2503.18945)) trains one geometry-aware model, on synthetic data, for three jobs: 4D reconstruction, action-conditioned video prediction and goal-conditioned visual planning. It shows that a 4D generator can double as a world model in the sense of [post 1]({{ '/blog/2026/world-models-01-what-is-a-world-model/' | relative_url }}).
+- **SAM 3D** (SAM 3D Team, preprint, [arXiv:2511.16624](https://arxiv.org/abs/2511.16624)) reconstructs objects (shape, texture and layout) from a single natural image. Object-level 3D "for free" means a scene generator can populate worlds with separable, editable objects instead of one fused surface.
+
+### Explicit 3D as memory for interactive generation
+
+The most interesting 2026 development joins this post with post 3. **L3G-World** (Choi et al., preprint, [arXiv:2610.40614](https://arxiv.org/abs/2610.40614), October 2026) keeps a **latent 3D Gaussian memory**. A feed-forward updater adds new Gaussians only where the scene needs new geometry, and a memory-conditioned video diffusion transformer renders the next frames from it. The memory therefore grows with the *explored scene*, not with the length of the stream, as the toy figure shows. Compared with the most efficient prior 3D-memory baseline, the authors report up to 38.6x fewer 3D primitives and real-time generation at 9 fps.
+
+{% include blog_figure.liquid path="assets/img/blog/world-models/04-update-memory-growth.svg" width="85%" caption="Toy comparison of memory growth for a walk that explores for 40 s, returns through already-seen space for 40 s (grey band, ↺) and then explores again. If every latent frame (6 per second, 50k Gaussians each) is unprojected, the memory grows as $O(T)$ (red) to 36 M primitives. If only new geometry is added (here 25% of each frame while exploring, nothing while revisiting), it grows with the explored area $O(\lvert A\rvert)$ (green) and stays flat during the revisit. This is the scaling argument behind L3G-World; the numbers are illustrative, not from the paper." %}
+
+### What changed in section 7
+
+- **Persistence vs. dynamics.** Explicit memory is now used *inside* interactive video models (GEN3C, Voyager, L3G-World). The "memory" row of the trade-off table therefore no longer separates the two columns as sharply.
+- **Speed.** Single-image-to-3D-scene went from minutes (CAT3D) to seconds (Bolt3D, FlashWorld) with feed-forward decoders.
+- **Engine-readiness.** Output formats moved toward what engines consume: meshes (HunyuanWorld 1.0), triangle splats (FLAT) and streamable splats (Spark 2.0). For how splats and generated assets enter real engines, see [graphics-engine post 6]({{ '/blog/2026/graphics-engine-06-ai-meets-graphics-engines/' | relative_url }}).
+- **Still open.** Generated worlds remain mostly static. Physically meaningful materials, articulated objects and agents are rare, and none of the systems above has a published evaluation of whether its worlds are *useful* for training agents (post 5's update covers the first closed-loop benchmarks).
+
 ## Representative papers
 
 | Paper | Venue | Year | Link | Why it matters |
@@ -306,6 +371,27 @@ A static analogue of the demo shows why edits are local:
 | PhysGaussian: Physics-Integrated 3D Gaussians for Generative Dynamics (Xie et al.) | CVPR | 2024 | [arXiv:2311.12198](https://arxiv.org/abs/2311.12198) | Simulating and rendering the same Gaussians |
 | CAT3D: Create Anything in 3D with Multi-View Diffusion Models (Gao et al.) | NeurIPS | 2024 | [arXiv:2405.10314](https://arxiv.org/abs/2405.10314) | Multi-view diffusion + reconstruction for scenes |
 | WonderWorld: Interactive 3D Scene Generation from a Single Image (Yu et al.) | CVPR | 2025 | [arXiv:2406.09394](https://arxiv.org/abs/2406.09394) | Interactive, under-10-second scene generation |
+| VGGT: Visual Geometry Grounded Transformer (Wang et al.) | CVPR | 2025 | [arXiv:2503.11651](https://arxiv.org/abs/2503.11651) | Feed-forward cameras, depth and points from many views |
+| GEN3C: 3D-Informed World-Consistent Video Generation with Precise Camera Control (Ren et al.) | CVPR | 2025 | [arXiv:2503.03751](https://arxiv.org/abs/2503.03751) | 3D cache conditions a video model |
+| Bolt3D: Generating 3D Scenes in Seconds (Szymanowicz et al.) | ICCV | 2025 | [arXiv:2503.14445](https://arxiv.org/abs/2503.14445) | Direct latent diffusion of Gaussian scenes |
+| Stable Virtual Camera: Generative View Synthesis with Diffusion Models (Zhou et al.) | preprint | 2025 | [arXiv:2503.14489](https://arxiv.org/abs/2503.14489) | Open generalist novel-view diffusion |
+| Aether: Geometric-Aware Unified World Modeling (Aether Team) | preprint | 2025 | [arXiv:2503.18945](https://arxiv.org/abs/2503.18945) | 4D reconstruction, prediction and planning in one model |
+| Voyager: Long-Range and World-Consistent Video Diffusion for Explorable 3D Scene Generation (Huang et al.) | preprint | 2025 | [arXiv:2506.04225](https://arxiv.org/abs/2506.04225) | RGB-D video with a world cache |
+| π³: Permutation-Equivariant Visual Geometry Learning (Wang et al.) | preprint | 2025 | [arXiv:2507.13347](https://arxiv.org/abs/2507.13347) | Reference-free feed-forward geometry |
+| HunyuanWorld 1.0 (HunyuanWorld Team) | preprint | 2025 | [arXiv:2507.21809](https://arxiv.org/abs/2507.21809) | Panorama-first, layered, mesh-exportable worlds |
+| Matrix-3D: Omnidirectional Explorable 3D World Generation (Yang et al.) | technical report | 2025 | [arXiv:2508.08086](https://arxiv.org/abs/2508.08086) | Panoramic video then 3D reconstruction |
+| 4DNeX: Feed-Forward 4D Generative Modeling Made Easy (Chen et al.) | preprint | 2025 | [arXiv:2508.13154](https://arxiv.org/abs/2508.13154) | Image to RGB + XYZ video (4D) |
+| MapAnything: Universal Feed-Forward Metric 3D Reconstruction (Keetha et al.) | 3DV | 2026 | [arXiv:2509.13414](https://arxiv.org/abs/2509.13414) | Metric geometry with optional extra inputs |
+| Lyra: Generative 3D Scene Reconstruction via Video Diffusion Model Self-Distillation (Bahmani et al.) | preprint | 2025 | [arXiv:2509.19296](https://arxiv.org/abs/2509.19296) | Video model distilled into a 3DGS decoder |
+| FlashWorld: High-quality 3D Scene Generation within Seconds (Li et al.) | preprint | 2025 | [arXiv:2510.13678](https://arxiv.org/abs/2510.13678) | Direct 3D-oriented Gaussian generation |
+| Marble: A Multimodal World Model (World Labs) | blog | 2025 | [worldlabs.ai](https://worldlabs.ai/blog/marble-world-model) | Productized explicit world generator |
+| Depth Anything 3: Recovering the Visual Space from Any Views (Lin et al.) | preprint | 2025 | [arXiv:2511.10647](https://arxiv.org/abs/2511.10647) | Plain transformer, depth + rays, any views |
+| SAM 3D: 3Dfy Anything in Images (SAM 3D Team) | preprint | 2025 | [arXiv:2511.16624](https://arxiv.org/abs/2511.16624) | Single-image object reconstruction |
+| Gen3R: 3D Scene Generation Meets Feed-Forward Reconstruction (Huang et al.) | preprint | 2026 | [arXiv:2601.04090](https://arxiv.org/abs/2601.04090) | Geometry latents aligned with video latents |
+| HY-World 2.0 (Team HY-World) | preprint | 2026 | [arXiv:2604.14268](https://arxiv.org/abs/2604.14268) | Reconstruct, generate and simulate 3DGS worlds |
+| FLAT: Feedforward Latent Triangle Splatting (Kupyn et al.) | preprint | 2026 | [arXiv:2606.24876](https://arxiv.org/abs/2606.24876) | Engine-ready triangle splats from video latents |
+| Atlas: A World Model for Spatial Intelligence (World Labs) | blog | 2026 | [worldlabs.ai](https://worldlabs.ai/blog/atlas) | Posed-image context with explicit 3D outputs |
+| L3G-World: Real-Time Infinite World Generation with Latent 3D Gaussian Memory (Choi et al.) | preprint | 2026 | [arXiv:2610.40614](https://arxiv.org/abs/2610.40614) | Gaussian memory that scales with scene extent |
 
 ## Learning resources
 
@@ -321,5 +407,12 @@ A static analogue of the demo shows why edits are local:
 3. Turn the toy into VSD: train a second small denoiser online on the current particles `theta` and use its prediction in place of `eps`. Does the spread approach that of the real data?
 4. In the depth-alignment script, replace the planar scene by one with a step discontinuity and a monocular depth that is a nonlinear function of the truth. Where does the global affine fit fail, and how would a local fit help?
 5. Take one row of the trade-off table in Section 7 and design a hybrid system that gets the best of both columns for that row. What would its training data be?
+6. (2025-2026 update) In the memory-growth toy, let the walk revisit a fraction $r$ of the time instead of one third, and let the fraction of new geometry per exploring frame be $f$. Write $N_{\text{frame}}(T)$ and $N_{\text{extent}}(T)$, and their ratio. For $f = 0.25$ and $r = 1/3$, what ratio do you get after 120 s, and how does it compare with the up-to-38.6x reduction that L3G-World reports against a 3D-memory baseline?
+
+<details markdown="1"><summary>Hint</summary>
+
+$N_{\text{frame}} = cT$ and $N_{\text{extent}} = c f (1 - r) T$, so the ratio is $1 / (f(1-r))$, which is $6$ for $f = 0.25$, $r = 1/3$. Larger reductions need a smaller $f$ (more overlap between frames, as in slow camera motion) or more revisiting. The baseline in the paper is a different, already-pruned 3D memory, so the numbers are not directly comparable.
+
+</details>
 
 **Next:** [post 5]({{ '/blog/2026/world-models-05-jepa-evaluation-and-open-problems/' | relative_url }}) steps back from generation: JEPA and the predictive-vs-generative debate, how world models are evaluated, and the open problems that lead into embodied AI.

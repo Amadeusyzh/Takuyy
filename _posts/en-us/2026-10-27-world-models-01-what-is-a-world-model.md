@@ -473,7 +473,42 @@ A few details worth noticing:
 | Behavior | evolution (CMA-ES) on a linear controller | CEM planning | actor-critic in imagination | MCTS in the model |
 | Main lesson | policies can be trained in a dream | joint latent dynamics + planning | imagination with analytic gradients scales | only value-relevant prediction is needed |
 
-These models are small, task-specific and trained from scratch per environment. The next two posts follow what happened when the dynamics model was replaced by internet-scale generative models: first the toolkit (VAEs, tokenizers, Transformers, diffusion, flow matching), then video world simulators such as Genie and GameNGen.
+These models are small, task-specific and trained from scratch per environment. (*Update, November 2026:* Dreamer 4 (2025) removes this limitation. Its world model is a video-scale transformer trained on offline video, and the agent learns purely in imagination. See the 2025-2026 update section below.) The next two posts follow what happened when the dynamics model was replaced by internet-scale generative models: first the toolkit (VAEs, tokenizers, Transformers, diffusion, flow matching), then video world simulators such as Genie and GameNGen.
+
+## 2025-2026 update (as of November 2026)
+
+This section adds what happened to model-based agents from 2025 to early November 2026. The main shift: the "small, task-specific, trained from scratch" world models of this post met the large video models of posts 2 and 3. Agents can now be trained *inside* a video-scale world model without touching the environment, and robot policies increasingly predict future video and actions with one network. "Preprint" means an arXiv paper not yet published at a venue.
+
+### Dreamer 4: imagination training at video scale
+
+**Dreamer 4** (Hafner, Yan and Lillicrap, "Training Agents Inside of Scalable World Models", preprint, [arXiv:2509.24527](https://arxiv.org/abs/2509.24527), September 2025) is the successor of section 5.3. DreamerV3 learned its world model online, from the agent's own interaction. Dreamer 4 instead learns from a **fixed offline dataset** and never interacts with the environment during training. The figure summarizes the three phases.
+
+{% include blog_figure.liquid path="assets/img/blog/world-models/01-update-dreamer4.svg" width="90%" caption="The three phases of Dreamer 4. (1) A tokenizer $E$ maps video frames $x$ to latents $z$, and a transformer dynamics model $p_\theta$ learns to predict the next latent. Most of the video has no action labels; only a small part has them, which is enough to learn general action conditioning. (2) Policy $\pi$ and reward $\hat r$ heads are added and trained on the offline data by behavior cloning (BC) and reward prediction. (3) The policy is improved by reinforcement learning on imagined rollouts of $p_\theta$, with no environment interaction. Compare it with the Dreamer loop of Section 5.1, where phase 3 alternates with real data collection." %}
+
+Three ingredients make this work at scale.
+
+1. **A fast, accurate video world model.** Dynamics are learned with a *shortcut forcing* objective and an efficient transformer. The objective combines the per-frame noise levels of Diffusion Forcing (post 3, section 6) with few-step "shortcut" sampling (post 2's update). The model runs in real time on a single GPU, and the authors report that in Minecraft it predicts object interactions and game mechanics much more accurately than earlier world models.
+2. **Mostly unlabeled video.** Action conditioning is learned from a small amount of action-labeled data, and most knowledge comes from diverse unlabeled videos. This is the latent-action idea of post 3 (Genie), turned into a recipe for control.
+3. **Imagination RL on top of behavior cloning.** As in section 5.1, actor and critic learn from imagined rollouts, but here they start from a BC policy and are trained purely in the learned simulator.
+
+The headline result is the "offline diamond challenge". Collecting diamonds in Minecraft takes more than 20,000 mouse and keyboard actions from raw pixels, and Dreamer 4 is the first agent reported to do it from offline data alone. DreamerV3 needed online interaction for the same task. The lesson for this post: **model exploitation and compounding error (section 2) did not disappear, but a sufficiently accurate world model makes long-horizon imagination training work even without new real data**. That is the property that matters for robots, where real interaction is slow and unsafe. The model in phase 1 is an interactive video world model in exactly the sense of [post 3]({{ '/blog/2026/world-models-03-video-world-simulators/' | relative_url }}). Dreamer 4 is where the two halves of this series meet.
+
+### World models as data generators and policy evaluators for robots
+
+- **DreamGen** (Jang et al., preprint, [arXiv:2505.12705](https://arxiv.org/abs/2505.12705), May 2025) fine-tunes video world models on a target robot and prompts them to generate videos of new behaviours. It then labels the videos with pseudo-actions (from latent actions or an inverse dynamics model) and trains policies on these "neural trajectories". This is Dyna (section 2.3) with a video generator as the model.
+- **Ctrl-World** (Guo et al., preprint, [arXiv:2510.10125](https://arxiv.org/abs/2510.10125), October 2025) is a controllable multi-view world model trained on the DROID robot dataset. It lets a generalist policy act inside imagination to *evaluate* it, and to *improve* it by fine-tuning on imagined successes. The authors report trajectories that stay consistent for over 20 seconds and a 44.7% improvement in policy success.
+
+### World action models: predicting video and actions together
+
+A 2026 trend, discussed in detail in [embodied-AI post 5]({{ '/blog/2026/embodied-ai-05-vision-language-action-models/' | relative_url }}), is the **world action model** (WAM). It is a single network, usually initialized from a pretrained video diffusion model, that predicts future frames *and* robot actions.
+
+- **DreamZero** ("World Action Models are Zero-shot Policies", Ye et al., preprint, [arXiv:2602.15922](https://arxiv.org/abs/2602.15922), February 2026) is a 14B autoregressive WAM built on a video diffusion backbone, running closed-loop control at 7 Hz. The authors report over 2x better generalization to new tasks and environments than state-of-the-art VLAs. They also report that video-only demonstrations from other robots or humans give more than 42% relative improvement on unseen tasks.
+- **Fast-WAM** (Yuan et al., preprint, [arXiv:2603.16666](https://arxiv.org/abs/2603.16666), March 2026) asks whether the imagination is needed at test time. It keeps video co-training during training but skips future-frame generation at inference, stays competitive with imagine-then-execute WAMs, and is over 4x faster (190 ms latency). In the terms of section 6, video prediction may be most useful as a *training signal* that shapes the representation, the same argument MuZero and JEPA make from the other side.
+- Two 2026 overviews organize the area: a tutorial *From World Models to World Action Models* ([arXiv:2607.00836](https://arxiv.org/abs/2607.00836)) and a survey *World-Action Models for Robot Learning and Control* ([arXiv:2609.16074](https://arxiv.org/abs/2609.16074)). NVIDIA's Cosmos 3 (post 3's update) is also marketed as a backbone for world action models.
+
+### How the table in section 9 extends
+
+Dreamer 4 would add a column: latent state = tokenized video latents; reconstructs pixels = yes; behavior = BC, then actor-critic in imagination; main lesson = *offline* imagination training works when the world model is good enough. A WAM column would read: no separate world model, a video-action predictor used directly as the policy. Classical simulators remain the main alternative for training robots ([graphics-engine post 5]({{ '/blog/2026/graphics-engine-05-physics-and-simulation-engines/' | relative_url }})). Neural game engines that play the role of the environment itself are covered in [graphics-engine post 6]({{ '/blog/2026/graphics-engine-06-ai-meets-graphics-engines/' | relative_url }}).
 
 ## Representative papers
 
@@ -491,6 +526,11 @@ These models are small, task-specific and trained from scratch per environment. 
 | Transformers are Sample-Efficient World Models (IRIS, Micheli et al.) | ICLR | 2023 | [arXiv:2209.00588](https://arxiv.org/abs/2209.00588) | Discrete tokens + Transformer dynamics |
 | TD-MPC2: Scalable, Robust World Models for Continuous Control (Hansen et al.) | ICLR | 2024 | [arXiv:2310.16828](https://arxiv.org/abs/2310.16828) | Decoder-free latent MPC at scale |
 | Diffusion for World Modeling: Visual Details Matter in Atari (DIAMOND, Alonso et al.) | NeurIPS | 2024 | [arXiv:2405.12399](https://arxiv.org/abs/2405.12399) | Diffusion as the dynamics model; playable CS:GO model |
+| DreamGen: Unlocking Generalization in Robot Learning through Video World Models (Jang et al.) | preprint | 2025 | [arXiv:2505.12705](https://arxiv.org/abs/2505.12705) | Video world models generate robot training data |
+| Training Agents Inside of Scalable World Models (Dreamer 4, Hafner et al.) | preprint | 2025 | [arXiv:2509.24527](https://arxiv.org/abs/2509.24527) | Offline imagination RL; Minecraft diamonds without interaction |
+| Ctrl-World: A Controllable Generative World Model for Robot Manipulation (Guo et al.) | preprint | 2025 | [arXiv:2510.10125](https://arxiv.org/abs/2510.10125) | Policy evaluation and improvement in imagination |
+| World Action Models are Zero-shot Policies (DreamZero, Ye et al.) | preprint | 2026 | [arXiv:2602.15922](https://arxiv.org/abs/2602.15922) | Joint video-action prediction as the policy |
+| Fast-WAM: Do World Action Models Need Test-time Future Imagination? (Yuan et al.) | preprint | 2026 | [arXiv:2603.16666](https://arxiv.org/abs/2603.16666) | Video prediction as a training signal only |
 
 ## Learning resources
 
@@ -507,5 +547,12 @@ These models are small, task-specific and trained from scratch per environment. 
 3. In the PyTorch sketch, replace the Gaussian stochastic state with 8 categorical variables of 8 classes using straight-through gradients (`one_hot + probs - probs.detach()`). What changes in `kl_balanced`?
 4. Set `lam=0` and `lam=1` in `lambda_return`. Which estimator does each correspond to, and which part of the system (critic or world model) does each trust?
 5. MuZero never reconstructs observations. Give one advantage and one failure mode of this choice when the reward is very sparse.
+6. (2025-2026 update) Dreamer 4 trains its policy only in imagination from offline data. Using the model-error figure of Section 2 as a guide, explain why imagined rollouts that start from *dataset* states and last $H$ steps are safer than rollouts that run for the whole 20,000-action episode. What would go wrong if the policy found actions that never appear in the offline data?
+
+<details markdown="1"><summary>Hint</summary>
+
+Model error compounds with rollout length, so short branches from real states (MBPO, section 7) keep the predicted states close to the data distribution. Actions outside the data are where the model is least accurate, and a policy optimized against the model will seek out exactly those errors (model exploitation). Starting from a BC policy and limiting how far RL moves it are the usual safeguards.
+
+</details>
 
 **Next:** [post 2]({{ '/blog/2026/world-models-02-generative-modeling-foundations/' | relative_url }}) builds the generative toolkit that modern world models are made of: VAEs, VQ tokenizers, autoregressive Transformers, diffusion and flow matching.

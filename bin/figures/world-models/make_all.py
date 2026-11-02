@@ -16,3 +16,6 @@ for n in range(1, 6):
     script = HERE / f"world_models_0{n}.py"
     print(f"== {script.name}", flush=True)
     subprocess.run([sys.executable, str(script)], check=True, cwd=HERE, env=env)
+# figures of the "2025-2026 update" sections (no training, a few seconds)
+print("== world_models_updates.py", flush=True)
+subprocess.run([sys.executable, str(HERE / "world_models_updates.py")], check=True, cwd=HERE, env=env)
