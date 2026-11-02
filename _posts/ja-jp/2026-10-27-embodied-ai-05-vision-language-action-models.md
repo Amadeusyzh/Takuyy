@@ -381,6 +381,72 @@ flowchart TB
 生きています。照明を変えたり、地形を彫ったり、中を歩いたりできます。上で述べた生成的世界モデルの小さな類似物です。XPBD の物理デモと
 組み合わせると、長期的な姿が見えてきます。物理を備えた生成的な 3D 世界で、VLA が学習され評価されるのです。
 
+## 2025〜2026 年の進展（2026 年 11 月時点）
+
+ここまでの節は 2026 年初めの状況を説明しています。この節では、その後 2026 年 11 月までに現れた仕事を補足します。ICLR 2026（4 月、リオデジャネイロ）、ICRA 2026（6 月、ウィーン）、ICML 2026（7 月）、RSS 2026（7 月、シドニー）はすでに開催されました。CoRL 2026（11 月 9〜12 日、オースティン）は 1 週間後なので、その論文はプレプリントとして引用します。各仕事について、出版済み・採択・プレプリント・公式発表のいずれかを明記します。産業界のモデルの多くはブログ記事しかなく、その場合もそう書きます。
+
+下のエクスプローラーは、本記事とこの節のモデルを 1 本のタイムラインに並べたものです。各レーンは研究機関またはモデルファミリーで、灰色の曲線は「〜に基づく」を表します。フィルタを使うと三つの傾向が見えます。フローマッチング（flow matching）が行動ヘッドの主流になったこと、オープンウェイトが学術界から NVIDIA や Physical Intelligence に広がったこと、そして 2026 年にヒューマノイドが主要なターゲットになったことです。
+
+{% include widget.liquid name="embodied-ai-vla-explorer" height="560" caption="インタラクティブ：行動ヘッド、オープンウェイトの有無、身体の種類で絞り込めます。モデルをタップまたはクリックすると概要・状態・リンクが表示されます（概要は英語）。色 = 行動ヘッド、塗りつぶし = オープンウェイト、灰色の曲線 = 〜に基づく。スマートフォンでは時間軸が下向きに伸び、長い名前は省略されます。項目をタップすると正式名が表示されます。日付は arXiv 初版または公式発表の月です。" %}
+
+{% include blog_figure.liquid path="assets/img/blog/embodied-ai/05-update-vla-timeline.svg" localized="true" caption="上：エクスプローラーと同じモデルを静的なタイムラインにしたもの（塗りつぶし = オープンウェイト、白抜き = 非公開）。下：この一覧に含まれるモデルの年ごとの数を行動ヘッド別に示したもの。2022〜2023 年は離散トークンが中心で、2024 年に拡散ヘッドが現れ、2025 年以降はフローマッチングが最も多い行動ヘッドになりました。「その他」が増えているのは、いくつかの産業界のモデルが行動ヘッドを公開していないためです。この一覧は網羅的な統計ではなく、選んだものです。" %}
+
+### Physical Intelligence：pi0.5 から pi0.7 へ
+
+- **知識の隔離**（knowledge insulation、Driess ら、NeurIPS 2025）は、VLM に行動エキスパートを加えるときの問題、つまり行動エキスパートの勾配が VLM の知識を損なう問題を解決します。バックボーンは離散的な FAST トークンとウェブデータで学習し、フローマッチングの行動エキスパートは勾配停止（stop-gradient）を介してバックボーンの特徴を読みます。学習は速いまま、推論では連続的なチャンクを出力でき、言語追従も向上します。openpi の pi0.5 の重みはこの方法を使っています。
+- **リアルタイムチャンキング**（real-time chunking、Black ら、NeurIPS 2025）は、チャンク化したフロー方策を非同期に動かします。ロボットが現在のチャンクを実行している間に、次のチャンクを*インペインティング*（inpainting）問題として生成します。すでに確定した行動は固定し、重なる部分はそれに沿うよう誘導します。再学習は不要で、第 3 節で述べたチャンク境界での停止やガタつきがなくなります。
+- **pi\*0.6**（Physical Intelligence、arXiv プレプリント、2025 年 11 月）は **Recap**（アドバンテージ条件付き方策による、経験と修正からの強化学習）を導入します。価値関数がデモ、専門家による修正、自律実行のデータの各区間を採点し、VLA は二値化したアドバンテージを条件として学習します。展開時には「良い」行動を出すよう指示します。フローヘッドを通した方策勾配を使わないオフライン RL です。同社は、最も難しいタスク（エスプレッソを淹れる、家庭で洗濯物を畳む、箱の組み立て）でスループットが 2 倍以上になったと報告しています。アドバンテージについては[第 2 回]({{ '/blog/2026/embodied-ai-02-reinforcement-learning-for-robots/' | relative_url }})を参照してください。
+- **pi0.7**（arXiv プレプリント、2026 年 4 月）はプロンプトを豊かにしました。言語に加えて、エピソードのメタデータ（デモの品質や速度）、制御モダリティ、任意のサブゴール画像を含みます。そのため、品質がまちまちのデータや他の身体のデータも、方策を劣化させずに学習に使えます。テスト時にはプロンプトで「高品質」を指定します。報告では、洗濯物を畳むデータのない身体でのゼロショットの洗濯物畳みが示されています。pi.website の査読なしの研究記事 2 本（2026 年 3 月）は、記憶（圧縮動画とテキストメモで約 15 分のタスクに対応）と、高速なオンライン RL のための「RL トークン」を加えています。後者はのちに arXiv プレプリントになりました（第 2 回）。
+
+### Google DeepMind：Gemini Robotics 1.5 から 2 へ
+
+**Gemini Robotics On-Device**（2025 年 6 月、発表）は、ネットワークなしで動き、50〜100 本のデモで微調整できる DeepMind 初の VLA です。**Gemini Robotics-ER 1.6**（2026 年 4 月、Gemini API で提供）は指し示し・数え上げ・成功判定を改善し、Boston Dynamics と共同開発したメーター読み取りを加えました。**Gemini Robotics 2**（2026 年 7 月発表。VLA は早期アクセスのパートナー向け、ER 2 はプレビュー）は、制御を双腕の卓上作業から Apptronik Apollo 2 などの**全身ヒューマノイド**へ広げました。ER 2 は複数台のロボットを協調させて数分にわたるタスクをこなし、On-Device 2 は 200 例未満で新しい双腕の身体に適応します。いずれも完全な論文はなく、ブログと安全性レポートだけなので、発表内容以上のアーキテクチャは分かりません。
+
+### NVIDIA：GR00T N1.5〜N1.7、そして世界行動モデルとしての N2
+
+- **GR00T N1.5**（2025 年 6 月、オープンウェイト）は Eagle 2.5 VLM を凍結し、方策の特徴を将来の観測の埋め込みに揃える **FLARE** 損失を加えました。DreamGen の「ニューラル軌道」（後述）でも学習しています。
+- **GR00T N1.6**（2025 年 12 月、非商用ライセンスのオープンウェイト）は Cosmos ベースの 2B VLM に切り替えて上位層を凍結解除し、行動 DiT は 32 層です。**現在の状態に対する相対的な**行動チャンクを予測します。これは第 3 節の正規化の問題の一例です。
+- **GR00T N1.7**（2026 年 3 月に早期アクセス、現在は GitHub で公開）は Cosmos-Reason2-2B をバックボーンに使います。人の手とロボットのグリッパーが共有する相対的なエンドエフェクタ行動空間を通して、EgoScale の一人称視点の人間動画約 2 万時間を加えています（[第 6 回]({{ '/blog/2026/embodied-ai-06-embodied-ai-meets-xr-and-hci/' | relative_url }})）。
+- **DreamZero**（Ye ら、arXiv プレプリント、2026 年 2 月）は、**世界行動モデルはゼロショット方策である**と主張します。14B の自己回帰型動画拡散モデルが将来の動画*と*行動を同時に生成し、約 7 Hz の閉ループで動きます。NVIDIA は 2026 年 3 月の GTC でこの設計に基づく **GR00T N2** を「年末までに」公開すると予告しました。2026 年 11 月時点では発表のみで、未公開です。
+
+### Figure：Helix、Helix 02、Helix 2.5
+
+**Helix**（2025 年 2 月、発表）は第 3 節で触れた二重システム設計です。7B の VLM（System 2）が 7〜9 Hz で潜在ベクトルを渡し、8000 万パラメータの Transformer（System 1）が 35 自由度の上半身を 200 Hz で制御します。すべて機体上で動きます。**Helix 02**（2026 年 1 月）は **System 0** を加えました。リターゲットした人間の動きで学習した 1 kHz の学習型全身コントローラで、第 2 回の動作追従 RL が VLA の中に入った形です。**Helix 2.5**（2026 年 9 月）は人間の行動データで事前学習し、未知の 30 軒の家庭でゼロショット動作したと報告しています。いずれも企業の発表で、論文や公開評価はありません。
+
+### 学術界とその他の企業のオープンモデル
+
+- **UniVLA**（Bu ら、RSS 2025）は DINO の特徴空間で動画から**タスク中心の潜在行動**を学び、インターネット動画や人間の動画を事前学習データにします。小さなデコーダが潜在行動を各ロボットに写像します。
+- **X-VLA**（Zheng ら、ICLR 2026）は**ソフトプロンプト**（soft prompt）でクロスエンボディメントのデータを扱います。データソースごとに学習可能な埋め込みを一つトークン列の前に付けます。0.9B の素の Transformer とフローマッチングヘッドだけで、この埋め込みがカメラや行動空間の違いを吸収します（上の統一行動ベクトルの図と比べてください）。
+- **GR-3**（ByteDance Seed、技術レポート、2025 年 7 月）は約 4B パラメータ（Qwen2.5-VL バックボーンとフローマッチング DiT）で、ウェブデータ、VR で収集した人間の軌道、双腕移動ロボットのデータで共同学習しています。
+- **WALL-OSS**（X Square Robot、arXiv プレプリント、2025 年 9 月）は、指示の推論・サブゴール・行動を「統一クロスレベル思考連鎖」で結び、フロー版と FAST 版を公開しました。
+- **RDT2**（Liu ら、ICML 2026）は 1 万時間を超える **UMI ハンドヘルドグリッパーのデータ**（[第 4 回]({{ '/blog/2026/embodied-ai-04-imitation-learning/' | relative_url }})）で 7B の VLM を学習します。RVQ トークン版とフローマッチング版があり、学習に一度も現れなかったロボットにゼロショットで展開されます。グリッパーが共通の「身体」なので、アームはほぼ交換可能になります。
+- **MolmoAct2**（Fang ら、Ai2、arXiv プレプリント、2026 年 5 月）は重み、コード、720 時間の双腕データセット、オープンな FAST 風トークナイザーまですべて公開しています。フローマッチングのエキスパートはバックボーンの層ごとのキー・バリューキャッシュを読みます。
+- **OAT（順序付き行動トークン化）**（Liu ら、RSS 2026、優秀論文賞ファイナリスト）は、プレフィックスだけで粗い行動に復号できる行動トークンを設計し、FAST の DCT による順序付けをさらに進めました。
+
+### 世界行動モデル：動画と行動を同時に予測する
+
+第 5 節では、一つのモデルが方策と世界モデルを兼ねられるかを問いました。2025〜2026 年には、いくつものグループがそのようなモデルを作りました。
+
+- **WorldVLA**（Cen ら、arXiv プレプリント、2025 年 6 月）と **Unified VLA**（Wang ら、ICLR 2026）は、画像・言語・行動のトークンを一つの自己回帰モデルに入れます。Unified VLA は動画で世界モデルとして事後学習もします。
+- **Genie Envisioner**（Liao ら、arXiv プレプリント、2025 年 8 月）は、動画拡散の世界モデル（GE-Base）、その潜在変数上のフローマッチング行動デコーダ（GE-Act）、ニューラルシミュレータ（GE-Sim）を学習します。
+- **DreamGen**（Jang ら、CoRL 2025）は微調整した動画モデルを*データ生成器*として使います。新しい行動の動画を「夢見て」、逆動力学で行動を付け、そのニューラル軌道で GR00T を学習します。単一タスクの遠隔操作データだけから 22 種類の新しい行動に到達しました。
+- **Cosmos Policy**（Kim ら、ICLR 2026）は Cosmos-Predict2 動画モデルを微調整し、行動・将来の状態・価値を追加の潜在フレームとして符号化します。一つのネットワークが方策・世界モデル・価値関数を兼ね、best-of-N サンプリングで計画もできます。
+- **DreamZero / GR00T N2**（前述）がこれまでで最大です。
+
+共通のパターンは、動画生成のバックボーンが VLM のバックボーンに取って代わり、行動はノイズ除去すべきモダリティの一つになる、というものです。動画の事前学習はキャプションより物理と動きをよく教える、という賭けです。代償は推論速度（数十 Hz ではなく数 Hz）です。動画モデルそのものは世界モデルシリーズの[動画世界シミュレータ]({{ '/blog/2026/world-models-03-video-world-simulators/' | relative_url }})で、エンジンとこれらのモデルがデータ工場へと合流していく様子は [AI とグラフィックスエンジン]({{ '/blog/2026/graphics-engine-06-ai-meets-graphics-engines/' | relative_url }})で扱います。
+
+### VLA の強化学習による微調整
+
+Recap のほかに、オープンな研究ではシミュレーションで事前学習済み VLA に方策勾配 RL を適用しています。**RL4VLA**（Liu ら、NeurIPS 2025）は、PPO による微調整が教師あり微調整より意味レベル・実行レベルの汎化を高め、この設定では PPO が DPO や GRPO より優れることを示しました。**SimpleVLA-RL**（Li ら、arXiv プレプリント、2025 年 9 月）は veRL フレームワークで OpenVLA-OFT に結果報酬 RL を拡張し、必要なデモ数を減らしました。フロー方策の RL（pi_RL）と実世界での変種は第 2 回で扱います。
+
+### 評価
+
+- **RoboArena**（Atreya ら、CoRL 2025）は実世界評価をクラウドソーシングします。方策は多くの機関の DROID 型 Franka 環境で動き、評価者は自分で選んだタスクで匿名の二つの方策を比べ、ペアワイズ選好モデルが投票をランキングにまとめます。第 4 節のブラインド A/B の考え方を大規模にしたものです。
+- **RoboChallenge**（Yakefu ら、arXiv プレプリント、2025 年 10 月）はホスト型のリモートベンチマークで、提出された方策が実ロボット上で固定の 30 タスク（Table30）を実行します。
+- **評価器としての世界モデル**：Google DeepMind は微調整した **Veo** 世界シミュレータで Gemini Robotics の方策を評価し（安全性の検査を含む）、実機の試行と照合しています（arXiv プレプリント、2025 年 12 月）。第 5 節の 5 番目の項目の実践です。詳しくは第 3 回を参照してください。
+
+*前の節からの変化：*第 2 節のまとめの表は、ほぼすべての行に後継モデルができました。第 4 節の「ロボット学習にはまだきれいなスケーリング則がない」という記述は成功率については今も正しいですが、EgoScale（第 6 回）は人間動画による事前学習の時間数と下流の器用な操作性能の間に対数線形の関係を報告しています。
+
 ## 代表的な論文
 
 | 論文 | 会議・論文誌 | 年 | リンク | 意義 |
@@ -410,6 +476,29 @@ flowchart TB
 | Shukor et al., *SmolVLA: a vision-language-action model for affordable and efficient robotics* | arXiv | 2025 | [arXiv](https://arxiv.org/abs/2506.01844) | 小型のオープンな VLA |
 | Assran et al., *V-JEPA 2: self-supervised video models enable understanding, prediction and planning* | arXiv | 2025 | [arXiv](https://arxiv.org/abs/2506.09985) | ゼロショット計画のための潜在世界モデル |
 | Gemini Robotics Team, *Gemini Robotics 1.5* | arXiv | 2025 | [arXiv](https://arxiv.org/abs/2510.03342) | 考える VLA、動作の転移 |
+| Bu et al., *UniVLA: learning to act anywhere with task-centric latent actions* | RSS | 2025 | [arXiv](https://arxiv.org/abs/2505.06111) | 動画から潜在行動を学習 |
+| Driess et al., *Knowledge insulating vision-language-action models* | NeurIPS | 2025 | [arXiv](https://arxiv.org/abs/2505.23705) | 行動エキスパートの勾配から VLM を守る |
+| Black et al., *Real-time execution of action chunking flow policies* | NeurIPS | 2025 | [arXiv](https://arxiv.org/abs/2506.07339) | インペインティングによる非同期チャンキング |
+| Jang et al., *DreamGen: unlocking generalization in robot learning through video world models* | CoRL | 2025 | [arXiv](https://arxiv.org/abs/2505.12705) | 動画モデルによるニューラル軌道 |
+| Atreya et al., *RoboArena: distributed real-world evaluation of generalist robot policies* | CoRL | 2025 | [arXiv](https://arxiv.org/abs/2506.18123) | クラウドソーシングによるペアワイズ実世界評価 |
+| Liu et al., *What can RL bring to VLA generalization? An empirical study* | NeurIPS | 2025 | [arXiv](https://arxiv.org/abs/2505.19789) | PPO による VLA の微調整 |
+| Cen et al., *WorldVLA: towards autoregressive action world model* | arXiv プレプリント（2025 年 6 月） | 2025 | [arXiv](https://arxiv.org/abs/2506.21539) | 行動と画像の同時予測 |
+| ByteDance Seed, *GR-3 technical report* | arXiv プレプリント（2025 年 7 月） | 2025 | [arXiv](https://arxiv.org/abs/2507.15493) | ウェブ + VR の人間 + ロボットの共同学習 |
+| Liao et al., *Genie Envisioner: a unified world foundation platform for robotic manipulation* | arXiv プレプリント（2025 年 8 月） | 2025 | [arXiv](https://arxiv.org/abs/2508.05635) | 動画世界モデル + 行動デコーダ + ニューラルシミュレータ |
+| Li et al., *SimpleVLA-RL: scaling VLA training via reinforcement learning* | arXiv プレプリント（2025 年 9 月） | 2025 | [arXiv](https://arxiv.org/abs/2509.09674) | VLA の結果報酬 RL |
+| Zhai et al., *Igniting VLMs toward the embodied space*（WALL-OSS） | arXiv プレプリント（2025 年 9 月） | 2025 | [arXiv](https://arxiv.org/abs/2509.11766) | クロスレベル思考連鎖を持つオープン VLA |
+| Zheng et al., *X-VLA: soft-prompted transformer as scalable cross-embodiment VLA* | ICLR | 2026 | [arXiv](https://arxiv.org/abs/2510.10274) | データソースごとのソフトプロンプト |
+| Wang et al., *Unified vision-language-action model* | ICLR | 2026 | [arXiv](https://arxiv.org/abs/2506.19850) | 世界モデル事後学習付きの自己回帰 VLA |
+| Yakefu et al., *RoboChallenge: large-scale real-robot evaluation of embodied policies* | arXiv プレプリント（2025 年 10 月） | 2025 | [arXiv](https://arxiv.org/abs/2510.17950) | ホスト型の実ロボットベンチマーク |
+| Physical Intelligence, *pi\*0.6: a VLA that learns from experience* | arXiv プレプリント（2025 年 11 月） | 2025 | [arXiv](https://arxiv.org/abs/2511.14759) | Recap：アドバンテージ条件付き RL |
+| Gemini Robotics Team, *Evaluating Gemini Robotics policies in a Veo world simulator* | arXiv プレプリント（2025 年 12 月） | 2025 | [arXiv](https://arxiv.org/abs/2512.10675) | 方策評価器としての世界モデル |
+| Kim et al., *Cosmos Policy: fine-tuning video models for visuomotor control and planning* | ICLR | 2026 | [arXiv](https://arxiv.org/abs/2601.16163) | 一つの動画モデルが方策・世界モデル・価値を兼ねる |
+| Ye et al., *World action models are zero-shot policies*（DreamZero） | arXiv プレプリント（2026 年 2 月） | 2026 | [arXiv](https://arxiv.org/abs/2602.15922) | 14B の動画・行動同時モデル、GR00T N2 の基盤 |
+| Liu et al., *RDT2: exploring the scaling limit of UMI data towards zero-shot cross-embodiment generalization* | ICML | 2026 | [arXiv](https://arxiv.org/abs/2602.03310) | 1 万時間超の UMI データで学習した VLA |
+| Liu et al., *OAT: ordered action tokenization* | RSS | 2026 | [arXiv](https://arxiv.org/abs/2602.04215) | プレフィックスで復号できる行動トークン |
+| Physical Intelligence, *pi0.7: a steerable generalist robotic foundation model with emergent capabilities* | arXiv プレプリント（2026 年 4 月） | 2026 | [arXiv](https://arxiv.org/abs/2604.15483) | メタデータ豊富なプロンプト、身体間転移 |
+| Fang et al., *MolmoAct2: action reasoning models for real-world deployment* | arXiv プレプリント（2026 年 5 月） | 2026 | [arXiv](https://arxiv.org/abs/2605.02881) | 完全オープンな VLA・データ・トークナイザー |
+| 産業界の発表：[Helix](https://www.figure.ai/news/helix)、[Helix 02](https://www.figure.ai/news/helix-02)、[Gemini Robotics On-Device](https://deepmind.google/blog/gemini-robotics-on-device-brings-ai-to-local-robotic-devices/)、[Gemini Robotics 2](https://deepmind.google/blog/gemini-robotics-2-brings-whole-body-intelligence-to-robots/)、[GR00T N1.5](https://research.nvidia.com/labs/gear/gr00t-n1_5/)、[GR00T N1.6](https://research.nvidia.com/labs/gear/gr00t-n1_6/) | 発表 | 2025〜2026 | リンク参照 | 論文なし、公式ページのみ |
 
 ## 学習リソース
 
@@ -432,6 +521,12 @@ flowchart TB
    どれがスクラッチから学習され、勾配がどこを流れるかを書き込みます。
 5. あなたの研究室で VLA を評価するプロトコルを設計しましょう。汎化の軸、条件ごとの試行回数、成功率の信頼区間をどう推定するかを
    挙げます。
+6. VLA エクスプローラーで「Flow」と「Open weights only」を選びましょう。一覧にはオープンウェイトのフローマッチングモデルが年ごとに何個あり、2025 年のモデルの「〜に基づく」曲線の多くはどの先行モデルにたどり着くでしょうか。
+
+   <details markdown="1"><summary>ヒント</summary>
+
+   2024 年が 1 個（pi0）、2025 年が 7 個（pi0.5、GR00T N1、N1.5、N1.6、SmolVLA、WALL-OSS、X-VLA）、2026 年が 3 個（N1.7、RDT2、MolmoAct2）です。この一覧では、2025 年のオープンなフローモデルの多くは pi0 か GR00T の系列にたどり着きます。X-VLA や WALL-OSS など親が記録されていないものもありますが、それは一覧に記録がないというだけです。一覧が厳選したものであることも忘れないでください。
+   </details>
 
 **次回：**[身体性 AI × XR・HCI]({{ '/blog/2026/embodied-ai-06-embodied-ai-meets-xr-and-hci/' | relative_url }})。人とヘッドセットと
 ロボットが出会います。

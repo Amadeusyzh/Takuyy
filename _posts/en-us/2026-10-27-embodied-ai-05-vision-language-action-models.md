@@ -392,6 +392,148 @@ open world of about 200,000 3D Gaussians is built (a keyword-driven procedural g
 and stays live: relit, sculptable, walkable. It is a tiny analogue of the generative world models above. Combined with the XPBD physics demo,
 it hints at the long-term picture: generative 3D worlds with physics, in which VLAs are trained and evaluated.
 
+## 2025-2026 update (as of November 2026)
+
+The sections above describe the field as of early 2026. This section adds what appeared since, up to November 2026.
+ICLR 2026 (April, Rio de Janeiro), ICRA 2026 (June, Vienna), ICML 2026 (July) and RSS 2026 (July, Sydney) have taken
+place. CoRL 2026 (9-12 November, Austin) is a week away, so its papers are cited here as preprints. For every work the
+status is given as published, accepted, preprint or announcement. Many industrial models have only a blog post, and we
+say so.
+
+The explorer below places the models of this post and of this update on one time line. Each lane is a lab or family,
+and each grey curve means "builds on". Use the filters to see three trends: flow matching taking over action heads,
+open weights spreading from academia to NVIDIA and Physical Intelligence, and humanoids becoming a main target in 2026.
+
+{% include widget.liquid name="embodied-ai-vla-explorer" height="560" caption="Interactive: filter by action head, open weights or embodiment. Tap or click a model to see its summary, status and link (summaries are in English). Colour = action head; a filled marker = open weights; grey curves = builds on. On a phone the time axis runs downwards and long names are shortened; tap an entry for the full name. Dates are the first arXiv version or the official announcement." %}
+
+{% include blog_figure.liquid path="assets/img/blog/embodied-ai/05-update-vla-timeline.svg" localized="true" caption="Top: the same models as the explorer as a static time line (filled = open weights, hollow = closed). Bottom: number of models in this list per year, by action head. Discrete tokens dominate 2022-2023 and diffusion heads appear in 2024; from 2025 flow matching is the most common head, and the 'other' share grows because several industrial models do not disclose their action head. The list is a curated selection, not a census." %}
+
+### Physical Intelligence: from pi0.5 to pi0.7
+
+- **Knowledge insulation** (Driess et al., NeurIPS 2025) fixes a problem with adding an action expert to a VLM: its
+  gradients can damage the VLM's knowledge. The backbone is trained on discrete FAST tokens and web data, while the
+  flow-matching expert reads the backbone's features through a stop-gradient. Training stays fast, inference keeps
+  continuous chunks, and language following improves. The openpi pi0.5 checkpoints use this recipe.
+- **Real-time chunking** (Black et al., NeurIPS 2025) runs chunked flow policies asynchronously. While the robot
+  executes the current chunk, the next one is generated as an *inpainting* problem: the actions already committed are
+  frozen and the overlap is guided toward them. No retraining is needed. It removes the pauses and jerks at chunk
+  boundaries described in section 3.
+- **pi\*0.6** (Physical Intelligence, arXiv preprint, November 2025) introduces **Recap** (RL with experience and
+  corrections via advantage-conditioned policies). A value function scores every segment of demonstrations, expert
+  corrections and autonomous rollouts. The VLA is then trained conditioned on a binarized advantage, and at deployment
+  it is asked for "good" actions. This is offline RL without policy gradients through the flow head. The company reports
+  more than doubled throughput on its hardest tasks (espresso making, folding laundry in homes, box assembly).
+  [Post 2]({{ '/blog/2026/embodied-ai-02-reinforcement-learning-for-robots/' | relative_url }}) explains advantages.
+- **pi0.7** (arXiv preprint, April 2026) makes the prompt richer. Besides language, it carries episode metadata
+  (demonstration quality and speed), the control modality and optional subgoal images. Data of mixed quality, and data
+  from other embodiments, can then be used without spoiling the policy: at test time the prompt asks for
+  "high-quality". The report shows zero-shot laundry folding on an embodiment without folding data. Two research posts
+  on pi.website (March 2026), not peer-reviewed, add memory (compressed video plus text notes for tasks of about 15
+  minutes) and an "RL token" for fast online RL. The RL token later appeared as an arXiv preprint (post 2).
+
+### Google DeepMind: Gemini Robotics 1.5 to 2
+
+**Gemini Robotics On-Device** (June 2025, announcement) was the first DeepMind VLA that runs without a network and can
+be fine-tuned with 50-100 demonstrations. **Gemini Robotics-ER 1.6** (April 2026, available through the Gemini API)
+improves pointing, counting and success detection, and adds gauge reading developed with Boston Dynamics.
+**Gemini Robotics 2** (July 2026 announcement; VLA for early-access partners, ER 2 as a preview) extends control from
+bimanual tabletop work to **whole-body humanoids** such as Apptronik's Apollo 2. In the GR 2 family, ER 2 coordinates
+several robots on multi-minute tasks, and On-Device 2 adapts to a new bi-arm body with fewer than 200 examples. None of
+these has a full paper, only blog posts and a safety report, so architecture claims beyond the announcements are
+unknown.
+
+### NVIDIA: GR00T N1.5 to N1.7, and N2 as a world action model
+
+- **GR00T N1.5** (June 2025, open weights) freezes the Eagle 2.5 VLM and adds **FLARE**, a loss that aligns the policy's
+  features with embeddings of future observations. It also trains on DreamGen "neural trajectories" (below).
+- **GR00T N1.6** (December 2025, open weights under a non-commercial licence) switches to a Cosmos-based 2B VLM with its
+  top layers unfrozen and a 32-layer action DiT. It predicts **state-relative** action chunks, an instance of the
+  normalization question of section 3.
+- **GR00T N1.7** (March 2026 early access, now on GitHub) uses a Cosmos-Reason2-2B backbone. It adds about 20k hours of
+  egocentric human video from EgoScale
+  ([post 6]({{ '/blog/2026/embodied-ai-06-embodied-ai-meets-xr-and-hci/' | relative_url }})) through a relative
+  end-effector action space shared by human hands and robot grippers.
+- **DreamZero** (Ye et al., arXiv preprint, February 2026) argues that **world action models are zero-shot policies**.
+  A 14B autoregressive video-diffusion model generates the future video *and* the actions together, and runs closed
+  loop at about 7 Hz. NVIDIA previewed **GR00T N2** on this design at GTC in March 2026 for release "by the end of the
+  year". As of November 2026 it is announced but not released.
+
+### Figure: Helix, Helix 02 and Helix 2.5
+
+**Helix** (February 2025, announcement) is the dual-system design mentioned in section 3: a 7B VLM (System 2) at 7-9 Hz
+passes a latent vector to an 80M-parameter transformer (System 1) that controls the 35-DoF upper body at 200 Hz,
+entirely on board. **Helix 02** (January 2026) adds **System 0**, a learned whole-body controller at 1 kHz trained on
+retargeted human motion. This is the motion-tracking RL of post 2, now inside a VLA stack. **Helix 2.5** (September
+2026) reports zero-shot operation in 30 unseen homes after pre-training on human behaviour data. These are company
+announcements without papers or open evaluation.
+
+### Open models from academia and other companies
+
+- **UniVLA** (Bu et al., RSS 2025) learns **task-centric latent actions** from video in DINO feature space, so internet
+  and human video become pre-training data. A small decoder maps latent actions to each robot.
+- **X-VLA** (Zheng et al., ICLR 2026) handles cross-embodiment data with **soft prompts**: one learnable embedding per
+  data source, prepended to the tokens. With a plain 0.9B transformer and a flow-matching head, the per-source
+  embedding absorbs camera and action-space differences (compare the unified action vector figure above).
+- **GR-3** (ByteDance Seed, technical report, July 2025) is about 4B parameters (a Qwen2.5-VL backbone and a
+  flow-matching DiT). It is co-trained on web data, VR-collected human trajectories and robot data for a bimanual mobile
+  robot.
+- **WALL-OSS** (X Square Robot, arXiv preprint, September 2025) links instruction reasoning, subgoals and actions in a
+  "unified cross-level chain of thought". It was released in flow and FAST variants.
+- **RDT2** (Liu et al., ICML 2026) trains a 7B VLM on more than 10k hours of **UMI handheld-gripper data**
+  ([post 4]({{ '/blog/2026/embodied-ai-04-imitation-learning/' | relative_url }})), with RVQ-token and flow-matching
+  variants. It is deployed zero-shot on robots that were never in the training set. Because the gripper is the shared
+  "embodiment", the robot arm becomes almost interchangeable.
+- **MolmoAct2** (Fang et al., Ai2, arXiv preprint, May 2026) is fully open: weights, code, a 720-hour bimanual dataset
+  and an open FAST-style tokenizer. Its flow-matching expert reads the backbone's per-layer key-value cache.
+- **OAT, ordered action tokenization** (Liu et al., RSS 2026, outstanding-paper finalist) designs action tokens whose
+  prefixes can already be decoded into coarse actions, a step beyond FAST's DCT ordering.
+
+### World action models: predicting video and actions together
+
+Section 5 asked whether one model can be both policy and world model. In 2025-2026 several groups built such models:
+
+- **WorldVLA** (Cen et al., arXiv preprint, June 2025) and **Unified VLA** (Wang et al., ICLR 2026) put image, language
+  and action tokens into one autoregressive model. Unified VLA is post-trained as a world model on video.
+- **Genie Envisioner** (Liao et al., arXiv preprint, August 2025) trains a video-diffusion world model (GE-Base), a
+  flow-matching action decoder on its latents (GE-Act), and a neural simulator (GE-Sim).
+- **DreamGen** (Jang et al., CoRL 2025) uses a fine-tuned video model as a *data generator*. It "dreams" videos of new
+  behaviours, labels them with inverse dynamics, and trains GR00T on these neural trajectories, reaching 22 new
+  behaviours from teleoperation data of a single task.
+- **Cosmos Policy** (Kim et al., ICLR 2026) fine-tunes the Cosmos-Predict2 video model so that actions, future states and
+  values are encoded as extra latent frames. One network is then policy, world model and value function, and can plan
+  by best-of-N sampling.
+- **DreamZero / GR00T N2** (above) is the largest so far.
+
+The common pattern: a video-generative backbone replaces the VLM backbone, and actions become one more modality to
+denoise. The bet is that video pre-training teaches physics and motion better than captions do. The cost is inference
+speed (a few Hz rather than tens of Hz). The world-models track
+([video world simulators]({{ '/blog/2026/world-models-03-video-world-simulators/' | relative_url }})) covers the video
+models themselves. How engines and these models are converging into data factories is the subject of
+[AI meets graphics engines]({{ '/blog/2026/graphics-engine-06-ai-meets-graphics-engines/' | relative_url }}).
+
+### RL fine-tuning of VLAs
+
+Besides Recap, open work applies policy-gradient RL to pre-trained VLAs in simulation. **RL4VLA** (Liu et al., NeurIPS
+2025) finds that PPO fine-tuning improves semantic and execution generalization over supervised fine-tuning, and that
+PPO beats DPO and GRPO there. **SimpleVLA-RL** (Li et al., arXiv preprint, September 2025) scales outcome-reward RL on
+OpenVLA-OFT with the veRL framework and reduces the demonstrations needed. Post 2 covers flow-policy RL (pi_RL) and
+real-world variants.
+
+### Evaluation
+
+- **RoboArena** (Atreya et al., CoRL 2025) crowd-sources real-world evaluation. Policies run on DROID-style Franka setups
+  at many institutions, evaluators compare two anonymous policies on a task they choose, and a pairwise-preference model
+  turns the votes into a ranking. This is the blind A/B idea of section 4 at scale.
+- **RoboChallenge** (Yakefu et al., arXiv preprint, October 2025) is a hosted remote benchmark: teams submit policies
+  that run on real robots for a fixed set of 30 tasks (Table30).
+- **World models as evaluators**: Google DeepMind evaluates Gemini Robotics policies in a fine-tuned **Veo** world
+  simulator, including safety probes, and checks the results against real trials (arXiv preprint, December 2025). This
+  is item 5 of section 5 in practice. Post 3 has more.
+
+*What changed since the earlier sections:* the summary table of section 2 now has successors for almost every row. The
+claim in section 4 that robot learning has no clean scaling laws still holds for success rates, but EgoScale
+(post 6) reports a log-linear relation between hours of human-video pre-training and downstream dexterous performance.
+
 ## Representative papers
 
 | Paper | Venue | Year | Link | Why it matters |
@@ -421,6 +563,29 @@ it hints at the long-term picture: generative 3D worlds with physics, in which V
 | Shukor et al., *SmolVLA: a vision-language-action model for affordable and efficient robotics* | arXiv | 2025 | [arXiv](https://arxiv.org/abs/2506.01844) | Small open VLA |
 | Assran et al., *V-JEPA 2: self-supervised video models enable understanding, prediction and planning* | arXiv | 2025 | [arXiv](https://arxiv.org/abs/2506.09985) | Latent world model for zero-shot planning |
 | Gemini Robotics Team, *Gemini Robotics 1.5* | arXiv | 2025 | [arXiv](https://arxiv.org/abs/2510.03342) | Thinking VLA, motion transfer |
+| Bu et al., *UniVLA: learning to act anywhere with task-centric latent actions* | RSS | 2025 | [arXiv](https://arxiv.org/abs/2505.06111) | Latent actions from video |
+| Driess et al., *Knowledge insulating vision-language-action models* | NeurIPS | 2025 | [arXiv](https://arxiv.org/abs/2505.23705) | Protect the VLM from action-expert gradients |
+| Black et al., *Real-time execution of action chunking flow policies* | NeurIPS | 2025 | [arXiv](https://arxiv.org/abs/2506.07339) | Asynchronous chunking by inpainting |
+| Jang et al., *DreamGen: unlocking generalization in robot learning through video world models* | CoRL | 2025 | [arXiv](https://arxiv.org/abs/2505.12705) | Neural trajectories from video models |
+| Atreya et al., *RoboArena: distributed real-world evaluation of generalist robot policies* | CoRL | 2025 | [arXiv](https://arxiv.org/abs/2506.18123) | Crowd-sourced pairwise real-world evaluation |
+| Liu et al., *What can RL bring to VLA generalization? An empirical study* | NeurIPS | 2025 | [arXiv](https://arxiv.org/abs/2505.19789) | PPO fine-tuning of VLAs |
+| Cen et al., *WorldVLA: towards autoregressive action world model* | arXiv preprint (Jun 2025) | 2025 | [arXiv](https://arxiv.org/abs/2506.21539) | Joint action and image prediction |
+| ByteDance Seed, *GR-3 technical report* | arXiv preprint (Jul 2025) | 2025 | [arXiv](https://arxiv.org/abs/2507.15493) | Web + VR human + robot co-training |
+| Liao et al., *Genie Envisioner: a unified world foundation platform for robotic manipulation* | arXiv preprint (Aug 2025) | 2025 | [arXiv](https://arxiv.org/abs/2508.05635) | Video world model + action decoder + neural simulator |
+| Li et al., *SimpleVLA-RL: scaling VLA training via reinforcement learning* | arXiv preprint (Sep 2025) | 2025 | [arXiv](https://arxiv.org/abs/2509.09674) | Outcome-reward RL for VLAs |
+| Zhai et al., *Igniting VLMs toward the embodied space* (WALL-OSS) | arXiv preprint (Sep 2025) | 2025 | [arXiv](https://arxiv.org/abs/2509.11766) | Open VLA with cross-level chain of thought |
+| Zheng et al., *X-VLA: soft-prompted transformer as scalable cross-embodiment VLA* | ICLR | 2026 | [arXiv](https://arxiv.org/abs/2510.10274) | Per-source soft prompts |
+| Wang et al., *Unified vision-language-action model* | ICLR | 2026 | [arXiv](https://arxiv.org/abs/2506.19850) | Autoregressive VLA with world-model post-training |
+| Yakefu et al., *RoboChallenge: large-scale real-robot evaluation of embodied policies* | arXiv preprint (Oct 2025) | 2025 | [arXiv](https://arxiv.org/abs/2510.17950) | Hosted real-robot benchmark |
+| Physical Intelligence, *pi\*0.6: a VLA that learns from experience* | arXiv preprint (Nov 2025) | 2025 | [arXiv](https://arxiv.org/abs/2511.14759) | Recap: advantage-conditioned RL |
+| Gemini Robotics Team, *Evaluating Gemini Robotics policies in a Veo world simulator* | arXiv preprint (Dec 2025) | 2025 | [arXiv](https://arxiv.org/abs/2512.10675) | World model as policy evaluator |
+| Kim et al., *Cosmos Policy: fine-tuning video models for visuomotor control and planning* | ICLR | 2026 | [arXiv](https://arxiv.org/abs/2601.16163) | Policy, world model and value in one video model |
+| Ye et al., *World action models are zero-shot policies* (DreamZero) | arXiv preprint (Feb 2026) | 2026 | [arXiv](https://arxiv.org/abs/2602.15922) | 14B joint video-action model; basis of GR00T N2 |
+| Liu et al., *RDT2: exploring the scaling limit of UMI data towards zero-shot cross-embodiment generalization* | ICML | 2026 | [arXiv](https://arxiv.org/abs/2602.03310) | VLA trained on 10k+ hours of UMI data |
+| Liu et al., *OAT: ordered action tokenization* | RSS | 2026 | [arXiv](https://arxiv.org/abs/2602.04215) | Prefix-decodable action tokens |
+| Physical Intelligence, *pi0.7: a steerable generalist robotic foundation model with emergent capabilities* | arXiv preprint (Apr 2026) | 2026 | [arXiv](https://arxiv.org/abs/2604.15483) | Metadata-rich prompts, cross-embodiment transfer |
+| Fang et al., *MolmoAct2: action reasoning models for real-world deployment* | arXiv preprint (May 2026) | 2026 | [arXiv](https://arxiv.org/abs/2605.02881) | Fully open VLA, data and tokenizer |
+| Industry announcements: [Helix](https://www.figure.ai/news/helix), [Helix 02](https://www.figure.ai/news/helix-02), [Gemini Robotics On-Device](https://deepmind.google/blog/gemini-robotics-on-device-brings-ai-to-local-robotic-devices/), [Gemini Robotics 2](https://deepmind.google/blog/gemini-robotics-2-brings-whole-body-intelligence-to-robots/), [GR00T N1.5](https://research.nvidia.com/labs/gear/gr00t-n1_5/), [GR00T N1.6](https://research.nvidia.com/labs/gear/gr00t-n1_6/) | announcement | 2025-2026 | see links | No papers; official pages only |
 
 ## Learning resources
 
@@ -444,6 +609,16 @@ it hints at the long-term picture: generative 3D worlds with physics, in which V
    Mark which weights are pre-trained, which are trained from scratch, and where gradients flow.
 5. Design an evaluation protocol for a VLA in your lab: list the generalization axes, the number of trials per
    condition, and how you would estimate confidence intervals for success rates.
+6. In the VLA explorer, select *Flow* and *Open weights only*. How many open flow-matching models does the list contain
+   per year, and which earlier model do most of the "builds on" curves of the 2025 ones lead back to?
+
+   <details markdown="1"><summary>Hint</summary>
+
+   One in 2024 (pi0), seven in 2025 (pi0.5, GR00T N1, N1.5, N1.6, SmolVLA, WALL-OSS, X-VLA) and three in 2026 (N1.7,
+   RDT2, MolmoAct2). Within this list the open flow models of 2025 trace back mostly to pi0 or to the GR00T line; several
+   (X-VLA, WALL-OSS) have no recorded parent, which only means that the list does not record one. Remember that the list
+   is a curated selection.
+   </details>
 
 **Next:** [Embodied AI meets XR and HCI]({{ '/blog/2026/embodied-ai-06-embodied-ai-meets-xr-and-hci/' | relative_url }}),
 where humans, headsets and robots meet.

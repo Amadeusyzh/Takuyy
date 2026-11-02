@@ -375,6 +375,78 @@ see is the $\Delta\lambda$ formula above applied to distance constraints. Notice
 stiffer and more stable; that is the same reason robotics simulators prefer small time steps. Neighbouring tabs show
 the rendering side: a path tracer and a Gaussian-splatting world.
 
+## 2025-2026 update (as of November 2026)
+
+Simulators change faster than papers, so this section starts with versions. Every version and date below was read from
+the project's GitHub release page or an official announcement in late October 2026. ICRA 2026 (June, Vienna), RSS 2026
+(July, Sydney) and IROS 2026 (September-October, Pittsburgh) have taken place. CoRL 2026 (9-12 November, Austin) and
+Humanoids 2026 (December, Santa Clara) are still ahead. For how a game-style physics pipeline (broad phase, narrow phase,
+solver) maps onto these robot simulators, and for OpenUSD and synthetic data, see the companion post
+[Physics and simulation engines]({{ '/blog/2026/graphics-engine-05-physics-and-simulation-engines/' | relative_url }}).
+
+### The GPU stacks converge: Isaac Lab 3, Newton, MuJoCo Warp
+
+| Project | Latest release (Nov 2026) | What changed in 2025-2026 |
+| --- | --- | --- |
+| Isaac Lab | v3.0.0 (2026-10-20) | multi-backend physics (PhysX or Newton) and rendering; many workflows run without Isaac Sim; quaternions now in `xyzw` order |
+| Isaac Sim | v6.2.0 (2026-10-14) | Isaac Lab 3.0 targets this version; a 7.0 alpha is out |
+| Newton | v1.7.0 (2026-10-14) | beta in September 2025, 1.0 announced at GTC in March 2026; solvers include MuJoCo Warp, Kamino (Disney), VBD deformables and implicit MPM |
+| MuJoCo / MuJoCo Warp | 3.17.0 (2026-10-22), versioned together | MuJoCo Warp is the GPU backend of MuJoCo on NVIDIA hardware and one of Newton's solvers |
+| mjlab | arXiv preprint, January 2026 | Isaac Lab's manager-based API on top of MuJoCo Warp |
+
+Three things happened. First, **Isaac Lab got a reference paper** (Mittal et al., arXiv preprint, November 2025). It
+describes the design that section 2 sketched: GPU-resident tensors, actuator models, sensors, domain randomization and
+RL or imitation workflows at scale. Second, **Newton** turned from a 2025 announcement into a released engine. It is a
+Linux Foundation project built on NVIDIA Warp and OpenUSD, and it hosts several solvers behind one model description,
+so the same robot can run with MuJoCo Warp's soft-contact rigid bodies or with a deformable solver. Third, Isaac Lab
+3.0 can now use **Newton as a physics backend** instead of PhysX. The line between "the NVIDIA stack" and "the MuJoCo
+stack" in the table of section 2 is blurring: the same environment code can switch engines. This is also a cheap
+robustness check, since a policy that only works in one engine is probably exploiting its contact model.
+
+**MuJoCo Playground** (Zakka et al., RSS 2025, outstanding demo paper award) and **mjlab** (Zakka et al., arXiv
+preprint, January 2026) are the MuJoCo-side equivalents. Playground packages GPU environments with sim-to-real recipes
+for locomotion and dexterous manipulation. mjlab copies Isaac Lab's manager API, so code moves between the two with
+little change.
+
+### Other platforms and benchmarks
+
+- **Genesis**: as of November 2026 the project ships 1.x releases on GitHub. We could not find an arXiv technical
+  report, so cite the repository. Its "generative data engine" (section 2) is still described by the project as a
+  direction, not a finished system.
+- **ManiSkill3** (Tao et al., RSS 2025) and **RoboVerse** (Geng et al., RSS 2025). RoboVerse's MetaSim layer runs one
+  task definition on several simulators and ships a large synthetic dataset with imitation and RL benchmarks.
+- **RoboCasa365** (Nasiriany et al., ICLR 2026) extends RoboCasa to 365 kitchen tasks in 2,500 scenes, so a policy can
+  be tested on a whole distribution of homes.
+- **BEHAVIOR Challenge.** The first edition (NeurIPS 2025, December 2025) asked teams to solve 50 full-length household
+  activities from BEHAVIOR-1K in OmniGibson. The second edition, at CoRL 2026, has 100 tasks; submissions closed on
+  16 October 2026 and results are due on 4 November 2026.
+- **GenManip** (CVPR 2025) uses an LLM and scene graphs to generate tabletop instruction-following tasks.
+
+### Generative simulation: world models as simulators
+
+The fourth use of world models in [post 5]({{ '/blog/2026/embodied-ai-05-vision-language-action-models/' | relative_url }})
+(policy evaluation) became concrete in 2025-2026:
+
+- **Cosmos-Predict2.5 and Cosmos-Transfer2.5** (NVIDIA, arXiv preprint, October 2025) are open flow-based video world
+  models at 2B and 14B parameters. The Transfer model is a control network that re-renders simulator output (depth,
+  segmentation, edges) as photoreal video. This "sim2real augmentation" attacks the visual gap of section 1 with a
+  generative model instead of a better renderer.
+- **WorldGym** (Quevedo et al., ICLR 2026) rolls out a policy inside an action-conditioned video model and scores the
+  rollout with a VLM, which gives an approximate success rate without a robot.
+- **Evaluating Gemini Robotics policies in a Veo world simulator** (Gemini Robotics Team, arXiv preprint, December 2025)
+  fine-tunes Veo on robot data and uses it to rank policies, probe out-of-distribution scenes and red-team safety, and it
+  compares the rankings with real trials.
+- **Genie 3** (Google DeepMind, blog, August 2025) generates interactive worlds in real time (720p, 24 fps, consistent
+  for a few minutes) and was used to train and test agents. DeepMind's Genie page now lists **Genie 4** as a research
+  preview for trusted testers and mentions early robotics uses.
+
+The caution from section 4 applies twice over: a learned simulator is useful only after its rankings have been shown to
+agree with real-world rankings, and it can hallucinate success. Physics engines remain the tool for contact-rich RL.
+Video world models are becoming the tool for visual diversity and for cheap policy triage.
+
+*What changed since the earlier sections:* the Newton row of the table in section 2 now describes a released 1.x engine,
+not just an announcement. Isaac Lab can run on Newton. The Genesis row stays as written.
+
 ## Representative papers
 
 | Paper | Venue | Year | Link | Why it matters |
@@ -398,6 +470,15 @@ the rendering side: a path tracer and a Gaussian-splatting world.
 | Tao et al., *ManiSkill3: GPU parallelized robotics simulation and rendering for generalizable embodied AI* | RSS (demo) | 2025 | [arXiv](https://arxiv.org/abs/2410.00425) | GPU-parallel sim and rendering |
 | Zakka et al., *MuJoCo Playground* | RSS (demo) | 2025 | [arXiv](https://arxiv.org/abs/2502.08844) | MJX environments with sim-to-real recipes |
 | Mittal et al., *Isaac Lab: a GPU-accelerated simulation framework for multi-modal robot learning* | arXiv | 2025 | [arXiv](https://arxiv.org/abs/2511.04831) | Isaac Lab design |
+| Geng et al., *RoboVerse: towards a unified platform, dataset and benchmark for scalable and generalizable robot learning* | RSS | 2025 | [arXiv](https://arxiv.org/abs/2504.18904) | One task definition across simulators |
+| *GenManip: LLM-driven simulation for generalizable instruction-following manipulation* | CVPR | 2025 | [arXiv](https://arxiv.org/abs/2506.10966) | LLM-generated tabletop tasks |
+| Quevedo et al., *WorldGym: world model as an environment for policy evaluation* | ICLR | 2026 | [arXiv](https://arxiv.org/abs/2506.00613) | Video world model as evaluator |
+| NVIDIA, *World simulation with video foundation models for physical AI* (Cosmos-Predict2.5 / Transfer2.5) | arXiv preprint (Oct 2025) | 2025 | [arXiv](https://arxiv.org/abs/2511.00062) | Open world models, sim2real augmentation |
+| Mittal et al., *Isaac Lab: a GPU-accelerated simulation framework for multi-modal robot learning* | arXiv preprint (Nov 2025) | 2025 | [arXiv](https://arxiv.org/abs/2511.04831) | Reference paper for Isaac Lab |
+| Gemini Robotics Team, *Evaluating Gemini Robotics policies in a Veo world simulator* | arXiv preprint (Dec 2025) | 2025 | [arXiv](https://arxiv.org/abs/2512.10675) | Policy ranking and safety probes in a world model |
+| Zakka et al., *mjlab: a lightweight framework for GPU-accelerated robot learning* | arXiv preprint (Jan 2026) | 2026 | [arXiv](https://arxiv.org/abs/2601.22074) | Isaac Lab API on MuJoCo Warp |
+| Nasiriany et al., *RoboCasa365: a large-scale simulation framework for training and benchmarking generalist robots* | ICLR | 2026 | [arXiv](https://arxiv.org/abs/2603.04356) | 365 tasks, 2,500 kitchen scenes |
+| Software: [Isaac Lab releases](https://github.com/isaac-sim/IsaacLab/releases), [Newton](https://github.com/newton-physics/newton), [MuJoCo Warp](https://github.com/google-deepmind/mujoco_warp), [BEHAVIOR Challenge](https://behavior.stanford.edu/challenge), [Genie 3](https://deepmind.google/blog/genie-3-a-new-frontier-for-world-models/) | release / blog | 2025-2026 | see links | Versions as of November 2026 |
 
 ## Learning resources
 
@@ -426,6 +507,17 @@ the rendering side: a path tracer and a Gaussian-splatting world.
    plot the distribution of final box positions after a push.
 5. Implement a 1-D XPBD chain (10 particles, distance constraints) in NumPy and show that increasing the iteration
    count changes the stiffness with plain PBD but not with XPBD.
+6. World models as simulators (update section): name two ways a learned video world model can give a wrong verdict
+   when it is used to evaluate a policy, and design one check for each.
+
+   <details markdown="1"><summary>Hint</summary>
+
+   Typical failures are *hallucinated success* (the model renders the object in the gripper although the actions
+   could not have grasped it), *drift* over long horizons, and *action insensitivity* (the video barely changes when the
+   actions change). Checks: replay the same start with zero or random actions and confirm that the predicted outcome
+   changes; and, as in the Veo evaluator work above, rank several policies in the world model and compare the ranking with
+   real-robot results.
+   </details>
 
 **Next:** [Imitation learning]({{ '/blog/2026/embodied-ai-04-imitation-learning/' | relative_url }}): learning from
 demonstrations instead of rewards.

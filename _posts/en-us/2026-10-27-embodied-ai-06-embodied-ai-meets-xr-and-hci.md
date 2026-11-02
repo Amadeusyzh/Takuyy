@@ -360,6 +360,76 @@ headsets such as Apple Vision Pro and Meta Quest Pro. Imagine streaming a robot'
 operator this way. The **Gaussian World** tab shows the 3DGS representation that photoreal digital twins are built from,
 and the **Cloth · XPBD** tab the kind of physics they need.
 
+## 2025-2026 update (as of November 2026)
+
+The XR and HCI venues of 2026 have mostly taken place: HRI 2026 (March, Edinburgh), IEEE VR 2026 (March, Daegu),
+CHI 2026 (April, Barcelona) and ISMAR 2026 (October, Bari). UIST 2026 runs in Detroit this week (2-5 November). On the
+robotics side, the biggest change is that **egocentric human data became pre-training data for robot foundation
+models**, with scaling results to back it up. How motion capture and retargeting work for animated characters, the
+graphics side of section 1, is covered in
+[Animation and characters]({{ '/blog/2026/graphics-09-animation-and-characters/' | relative_url }}).
+
+### Egocentric data at scale
+
+- **Project Aria Gen 2** (Meta, announced February 2025) is the second generation of the research glasses of section 2.
+  It weighs about 75 g and has on-device SLAM, eye and hand tracking, and a heart-rate (PPG) sensor. The **Aria Gen 2
+  Pilot Dataset** (arXiv preprint, October 2025) shows what it records. Meta targeted availability to research
+  partners for 2026.
+- **EgoDex** (Hoque et al., Apple, ICLR 2026) has 829 hours of egocentric video over 194 tabletop tasks. It was recorded
+  on Apple Vision Pro, so every frame comes with tracked 3D hand and finger poses. The headset's own tracking becomes the
+  action label, which is the point of section 2 made at scale.
+- **EgoScale** (Zheng et al., NVIDIA, arXiv preprint, February 2026) pre-trains a dexterous policy on 20,854 hours of
+  human egocentric video, then adapts it to a 22-DoF robot hand. It reports a **log-linear** relation between hours of
+  human data and robot performance, the first clear scaling law of this kind. GR00T N1.7 uses this data
+  ([post 5]({{ '/blog/2026/embodied-ai-05-vision-language-action-models/' | relative_url }})).
+- **Nymeria** (Ma et al., 2024) has 300 hours from 264 participants with Aria glasses plus full-body motion capture and
+  language. **NymeriaPlus** (arXiv preprint, March 2026) adds object boxes and reconstructions. **HOT3D** (Banerjee et
+  al., CVPR 2025) provides more than 3.7M images of hand-object interaction with 3D poses, recorded with Aria and
+  Quest 3.
+
+### From human video to robot actions
+
+The problem of section 2, that people and robots have different bodies, has three 2025-2026 answers:
+
+1. **Share the action space.** **EgoMimic** (Kareer et al., arXiv preprint, October 2024) co-trains on Aria human data
+   and robot data with aligned hand and gripper trajectories. **Humanoid policy ~ human policy** (Qiu et al., arXiv
+   preprint, March 2025) defines one state-action space for humans and humanoids. **EgoVLA** (Yang et al., arXiv
+   preprint, July 2025) pre-trains a VLA on human wrist and hand actions and retargets them to the robot by inverse
+   kinematics ([post 1]({{ '/blog/2026/embodied-ai-01-robotics-foundations/' | relative_url }})).
+2. **Edit the pixels.** **Phantom** (Lepert et al., CoRL 2025) inpaints the human arm out of the video and renders a
+   robot in its place. The policy is trained only on these edited human videos and runs on the real robot without any
+   robot data. **Masquerade** (Lepert et al., arXiv preprint, August 2025) applies the same editing to in-the-wild
+   videos.
+3. **Distil from web video.** **ZeroMimic** (Shi et al., ICRA 2025) learns six types of manipulation skills purely
+   from EpicKitchens videos and deploys them on two robots.
+
+### XR teleoperation, second generation
+
+- **TWIST2** (Ze et al., arXiv preprint, November 2025) drops the motion-capture suit of TWIST. A consumer VR headset
+  plus a low-cost 2-DoF robot neck give the operator an egocentric stereo view, as in Open-TeleVision. The authors
+  report about 100 whole-body demonstrations in 15 minutes, and both the system and the data are open. Underneath, a
+  motion tracker of the kind described in
+  [post 2]({{ '/blog/2026/embodied-ai-02-reinforcement-learning-for-robots/' | relative_url }}) turns human poses into
+  robot motion.
+- **ARCap** (Chen et al., arXiv preprint, October 2024) and **ARMADA** (Nechyporenko et al., arXiv preprint, December
+  2024) close the loop of section 3 with AR. The demonstrator collects bare-hand or handheld demonstrations *without a
+  robot*, while the headset overlays a virtual robot and warns, visually or with haptics, when a motion would exceed the
+  robot's limits. Every demonstration is then feasible by construction.
+- **GR-3** (post 5) and **SONIC** (post 2) treat VR-collected human trajectories as a regular training modality, not
+  only as teleoperation.
+
+### HRI in the age of LLMs
+
+A **systematic review of HRI research with large language models** (Wang et al., arXiv preprint, February 2026,
+86 papers) follows the PRISMA procedure to map how HRI research uses LLMs and how such studies are designed and
+evaluated. It is a good companion to section 4. For 2026 papers at CHI, UIST and IEEE VR on immersive robot
+teleoperation, we could not verify a specific list in time for this update. The proceedings of those venues (ACM DL,
+IEEE Xplore) are the place to look.
+
+*What changed since the earlier sections:* section 2 presented egocentric data as promising. By 2026 it is a main
+ingredient of commercial and open robot foundation models (GR00T N1.7, Being-H0.5, Helix 2.5's human-behaviour
+pre-training), and the scaling evidence is in.
+
 ## Representative papers
 
 | Paper | Venue | Year | Link | Why it matters |
@@ -390,6 +460,20 @@ and the **Cloth · XPBD** tab the kind of physics they need.
 | Kareer et al., *EgoMimic: scaling imitation learning via egocentric video* | ICRA | 2025 | [arXiv](https://arxiv.org/abs/2410.24221) | Humans as another embodiment |
 | Hoque et al., *EgoDex: learning dexterous manipulation from large-scale egocentric video* | ICLR | 2026 | [arXiv](https://arxiv.org/abs/2505.11709) | Vision Pro hand-tracked dataset |
 | Qureshi et al., *SplatSim: zero-shot sim2real transfer of RGB manipulation policies using Gaussian splatting* | arXiv | 2024 | [arXiv](https://arxiv.org/abs/2409.10161) | 3DGS for photoreal simulation |
+| Ma et al., *Nymeria: a massive collection of multimodal egocentric daily motion in the wild* | ECCV | 2024 | [arXiv](https://arxiv.org/abs/2406.09905) | Egocentric video + full-body motion + language |
+| Chen et al., *ARCap: collecting high-quality human demonstrations for robot learning with augmented reality feedback* | arXiv preprint (Oct 2024) | 2024 | [arXiv](https://arxiv.org/abs/2410.08464) | AR feedback keeps demos feasible |
+| Banerjee et al., *HOT3D: hand and object tracking in 3D from egocentric multi-view videos* | CVPR | 2025 | [arXiv](https://arxiv.org/abs/2411.19167) | Hand-object 3D poses from Aria and Quest 3 |
+| Nechyporenko et al., *ARMADA: augmented reality for robot manipulation and robot-free data acquisition* | arXiv preprint (Dec 2024) | 2024 | [arXiv](https://arxiv.org/abs/2412.10631) | Virtual robot overlay in Vision Pro |
+| Lepert et al., *Phantom: training robots without robots using only human videos* | CoRL | 2025 | [arXiv](https://arxiv.org/abs/2503.00779) | Inpaint human, render robot |
+| Qiu et al., *Humanoid policy ~ human policy* | arXiv preprint (Mar 2025) | 2025 | [arXiv](https://arxiv.org/abs/2503.13441) | Shared human-humanoid action space |
+| Shi et al., *ZeroMimic: distilling robotic manipulation skills from web videos* | ICRA | 2025 | [arXiv](https://arxiv.org/abs/2503.23877) | Skills from EpicKitchens only |
+| Yang et al., *EgoVLA: learning vision-language-action models from egocentric human videos* | arXiv preprint (Jul 2025) | 2025 | [arXiv](https://arxiv.org/abs/2507.12440) | VLA pre-trained on human hands |
+| Lepert et al., *Masquerade: learning from in-the-wild human videos using data-editing* | arXiv preprint (Aug 2025) | 2025 | [arXiv](https://arxiv.org/abs/2508.09976) | Phantom-style editing at web scale |
+| Meta, *Aria Gen 2 pilot dataset* | arXiv preprint (Oct 2025) | 2025 | [arXiv](https://arxiv.org/abs/2510.16134) | Data from the second-generation glasses |
+| Ze et al., *TWIST2: scalable, portable, and holistic humanoid data collection system* | arXiv preprint (Nov 2025) | 2025 | [arXiv](https://arxiv.org/abs/2511.02832) | Mocap-free VR whole-body teleoperation |
+| Wang et al., *How do we research human-robot interaction in the age of large language models? A systematic review* | arXiv preprint (Feb 2026) | 2026 | [arXiv](https://arxiv.org/abs/2602.15063) | Review of LLM-based HRI |
+| Zheng et al., *EgoScale: scaling dexterous manipulation with diverse egocentric human data* | arXiv preprint (Feb 2026) | 2026 | [arXiv](https://arxiv.org/abs/2602.16710) | Log-linear scaling with human video |
+| Meta, [*Introducing Aria Gen 2*](https://www.meta.com/blog/project-aria-gen-2-next-generation-egocentric-research-glasses-reality-labs-ai-robotics/) | blog | 2025 | see link | Second-generation research glasses |
 
 ## Learning resources
 
@@ -414,6 +498,19 @@ and the **Cloth · XPBD** tab the kind of physics they need.
    measures (success, time, NASA-TLX, demonstration smoothness) and the number of participants. What would you expect?
 5. Pick one of the research opportunities above and write a one-page proposal: the question, the system you would build,
    the data you would collect, and how you would evaluate it.
+
+6. Human-to-robot transfer (update section): for each of the three routes from human video to robot actions, say what
+   must be estimated from the video and which error you expect to dominate on a parallel-jaw gripper.
+
+   <details markdown="1"><summary>Hint</summary>
+
+   Sharing the action space needs 3D wrist and hand trajectories in a frame aligned with the robot's; errors in hand
+   depth and the loss of finger degrees of freedom when mapping to a gripper dominate. Editing the pixels (Phantom,
+   Masquerade) needs a hand-arm segmentation and pose good enough to inpaint the human and render the robot; rendering
+   artefacts and pose errors dominate. Distilling from web video (ZeroMimic) must estimate where and how the hand grasps
+   and the wrist motion afterwards, from uncalibrated footage; camera and scale ambiguity and imprecise grasp points
+   dominate.
+   </details>
 
 **Where to go next:** this is the last post of the embodied AI track. The
 [world-models track]({{ '/blog/category/world-models/' | relative_url }}) explores the predictive models touched on here

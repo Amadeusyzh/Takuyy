@@ -345,6 +345,45 @@ print(final.shape)                           # (1024, 9)
 拉它、剪它、把它拉到撕裂。你看到的每一次更新，都是上面的 $\Delta\lambda$ 公式作用在距离约束上。注意子步越多，布料越硬、越稳定；
 这和机器人仿真器偏爱小时间步长是同一个原因。相邻的标签页展示了渲染那一侧：一个路径追踪器和一个高斯泼溅世界。
 
+## 2025–2026 年进展（截至 2026 年 11 月）
+
+仿真器的变化比论文更快，所以本节从版本说起。下面的版本号和日期都是 2026 年 10 月下旬从各项目的 GitHub 发布页或官方公告中读取的。ICRA 2026（6 月，维也纳）、RSS 2026（7 月，悉尼）和 IROS 2026（9–10 月，匹兹堡）均已召开；CoRL 2026（11 月 9–12 日，奥斯汀）和 Humanoids 2026（12 月，圣克拉拉）尚未举行。游戏式物理管线（宽相、窄相、求解器）如何对应到这些机器人仿真器，以及 OpenUSD 与合成数据，见配套文章[物理与仿真引擎]({{ '/blog/2026/graphics-engine-05-physics-and-simulation-engines/' | relative_url }})。
+
+### GPU 技术栈的汇合：Isaac Lab 3、Newton、MuJoCo Warp
+
+| 项目 | 最新版本（2026 年 11 月） | 2025–2026 年的变化 |
+| --- | --- | --- |
+| Isaac Lab | v3.0.0（2026-10-20） | 多后端物理（PhysX 或 Newton）与渲染；许多流程无需 Isaac Sim 即可运行；四元数改为 `xyzw` 顺序 |
+| Isaac Sim | v6.2.0（2026-10-14） | Isaac Lab 3.0 以此版本为目标；7.0 alpha 已发布 |
+| Newton | v1.7.0（2026-10-14） | 2025 年 9 月 beta，2026 年 3 月 GTC 上宣布 1.0；求解器包括 MuJoCo Warp、Kamino（Disney）、VBD 可变形体和隐式 MPM |
+| MuJoCo / MuJoCo Warp | 3.17.0（2026-10-22），版本同步 | MuJoCo Warp 是 MuJoCo 在 NVIDIA 硬件上的 GPU 后端，也是 Newton 的求解器之一 |
+| mjlab | arXiv 预印本，2026 年 1 月 | 在 MuJoCo Warp 之上实现 Isaac Lab 的 manager 式 API |
+
+发生了三件事。第一，**Isaac Lab 有了参考论文**（Mittal 等，arXiv 预印本，2025 年 11 月），描述了第 2 节勾勒的设计：常驻 GPU 的张量、执行器模型、传感器、域随机化以及大规模 RL 和模仿学习流程。第二，**Newton** 从 2025 年的公告变成了已发布的引擎：它是 Linux 基金会项目，基于 NVIDIA Warp 和 OpenUSD，在同一个模型描述背后提供多个求解器，所以同一个机器人既可以用 MuJoCo Warp 的软接触刚体，也可以用可变形体求解器来仿真。第三，Isaac Lab 3.0 可以用 **Newton 作为物理后端**来代替 PhysX。第 2 节表格中“NVIDIA 技术栈”与“MuJoCo 技术栈”的界线正在模糊：同一份环境代码可以切换引擎。这也是一个低成本的鲁棒性检查：只在一个引擎里有效的策略，多半是在利用该引擎的接触模型。
+
+**MuJoCo Playground**（Zakka 等，RSS 2025，杰出演示论文奖）和 **mjlab**（Zakka 等，arXiv 预印本，2026 年 1 月）是 MuJoCo 一侧的对应物。Playground 打包了带仿真到现实方案的 GPU 运动与灵巧操作环境；mjlab 照搬 Isaac Lab 的 manager API，代码在两者之间几乎可以直接迁移。
+
+### 其他平台与基准
+
+- **Genesis**：截至 2026 年 11 月，项目在 GitHub 上发布 1.x 版本。我们没有找到 arXiv 技术报告，因此请引用代码仓库。第 2 节提到的“生成式数据引擎”在项目描述中仍是一个方向，而不是完成的系统。
+- **ManiSkill3**（Tao 等，RSS 2025）与 **RoboVerse**（Geng 等，RSS 2025）。RoboVerse 的 MetaSim 层让同一份任务定义在多个仿真器上运行，并附带大型合成数据集和模仿学习、RL 基准。
+- **RoboCasa365**（Nasiriany 等，ICLR 2026）把 RoboCasa 扩展到 2,500 个场景中的 365 个厨房任务，可以在整个家庭分布上测试策略。
+- **BEHAVIOR 挑战赛**：第一届（NeurIPS 2025，2025 年 12 月）要求参赛队在 OmniGibson 中完成 BEHAVIOR-1K 的 50 个完整家务活动；第二届在 CoRL 2026 举行，共 100 个任务，提交已于 2026 年 10 月 16 日截止，结果将于 2026 年 11 月 4 日公布。
+- **GenManip**（CVPR 2025）用 LLM 和场景图生成桌面指令跟随任务。
+
+### 生成式仿真：把世界模型当作仿真器
+
+[第 5 篇]({{ '/blog/2026/embodied-ai-05-vision-language-action-models/' | relative_url }})中世界模型的第 4 种用法（策略评测）在 2025–2026 年变得具体：
+
+- **Cosmos-Predict2.5 与 Cosmos-Transfer2.5**（NVIDIA，arXiv 预印本，2025 年 10 月）是 2B 和 14B 参数的开放流式视频世界模型。Transfer 模型是一个控制网络，把仿真器输出（深度、分割、边缘）重新渲染成照片级视频。这种“sim2real 增强”用生成模型而不是更好的渲染器来缩小第 1 节所说的视觉差距。
+- **WorldGym**（Quevedo 等，ICLR 2026）在动作条件视频模型中推演策略，并用 VLM 给推演打分，无需机器人就能得到近似成功率。
+- **在 Veo 世界模拟器中评测 Gemini Robotics 策略**（Gemini Robotics Team，arXiv 预印本，2025 年 12 月）在机器人数据上微调 Veo，用它对策略排名、探测分布外场景并做安全红队测试，并与真实试验的排名对比。
+- **Genie 3**（Google DeepMind，博客，2025 年 8 月）实时生成可交互世界（720p、24 fps、几分钟内保持一致），曾用于训练和测试智能体。DeepMind 的 Genie 页面现在把 **Genie 4** 列为面向受信测试者的研究预览，并提到早期的机器人应用。
+
+第 4 节的提醒在这里加倍适用：学习得到的仿真器只有在其排名被证明与真实世界一致之后才有用，而且它可能“幻想”出成功。物理引擎仍是接触密集型 RL 的工具；视频世界模型正在成为提供视觉多样性和低成本筛选策略的工具。
+
+*与前文相比的变化：*第 2 节表格中的 Newton 一行现在描述的是已发布的 1.x 引擎，而不只是公告；Isaac Lab 可以运行在 Newton 之上。Genesis 一行维持原样。
+
 ## 代表性论文
 
 | 论文 | 会议/期刊 | 年份 | 链接 | 意义 |
@@ -368,6 +407,15 @@ print(final.shape)                           # (1024, 9)
 | Tao et al., *ManiSkill3: GPU parallelized robotics simulation and rendering for generalizable embodied AI* | RSS (demo) | 2025 | [arXiv](https://arxiv.org/abs/2410.00425) | GPU 并行仿真与渲染 |
 | Zakka et al., *MuJoCo Playground* | RSS (demo) | 2025 | [arXiv](https://arxiv.org/abs/2502.08844) | 带仿真到现实配方的 MJX 环境 |
 | Mittal et al., *Isaac Lab: a GPU-accelerated simulation framework for multi-modal robot learning* | arXiv | 2025 | [arXiv](https://arxiv.org/abs/2511.04831) | Isaac Lab 的设计 |
+| Geng et al., *RoboVerse: towards a unified platform, dataset and benchmark for scalable and generalizable robot learning* | RSS | 2025 | [arXiv](https://arxiv.org/abs/2504.18904) | 同一任务定义跨仿真器运行 |
+| *GenManip: LLM-driven simulation for generalizable instruction-following manipulation* | CVPR | 2025 | [arXiv](https://arxiv.org/abs/2506.10966) | LLM 生成桌面任务 |
+| Quevedo et al., *WorldGym: world model as an environment for policy evaluation* | ICLR | 2026 | [arXiv](https://arxiv.org/abs/2506.00613) | 视频世界模型作为评测器 |
+| NVIDIA, *World simulation with video foundation models for physical AI*（Cosmos-Predict2.5 / Transfer2.5） | arXiv 预印本（2025 年 10 月） | 2025 | [arXiv](https://arxiv.org/abs/2511.00062) | 开放世界模型，sim2real 增强 |
+| Mittal et al., *Isaac Lab: a GPU-accelerated simulation framework for multi-modal robot learning* | arXiv 预印本（2025 年 11 月） | 2025 | [arXiv](https://arxiv.org/abs/2511.04831) | Isaac Lab 的参考论文 |
+| Gemini Robotics Team, *Evaluating Gemini Robotics policies in a Veo world simulator* | arXiv 预印本（2025 年 12 月） | 2025 | [arXiv](https://arxiv.org/abs/2512.10675) | 在世界模型中做策略排名与安全探测 |
+| Zakka et al., *mjlab: a lightweight framework for GPU-accelerated robot learning* | arXiv 预印本（2026 年 1 月） | 2026 | [arXiv](https://arxiv.org/abs/2601.22074) | 基于 MuJoCo Warp 的 Isaac Lab 式 API |
+| Nasiriany et al., *RoboCasa365: a large-scale simulation framework for training and benchmarking generalist robots* | ICLR | 2026 | [arXiv](https://arxiv.org/abs/2603.04356) | 365 个任务、2,500 个厨房场景 |
+| 软件：[Isaac Lab releases](https://github.com/isaac-sim/IsaacLab/releases)、[Newton](https://github.com/newton-physics/newton)、[MuJoCo Warp](https://github.com/google-deepmind/mujoco_warp)、[BEHAVIOR Challenge](https://behavior.stanford.edu/challenge)、[Genie 3](https://deepmind.google/blog/genie-3-a-new-frontier-for-world-models/) | 发布 / 博客 | 2025–2026 | 见链接 | 截至 2026 年 11 月的版本 |
 
 ## 学习资源
 
@@ -390,5 +438,11 @@ print(final.shape)                           # (1024, 9)
 3. 用 `mujoco.Renderer` 在每个控制步之后渲染一张 64 x 64 的深度图，并测量 CPU 上的帧率。
 4. 在 1024 个 MJX 世界中随机化箱子的质量和摩擦（把每个世界的值放进批量化的 `mjx.Model`），画出推一下之后箱子最终位置的分布。
 5. 用 NumPy 实现一个一维 XPBD 链（10 个粒子，距离约束），并证明增加迭代次数会改变普通 PBD 的刚度，却不会改变 XPBD 的刚度。
+6. 世界模型作为仿真器（进展一节）：说出学到的视频世界模型在评估策略时给出错误结论的两种方式，并为每种设计一个检查。
+
+   <details markdown="1"><summary>提示</summary>
+
+   典型的失败有*幻觉式成功*（模型画出了夹爪里的物体，但这些动作根本抓不起来）、长时域上的*漂移*，以及*对动作不敏感*（动作改变时视频几乎不变）。检查方法：从同一初始状态输入零动作或随机动作，确认预测结果会改变；以及像上文 Veo 评估器的工作那样，在世界模型中给多个策略排名，再与真实机器人上的结果比较。
+   </details>
 
 **下一篇：**[模仿学习]({{ '/blog/2026/embodied-ai-04-imitation-learning/' | relative_url }})：从示范而不是奖励中学习。

@@ -282,7 +282,7 @@ $$
 L_\pi(\theta) = \mathbb{E}_{s\sim\mathcal{D},\,\xi}\left[\alpha\log\pi_\theta(\tilde a\mid s) - \min_j Q_{\phi_j}(s, \tilde a)\right].
 $$
 
-tanh 改变了概率密度，因此 $\log\pi(\tilde a\mid s) = \log\mathcal{N}(u;\mu,\sigma) - \sum_i\log(1-\tanh^2 u_i)$。后续论文（Haarnoja 等 2018b）
+tanh 改变了概率密度，因此 $\log\pi(\tilde a\mid s) = \log\mathcal{N}(u;\mu,\sigma)$ $-\, \sum_i\log(1-\tanh^2 u_i)$。后续论文（Haarnoja 等 2018b）
 还会把 $\alpha$ 自动调向目标熵（常取 $-\dim\mathcal{A}$），并展示了在真实的 Minitaur 四足机器人上直接学会行走，只用了约两小时的经验。
 
 | | PPO | SAC |
@@ -392,6 +392,123 @@ flowchart LR
 **[Lab]({{ '/' | relative_url }}#lab)** 中的 XPBD 布料演示是一个带子步与约束投影的物理仿真器，正是 RL 智能体在其中训练的那类引擎。
 拖动布料就是一个稳健策略必须抵抗的扰动；把随机化布料的刚度和质量想象成域随机化即可。
 
+## 2025–2026 年进展（截至 2026 年 11 月）
+
+2026 年初以来有两条研究线发展很快：一是**基于动作跟踪的人形机器人全身控制**，把第 5 节的仿真到现实方法带到人形机器人上；二是**在预训练基础策略之上做 RL**，把第 6 节最后一条变成了一个研究领域。ICRA 2026、RSS 2026 和 IROS 2026 已召开；CoRL 2026（11 月 9–12 日）和 Humanoids 2026（12 月）尚未举行，所以相关论文以预印本或“已录用”标注。同样思想在角色动画一侧的版本（DeepMimic 式跟踪、动作捕捉、motion matching）见[动画与角色]({{ '/blog/2026/graphics-09-animation-and-characters/' | relative_url }})。
+
+### 人形机器人动作跟踪：一个策略，很多动作
+
+这一方法可以追溯到 DeepMimic（见下表）。先把人体动作捕捉片段重定向（retarget）到机器人上，得到参考轨迹 $\hat q_t$（关节角）和 $\hat x_t$（身体部位位置），再在 GPU 仿真器中用 PPO 训练策略去跟随它，奖励的形式为
+
+$$
+r_t = \sum_k w_k \exp\!\left(-\frac{\lVert e_{k,t}\rVert^2}{\sigma_k^2}\right),
+\qquad e_{k,t} \in \lbrace q_t-\hat q_t,\; x_t-\hat x_t,\; \dot q_t-\dot{\hat q}_t,\;\dots \rbrace
+$$
+
+其中 $w_k$ 是各误差项的权重，$\sigma_k$ 是其容差。完美跟踪时每一项为 1，误差增大时平滑衰减。再加上域随机化和教师-学生划分，策略就能迁移到真实机器人上。2025–2026 年的论文区别在于跟踪*什么*、一个策略覆盖*多少*动作，以及*如何*缩小仿真与现实的差距：
+
+{% include blog_figure.liquid path="assets/img/blog/embodied-ai/02-update-tracking-reward.svg" caption="左：三种容差 $\sigma$ 下的跟踪奖励项 $r = \exp(-e^2/\sigma^2)$。右：一个玩具示例，关节以 40 ms 的滞后和少量噪声跟随 $\hat q(t) = 0.6\sin(1.5\pi t)$。灰色曲线是误差，彩色曲线是每一步的奖励。小的 $\sigma$（红色）对同样的滞后惩罚重得多，信号稀疏而尖锐；大的 $\sigma$（蓝色）很宽容，却几乎区分不出好的和一般的跟踪。KungfuBot 正因如此在训练中自适应调整 $\sigma$。" %}
+
+- **HOVER**（He 等，ICRA 2025）把多种指令模式（关节角、根部速度、手部关键点）蒸馏进一个全身控制器，上层规划器或遥操作者切换模式时无需切换策略。
+- **ASAP**（He 等，RSS 2025）直接处理动力学差距：先在仿真中训练跟踪策略并在真实机器人上运行以记录轨迹，再拟合一个**增量动作模型**（delta action model）$\Delta_\phi$，使仿真器复现这些真实轨迹，$s_{t+1} = f_{\text{sim}}(s_t, a_t + \Delta_\phi(s_t,a_t))$，最后在修正后的仿真器中微调策略。可与第 5 节的系统辨识对比：它不是拟合少数物理参数，而是学习动作上的残差。
+- **KungfuBot**（Xie 等，NeurIPS 2025）从视频中提取动作并按物理可行性过滤，训练中通过双层优化自适应调整容差 $\sigma_k$，让 Unitree G1 学会高动态技能。
+- **GMT**（Chen 等，arXiv 预印本，2025 年 6 月）用困难片段自适应采样和混合专家策略，为大型动作库训练*通用*跟踪器。**Any2Track**（Zhang 等，arXiv 预印本，2025 年 9 月）加入类似 RMA 的在线自适应模块，以应对推搡、负载和不平地面。
+- **BeyondMimic**（Liao 等，arXiv 预印本，2025 年 8 月）开源了高动态技能的跟踪管线，并把跟踪器蒸馏成潜在**扩散**模型，测试时可用分类器引导（摇杆、路径点、避障）控制。这是把[第 4 篇]({{ '/blog/2026/embodied-ai-04-imitation-learning/' | relative_url }})的扩散模型作为 RL 跟踪器之上的动作先验。
+- **SONIC**（Luo 等，NVIDIA；发表于 *Science Robotics*，2026）把动作跟踪当作**基础任务**：扩大模型、动作捕捉数据和算力，并把 VR 遥操作、人类视频和 VLA 输出映射到同一个指令 token 空间。公开的 GR00T 全身控制代码和权重便于他人在其上开发。
+- **X-WBC**（Zhang 等，已被 CoRL 2026 录用）在多个人形机器人上训练一个 Transformer，加上小的机器人专属模块，报告联合训练提升了每个机器人的跟踪表现。
+
+能跟随*任意*人体动作的跟踪器，就成了其上一切的底层。**TWIST** 和 **TWIST2**（Ze 等，arXiv 预印本，2025）用全身遥操作驱动它来采集数据（见[第 6 篇]({{ '/blog/2026/embodied-ai-06-embodied-ai-meets-xr-and-hci/' | relative_url }})）；Figure 的 Helix 02 则在 VLA 之下放了一个这样的 1 kHz 学习型控制器（见[第 5 篇]({{ '/blog/2026/embodied-ai-05-vision-language-action-models/' | relative_url }})）。
+
+### 真实世界 RL 与基础策略的 RL 微调
+
+- **HIL-SERL**（Luo 等，arXiv，2024 年 10 月）直接在真实机器人上运行离策略 RL（RLPD 式的 SAC 变体，见第 3 节），用人的纠正加速探索，在一到数小时的真实交互中学会精密装配、动态翻转和双臂任务。它是“真实世界 RL 是可行的”的参照点。
+- **ConRFT**（Chen 等，RSS 2025）通过一致性策略头并结合人工干预，先离线、再在真实机器人上在线微调 VLA。
+- **RL4VLA**（Liu 等，NeurIPS 2025）、**VLA-RL**（Lu 等，arXiv 预印本，2025 年 5 月）和 **SimpleVLA-RL**（Li 等，arXiv 预印本，2025 年 9 月）在仿真中用稀疏成功奖励对基于 token 或回归的 VLA 做 PPO 式 RL，报告了比监督微调更好的泛化；RL4VLA 还发现在该设置下 PPO 优于 DPO 和 GRPO。
+- **pi_RL**（Chen 等，arXiv 预印本，2025 年 10 月）解决了 pi0 这类**流策略**的一个技术障碍：PPO 需要 $\log \pi_\theta(a\mid s)$，而确定性的流 ODE 没有可计算的似然。在每个积分步注入噪声（Flow-Noise）或把 ODE 变成 SDE（Flow-SDE）后，每个去噪步都是高斯分布，对数似然就是高斯对数密度之和，于是 PPO 和 GRPO 可以用于 pi0 和 pi0.5。
+- pi\*0.6 中的 **Recap**（Physical Intelligence，arXiv 预印本，2025 年 11 月）完全避开策略梯度：学习价值函数 $V(s)$，为数据的每一段标注优势估计（最简单的形式是第 2 节的 $A = r + \gamma V(s') - V(s)$），再以 $A > 0$ 与否为条件训练 VLA；测试时要求模型输出“优势为正”的动作。
+- **RL Token**（Xu 等，arXiv 预印本，2026 年 4 月）从冻结的 VLA 中引出一个紧凑的“RL token”，在其上在线训练小型 actor-critic，任务中的精细阶段在真实机器人上几小时内就能改进。
+- **Real-time EXPO-FT**（Dong 等，arXiv 预印本，2026 年 9 月）保留慢速 VLA 作为动作块的提议者，再训练一个轻量的 RL“编辑”策略，以高频率修正动作块，用于动态操作。
+
+### 计算示例：流策略的似然
+
+pi_RL 为什么需要 Flow-Noise？流策略（第 5 篇）先采样 $a_0 \sim \mathcal{N}(0, 1)$，再用 $K$ 个步长为 $\Delta = 1/K$ 的欧拉步，把学到的速度场 $v_\theta(a, \tau)$ 从 $\tau = 0$ 积分到 $1$。如果确定性地积分，最终动作只是 $a_0$ 的一个固定函数，PPO 的比率 $\pi_\theta(a\mid s)/\pi_{\theta_\text{old}}(a\mid s)$ 没有简单的形式。Flow-Noise 在每一步加入标准差为 $\sigma\sqrt{\Delta}$ 的高斯噪声：
+
+$$
+a_{k+1} = a_k + v_\theta(a_k, \tau_k)\,\Delta + \sigma\sqrt{\Delta}\,\varepsilon_k,\qquad \varepsilon_k \sim \mathcal{N}(0, 1).
+$$
+
+这样每一步都是均值为 $a_k + v_\theta\Delta$ 的高斯分布，整条链 $a_{0:K}$ 的对数似然为
+
+$$
+\log \pi_\theta(a_{0:K}) = \log\mathcal{N}(a_0; 0, 1) + \sum_{k=0}^{K-1} \log\mathcal{N}\!\left(a_{k+1};\, a_k + v_\theta(a_k,\tau_k)\Delta,\, \sigma^2\Delta\right),
+$$
+
+PPO 比率就是在实际采样到的链上计算的 $\rho = \exp(\log\pi_{\theta}(a_{0:K}) - \log\pi_{\theta_\text{old}}(a_{0:K}))$。下面的玩具例子使用一维“策略”，它唯一的参数 $\theta$ 是直线流 $v_\theta(a,\tau) = (\theta - a)/(1-\tau)$ 的目标动作：
+
+```python
+import numpy as np
+
+
+def velocity(a, tau, theta):
+    # straight-line (rectified) flow from noise to the action theta: v = (theta - a) / (1 - tau)
+    return (theta - a) / (1.0 - tau)
+
+
+def log_prob(chain, theta, sigma=0.3):
+    """log-likelihood of a whole denoising chain a_0 -> a_K under Flow-Noise."""
+    K = len(chain) - 1
+    dt = 1.0 / K
+    std = sigma * np.sqrt(dt)
+    lp = -0.5 * chain[0] ** 2 - 0.5 * np.log(2 * np.pi)          # a_0 ~ N(0, 1)
+    for k in range(K):
+        mean = chain[k] + velocity(chain[k], k * dt, theta) * dt  # Euler step
+        lp += -0.5 * ((chain[k + 1] - mean) / std) ** 2 - np.log(std * np.sqrt(2 * np.pi))
+    return lp
+
+
+def sample(theta, K=10, sigma=0.3, rng=None):
+    dt = 1.0 / K
+    chain = [rng.standard_normal()]
+    for k in range(K):
+        mean = chain[-1] + velocity(chain[-1], k * dt, theta) * dt
+        chain.append(mean + sigma * np.sqrt(dt) * rng.standard_normal())
+    return np.array(chain)
+
+
+rng = np.random.default_rng(0)
+theta_old, theta_new = 0.50, 0.60
+chain = sample(theta_old, rng=rng)
+lp_old, lp_new = log_prob(chain, theta_old), log_prob(chain, theta_new)
+print("final action a_K       = %.3f" % chain[-1])
+print("log pi_old(chain)      = %.3f" % lp_old)
+print("log pi_new(chain)      = %.3f" % lp_new)
+print("PPO ratio pi_new/pi_old = %.3f" % np.exp(lp_new - lp_old))
+
+# sanity check: with sigma -> 0 the chain becomes the deterministic ODE and a_K -> theta
+finals = [sample(theta_old, sigma=1e-4, rng=rng)[-1] for _ in range(3)]
+print("ODE limit a_K:", np.round(finals, 3))
+```
+
+输出：
+
+```text
+final action a_K       = 0.441
+log pi_old(chain)      = 10.467
+log pi_new(chain)      = 8.617
+PPO ratio pi_new/pi_old = 0.157
+ODE limit a_K: [0.5 0.5 0.5]
+```
+
+对数似然为正，是因为每一步的密度很窄（$\sigma\sqrt{\Delta} \approx 0.095$），密度值大于 1。采样到的动作 0.441 *低于* $\theta_\text{old} = 0.5$，所以改成 $\theta = 0.6$ 后这条链的概率约降为六分之一（$\rho = 0.157$）。如果这个动作的优势为正，PPO 就会把 $\theta$ 往下推，朝它靠近。当 $\sigma \to 0$ 时，链退化为确定性的 ODE，总是停在 $\theta$；正是噪声让似然得以存在。在 pi0 中，$v_\theta$ 是动作专家，$a$ 是 50 步的动作块，但计算方式完全相同。
+
+下图展示了这一论证的两部分：带噪声的链，以及不同噪声大小下比率对 $\theta$ 的反应有多剧烈。
+
+{% include blog_figure.liquid path="assets/img/blog/embodied-ai/02-update-flow-noise.svg" caption="左：玩具流策略在 $\sigma = 0.3$ 时的 25 条带噪声的去噪链（橙色）和 6 条确定性 ODE 链（虚线），它们都朝向 $\theta_\text{old} = 0.5$；正是噪声让每一步都有高斯密度。右：一条采样链的 PPO 比率 $\rho$ 随 $\theta$ 偏离 0.5 的变化，共三种噪声大小。$\sigma = 0.3$ 的曲线就是计算示例中的那条链（$a_K = 0.44$，$\theta = 0.6$ 时 $\rho = 0.157$）。$\sigma$ 小时比率几乎立刻离开裁剪带（灰色）；$\sigma$ 大时信号平坦而微弱。" %}
+
+共同的主线是**分工**：模仿学习或大规模预训练提供先验和语义，RL 负责最后一公里的精度和可靠性，方式可以是策略梯度（pi_RL、SimpleVLA-RL），也可以是基于价值的重新标注（Recap）。
+
+*与前文相比的变化：*第 6 节说“模仿学习主导了今天的操作任务”，就预训练而言仍然成立；但对最终的可靠性来说，RL 微调已成为工业界的标准做法，而且直接使用真实机器人，不再只用仿真器。
+
 ## 代表性论文
 
 | 论文 | 会议/期刊 | 年份 | 链接 | 意义 |
@@ -415,6 +532,23 @@ flowchart LR
 | Kaufmann et al., *Champion-level drone racing using deep reinforcement learning* | Nature | 2023 | [DOI](https://doi.org/10.1038/s41586-023-06419-4) | RL 击败人类冠军 |
 | Ma et al., *Eureka: human-level reward design via coding large language models* | ICLR | 2024 | [arXiv](https://arxiv.org/abs/2310.12931) | LLM 编写奖励 |
 | Radosavovic et al., *Real-world humanoid locomotion with reinforcement learning* | Science Robotics | 2024 | [arXiv](https://arxiv.org/abs/2303.03381) | 人形机器人的 Transformer 策略 |
+| He et al., *HOVER: versatile neural whole-body controller for humanoid robots* | ICRA | 2025 | [arXiv](https://arxiv.org/abs/2410.21229) | 多种指令模式，一个策略 |
+| Luo et al., *Precise and dexterous robotic manipulation via human-in-the-loop reinforcement learning*（HIL-SERL） | arXiv（2024 年 10 月） | 2024 | [arXiv](https://arxiv.org/abs/2410.21845) | 可行的真实世界 RL |
+| He et al., *ASAP: aligning simulation and real-world physics for learning agile humanoid whole-body skills* | RSS | 2025 | [arXiv](https://arxiv.org/abs/2502.01143) | 增量动作模型缩小动力学差距 |
+| Chen et al., *ConRFT: a reinforced fine-tuning method for VLA models via consistency policy* | RSS | 2025 | [arXiv](https://arxiv.org/abs/2502.05450) | 离线到在线的真实机器人 VLA 微调 |
+| Xie et al., *KungfuBot: physics-based humanoid whole-body control for learning highly-dynamic skills* | NeurIPS | 2025 | [arXiv](https://arxiv.org/abs/2506.12851) | 自适应跟踪容差 |
+| Liu et al., *What can RL bring to VLA generalization? An empirical study* | NeurIPS | 2025 | [arXiv](https://arxiv.org/abs/2505.19789) | VLA 的 PPO 与 SFT 对比 |
+| Lu et al., *VLA-RL: towards masterful and general robotic manipulation with scalable reinforcement learning* | arXiv 预印本（2025 年 5 月） | 2025 | [arXiv](https://arxiv.org/abs/2505.18719) | 对预训练 VLA 做在线 RL |
+| Chen et al., *GMT: general motion tracking for humanoid whole-body control* | arXiv 预印本（2025 年 6 月） | 2025 | [arXiv](https://arxiv.org/abs/2506.14770) | 面向大型动作库的单一跟踪器 |
+| Liao et al., *BeyondMimic: from motion tracking to versatile humanoid control via guided diffusion* | arXiv 预印本（2025 年 8 月） | 2025 | [arXiv](https://arxiv.org/abs/2508.08241) | 开源跟踪管线 + 引导扩散 |
+| Zhang et al., *Track any motions under any disturbances*（Any2Track） | arXiv 预印本（2025 年 9 月） | 2025 | [arXiv](https://arxiv.org/abs/2509.13833) | 带在线自适应的跟踪 |
+| Li et al., *SimpleVLA-RL: scaling VLA training via reinforcement learning* | arXiv 预印本（2025 年 9 月） | 2025 | [arXiv](https://arxiv.org/abs/2509.09674) | VLA 的结果奖励 RL |
+| Chen et al., *pi_RL: online RL fine-tuning for flow-based vision-language-action models* | arXiv 预印本（2025 年 10 月） | 2025 | [arXiv](https://arxiv.org/abs/2510.25889) | 为流策略提供似然 |
+| Luo et al., *SONIC: supersizing motion tracking for natural humanoid whole-body control* | Science Robotics | 2026 | [arXiv](https://arxiv.org/abs/2511.07820) | 动作跟踪作为基础任务 |
+| Physical Intelligence, *pi\*0.6: a VLA that learns from experience* | arXiv 预印本（2025 年 11 月） | 2025 | [arXiv](https://arxiv.org/abs/2511.14759) | 优势条件 RL（Recap） |
+| Xu et al., *RL Token: bootstrapping online RL with vision-language-action models* | arXiv 预印本（2026 年 4 月） | 2026 | [arXiv](https://arxiv.org/abs/2604.23073) | 冻结 VLA 上的小型在线 actor-critic |
+| Zhang et al., *X-WBC: a cross-embodiment foundation model for humanoid whole-body control* | CoRL（已录用） | 2026 | [arXiv](https://arxiv.org/abs/2609.15213) | 跨人形机器人的单一控制器 |
+| Dong et al., *Reinforcement learning for real-time vision-language-action policies* | arXiv 预印本（2026 年 9 月） | 2026 | [arXiv](https://arxiv.org/abs/2609.18207) | 在慢速 VLA 动作块上做快速 RL 编辑 |
 
 ## 学习资源
 
@@ -436,5 +570,18 @@ flowchart LR
 4. 在 `PointReach` 上训练，然后在参数取极端值的 `RandomizedPointReach` 上评估，并与用随机化训练的策略比较。把真实阻尼加入
    观测（"特权"输入），看看能帮多少。
 5. 为同一任务实现 SAC（回放缓冲区、双 Q、tanh 高斯、自动 $\alpha$），并比较它与 PPO 所需的环境步数。
+6. 在 Flow-Noise 代码中，分别用 `sigma=0.1` 和 `sigma=1.0` 重新计算 PPO 比率（`sample` 和 `log_prob` 都要传入 `sigma`）。为什么 $\sigma$ 小时比率会变得极端？这对 PPO 的裁剪意味着什么？
+
+   <details markdown="1"><summary>提示</summary>
+
+   用种子 0 时，$\sigma = 1$ 的比率约为 $0.69$，$\sigma = 0.1$ 时几乎为 $0$。改变 $\theta$ 会让每一步的均值平移一个固定量，对数密度的变化大约是（平移量）$^2/(\sigma^2\Delta)$，因此按 $1/\sigma^2$ 增长。噪声太小时几乎每个样本都会触到裁剪范围，梯度信号消失；pi_RL 因此要调节或学习噪声大小。
+   </details>
+
+7. 在跟踪奖励图中，关节以 40 ms 的滞后跟随 $\hat q(t) = 0.6\sin(1.5\pi t)$。估计最大误差，以及该误差下 $\sigma = 0.1, 0.25, 0.5$ 时的奖励。
+
+   <details markdown="1"><summary>提示</summary>
+
+   滞后 $\delta$ 很小时 $e \approx \dot{\hat q}\,\delta$，最大速度为 $0.6 \cdot 1.5\pi$ rad/s，所以 $e_\text{max} \approx 0.6 \cdot 1.5\pi \cdot 0.04 \approx 0.113$ rad。于是 $r = \exp(-e^2/\sigma^2) \approx 0.28$、$0.82$ 和 $0.95$。只有最小的 $\sigma$ 能清楚地告诉策略“你慢了”。
+   </details>
 
 **下一篇：**[仿真平台]({{ '/blog/2026/embodied-ai-03-simulation-platforms/' | relative_url }})，所有这些训练发生的地方。

@@ -324,6 +324,54 @@ LeRobot の実装がよい参考になります。
 マウスで布をドラッグすることは、変形物体のマニピュレーション軌道の「デモ」です。マウスの経路と粒子の位置を記録すれば、布をたたむ
 方策の学習に使うのとまさに同じ $(o_t, a_t)$ のペアが得られます。
 
+## 2025〜2026 年の進展（2026 年 11 月時点）
+
+2026 年初め以降の三つの進展が、本記事の考え方の実際の使われ方を変えました。データセットは数千のエピソードではなく数千**時間**で数えられるようになりました。UMI 型のハンドヘルド収集は、基盤モデルを事前学習できるほどの規模になりました。そして「大規模行動モデル」（Large Behavior Models、多タスクで学習した Diffusion Policy 型のモデル）が、異例なほど慎重な統計で評価されました。状態は 2026 年 11 月時点のものです。
+
+### データセット：数字で見る
+
+表は、各論文または公式ページに書かれた数字をまとめたものです。データセットごとに数える対象（軌道、時間、シーン）が異なるので、列の中で比べ、列をまたいで比べないでください。
+
+| データセット | 状態 | 規模 | 身体 | 多様性 |
+| --- | --- | --- | --- | --- |
+| BridgeData V2 | CoRL 2023 | 60,096 軌道 | 1（WidowX 250） | 24 環境、13 スキル |
+| Open X-Embodiment | ICRA 2024 | 60 データセットから 100 万軌道以上 | 22 種類のロボット | 527 スキル、21 機関 |
+| DROID | RSS 2024 | 7.6 万軌道、350 時間 | 1（Franka） | 564 シーン、86 タスク |
+| RoboMIND | RSS 2025 | 約 10.7 万軌道 | 4 | 479 タスク、失敗デモ 5 千本を含む |
+| AgiBot World | arXiv プレプリント（2025 年 3 月） | 100 万軌道以上 | AgiBot G1 プラットフォーム | 217 タスク、5 つの展開シナリオ |
+| Galaxea Open-World | arXiv プレプリント（2025 年 8 月） | 500 時間以上 | 1（R1 Lite 移動マニピュレータ） | 11 の実際の場所（家庭、店舗など） |
+| TRI LBM の事前学習データ | Science Robotics 2026 | 約 1,700 時間（自前の遠隔操作 468 時間、シミュレーション 45 時間、UMI 32 時間、OXE 約 1,150 時間） | 複数 | 評価タスク 29 |
+| Being-H0.5 / UniHand-2.0 | arXiv プレプリント（2026 年 1 月） | 3.5 万時間以上、主に人の手のインタラクション | 人 + 30 種類のロボットの身体 | 人間中心の事前学習 |
+| 双腕の家事データ（Xu ら） | arXiv プレプリント（2026 年 9 月） | 1,500 時間（オープンソース化） | 双腕 | 専門家データと方策オン型の修正データ |
+
+{% include blog_figure.liquid path="assets/img/blog/embodied-ai/04-update-dataset-scale.svg" localized="true" caption="左：データソースごとの時間数（対数軸。論文が「以上」と書くものは下限値）。青 = ロボット遠隔操作、橙 = ハンドヘルド UMI データ、緑 = 人間の一人称視点動画。最大の人間のコーパスは 1〜2 桁大きいです。右：両方の数字を報告しているデータセットの軌道数とロボットの身体の数。両方向に大きいのは Open X-Embodiment だけです。" %}
+
+二つの傾向がはっきりしています。第一に、**シーンの多様性は繰り返しに勝ります**。DROID の 564 シーンや Galaxea の実際の家庭・店舗は、[第 5 回]({{ '/blog/2026/embodied-ai-05-vision-language-action-models/' | relative_url }})の汎化の軸を狙って設計されています。第二に、最大の数字は今や**人間のデータ**から来ています。UniHand-2.0 と EgoScale（[第 6 回]({{ '/blog/2026/embodied-ai-06-embodied-ai-meets-xr-and-hci/' | relative_url }})）は数万時間の規模で、どのロボット遠隔操作コーパスよりも一桁多いです。Xu らの 2026 年の論文には有益なひねりがあります。専門家のデモと並べて **DAgger 型の方策オン修正データ**（第 1 節）も拡大し、両者がどうスケールするかを調べています。1,500 時間あっても、共変量シフトは依然として敵です。
+
+### UMI 型の収集の成熟
+
+第 4 節のハンドヘルドグリッパーは、一つのファミリーになりました。
+
+- **UMI on Legs**（Ha ら、arXiv プレプリント、2024 年 7 月）は、シミュレーションで学習した全身コントローラを介して、UMI で学習した操作方策を四脚ロボットで動かします。方策はワールド座標でのエンドエフェクタ目標を出力するので、グリッパーを何が運んでいるかを気にしません。
+- **FastUMI**（Zhaxizhuoma ら、arXiv プレプリント、2024 年 9 月）は UMI の視覚 SLAM を市販のトラッキングに置き換えてハードウェアを再現しやすくし、1 万軌道以上を公開しました。
+- **DexUMI**（Xu ら、CoRL 2025）は人の手をインターフェースにします。外骨格がロボットハンドの運動学に合わせ、動画の中で人の手をロボットハンドにインペインティングすることで、見た目のギャップをなくします。
+- **ViTaMIn**（Liu ら、arXiv プレプリント、2025 年 4 月）とその双腕版はハンドヘルドグリッパーに**触覚**を加えました。**UMI-FT**（Choi ら、arXiv プレプリント、2026 年 1 月）は指ごとに 6 軸力覚センサを付け、柔らかく接触の多いタスクに対応します。
+- **RDT2**（Liu ら、ICML 2026）はスケールの試金石です。1 万時間を超える UMI データで 7B の VLA を学習し、見たことのないロボットにゼロショットで展開します（第 5 回）。
+
+### 拡散方策とフロー方策：より速く、より滑らかに
+
+- **リアルタイムチャンキング**（Black ら、NeurIPS 2025）は、第 2 節のアクションチャンキングでチャンク境界に生じる停止やガタつきを解消します。現在のチャンクを実行しながら、確定済みの行動を固定したインペインティングで次のチャンクを生成します。続く研究では、この条件付けを学習時に移しています。
+- **Streaming Flow Policy**（Jiang ら、CoRL 2025）は行動軌道そのものをフローの軌道とみなし、サンプリングの途中でも行動をロボットにストリーミングできます。
+- **One-Step Flow Policy**（Li ら、arXiv プレプリント、2026 年 3 月）はフロー方策を 1 回のネットワーク評価に自己蒸留します。56 のシミュレーションタスクで、100 ステップの拡散・フロー方策と同等以上の性能を 100 倍以上の速度で出します。蒸留を極限まで進めた形で、行動チャンク一つにつきネットワーク評価は 1 回です。
+
+### 大規模行動モデル
+
+**A careful examination of large behavior models for multitask dexterous manipulation**（TRI LBM Team、arXiv 2025 年 7 月。プロジェクトページによれば 2026 年に *Science Robotics* に掲載）は、上の表の約 1,700 時間の混合データで Diffusion Policy 型の Transformer を事前学習し、新しいタスクで微調整します。学習者にとって最も役立つのはその方法論です。評価はブラインドかつランダム化され、約 1,800 回の実機と 4.7 万回のシミュレーションのロールアウトを使い、信頼区間を報告しています。このプロトコルのもとで、多タスク事前学習は微調整後の方策の成功率と頑健性を高め、新しいタスクは単一タスクのベースラインのごく一部のデータで済みました。性能は事前学習データの規模と多様性とともに向上しました。第 5 回の演習 5 は、まさにこのようなプロトコルの設計を求めています。
+
+その後、Boston Dynamics と TRI は電動の **Atlas** ヒューマノイド用の LBM を学習しました。Boston Dynamics の 2025 年のブログによれば、約 4.5 億パラメータの拡散 Transformer でフローマッチングで学習され、30 Hz で 48 ステップの行動チャンクを出力し（24 ステップ実行してから再計画）、手や足を含む全身を制御します。第 2 節のアクションチャンキングをヒューマノイドの規模にしたものです。
+
+*前の節からの変化：*第 5 節ではデータセットを軌道数で説明しました。2026 年規模のコーパスでは、時間数と異なるシーンの数のほうが有益な単位であり、生の規模では人間のデータがロボットのデータを上回っています。
+
 ## 代表的な論文
 
 | 論文 | 会議・論文誌 | 年 | リンク | 意義 |
@@ -344,6 +392,21 @@ LeRobot の実装がよい参考になります。
 | Ze et al., *3D Diffusion Policy* | RSS | 2024 | [arXiv](https://arxiv.org/abs/2403.03954) | 点群による条件付け |
 | Fu, Zhao, Finn, *Mobile ALOHA* | CoRL | 2024 | [arXiv](https://arxiv.org/abs/2401.02117) | 移動双腕の模倣、共同学習 |
 | Zhao et al., *ALOHA Unleashed: a simple recipe for robot dexterity* | CoRL | 2024 | [arXiv](https://arxiv.org/abs/2410.13126) | 双腕の器用さのスケーリング |
+| Ha et al., *UMI on Legs: making manipulation policies mobile with manipulation-centric whole-body controllers* | arXiv プレプリント（2024 年 7 月） | 2024 | [arXiv](https://arxiv.org/abs/2407.10353) | 四脚ロボット上の UMI 方策 |
+| Zhaxizhuoma et al., *FastUMI: a scalable and hardware-independent universal manipulation interface with dataset* | arXiv プレプリント（2024 年 9 月） | 2024 | [arXiv](https://arxiv.org/abs/2409.19499) | 簡単な UMI ハードウェア、1 万軌道以上 |
+| Wu et al., *RoboMIND: benchmark on multi-embodiment intelligence normative data for robot manipulation* | RSS | 2025 | [arXiv](https://arxiv.org/abs/2412.13877) | 失敗を含む複数身体のデータ |
+| AgiBot World Contributors, *AgiBot World Colosseo: a large-scale manipulation platform for scalable and intelligent embodied systems* | arXiv プレプリント（2025 年 3 月） | 2025 | [arXiv](https://arxiv.org/abs/2503.06669) | 100 万軌道以上 |
+| Liu et al., *ViTaMIn: learning contact-rich tasks through robot-free visuo-tactile manipulation interface* | arXiv プレプリント（2025 年 4 月） | 2025 | [arXiv](https://arxiv.org/abs/2504.06156) | 触覚付きハンドヘルド収集 |
+| Xu et al., *DexUMI: using human hand as the universal manipulation interface for dexterous manipulation* | CoRL | 2025 | [arXiv](https://arxiv.org/abs/2505.21864) | 外骨格 + 手のインペインティング |
+| Jiang et al., *Streaming flow policy* | CoRL | 2025 | [arXiv](https://arxiv.org/abs/2505.21851) | サンプリング中に行動をストリーミング |
+| Black et al., *Real-time execution of action chunking flow policies* | NeurIPS | 2025 | [arXiv](https://arxiv.org/abs/2506.07339) | 非同期チャンキング |
+| TRI LBM Team, *A careful examination of large behavior models for multitask dexterous manipulation* | Science Robotics | 2026 | [arXiv](https://arxiv.org/abs/2507.05331) | 統計的に慎重な LBM 評価 |
+| Jiang et al., *Galaxea Open-World dataset and G0 dual-system VLA model* | arXiv プレプリント（2025 年 8 月） | 2025 | [arXiv](https://arxiv.org/abs/2509.00576) | 実際の家庭と店舗での 500 時間以上 |
+| Choi et al., *In-the-wild compliant manipulation with UMI-FT* | arXiv プレプリント（2026 年 1 月） | 2026 | [arXiv](https://arxiv.org/abs/2601.09988) | 指の力覚センシング |
+| Luo et al., *Being-H0.5: scaling human-centric robot learning for cross-embodiment generalization* | arXiv プレプリント（2026 年 1 月） | 2026 | [arXiv](https://arxiv.org/abs/2601.12993) | 3.5 万時間以上の人間中心データ |
+| Li et al., *One-step flow policy: self-distillation for fast visuomotor policies* | arXiv プレプリント（2026 年 3 月） | 2026 | [arXiv](https://arxiv.org/abs/2603.12480) | 1 ステップの生成方策 |
+| Xu et al., *Scaling bimanual household manipulation from 1,500 hours of demonstrations to on-policy corrections* | arXiv プレプリント（2026 年 9 月） | 2026 | [arXiv](https://arxiv.org/abs/2609.03591) | 専門家データと修正データのスケーリング |
+| Boston Dynamics, [*Large behavior models and Atlas find new footing*](https://bostondynamics.com/blog/large-behavior-models-atlas-find-new-footing/) | ブログ | 2025 | リンク参照 | Atlas の全身 LBM |
 
 ## 学習リソース
 
@@ -364,6 +427,12 @@ LeRobot の実装がよい参考になります。
    回帰し、サンプリングでは 10 ステップのオイラー法で ODE を積分します。
 5. 拡散サンプラの上に ACT 流の時間的アンサンブル（毎ステップ問い合わせ、重なった予測を指数重みで平均）を実装し、後退ホライズン実行と
    滑らかさを比べましょう。
+6. データ規模（進展の節）：データ規模の図にある EgoScale（20,854 時間）と DROID（350 時間）の時間数を、30 fps でフレーム数に換算しましょう。この単純な比が、人間のデータがロボットにとってどれだけ役立つかを過大に見せるのはなぜでしょうか。
+
+   <details markdown="1"><summary>ヒント</summary>
+
+   $20{,}854 \cdot 3600 \cdot 30 \approx 2.25\times 10^9$ フレームに対して $350 \cdot 3600 \cdot 30 \approx 3.8\times 10^7$ フレームで、比は約 60 です。しかし人間の動画にはロボットの行動がありません。行動は推定しなければならず（手の姿勢、リターゲティング）、身体もカメラもロボットとは違い、操作をしていないフレームも多くあります。そのため論文はずっと少量のロボットデータと混ぜて使い、一対一の換算率ではなくスケーリングの*傾向*を報告しています。
+   </details>
 
 **次回：**[Vision-Language-Action モデル]({{ '/blog/2026/embodied-ai-05-vision-language-action-models/' | relative_url }})。
 模倣学習が基盤モデルと出会います。

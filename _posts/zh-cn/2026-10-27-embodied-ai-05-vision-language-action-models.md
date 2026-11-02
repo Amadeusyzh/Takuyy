@@ -349,6 +349,72 @@ flowchart TB
 可编辑开放世界（由一个关键词驱动的程序化生成器代替学习模型），而且它是"活"的：可以重新打光、塑形、在其中行走。它是上面那些
 生成式世界模型的一个迷你版。结合 XPBD 物理演示，它暗示了长远的图景：带物理的生成式三维世界，VLA 在其中被训练和评估。
 
+## 2025–2026 年进展（截至 2026 年 11 月）
+
+前面各节描述的是 2026 年初的状况，本节补充此后到 2026 年 11 月为止的新工作。ICLR 2026（4 月，里约热内卢）、ICRA 2026（6 月，维也纳）、ICML 2026（7 月）和 RSS 2026（7 月，悉尼）都已召开；CoRL 2026（11 月 9–12 日，奥斯汀）还有一周，因此其论文在这里按预印本引用。每项工作都注明了状态：已发表、已录用、预印本或官方公告。许多工业界模型只有博客文章，我们会明确指出。
+
+下面的浏览器把本文和本节的模型放在同一条时间线上：每条泳道是一个机构或模型家族，灰色曲线表示“基于”。用筛选器可以看出三个趋势：流匹配（flow matching）逐渐成为主流动作头；开放权重从学术界扩展到 NVIDIA 和 Physical Intelligence；2026 年人形机器人成为主要目标。
+
+{% include widget.liquid name="embodied-ai-vla-explorer" height="560" caption="交互：按动作头、是否开放权重或本体类型筛选。点击模型可查看摘要、状态和链接（摘要为英文）。颜色 = 动作头，实心 = 开放权重，灰色曲线 = 基于。手机上时间轴向下延伸，较长的名称会被缩短，点击条目即可看到全名。日期为 arXiv 首个版本或官方公告的月份。" %}
+
+{% include blog_figure.liquid path="assets/img/blog/embodied-ai/05-update-vla-timeline.svg" localized="true" caption="上：与浏览器相同的模型，画成静态时间线（实心 = 开放权重，空心 = 未开放）。下：本列表中每年的模型数，按动作头分类。2022–2023 年以离散 token 为主，2024 年出现扩散头；从 2025 年起流匹配成为最常见的动作头，“其他”的比例上升是因为若干工业界模型没有公开动作头。该列表是精选，而非完整统计。" %}
+
+### Physical Intelligence：从 pi0.5 到 pi0.7
+
+- **知识隔离**（knowledge insulation，Driess 等，NeurIPS 2025）解决了给 VLM 加动作专家时的一个问题：动作专家的梯度会损害 VLM 原有的知识。主干网络用离散的 FAST token 和网络数据训练，流匹配动作专家则通过停止梯度（stop-gradient）读取主干特征。这样训练依然快，推理仍输出连续动作块，语言跟随能力也更好。openpi 中的 pi0.5 权重采用了这一做法。
+- **实时分块**（real-time chunking，Black 等，NeurIPS 2025）让分块流策略异步运行：机器人执行当前动作块时，下一块作为一个*修复*（inpainting）问题生成，已提交的动作被冻结，重叠部分被引导与之衔接。无需重新训练，就能消除第 3 节提到的动作块边界处的停顿和抖动。
+- **pi\*0.6**（Physical Intelligence，arXiv 预印本，2025 年 11 月）提出 **Recap**（基于优势条件策略、利用经验与纠正的强化学习）。一个价值函数为示范、专家纠正和自主执行数据的每一段打分，VLA 在二值化优势的条件下训练，部署时要求输出“好”的动作。这是一种不需要通过流匹配头做策略梯度的离线 RL。官方报告称在最难的任务（制作意式咖啡、在家中叠衣服、组装纸箱）上吞吐量提高了一倍以上。优势函数的概念见[第 2 篇]({{ '/blog/2026/embodied-ai-02-reinforcement-learning-for-robots/' | relative_url }})。
+- **pi0.7**（arXiv 预印本，2026 年 4 月）让提示（prompt）更丰富：除语言外，还包含片段元数据（示范质量、速度）、控制模态和可选的子目标图像。这样，质量参差的数据和其他本体的数据都能用于训练而不拖累策略，测试时在提示中要求“高质量”即可。报告展示了在没有叠衣数据的本体上零样本叠衣。pi.website 上两篇未经同行评审的研究文章（2026 年 3 月）还加入了记忆（压缩视频加文本笔记，可处理约 15 分钟的任务）和用于快速在线 RL 的“RL token”；后者随后以 arXiv 预印本发表（见第 2 篇）。
+
+### Google DeepMind：从 Gemini Robotics 1.5 到 2
+
+**Gemini Robotics On-Device**（2025 年 6 月，公告）是 DeepMind 第一个无需联网、可用 50–100 条示范微调的 VLA。**Gemini Robotics-ER 1.6**（2026 年 4 月，通过 Gemini API 提供）改进了指点、计数和成功检测，并加入与 Boston Dynamics 合作开发的仪表读数能力。**Gemini Robotics 2**（2026 年 7 月公告；VLA 面向早期合作伙伴，ER 2 为预览版）把控制从双臂桌面操作扩展到 Apptronik Apollo 2 等**全身人形机器人**；ER 2 可协调多台机器人完成数分钟的任务，On-Device 2 用不到 200 个示例即可适配新的双臂本体。这些都没有完整论文，只有博客和安全报告，公告之外的架构细节未知。
+
+### NVIDIA：GR00T N1.5 到 N1.7，以及作为世界动作模型的 N2
+
+- **GR00T N1.5**（2025 年 6 月，开放权重）冻结 Eagle 2.5 VLM，加入 **FLARE** 损失，使策略特征与未来观测的嵌入对齐，并使用 DreamGen 的“神经轨迹”（见下文）训练。
+- **GR00T N1.6**（2025 年 12 月，非商用许可的开放权重）改用基于 Cosmos 的 2B VLM 并解冻其顶层，动作 DiT 为 32 层，预测**相对当前状态**的动作块，这正是第 3 节归一化问题的一个实例。
+- **GR00T N1.7**（2026 年 3 月抢先体验，现已在 GitHub 发布）采用 Cosmos-Reason2-2B 主干，通过人手与机器人夹爪共享的相对末端执行器动作空间，加入约 2 万小时来自 EgoScale 的第一人称人类视频（见[第 6 篇]({{ '/blog/2026/embodied-ai-06-embodied-ai-meets-xr-and-hci/' | relative_url }})）。
+- **DreamZero**（Ye 等，arXiv 预印本，2026 年 2 月）主张**世界动作模型就是零样本策略**：一个 14B 的自回归视频扩散模型同时生成未来视频*和*动作，以约 7 Hz 闭环运行。NVIDIA 在 2026 年 3 月的 GTC 上预告了基于这一设计的 **GR00T N2**，称将于“年底前”发布；截至 2026 年 11 月，它仍只是公告。
+
+### Figure：Helix、Helix 02 与 Helix 2.5
+
+**Helix**（2025 年 2 月，公告）就是第 3 节提到的双系统设计：7B VLM（System 2）以 7–9 Hz 运行，把潜向量传给一个 8000 万参数的 Transformer（System 1），后者以 200 Hz 控制 35 自由度的上半身，全部在机载算力上运行。**Helix 02**（2026 年 1 月）加入 **System 0**：一个用重定向人体动作训练、以 1 kHz 运行的学习型全身控制器，也就是第 2 篇中的动作跟踪 RL 进入了 VLA 体系。**Helix 2.5**（2026 年 9 月）在人类行为数据上预训练后，报告在 30 个未见过的家庭中零样本工作。这些都是公司公告，没有论文或公开评测。
+
+### 来自学术界和其他公司的开放模型
+
+- **UniVLA**（Bu 等，RSS 2025）在 DINO 特征空间中从视频学习**以任务为中心的潜在动作**，使互联网视频和人类视频成为预训练数据，再用小解码器映射到各个机器人。
+- **X-VLA**（Zheng 等，ICLR 2026）用**软提示**（soft prompt）处理跨本体数据：每个数据源一个可学习嵌入，拼接在 token 前面。只用一个 0.9B 的普通 Transformer 和流匹配头，这些嵌入就能吸收相机与动作空间的差异（可与上文统一动作向量图对比）。
+- **GR-3**（字节跳动 Seed，技术报告，2025 年 7 月）约 4B 参数（Qwen2.5-VL 主干加流匹配 DiT），在网络数据、VR 采集的人类轨迹和双臂移动机器人数据上联合训练。
+- **WALL-OSS**（X Square Robot，arXiv 预印本，2025 年 9 月）用“统一的跨层级思维链”连接指令推理、子目标和动作，发布了流匹配和 FAST 两个版本。
+- **RDT2**（Liu 等，ICML 2026）在超过 1 万小时的 **UMI 手持夹爪数据**（见[第 4 篇]({{ '/blog/2026/embodied-ai-04-imitation-learning/' | relative_url }})）上训练 7B VLM，有 RVQ token 和流匹配两个版本，可零样本部署到训练中从未出现的机器人上。由于夹爪是共享的“本体”，机械臂几乎可以互换。
+- **MolmoAct2**（Fang 等，Ai2，arXiv 预印本，2026 年 5 月）完全开放：权重、代码、720 小时的双臂数据集，以及一个开放的 FAST 式分词器；其流匹配专家读取主干每一层的键值缓存。
+- **OAT（有序动作分词）**（Liu 等，RSS 2026，杰出论文候选）设计的动作 token 只看前缀就能解码出粗略动作，比 FAST 的 DCT 排序更进一步。
+
+### 世界动作模型：同时预测视频和动作
+
+第 5 节问过：一个模型能否既是策略又是世界模型？2025–2026 年已有多个团队做出了这样的模型：
+
+- **WorldVLA**（Cen 等，arXiv 预印本，2025 年 6 月）和 **Unified VLA**（Wang 等，ICLR 2026）把图像、语言和动作 token 放进同一个自回归模型；Unified VLA 还在视频上做世界模型后训练。
+- **Genie Envisioner**（Liao 等，arXiv 预印本，2025 年 8 月）训练了视频扩散世界模型（GE-Base）、基于其潜变量的流匹配动作解码器（GE-Act）和神经仿真器（GE-Sim）。
+- **DreamGen**（Jang 等，CoRL 2025）把微调后的视频模型当作*数据生成器*：“梦见”新行为的视频，用逆动力学模型标注动作，再用这些神经轨迹训练 GR00T，仅凭单一任务的遥操作数据就学会了 22 种新行为。
+- **Cosmos Policy**（Kim 等，ICLR 2026）微调 Cosmos-Predict2 视频模型，把动作、未来状态和价值编码为额外的潜在帧，使一个网络同时充当策略、世界模型和价值函数，并能用 best-of-N 采样做规划。
+- **DreamZero / GR00T N2**（见上文）是目前规模最大的。
+
+共同的模式是：视频生成主干取代 VLM 主干，动作只是又一个需要去噪的模态。押注在于视频预训练比图像描述更能教会物理和运动；代价是推理速度（几 Hz 而不是几十 Hz）。视频模型本身见世界模型系列的[视频世界模拟器]({{ '/blog/2026/world-models-03-video-world-simulators/' | relative_url }})；引擎与这些模型如何汇合成数据工厂，见 [AI 与图形引擎]({{ '/blog/2026/graphics-engine-06-ai-meets-graphics-engines/' | relative_url }})。
+
+### VLA 的强化学习微调
+
+除 Recap 外，开放研究也在仿真中对预训练 VLA 做策略梯度 RL。**RL4VLA**（Liu 等，NeurIPS 2025）发现 PPO 微调比监督微调更能提升语义和执行层面的泛化，且在该设置下 PPO 优于 DPO 和 GRPO。**SimpleVLA-RL**（Li 等，arXiv 预印本，2025 年 9 月）基于 veRL 框架在 OpenVLA-OFT 上扩展结果奖励 RL，减少了所需示范数量。流策略的 RL（pi_RL）和真实世界的变体见第 2 篇。
+
+### 评测
+
+- **RoboArena**（Atreya 等，CoRL 2025）众包真实世界评测：策略在多个机构的 DROID 式 Franka 平台上运行，评测者在自选任务上比较两个匿名策略，成对偏好模型把投票汇总成排名，即第 4 节盲测 A/B 思路的规模化。
+- **RoboChallenge**（Yakefu 等，arXiv 预印本，2025 年 10 月）是托管式远程基准：团队提交策略，在真实机器人上执行固定的 30 个任务（Table30）。
+- **以世界模型为评测器**：Google DeepMind 在微调后的 **Veo** 世界模拟器中评测 Gemini Robotics 策略（包括安全性探测），并与真实试验对照（arXiv 预印本，2025 年 12 月），正是第 5 节第 5 条的实践。更多内容见第 3 篇。
+
+*与前文相比的变化：*第 2 节汇总表中几乎每一行都有了后继模型。第 4 节说机器人学习还没有清晰的规模定律，这对成功率而言仍然成立；但 EgoScale（第 6 篇）报告了人类视频预训练小时数与下游灵巧操作性能之间的对数线性关系。
+
 ## 代表性论文
 
 | 论文 | 会议/期刊 | 年份 | 链接 | 意义 |
@@ -378,6 +444,29 @@ flowchart TB
 | Shukor et al., *SmolVLA: a vision-language-action model for affordable and efficient robotics* | arXiv | 2025 | [arXiv](https://arxiv.org/abs/2506.01844) | 小型开放 VLA |
 | Assran et al., *V-JEPA 2: self-supervised video models enable understanding, prediction and planning* | arXiv | 2025 | [arXiv](https://arxiv.org/abs/2506.09985) | 用于零样本规划的隐空间世界模型 |
 | Gemini Robotics Team, *Gemini Robotics 1.5* | arXiv | 2025 | [arXiv](https://arxiv.org/abs/2510.03342) | 会思考的 VLA，运动迁移 |
+| Bu et al., *UniVLA: learning to act anywhere with task-centric latent actions* | RSS | 2025 | [arXiv](https://arxiv.org/abs/2505.06111) | 从视频学习潜在动作 |
+| Driess et al., *Knowledge insulating vision-language-action models* | NeurIPS | 2025 | [arXiv](https://arxiv.org/abs/2505.23705) | 防止动作专家梯度损害 VLM |
+| Black et al., *Real-time execution of action chunking flow policies* | NeurIPS | 2025 | [arXiv](https://arxiv.org/abs/2506.07339) | 以修复方式异步分块执行 |
+| Jang et al., *DreamGen: unlocking generalization in robot learning through video world models* | CoRL | 2025 | [arXiv](https://arxiv.org/abs/2505.12705) | 视频模型生成神经轨迹 |
+| Atreya et al., *RoboArena: distributed real-world evaluation of generalist robot policies* | CoRL | 2025 | [arXiv](https://arxiv.org/abs/2506.18123) | 众包成对真实世界评测 |
+| Liu et al., *What can RL bring to VLA generalization? An empirical study* | NeurIPS | 2025 | [arXiv](https://arxiv.org/abs/2505.19789) | 用 PPO 微调 VLA |
+| Cen et al., *WorldVLA: towards autoregressive action world model* | arXiv 预印本（2025 年 6 月） | 2025 | [arXiv](https://arxiv.org/abs/2506.21539) | 联合预测动作与图像 |
+| ByteDance Seed, *GR-3 technical report* | arXiv 预印本（2025 年 7 月） | 2025 | [arXiv](https://arxiv.org/abs/2507.15493) | 网络 + VR 人类 + 机器人联合训练 |
+| Liao et al., *Genie Envisioner: a unified world foundation platform for robotic manipulation* | arXiv 预印本（2025 年 8 月） | 2025 | [arXiv](https://arxiv.org/abs/2508.05635) | 视频世界模型 + 动作解码器 + 神经仿真器 |
+| Li et al., *SimpleVLA-RL: scaling VLA training via reinforcement learning* | arXiv 预印本（2025 年 9 月） | 2025 | [arXiv](https://arxiv.org/abs/2509.09674) | VLA 的结果奖励 RL |
+| Zhai et al., *Igniting VLMs toward the embodied space*（WALL-OSS） | arXiv 预印本（2025 年 9 月） | 2025 | [arXiv](https://arxiv.org/abs/2509.11766) | 带跨层级思维链的开放 VLA |
+| Zheng et al., *X-VLA: soft-prompted transformer as scalable cross-embodiment VLA* | ICLR | 2026 | [arXiv](https://arxiv.org/abs/2510.10274) | 按数据源的软提示 |
+| Wang et al., *Unified vision-language-action model* | ICLR | 2026 | [arXiv](https://arxiv.org/abs/2506.19850) | 带世界模型后训练的自回归 VLA |
+| Yakefu et al., *RoboChallenge: large-scale real-robot evaluation of embodied policies* | arXiv 预印本（2025 年 10 月） | 2025 | [arXiv](https://arxiv.org/abs/2510.17950) | 托管式真实机器人基准 |
+| Physical Intelligence, *pi\*0.6: a VLA that learns from experience* | arXiv 预印本（2025 年 11 月） | 2025 | [arXiv](https://arxiv.org/abs/2511.14759) | Recap：优势条件 RL |
+| Gemini Robotics Team, *Evaluating Gemini Robotics policies in a Veo world simulator* | arXiv 预印本（2025 年 12 月） | 2025 | [arXiv](https://arxiv.org/abs/2512.10675) | 世界模型作为策略评测器 |
+| Kim et al., *Cosmos Policy: fine-tuning video models for visuomotor control and planning* | ICLR | 2026 | [arXiv](https://arxiv.org/abs/2601.16163) | 一个视频模型兼任策略、世界模型和价值函数 |
+| Ye et al., *World action models are zero-shot policies*（DreamZero） | arXiv 预印本（2026 年 2 月） | 2026 | [arXiv](https://arxiv.org/abs/2602.15922) | 14B 视频-动作联合模型，GR00T N2 的基础 |
+| Liu et al., *RDT2: exploring the scaling limit of UMI data towards zero-shot cross-embodiment generalization* | ICML | 2026 | [arXiv](https://arxiv.org/abs/2602.03310) | 用 1 万小时以上 UMI 数据训练的 VLA |
+| Liu et al., *OAT: ordered action tokenization* | RSS | 2026 | [arXiv](https://arxiv.org/abs/2602.04215) | 前缀可解码的动作 token |
+| Physical Intelligence, *pi0.7: a steerable generalist robotic foundation model with emergent capabilities* | arXiv 预印本（2026 年 4 月） | 2026 | [arXiv](https://arxiv.org/abs/2604.15483) | 富含元数据的提示，跨本体迁移 |
+| Fang et al., *MolmoAct2: action reasoning models for real-world deployment* | arXiv 预印本（2026 年 5 月） | 2026 | [arXiv](https://arxiv.org/abs/2605.02881) | 完全开放的 VLA、数据和分词器 |
+| 工业界公告：[Helix](https://www.figure.ai/news/helix)、[Helix 02](https://www.figure.ai/news/helix-02)、[Gemini Robotics On-Device](https://deepmind.google/blog/gemini-robotics-on-device-brings-ai-to-local-robotic-devices/)、[Gemini Robotics 2](https://deepmind.google/blog/gemini-robotics-2-brings-whole-body-intelligence-to-robots/)、[GR00T N1.5](https://research.nvidia.com/labs/gear/gr00t-n1_5/)、[GR00T N1.6](https://research.nvidia.com/labs/gear/gr00t-n1_6/) | 公告 | 2025–2026 | 见链接 | 无论文，仅官方页面 |
 
 ## 学习资源
 
@@ -397,6 +486,12 @@ flowchart TB
 4. 阅读 OpenVLA 和 pi0 的论文，用与上面 Mermaid 图相同的风格画出两者的架构。标出哪些权重是预训练的、哪些是从零训练的，以及
    梯度从哪里流过。
 5. 为你实验室中的 VLA 设计一个评测方案：列出泛化维度、每个条件的试验次数，以及如何估计成功率的置信区间。
+6. 在 VLA 浏览器中选择“Flow”和“Open weights only”。列表中每年有多少个开放权重的流匹配模型？2025 年那些模型的“基于”曲线大多追溯到哪个更早的模型？
+
+   <details markdown="1"><summary>提示</summary>
+
+   2024 年 1 个（pi0），2025 年 7 个（pi0.5、GR00T N1、N1.5、N1.6、SmolVLA、WALL-OSS、X-VLA），2026 年 3 个（N1.7、RDT2、MolmoAct2）。在这个列表中，2025 年的开放流模型大多追溯到 pi0 或 GR00T 系列；有几个（X-VLA、WALL-OSS）没有记录父节点，这只说明列表里没有记录。别忘了这个列表是精选的。
+   </details>
 
 **下一篇：**[具身智能遇上 XR 与 HCI]({{ '/blog/2026/embodied-ai-06-embodied-ai-meets-xr-and-hci/' | relative_url }})，人、头显与机器人
 在这里相遇。

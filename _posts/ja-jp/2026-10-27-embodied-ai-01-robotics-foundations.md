@@ -541,6 +541,32 @@ PD 制御器に送っています。これらの層を理解していること�
 することは、文字どおり非常に冗長な鎖の IK 問題です。`ik_dls` を JavaScript に移植して、canvas 上で 3 リンクアームの先端を
 ドラッグできるようにするのは良い練習になります。
 
+## 2025〜2026 年の進展（2026 年 11 月時点）
+
+本記事の数学（SE(3)、ヤコビアン、逆運動学、PD 制御、計画）は変わっていません。2026 年 11 月までに変わったのは、それが現代のヒューマノイドのスタックの*どこに*置かれるかです。以下の状態と日付は、論文、公式発表、プロジェクトのリポジトリによるものです。
+
+### 古典的なインターフェースの上の学習型全身制御
+
+ヒューマノイドでは、手で設計した全身コントローラ（タスクヤコビアンに基づく QP、第 6 節）が、**学習型全身コントローラ**に置き換えられつつあります。シミュレーションで RL により学習し、人間らしいどんな動きにも追従するニューラル方策です。例として HOVER（ICRA 2025）、SONIC（*Science Robotics*、2026）、Figure の Helix 02 にある 1 kHz の学習型「System 0」（発表、2026 年 1 月）があります。学習方法は[第 2 回]({{ '/blog/2026/embodied-ai-02-reinforcement-learning-for-robots/' | relative_url }})で説明しています。本記事の古典的な部品は消えたのではなく、場所を移しました。
+
+- 方策は通常**関節位置の目標値** $q^{\text{des}}$ を出力し、第 6 節のような PD ループがロボット上で高い周波数でトルクに変換します。$\tau = K_p (q^{\text{des}} - q) - K_d \dot q$ です。
+- 追従する指令（手の姿勢、ルート速度、キーポイント）は遠隔操作や VLA から来て、第 1 節の SE(3) の道具で表されます。人間の動きをロボットにリターゲットするのは逆運動学の問題です（第 4 節）。
+- プランナ（第 7 節）は今も*どこへ*行くかを決め、学習型コントローラは体が*どう*動いてそこへ行くかを決めます。
+
+### ハードウェアの節目（公式情報のみ）
+
+- **Boston Dynamics** は 2026 年 1 月 5 日の CES で、56 自由度の電動 **Atlas** の製品版を発表しました。発表によれば、2026 年の全台数は Hyundai と Google DeepMind に割り当て済みです。
+- **Figure** は 2025 年 10 月 9 日に **Figure 03** を発表しました。Helix 02 と Helix 2.5 のハードウェアです（[第 5 回]({{ '/blog/2026/embodied-ai-05-vision-language-action-models/' | relative_url }})）。
+- **Google DeepMind の Gemini Robotics 2**（2026 年 7 月）は、22 自由度のハンドを持つ Apptronik の Apollo 2 ヒューマノイドで実演されました。
+
+### オープンソースのスタック
+
+- **GR00T Whole-Body Control**（NVIDIA、GitHub、2025 年 11 月）は分離型の全身コントローラを公開し、のちに SONIC のチェックポイントと C++ の展開スタックも公開しました。
+- **Holosoma**（Amazon FAR、GitHub、Apache-2.0、2025 年 12 月）は、Unitree G1 と Booster T1 ヒューマノイドの学習、モーションのリターゲット、展開をカバーします。
+- **mjlab**（arXiv プレプリント、2026 年 1 月）と **Isaac Lab 3.0**（2026 年 10 月）が、その下の学習フレームワークです（[第 3 回]({{ '/blog/2026/embodied-ai-03-simulation-platforms/' | relative_url }})）。
+
+学習者への実用的な助言：方策を学習する前に、上の逆運動学アームのウィジェットで特異点と関節限界の直感をつかんでおきましょう。学習型コントローラはまさにそうした場所で失敗し、リターゲットのコードはそれらを明示的に扱う必要があります。
+
 ## 代表的な論文
 
 | 論文 | 会議・論文誌 | 年 | リンク | 意義 |
@@ -555,6 +581,9 @@ PD 制御器に送っています。これらの層を理解していること�
 | Karaman and Frazzoli, *Sampling-based algorithms for optimal motion planning* | IJRR | 2011 | [arXiv](https://arxiv.org/abs/1105.1186) | RRT\*、PRM\*、漸近的最適性 |
 | Schulman et al., *Finding locally optimal, collision-free trajectories with sequential convex optimization* | RSS | 2013 | [PDF](https://www.roboticsproceedings.org/rss09/p31.pdf) | TrajOpt |
 | Zhou et al., *On the continuity of rotation representations in neural networks* | CVPR | 2019 | [arXiv](https://arxiv.org/abs/1812.07035) | 多くの方策が使う 6 次元回転表現 |
+| He et al., *HOVER: versatile neural whole-body controller for humanoid robots* | ICRA | 2025 | [arXiv](https://arxiv.org/abs/2410.21229) | 多くの指令モードを持つ学習型全身コントローラ |
+| Luo et al., *SONIC: supersizing motion tracking for natural humanoid whole-body control* | Science Robotics | 2026 | [arXiv](https://arxiv.org/abs/2511.07820) | ヒューマノイドの下位層としての動作追従 |
+| オープンなスタックとハードウェア：[GR00T-WholeBodyControl](https://github.com/NVlabs/GR00T-WholeBodyControl)、[Holosoma](https://github.com/amazon-far/holosoma)、[Atlas の発表](https://bostondynamics.com/blog/boston-dynamics-unveils-new-atlas-robot-to-revolutionize-industry/)、[Figure 03](https://www.figure.ai/news/introducing-figure-03) | リリース / 発表 | 2025〜2026 | リンク参照 | 公式情報 |
 
 ## 学習リソース
 

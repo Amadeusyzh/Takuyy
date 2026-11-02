@@ -349,6 +349,37 @@ flowchart TB
 追跡付きのヘッドセットと同じ仕組みです。ロボットのステレオカメラやデジタルツインを、この方法で操作者に送ることを想像してみて
 ください。**Gaussian World** タブは写実的なデジタルツインを作る 3DGS の表現を、**Cloth · XPBD** タブはそれに必要な物理を示しています。
 
+## 2025〜2026 年の進展（2026 年 11 月時点）
+
+2026 年の XR・HCI の会議はほぼ終わりました。HRI 2026（3 月、エディンバラ）、IEEE VR 2026（3 月、大邱）、CHI 2026（4 月、バルセロナ）、ISMAR 2026（10 月、バーリ）です。UIST 2026 は今週（11 月 2〜5 日）デトロイトで開かれています。ロボティクス側での最大の変化は、**一人称視点の人間データがロボット基盤モデルの事前学習データになった**ことで、スケーリングの結果がそれを裏付けています。アニメーションのキャラクターでモーションキャプチャとリターゲットがどう働くか（第 1 節のグラフィックス側）は、[アニメーションとキャラクター]({{ '/blog/2026/graphics-09-animation-and-characters/' | relative_url }})で扱います。
+
+### 大規模な一人称視点データ
+
+- **Project Aria Gen 2**（Meta、2025 年 2 月発表）は第 2 節の研究用メガネの第 2 世代です。重さ約 75 g で、機体上の SLAM、視線と手のトラッキング、心拍（PPG）センサを備えます。**Aria Gen 2 Pilot Dataset**（arXiv プレプリント、2025 年 10 月）が記録内容を示しています。Meta は 2026 年に研究パートナーへ提供する予定としていました。
+- **EgoDex**（Hoque ら、Apple、ICLR 2026）は 194 の卓上タスクにわたる 829 時間の一人称視点動画です。Apple Vision Pro で記録されたため、全フレームにトラッキングされた 3D の手と指の姿勢が付いています。ヘッドセット自身のトラッキングが行動ラベルになるわけで、第 2 節の論点を大規模に実現したものです。
+- **EgoScale**（Zheng ら、NVIDIA、arXiv プレプリント、2026 年 2 月）は、20,854 時間の人間の一人称視点動画で器用な操作方策を事前学習し、22 自由度のロボットハンドに適応させます。人間データの時間数とロボットの性能の間に**対数線形**の関係があると報告しており、この種のスケーリング則の最初の明確な証拠です。GR00T N1.7 はこのデータを使っています（[第 5 回]({{ '/blog/2026/embodied-ai-05-vision-language-action-models/' | relative_url }})）。
+- **Nymeria**（Ma ら、2024）は 264 人の参加者による 300 時間のデータで、Aria メガネ、全身モーションキャプチャ、言語注釈を含みます。**NymeriaPlus**（arXiv プレプリント、2026 年 3 月）は物体のバウンディングボックスと再構成を加えました。**HOT3D**（Banerjee ら、CVPR 2025）は、Aria と Quest 3 で記録した、3D 姿勢付きの手と物体のインタラクション画像を 370 万枚以上提供します。
+
+### 人間の動画からロボットの行動へ
+
+第 2 節の問題、つまり人とロボットの身体が違うという問題には、2025〜2026 年に三つの答えが出ました。
+
+1. **行動空間を共有する。** **EgoMimic**（Kareer ら、arXiv プレプリント、2024 年 10 月）は、手とグリッパーの軌道を揃えて、Aria の人間データとロボットデータで共同学習します。**Humanoid policy ~ human policy**（Qiu ら、arXiv プレプリント、2025 年 3 月）は人とヒューマノイドに共通の状態・行動空間を定義します。**EgoVLA**（Yang ら、arXiv プレプリント、2025 年 7 月）は人の手首と手の行動で VLA を事前学習し、逆運動学（[第 1 回]({{ '/blog/2026/embodied-ai-01-robotics-foundations/' | relative_url }})）でロボットにリターゲットします。
+2. **ピクセルを編集する。** **Phantom**（Lepert ら、CoRL 2025）は動画から人の腕をインペインティングで消し、その場所にロボットを描画します。方策はこの編集済みの人間動画だけで学習し、ロボットデータなしで実機で動きます。**Masquerade**（Lepert ら、arXiv プレプリント、2025 年 8 月）は同じ編集を実環境のウェブ動画に適用します。
+3. **ウェブ動画から蒸留する。** **ZeroMimic**（Shi ら、ICRA 2025）は EpicKitchens の動画だけから 6 種類の操作スキルを学び、2 種類のロボットに展開します。
+
+### 第 2 世代の XR 遠隔操作
+
+- **TWIST2**（Ze ら、arXiv プレプリント、2025 年 11 月）は TWIST のモーションキャプチャスーツをやめました。市販の VR ヘッドセットと低コストの 2 自由度のロボットの首が、Open-TeleVision のように操作者に一人称のステレオ映像を与えます。著者らは 15 分で約 100 本の全身デモを集められたと報告しており、システムとデータは公開されています。その下では、[第 2 回]({{ '/blog/2026/embodied-ai-02-reinforcement-learning-for-robots/' | relative_url }})で説明した種類の動作追従器が人の姿勢をロボットの動きに変換しています。
+- **ARCap**（Chen ら、arXiv プレプリント、2024 年 10 月）と **ARMADA**（Nechyporenko ら、arXiv プレプリント、2024 年 12 月）は、AR で第 3 節のループを閉じます。デモを行う人は*ロボットなしで*素手またはハンドヘルド器具でデモを集め、ヘッドセットが仮想ロボットを重ねて表示し、動きがロボットの限界を超えそうになると視覚や触覚で警告します。これにより、どのデモも構造上実行可能になります。
+- **GR-3**（第 5 回）と **SONIC**（第 2 回）は、VR で集めた人間の軌道を遠隔操作の手段としてだけでなく、通常の学習モダリティとして扱います。
+
+### LLM 時代のヒューマンロボットインタラクション
+
+**LLM 時代の HRI 研究に関する系統的レビュー**（Wang ら、arXiv プレプリント、2026 年 2 月、86 本の論文）は、PRISMA の手順に従って、HRI 研究が LLM をどう使い、それらの研究がどう設計・評価されているかを整理しています。第 4 節と合わせて読むのに適しています。2026 年の CHI、UIST、IEEE VR での没入型ロボット遠隔操作の論文については、今回の更新までに具体的な一覧を検証できませんでした。各会議の論文集（ACM DL、IEEE Xplore）を参照してください。
+
+*前の節からの変化：*第 2 節では一人称視点データを有望な方向として紹介しました。2026 年には、それが商用・オープンのロボット基盤モデル（GR00T N1.7、Being-H0.5、Helix 2.5 の人間行動による事前学習）の主要な材料になり、スケーリングの証拠もそろいました。
+
 ## 代表的な論文
 
 | 論文 | 会議・論文誌 | 年 | リンク | 意義 |
@@ -379,6 +410,20 @@ flowchart TB
 | Kareer et al., *EgoMimic: scaling imitation learning via egocentric video* | ICRA | 2025 | [arXiv](https://arxiv.org/abs/2410.24221) | 人を別のエンボディメントとして |
 | Hoque et al., *EgoDex: learning dexterous manipulation from large-scale egocentric video* | ICLR | 2026 | [arXiv](https://arxiv.org/abs/2505.11709) | ハンドトラッキング付きの Vision Pro データセット |
 | Qureshi et al., *SplatSim: zero-shot sim2real transfer of RGB manipulation policies using Gaussian splatting* | arXiv | 2024 | [arXiv](https://arxiv.org/abs/2409.10161) | 写実的なシミュレーションのための 3DGS |
+| Ma et al., *Nymeria: a massive collection of multimodal egocentric daily motion in the wild* | ECCV | 2024 | [arXiv](https://arxiv.org/abs/2406.09905) | 一人称視点動画 + 全身の動き + 言語 |
+| Chen et al., *ARCap: collecting high-quality human demonstrations for robot learning with augmented reality feedback* | arXiv プレプリント（2024 年 10 月） | 2024 | [arXiv](https://arxiv.org/abs/2410.08464) | AR フィードバックで実行可能なデモに |
+| Banerjee et al., *HOT3D: hand and object tracking in 3D from egocentric multi-view videos* | CVPR | 2025 | [arXiv](https://arxiv.org/abs/2411.19167) | Aria と Quest 3 による手と物体の 3D 姿勢 |
+| Nechyporenko et al., *ARMADA: augmented reality for robot manipulation and robot-free data acquisition* | arXiv プレプリント（2024 年 12 月） | 2024 | [arXiv](https://arxiv.org/abs/2412.10631) | Vision Pro で仮想ロボットを重ねる |
+| Lepert et al., *Phantom: training robots without robots using only human videos* | CoRL | 2025 | [arXiv](https://arxiv.org/abs/2503.00779) | 人を消してロボットを描く |
+| Qiu et al., *Humanoid policy ~ human policy* | arXiv プレプリント（2025 年 3 月） | 2025 | [arXiv](https://arxiv.org/abs/2503.13441) | 人とヒューマノイドで共通の行動空間 |
+| Shi et al., *ZeroMimic: distilling robotic manipulation skills from web videos* | ICRA | 2025 | [arXiv](https://arxiv.org/abs/2503.23877) | EpicKitchens だけからスキルを学ぶ |
+| Yang et al., *EgoVLA: learning vision-language-action models from egocentric human videos* | arXiv プレプリント（2025 年 7 月） | 2025 | [arXiv](https://arxiv.org/abs/2507.12440) | 人の手で事前学習した VLA |
+| Lepert et al., *Masquerade: learning from in-the-wild human videos using data-editing* | arXiv プレプリント（2025 年 8 月） | 2025 | [arXiv](https://arxiv.org/abs/2508.09976) | ウェブ規模の Phantom 型編集 |
+| Meta, *Aria Gen 2 pilot dataset* | arXiv プレプリント（2025 年 10 月） | 2025 | [arXiv](https://arxiv.org/abs/2510.16134) | 第 2 世代メガネのデータ |
+| Ze et al., *TWIST2: scalable, portable, and holistic humanoid data collection system* | arXiv プレプリント（2025 年 11 月） | 2025 | [arXiv](https://arxiv.org/abs/2511.02832) | モーキャプ不要の VR 全身遠隔操作 |
+| Wang et al., *How do we research human-robot interaction in the age of large language models? A systematic review* | arXiv プレプリント（2026 年 2 月） | 2026 | [arXiv](https://arxiv.org/abs/2602.15063) | LLM を使う HRI のレビュー |
+| Zheng et al., *EgoScale: scaling dexterous manipulation with diverse egocentric human data* | arXiv プレプリント（2026 年 2 月） | 2026 | [arXiv](https://arxiv.org/abs/2602.16710) | 人間動画による対数線形スケーリング |
+| Meta, [*Introducing Aria Gen 2*](https://www.meta.com/blog/project-aria-gen-2-next-generation-egocentric-research-glasses-reality-labs-ai-robotics/) | ブログ | 2025 | リンク参照 | 第 2 世代の研究用メガネ |
 
 ## 学習リソース
 
@@ -401,6 +446,13 @@ flowchart TB
 4. XR 遠隔操作インターフェースの小さなユーザースタディを設計しましょう。2 つの条件（例：単眼とステレオの映像）、タスク、指標
    （成功率、時間、NASA-TLX、デモの滑らかさ）、参加者の人数を決めます。どんな結果を予想しますか。
 5. 上の研究機会から 1 つ選び、1 ページの研究計画を書きましょう。問い、作るシステム、集めるデータ、評価の方法を含めます。
+
+6. 人からロボットへの転移（進展の節）：人間の動画からロボットの行動を得る三つのルートそれぞれについて、動画から何を推定する必要があり、平行グリッパーではどの誤差が支配的になると予想されるかを述べましょう。
+
+   <details markdown="1"><summary>ヒント</summary>
+
+   行動空間の共有には、ロボットと揃えた座標系での 3D の手首と手の軌道が必要で、手の奥行きの誤差と、グリッパーへの写像で指の自由度が失われることが支配的です。ピクセルの編集（Phantom、Masquerade）には、人を消してロボットを描けるだけの手と腕のセグメンテーションと姿勢が必要で、レンダリングのアーティファクトと姿勢の誤差が支配的です。Web 動画からの蒸留（ZeroMimic）では、キャリブレーションされていない映像から手がどこをどう掴み、その後手首がどう動くかを推定しなければならず、カメラとスケールの曖昧さと不正確な把持点が支配的です。
+   </details>
 
 **この先へ：**これで身体性 AI シリーズは最終回です。[世界モデルシリーズ]({{ '/blog/category/world-models/' | relative_url }})では
 ここで触れた予測モデルを詳しく扱い、[ロードマップの記事]({{ '/blog/category/roadmap/' | relative_url }})ではすべてのシリーズを

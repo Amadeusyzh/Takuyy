@@ -518,6 +518,32 @@ print(f"tree size {n}, path waypoints {len(path)}, "
 这与上面的 IK 迭代把手臂投影到"够到目标"这一约束上非常相似；拖动布料上的一个粒子，本质上就是一条高度冗余链的
 IK 问题。一个不错的练习是把 `ik_dls` 移植到 JavaScript，在 canvas 上拖动三连杆机械臂的末端。
 
+## 2025–2026 年进展（截至 2026 年 11 月）
+
+本文的数学（SE(3)、雅可比矩阵、逆运动学、PD 控制、规划）没有变化。到 2026 年 11 月，变化的是它们在现代人形机器人体系中的*位置*。以下状态和日期来自论文、官方公告或项目代码仓库。
+
+### 建立在经典接口之上的学习型全身控制
+
+在人形机器人上，手工设计的全身控制器（基于任务雅可比矩阵的 QP，第 6 节）越来越多地被**学习型全身控制器**取代：一个在仿真中用 RL 训练、能跟踪任意类人动作的神经网络策略。例子有 HOVER（ICRA 2025）、SONIC（*Science Robotics*，2026）以及 Figure Helix 02 中以 1 kHz 运行的学习型“System 0”（公告，2026 年 1 月）。它们的训练方法见[第 2 篇]({{ '/blog/2026/embodied-ai-02-reinforcement-learning-for-robots/' | relative_url }})。本文的经典内容并没有消失，而是换了位置：
+
+- 策略通常输出**关节位置目标** $q^{\text{des}}$，再由第 6 节那样的 PD 回路在机器人上以高频率转换为力矩：$\tau = K_p (q^{\text{des}} - q) - K_d \dot q$。
+- 它所跟踪的指令（手部位姿、根部速度、关键点）来自遥操作或 VLA，用第 1 节的 SE(3) 工具表示；把人体动作重定向到机器人则是一个逆运动学问题（第 4 节）。
+- 规划器（第 7 节）仍然决定*去哪里*，学习型控制器决定身体*如何*移动到那里。
+
+### 硬件里程碑（仅限官方来源）
+
+- **Boston Dynamics** 于 2026 年 1 月 5 日在 CES 上发布了电动 **Atlas** 的产品版，具有 56 个自由度；据公告，2026 年的全部产量已分配给 Hyundai 和 Google DeepMind。
+- **Figure** 于 2025 年 10 月 9 日推出 **Figure 03**，它是 Helix 02 和 Helix 2.5 的硬件平台（见[第 5 篇]({{ '/blog/2026/embodied-ai-05-vision-language-action-models/' | relative_url }})）。
+- **Google DeepMind 的 Gemini Robotics 2**（2026 年 7 月）在配备 22 自由度灵巧手的 Apptronik Apollo 2 人形机器人上进行了演示。
+
+### 开源技术栈
+
+- **GR00T Whole-Body Control**（NVIDIA，GitHub，2025 年 11 月）发布了解耦的全身控制器，之后又发布了 SONIC 权重和 C++ 部署栈。
+- **Holosoma**（Amazon FAR，GitHub，Apache-2.0，2025 年 12 月）涵盖 Unitree G1 和 Booster T1 人形机器人的训练、动作重定向和部署。
+- **mjlab**（arXiv 预印本，2026 年 1 月）和 **Isaac Lab 3.0**（2026 年 10 月）是底层的训练框架（见[第 3 篇]({{ '/blog/2026/embodied-ai-03-simulation-platforms/' | relative_url }})）。
+
+给学习者的实用建议：训练任何策略之前，先用上面的逆运动学机械臂交互组件建立对奇异点和关节限位的直觉。学习型控制器恰恰在这些地方失败，而重定向代码必须显式处理它们。
+
 ## 代表性论文
 
 | 论文 | 会议/期刊 | 年份 | 链接 | 意义 |
@@ -532,6 +558,9 @@ IK 问题。一个不错的练习是把 `ik_dls` 移植到 JavaScript，在 canv
 | Karaman and Frazzoli, *Sampling-based algorithms for optimal motion planning* | IJRR | 2011 | [arXiv](https://arxiv.org/abs/1105.1186) | RRT\*、PRM\*，渐近最优性 |
 | Schulman et al., *Finding locally optimal, collision-free trajectories with sequential convex optimization* | RSS | 2013 | [PDF](https://www.roboticsproceedings.org/rss09/p31.pdf) | TrajOpt |
 | Zhou et al., *On the continuity of rotation representations in neural networks* | CVPR | 2019 | [arXiv](https://arxiv.org/abs/1812.07035) | 许多策略采用的 6 维旋转表示 |
+| He et al., *HOVER: versatile neural whole-body controller for humanoid robots* | ICRA | 2025 | [arXiv](https://arxiv.org/abs/2410.21229) | 支持多种指令模式的学习型全身控制器 |
+| Luo et al., *SONIC: supersizing motion tracking for natural humanoid whole-body control* | Science Robotics | 2026 | [arXiv](https://arxiv.org/abs/2511.07820) | 动作跟踪作为人形机器人的底层 |
+| 开源栈与硬件：[GR00T-WholeBodyControl](https://github.com/NVlabs/GR00T-WholeBodyControl)、[Holosoma](https://github.com/amazon-far/holosoma)、[Atlas 公告](https://bostondynamics.com/blog/boston-dynamics-unveils-new-atlas-robot-to-revolutionize-industry/)、[Figure 03](https://www.figure.ai/news/introducing-figure-03) | 发布 / 公告 | 2025–2026 | 见链接 | 官方来源 |
 
 ## 学习资源
 

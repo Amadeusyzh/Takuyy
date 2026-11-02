@@ -340,6 +340,88 @@ a good thought experiment: dragging the cloth with the mouse is a "demonstration
 trajectory. Recording the mouse path and the particle positions would give exactly the $(o_t, a_t)$ pairs that a
 cloth-folding policy is trained on.
 
+## 2025-2026 update (as of November 2026)
+
+Three developments since early 2026 change how this post's ideas are used in practice. Datasets are now counted in
+thousands of **hours** rather than thousands of episodes. Handheld UMI-style collection has grown into a data source
+large enough to pre-train foundation models. And "Large Behavior Models", Diffusion-Policy-style models trained on many
+tasks, have been evaluated with unusual statistical care. Statuses are as of November 2026.
+
+### Datasets: the numbers
+
+The table collects figures stated in each paper or on its official page. Different datasets count different things
+(trajectories, hours, scenes), so compare within a column, not across columns.
+
+| Dataset | Status | Size | Embodiments | Diversity |
+| --- | --- | --- | --- | --- |
+| BridgeData V2 | CoRL 2023 | 60,096 trajectories | 1 (WidowX 250) | 24 environments, 13 skills |
+| Open X-Embodiment | ICRA 2024 | 1M+ trajectories from 60 datasets | 22 robot types | 527 skills, 21 institutions |
+| DROID | RSS 2024 | 76k trajectories, 350 h | 1 (Franka) | 564 scenes, 86 tasks |
+| RoboMIND | RSS 2025 | about 107k trajectories | 4 | 479 tasks, includes 5k failure demos |
+| AgiBot World | arXiv preprint (Mar 2025) | 1M+ trajectories | AgiBot G1 platform | 217 tasks, 5 deployment scenarios |
+| Galaxea Open-World | arXiv preprint (Aug 2025) | 500+ h | 1 (R1 Lite mobile manipulator) | 11 real sites (homes, shops, ...) |
+| TRI LBM pre-training mix | Science Robotics 2026 | about 1,700 h (468 h own teleoperation, 45 h sim, 32 h UMI, about 1,150 h OXE) | several | 29 evaluation tasks |
+| Being-H0.5 / UniHand-2.0 | arXiv preprint (Jan 2026) | 35,000+ h, mostly human hand interaction | human + 30 robot embodiments | human-centric pre-training |
+| Bimanual household data (Xu et al.) | arXiv preprint (Sep 2026) | 1,500 h (open-sourced) | bimanual | expert data plus on-policy corrections |
+
+{% include blog_figure.liquid path="assets/img/blog/embodied-ai/04-update-dataset-scale.svg" localized="true" caption="Left: hours of data per source on a log axis (lower bounds where the paper says 'more than'). Blue = robot teleoperation, orange = handheld UMI data, green = human egocentric video. The largest human corpora are one to two orders of magnitude larger. Right: trajectories against number of robot embodiments for the datasets that report both. Open X-Embodiment is the only one that is large in both directions." %}
+
+Two trends stand out. First, **diversity of scenes beats repetition**. DROID's 564 scenes and Galaxea's real homes and
+shops are designed for the generalization axes of
+[post 5]({{ '/blog/2026/embodied-ai-05-vision-language-action-models/' | relative_url }}). Second, the largest numbers
+now come from **human data**. UniHand-2.0 and EgoScale
+([post 6]({{ '/blog/2026/embodied-ai-06-embodied-ai-meets-xr-and-hci/' | relative_url }})) are measured in tens of
+thousands of hours, an order of magnitude more than any robot-teleoperation corpus. The 2026 paper by Xu et al. adds a
+useful twist: it scales **DAgger-style on-policy correction data** (section 1) alongside expert demonstrations and
+studies how both scale. Covariate shift is still the enemy at 1,500 hours.
+
+### UMI-style collection grows up
+
+The handheld gripper of section 4 has become a family:
+
+- **UMI on Legs** (Ha et al., arXiv preprint, July 2024) runs UMI-trained manipulation policies on a quadruped through a
+  whole-body controller trained in simulation. The policy outputs end-effector targets in a world frame, so it does not
+  care what carries the gripper.
+- **FastUMI** (Zhaxizhuoma et al., arXiv preprint, September 2024) replaces UMI's visual SLAM with off-the-shelf
+  tracking, which makes the hardware easier to reproduce, and releases more than 10k trajectories.
+- **DexUMI** (Xu et al., CoRL 2025) uses the human hand as the interface. An exoskeleton matches the robot hand's
+  kinematics, and the human hand is inpainted into the robot hand in the video, which closes the visual gap.
+- **ViTaMIn** (Liu et al., arXiv preprint, April 2025) and its bimanual successor add **tactile** sensing to the
+  handheld gripper. **UMI-FT** (Choi et al., arXiv preprint, January 2026) adds a 6-axis force-torque sensor per finger
+  for compliant, contact-rich tasks.
+- **RDT2** (Liu et al., ICML 2026) is the scale test. It trains a 7B VLA on more than 10k hours of UMI data and deploys
+  it zero-shot on robots it never saw (post 5).
+
+### Diffusion and flow policies: faster and smoother
+
+- **Real-time chunking** (Black et al., NeurIPS 2025) fixes the pause and jerk at chunk boundaries of the action chunking in section 2. The next
+  chunk is generated while the current one executes, by inpainting with the committed actions frozen. A follow-up moves
+  this conditioning into training.
+- **Streaming Flow Policy** (Jiang et al., CoRL 2025) treats the action trajectory itself as the flow trajectory, so
+  actions can be streamed to the robot while sampling is still running.
+- **One-Step Flow Policy** (Li et al., arXiv preprint, March 2026) self-distils a flow policy into a single network
+  evaluation. On 56 simulated tasks it matches or beats 100-step diffusion and flow policies at more than 100 times the
+  speed. This is distillation taken to its limit: one network evaluation per action chunk.
+
+### Large Behavior Models
+
+**A careful examination of large behavior models for multitask dexterous manipulation** (TRI LBM Team, arXiv July
+2025; published in *Science Robotics* in 2026 according to the project page) pre-trains Diffusion-Policy-style
+transformers on the roughly 1,700-hour mix in the table above, then fine-tunes them on new tasks. Its most useful
+contribution for a learner is methodological. Evaluation is blind and randomized, uses about 1,800 real-world and 47k
+simulated rollouts, and reports confidence intervals. Under this protocol, multitask pre-training made fine-tuned policies more
+successful and more robust, and new tasks needed only a fraction of the data of single-task baselines. Performance
+also rose as pre-training data grew in scale and diversity.
+Exercise 5 of post 5 asks you to design exactly such a protocol.
+
+Boston Dynamics and TRI then trained an LBM for the electric **Atlas** humanoid. According to the 2025 Boston Dynamics
+blog post, it is a roughly 450M-parameter diffusion transformer trained with flow matching. It outputs 48-step action
+chunks at 30 Hz (executing 24 before replanning) for the whole body, hands and feet included. It is the action chunking
+of section 2 at humanoid scale.
+
+*What changed since the earlier sections:* section 5 described datasets in trajectories. For 2026-scale corpora, hours
+and number of distinct scenes are the more informative units, and human data has overtaken robot data in raw size.
+
 ## Representative papers
 
 | Paper | Venue | Year | Link | Why it matters |
@@ -360,6 +442,21 @@ cloth-folding policy is trained on.
 | Ze et al., *3D Diffusion Policy* | RSS | 2024 | [arXiv](https://arxiv.org/abs/2403.03954) | Point-cloud conditioning |
 | Fu, Zhao, Finn, *Mobile ALOHA* | CoRL | 2024 | [arXiv](https://arxiv.org/abs/2401.02117) | Mobile bimanual imitation, co-training |
 | Zhao et al., *ALOHA Unleashed: a simple recipe for robot dexterity* | CoRL | 2024 | [arXiv](https://arxiv.org/abs/2410.13126) | Scaling bimanual dexterity |
+| Ha et al., *UMI on Legs: making manipulation policies mobile with manipulation-centric whole-body controllers* | arXiv preprint (Jul 2024) | 2024 | [arXiv](https://arxiv.org/abs/2407.10353) | UMI policies on a quadruped |
+| Zhaxizhuoma et al., *FastUMI: a scalable and hardware-independent universal manipulation interface with dataset* | arXiv preprint (Sep 2024) | 2024 | [arXiv](https://arxiv.org/abs/2409.19499) | Simpler UMI hardware, 10k+ trajectories |
+| Wu et al., *RoboMIND: benchmark on multi-embodiment intelligence normative data for robot manipulation* | RSS | 2025 | [arXiv](https://arxiv.org/abs/2412.13877) | Multi-embodiment data with failures |
+| AgiBot World Contributors, *AgiBot World Colosseo: a large-scale manipulation platform for scalable and intelligent embodied systems* | arXiv preprint (Mar 2025) | 2025 | [arXiv](https://arxiv.org/abs/2503.06669) | 1M+ trajectories |
+| Liu et al., *ViTaMIn: learning contact-rich tasks through robot-free visuo-tactile manipulation interface* | arXiv preprint (Apr 2025) | 2025 | [arXiv](https://arxiv.org/abs/2504.06156) | Tactile handheld collection |
+| Xu et al., *DexUMI: using human hand as the universal manipulation interface for dexterous manipulation* | CoRL | 2025 | [arXiv](https://arxiv.org/abs/2505.21864) | Exoskeleton + hand inpainting |
+| Jiang et al., *Streaming flow policy* | CoRL | 2025 | [arXiv](https://arxiv.org/abs/2505.21851) | Stream actions during sampling |
+| Black et al., *Real-time execution of action chunking flow policies* | NeurIPS | 2025 | [arXiv](https://arxiv.org/abs/2506.07339) | Asynchronous chunking |
+| TRI LBM Team, *A careful examination of large behavior models for multitask dexterous manipulation* | Science Robotics | 2026 | [arXiv](https://arxiv.org/abs/2507.05331) | Statistically careful LBM evaluation |
+| Jiang et al., *Galaxea Open-World dataset and G0 dual-system VLA model* | arXiv preprint (Aug 2025) | 2025 | [arXiv](https://arxiv.org/abs/2509.00576) | 500+ h in real homes and shops |
+| Choi et al., *In-the-wild compliant manipulation with UMI-FT* | arXiv preprint (Jan 2026) | 2026 | [arXiv](https://arxiv.org/abs/2601.09988) | Finger force-torque sensing |
+| Luo et al., *Being-H0.5: scaling human-centric robot learning for cross-embodiment generalization* | arXiv preprint (Jan 2026) | 2026 | [arXiv](https://arxiv.org/abs/2601.12993) | 35k+ h human-centric data |
+| Li et al., *One-step flow policy: self-distillation for fast visuomotor policies* | arXiv preprint (Mar 2026) | 2026 | [arXiv](https://arxiv.org/abs/2603.12480) | One-step generative policy |
+| Xu et al., *Scaling bimanual household manipulation from 1,500 hours of demonstrations to on-policy corrections* | arXiv preprint (Sep 2026) | 2026 | [arXiv](https://arxiv.org/abs/2609.03591) | Scaling expert and correction data |
+| Boston Dynamics, [*Large behavior models and Atlas find new footing*](https://bostondynamics.com/blog/large-behavior-models-atlas-find-new-footing/) | blog | 2025 | see link | Whole-body LBM on Atlas |
 
 ## Learning resources
 
@@ -383,6 +480,16 @@ cloth-folding policy is trained on.
    the velocity $A^0 - \epsilon$; sample by integrating the ODE with 10 Euler steps.
 5. Implement ACT-style temporal ensembling on top of the diffusion sampler (query every step, average overlapping
    predictions with exponential weights) and compare smoothness with receding-horizon execution.
+6. Dataset scale (update section): convert the hours in the dataset-scale figure to frames at 30 fps for EgoScale
+   (20,854 h) and DROID (350 h). Why does the raw ratio overstate how much more useful the human data is for a robot?
+
+   <details markdown="1"><summary>Hint</summary>
+
+   $20{,}854 \cdot 3600 \cdot 30 \approx 2.25\times 10^9$ frames against $350 \cdot 3600 \cdot 30 \approx 3.8\times 10^7$,
+   a ratio of about 60. But human video has no robot actions: the actions must be estimated (hand poses, retargeting),
+   the body and the camera differ from the robot's, and many frames show no manipulation. Papers therefore mix it with a
+   much smaller amount of robot data and report scaling *trends*, not one-to-one exchange rates.
+   </details>
 
 **Next:** [Vision-Language-Action models]({{ '/blog/2026/embodied-ai-05-vision-language-action-models/' | relative_url }}),
 where imitation learning meets foundation models.

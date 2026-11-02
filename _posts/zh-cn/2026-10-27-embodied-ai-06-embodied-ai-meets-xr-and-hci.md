@@ -325,6 +325,37 @@ flowchart TB
 用这种方式把机器人的立体相机画面或数字孪生传给操作员。**Gaussian World** 标签页展示了构建照片级数字孪生所用的 3DGS 表示，
 **Cloth · XPBD** 标签页则展示了它们所需的那类物理。
 
+## 2025–2026 年进展（截至 2026 年 11 月）
+
+2026 年的 XR 与 HCI 会议大多已经召开：HRI 2026（3 月，爱丁堡）、IEEE VR 2026（3 月，大邱）、CHI 2026（4 月，巴塞罗那）和 ISMAR 2026（10 月，巴里）；UIST 2026 本周（11 月 2–5 日）在底特律举行。机器人方面最大的变化是：**第一人称人类数据成了机器人基础模型的预训练数据**，而且有了规模化结果的支撑。动作捕捉和重定向在动画角色中如何工作（第 1 节的图形学一侧），见[动画与角色]({{ '/blog/2026/graphics-09-animation-and-characters/' | relative_url }})。
+
+### 大规模第一人称数据
+
+- **Project Aria Gen 2**（Meta，2025 年 2 月发布）是第 2 节研究眼镜的第二代：重约 75 g，具备机载 SLAM、眼动和手部跟踪以及心率（PPG）传感器。**Aria Gen 2 Pilot Dataset**（arXiv 预印本，2025 年 10 月）展示了它记录的内容。Meta 计划在 2026 年向研究合作者提供。
+- **EgoDex**（Hoque 等，Apple，ICLR 2026）包含 194 个桌面任务、共 829 小时的第一人称视频。它用 Apple Vision Pro 录制，每一帧都附带跟踪得到的 3D 手部和手指姿态。头显自身的跟踪就成了动作标签，这正是第 2 节观点的规模化。
+- **EgoScale**（Zheng 等，NVIDIA，arXiv 预印本，2026 年 2 月）在 20,854 小时的人类第一人称视频上预训练灵巧策略，再适配到 22 自由度的机器人手上。它报告了人类数据小时数与机器人性能之间的**对数线性**关系，是这类规模定律的第一个清晰证据。GR00T N1.7 使用了这些数据（见[第 5 篇]({{ '/blog/2026/embodied-ai-05-vision-language-action-models/' | relative_url }})）。
+- **Nymeria**（Ma 等，2024）有来自 264 名参与者的 300 小时数据，包括 Aria 眼镜、全身动作捕捉和语言标注；**NymeriaPlus**（arXiv 预印本，2026 年 3 月）加入了物体包围盒和重建。**HOT3D**（Banerjee 等，CVPR 2025）提供 370 万张以上带 3D 姿态的手-物交互图像，由 Aria 和 Quest 3 录制。
+
+### 从人类视频到机器人动作
+
+第 2 节的问题（人和机器人的身体不同）在 2025–2026 年有三种回答：
+
+1. **共享动作空间。**  **EgoMimic**（Kareer 等，arXiv 预印本，2024 年 10 月）用对齐的手部与夹爪轨迹，在 Aria 人类数据和机器人数据上联合训练。**Humanoid policy ~ human policy**（Qiu 等，arXiv 预印本，2025 年 3 月）为人和人形机器人定义了同一个状态-动作空间。**EgoVLA**（Yang 等，arXiv 预印本，2025 年 7 月）在人类手腕与手部动作上预训练 VLA，再通过逆运动学（见[第 1 篇]({{ '/blog/2026/embodied-ai-01-robotics-foundations/' | relative_url }})）重定向到机器人。
+2. **编辑像素。**  **Phantom**（Lepert 等，CoRL 2025）从视频中修复掉人的手臂并在原处渲染机器人；策略只用这些编辑过的人类视频训练，无需任何机器人数据就能在真实机器人上运行。**Masquerade**（Lepert 等，arXiv 预印本，2025 年 8 月）把同样的编辑应用到真实场景的网络视频上。
+3. **从网络视频蒸馏。**  **ZeroMimic**（Shi 等，ICRA 2025）只用 EpicKitchens 视频学习六类操作技能，并部署到两种机器人上。
+
+### 第二代 XR 遥操作
+
+- **TWIST2**（Ze 等，arXiv 预印本，2025 年 11 月）不再使用 TWIST 的动作捕捉服：消费级 VR 头显加一个低成本的 2 自由度机器人颈部，像 Open-TeleVision 一样为操作者提供第一人称立体视图。作者报告 15 分钟内约可采集 100 条全身示范，系统和数据均已开放。底层是[第 2 篇]({{ '/blog/2026/embodied-ai-02-reinforcement-learning-for-robots/' | relative_url }})所述的那类动作跟踪器，把人体姿态转换为机器人动作。
+- **ARCap**（Chen 等，arXiv 预印本，2024 年 10 月）和 **ARMADA**（Nechyporenko 等，arXiv 预印本，2024 年 12 月）用 AR 闭合第 3 节的回路：示范者*无需机器人*，徒手或用手持工具采集示范，头显叠加虚拟机器人，当动作会超出机器人限制时用视觉或触觉提醒。这样每条示范在构造上就是可行的。
+- **GR-3**（第 5 篇）和 **SONIC**（第 2 篇）把 VR 采集的人类轨迹当作常规训练模态，而不只是遥操作手段。
+
+### LLM 时代的人机交互
+
+一篇**关于 LLM 时代人机交互研究的系统综述**（Wang 等，arXiv 预印本，2026 年 2 月，涵盖 86 篇论文）按 PRISMA 流程梳理了 HRI 研究如何使用 LLM，以及这些研究如何设计和评估，适合与第 4 节对照阅读。关于 2026 年 CHI、UIST 和 IEEE VR 上沉浸式机器人遥操作的论文，我们未能在本次更新前核实具体清单，请到这些会议的论文集（ACM DL、IEEE Xplore）中查找。
+
+*与前文相比的变化：*第 2 节把第一人称数据描述为有前景的方向；到 2026 年，它已成为商业和开放机器人基础模型（GR00T N1.7、Being-H0.5、Helix 2.5 的人类行为预训练）的主要成分，规模化的证据也已出现。
+
 ## 代表性论文
 
 | 论文 | 会议/期刊 | 年份 | 链接 | 意义 |
@@ -355,6 +386,20 @@ flowchart TB
 | Kareer et al., *EgoMimic: scaling imitation learning via egocentric video* | ICRA | 2025 | [arXiv](https://arxiv.org/abs/2410.24221) | 把人当作另一种本体 |
 | Hoque et al., *EgoDex: learning dexterous manipulation from large-scale egocentric video* | ICLR | 2026 | [arXiv](https://arxiv.org/abs/2505.11709) | 带手部追踪的 Vision Pro 数据集 |
 | Qureshi et al., *SplatSim: zero-shot sim2real transfer of RGB manipulation policies using Gaussian splatting* | arXiv | 2024 | [arXiv](https://arxiv.org/abs/2409.10161) | 用 3DGS 做照片级仿真 |
+| Ma et al., *Nymeria: a massive collection of multimodal egocentric daily motion in the wild* | ECCV | 2024 | [arXiv](https://arxiv.org/abs/2406.09905) | 第一人称视频 + 全身动作 + 语言 |
+| Chen et al., *ARCap: collecting high-quality human demonstrations for robot learning with augmented reality feedback* | arXiv 预印本（2024 年 10 月） | 2024 | [arXiv](https://arxiv.org/abs/2410.08464) | AR 反馈保证示范可行 |
+| Banerjee et al., *HOT3D: hand and object tracking in 3D from egocentric multi-view videos* | CVPR | 2025 | [arXiv](https://arxiv.org/abs/2411.19167) | Aria 与 Quest 3 采集的手-物 3D 姿态 |
+| Nechyporenko et al., *ARMADA: augmented reality for robot manipulation and robot-free data acquisition* | arXiv 预印本（2024 年 12 月） | 2024 | [arXiv](https://arxiv.org/abs/2412.10631) | Vision Pro 中叠加虚拟机器人 |
+| Lepert et al., *Phantom: training robots without robots using only human videos* | CoRL | 2025 | [arXiv](https://arxiv.org/abs/2503.00779) | 修复掉人、渲染机器人 |
+| Qiu et al., *Humanoid policy ~ human policy* | arXiv 预印本（2025 年 3 月） | 2025 | [arXiv](https://arxiv.org/abs/2503.13441) | 人与人形机器人共享动作空间 |
+| Shi et al., *ZeroMimic: distilling robotic manipulation skills from web videos* | ICRA | 2025 | [arXiv](https://arxiv.org/abs/2503.23877) | 仅凭 EpicKitchens 学习技能 |
+| Yang et al., *EgoVLA: learning vision-language-action models from egocentric human videos* | arXiv 预印本（2025 年 7 月） | 2025 | [arXiv](https://arxiv.org/abs/2507.12440) | 在人手动作上预训练的 VLA |
+| Lepert et al., *Masquerade: learning from in-the-wild human videos using data-editing* | arXiv 预印本（2025 年 8 月） | 2025 | [arXiv](https://arxiv.org/abs/2508.09976) | 网络规模的 Phantom 式编辑 |
+| Meta, *Aria Gen 2 pilot dataset* | arXiv 预印本（2025 年 10 月） | 2025 | [arXiv](https://arxiv.org/abs/2510.16134) | 第二代眼镜采集的数据 |
+| Ze et al., *TWIST2: scalable, portable, and holistic humanoid data collection system* | arXiv 预印本（2025 年 11 月） | 2025 | [arXiv](https://arxiv.org/abs/2511.02832) | 无需动捕的 VR 全身遥操作 |
+| Wang et al., *How do we research human-robot interaction in the age of large language models? A systematic review* | arXiv 预印本（2026 年 2 月） | 2026 | [arXiv](https://arxiv.org/abs/2602.15063) | 基于 LLM 的 HRI 综述 |
+| Zheng et al., *EgoScale: scaling dexterous manipulation with diverse egocentric human data* | arXiv 预印本（2026 年 2 月） | 2026 | [arXiv](https://arxiv.org/abs/2602.16710) | 随人类视频对数线性扩展 |
+| Meta, [*Introducing Aria Gen 2*](https://www.meta.com/blog/project-aria-gen-2-next-generation-egocentric-research-glasses-reality-labs-ai-robotics/) | 博客 | 2025 | 见链接 | 第二代研究眼镜 |
 
 ## 学习资源
 
@@ -374,6 +419,13 @@ flowchart TB
 4. 为一个 XR 遥操作界面设计一个小型用户研究：两种条件（例如单目与立体视频）、任务、指标（成功率、时间、NASA-TLX、示范平滑度）
    以及参与者人数。你预期会看到什么结果？
 5. 从上面的研究机会中选一个，写一页研究计划：问题、你要构建的系统、要采集的数据，以及如何评估。
+
+6. 人到机器人的迁移（进展一节）：对于从人类视频得到机器人动作的三条路线，分别说明需要从视频中估计什么，以及在平行夹爪上你预计哪种误差占主导。
+
+   <details markdown="1"><summary>提示</summary>
+
+   共享动作空间需要在与机器人对齐的坐标系中得到 3D 手腕和手部轨迹；主要误差来自手部深度估计，以及映射到夹爪时手指自由度的丢失。编辑像素（Phantom、Masquerade）需要足够好的手臂分割和姿态，才能抹去人并渲染机器人；渲染瑕疵和姿态误差占主导。从网络视频中蒸馏（ZeroMimic）要从未标定的画面中估计手在哪里、如何抓取，以及之后的手腕运动；相机与尺度的歧义和不精确的抓取点占主导。
+   </details>
 
 **接下来：**这是具身智能系列的最后一篇。[世界模型系列]({{ '/blog/category/world-models/' | relative_url }})会深入探讨这里提到的
 预测模型，而[路线图文章]({{ '/blog/category/roadmap/' | relative_url }})会把所有系列串成一份学习计划。

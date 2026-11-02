@@ -290,7 +290,7 @@ $$
 L_\pi(\theta) = \mathbb{E}_{s\sim\mathcal{D},\,\xi}\left[\alpha\log\pi_\theta(\tilde a\mid s) - \min_j Q_{\phi_j}(s, \tilde a)\right]
 $$
 
-を最小化します。tanh は密度を変えるので $\log\pi(\tilde a\mid s) = \log\mathcal{N}(u;\mu,\sigma) - \sum_i\log(1-\tanh^2 u_i)$ となります。
+を最小化します。tanh は密度を変えるので $\log\pi(\tilde a\mid s) = \log\mathcal{N}(u;\mu,\sigma)$ $-\, \sum_i\log(1-\tanh^2 u_i)$ となります。
 続く論文（Haarnoja ら 2018b）は $\alpha$ を目標エントロピー（よく $-\dim\mathcal{A}$ を使います）に向けて自動調整し、実機の Minitaur
 四脚ロボットで約 2 時間分の経験だけで直接歩行を学習できることを示しました。
 
@@ -409,6 +409,123 @@ flowchart LR
 その中で学習するのと同じ種類のエンジンです。布をドラッグすることは、頑健な方策が打ち消さなければならない外乱です。布の剛性と
 質量をランダム化することを、ドメインランダム化として想像してみてください。
 
+## 2025〜2026 年の進展（2026 年 11 月時点）
+
+2026 年初め以降、二つの研究の流れが急速に伸びました。一つは**動作追従による人型ロボットの全身制御**で、第 5 節の Sim-to-Real のレシピをヒューマノイドへ持ち込むものです。もう一つは**事前学習済みの基盤方策の上での RL** で、第 6 節の最後の項目が一つの研究分野になりました。ICRA 2026、RSS 2026、IROS 2026 は開催済みで、CoRL 2026（11 月 9〜12 日）と Humanoids 2026（12 月）はまだなので、それらの論文はプレプリントまたは「採択」として示します。同じ考え方のキャラクターアニメーション側（DeepMimic 型の追従、モーションキャプチャ、モーションマッチング）は[アニメーションとキャラクター]({{ '/blog/2026/graphics-09-animation-and-characters/' | relative_url }})で扱います。
+
+### ヒューマノイドの動作追従：一つの方策で多くの動き
+
+このレシピは DeepMimic（下の表）にさかのぼります。人のモーションキャプチャのクリップをロボットにリターゲット（retarget）して、参照軌道 $\hat q_t$（関節角）と $\hat x_t$（体の各部の位置）を得ます。次に GPU シミュレータで PPO により方策を学習し、それに追従させます。報酬は次の形です。
+
+$$
+r_t = \sum_k w_k \exp\!\left(-\frac{\lVert e_{k,t}\rVert^2}{\sigma_k^2}\right),
+\qquad e_{k,t} \in \lbrace q_t-\hat q_t,\; x_t-\hat x_t,\; \dot q_t-\dot{\hat q}_t,\;\dots \rbrace
+$$
+
+ここで $w_k$ は各誤差項の重み、$\sigma_k$ はその許容幅です。各項は追従が完璧なとき 1 で、誤差とともに滑らかに減衰します。ドメインランダム化と教師・生徒の分割を加えれば、方策は実機に転移します。2025〜2026 年の論文は、*何を*追従するか、一つの方策が*どれだけ多くの*動きを扱うか、そして Sim-to-Real のギャップを*どう*埋めるかで異なります。
+
+{% include blog_figure.liquid path="assets/img/blog/embodied-ai/02-update-tracking-reward.svg" caption="左：三つの許容幅 $\sigma$ での追従報酬項 $r = \exp(-e^2/\sigma^2)$。右：関節が 40 ms の遅れと小さなノイズで $\hat q(t) = 0.6\sin(1.5\pi t)$ に追従するおもちゃの例。灰色の曲線が誤差、色付きの曲線が各ステップの報酬です。小さな $\sigma$（赤）は同じ遅れをずっと強く罰し、疎で尖った信号になります。大きな $\sigma$（青）は寛容ですが、良い追従とそこそこの追従をほとんど区別できません。KungfuBot が学習中に $\sigma$ を適応させるのはこのためです。" %}
+
+- **HOVER**（He ら、ICRA 2025）は複数の指令モード（関節角、ルート速度、手のキーポイント）を一つの全身コントローラに蒸留します。上位のプランナや遠隔操作者は、方策を替えずにモードを切り替えられます。
+- **ASAP**（He ら、RSS 2025）は動力学のギャップに直接取り組みます。まずシミュレーションで追従方策を学習し、実機で動かして軌道を記録します。次に、シミュレータがその実機の軌道を再現するように**デルタ行動モデル**（delta action model）$\Delta_\phi$ を当てはめます。$s_{t+1} = f_{\text{sim}}(s_t, a_t + \Delta_\phi(s_t,a_t))$ です。最後に、この補正したシミュレータで方策を微調整します。第 5 節のシステム同定と比べると、少数の物理パラメータを当てはめる代わりに、行動に対する残差を学習しています。
+- **KungfuBot**（Xie ら、NeurIPS 2025）は動画から抽出した動きを物理的な実現可能性で選別し、学習中に二段階最適化で許容幅 $\sigma_k$ を適応させます。これにより Unitree G1 が非常に動的な技を習得しました。
+- **GMT**（Chen ら、arXiv プレプリント、2025 年 6 月）は、難しいクリップの適応的サンプリングと混合エキスパート方策を使い、大きなモーションライブラリに対する*汎用*の追従器を学習します。**Any2Track**（Zhang ら、arXiv プレプリント、2025 年 9 月）は、押されたり荷重がかかったり地面が不整だったりする状況のために、RMA と同じ考えのオンライン適応モジュールを加えます。
+- **BeyondMimic**（Liao ら、arXiv プレプリント、2025 年 8 月）は、非常に動的な技のためのオープンな追従パイプラインを公開しました。さらに追従器を潜在**拡散**モデルに蒸留し、テスト時に分類器ガイダンス（ジョイスティック、ウェイポイント、障害物回避）で操れるようにしています。[第 4 回]({{ '/blog/2026/embodied-ai-04-imitation-learning/' | relative_url }})の拡散モデルを、RL の追従器の上の動作の事前分布として使ったものです。
+- **SONIC**（Luo ら、NVIDIA、*Science Robotics* 2026 掲載）は動作追従を**基盤タスク**として扱います。モデル、モーションキャプチャデータ、計算量を拡大し、VR 遠隔操作・人間の動画・VLA の出力を一つの共通の指令トークン空間に写像します。公開された GR00T の全身制御コードとチェックポイントの上に、他の人も開発できます。
+- **X-WBC**（Zhang ら、CoRL 2026 採択）は、ロボットごとの小さなモジュールを付けた一つの Transformer を複数のヒューマノイドで学習し、共同学習によって各ロボットでの追従が改善したと報告しています。
+
+*どんな*人間の動きにも追従できる追従器は、その上のすべてを支える下位層になります。**TWIST** と **TWIST2**（Ze ら、arXiv プレプリント、2025）は全身遠隔操作でそれを動かしてデータを集めます（[第 6 回]({{ '/blog/2026/embodied-ai-06-embodied-ai-meets-xr-and-hci/' | relative_url }})）。Figure の Helix 02 は、この種の 1 kHz の学習型コントローラを VLA の下に置いています（[第 5 回]({{ '/blog/2026/embodied-ai-05-vision-language-action-models/' | relative_url }})）。
+
+### 実世界での RL と基盤方策の RL による微調整
+
+- **HIL-SERL**（Luo ら、arXiv、2024 年 10 月）は、方策オフ型の RL（RLPD 型の SAC の変種、第 3 節）を実機で直接動かします。人の修正で探索を速め、精密な組み立て、動的な裏返し、双腕タスクを 1〜数時間の実機でのやり取りで習得します。「実世界の RL は実用的だ」という主張の基準点です。
+- **ConRFT**（Chen ら、RSS 2025）は、人の介入とともに一貫性方策（consistency policy）のヘッドを使い、VLA をまずオフラインで、次に実機上でオンラインに微調整します。
+- **RL4VLA**（Liu ら、NeurIPS 2025）、**VLA-RL**（Lu ら、arXiv プレプリント、2025 年 5 月）、**SimpleVLA-RL**（Li ら、arXiv プレプリント、2025 年 9 月）は、トークン型や回帰型の VLA に、シミュレーションで疎な成功報酬を使った PPO 型の RL を適用します。教師あり微調整より汎化が良くなったと報告しており、RL4VLA はこの設定で PPO が DPO や GRPO より優れることを示しました。
+- **pi_RL**（Chen ら、arXiv プレプリント、2025 年 10 月）は、pi0 のような**フロー方策**の技術的な障害を解決します。PPO には $\log \pi_\theta(a\mid s)$ が必要ですが、決定的なフロー ODE には計算可能な尤度がありません。各積分ステップでノイズを注入する（Flow-Noise）か、ODE を SDE に変える（Flow-SDE）と、各ノイズ除去ステップがガウス分布になり、対数尤度はガウスの対数密度の和になります。こうして PPO と GRPO が pi0 と pi0.5 に使えるようになります。
+- pi\*0.6 の **Recap**（Physical Intelligence、arXiv プレプリント、2025 年 11 月）は方策勾配をまったく使いません。価値関数 $V(s)$ を学習し、データの各区間にアドバンテージの推定値（最も簡単な形は第 2 節の $A = r + \gamma V(s') - V(s)$）を付け、$A > 0$ かどうかを条件として VLA を学習します。テスト時には「アドバンテージが正」の行動を求めます。
+- **RL Token**（Xu ら、arXiv プレプリント、2026 年 4 月）は、凍結した VLA からコンパクトな「RL トークン」を取り出し、その上で小さな actor-critic をオンラインで学習します。タスクの精密な段階が実機上で数時間で改善します。
+- **Real-time EXPO-FT**（Dong ら、arXiv プレプリント、2026 年 9 月）は、遅い VLA を行動チャンクの提案役として残し、軽量な RL の「編集」方策がそれを高い頻度で修正する仕組みで、動的な操作に使います。
+
+### 計算例：フロー方策の尤度
+
+pi_RL はなぜ Flow-Noise を必要とするのでしょうか。フロー方策（第 5 回）は $a_0 \sim \mathcal{N}(0, 1)$ をサンプルし、学習した速度場 $v_\theta(a, \tau)$ を幅 $\Delta = 1/K$ の $K$ 回のオイラーステップで $\tau = 0$ から $1$ まで積分します。決定的に積分すると最終行動は $a_0$ の固定された関数にすぎず、PPO の比 $\pi_\theta(a\mid s)/\pi_{\theta_\text{old}}(a\mid s)$ は簡単な形を持ちません。Flow-Noise は各ステップに標準偏差 $\sigma\sqrt{\Delta}$ のガウスノイズを加えます。
+
+$$
+a_{k+1} = a_k + v_\theta(a_k, \tau_k)\,\Delta + \sigma\sqrt{\Delta}\,\varepsilon_k,\qquad \varepsilon_k \sim \mathcal{N}(0, 1).
+$$
+
+すると各ステップは平均 $a_k + v_\theta\Delta$ のガウス分布になり、連鎖 $a_{0:K}$ 全体の対数尤度は
+
+$$
+\log \pi_\theta(a_{0:K}) = \log\mathcal{N}(a_0; 0, 1) + \sum_{k=0}^{K-1} \log\mathcal{N}\!\left(a_{k+1};\, a_k + v_\theta(a_k,\tau_k)\Delta,\, \sigma^2\Delta\right)
+$$
+
+となります。PPO の比は、実際にサンプルした連鎖の上で $\rho = \exp(\log\pi_{\theta}(a_{0:K}) - \log\pi_{\theta_\text{old}}(a_{0:K}))$ として計算します。次のおもちゃの例では一次元の「方策」を使い、その唯一のパラメータ $\theta$ は直線フロー $v_\theta(a,\tau) = (\theta - a)/(1-\tau)$ が向かう行動です。
+
+```python
+import numpy as np
+
+
+def velocity(a, tau, theta):
+    # straight-line (rectified) flow from noise to the action theta: v = (theta - a) / (1 - tau)
+    return (theta - a) / (1.0 - tau)
+
+
+def log_prob(chain, theta, sigma=0.3):
+    """log-likelihood of a whole denoising chain a_0 -> a_K under Flow-Noise."""
+    K = len(chain) - 1
+    dt = 1.0 / K
+    std = sigma * np.sqrt(dt)
+    lp = -0.5 * chain[0] ** 2 - 0.5 * np.log(2 * np.pi)          # a_0 ~ N(0, 1)
+    for k in range(K):
+        mean = chain[k] + velocity(chain[k], k * dt, theta) * dt  # Euler step
+        lp += -0.5 * ((chain[k + 1] - mean) / std) ** 2 - np.log(std * np.sqrt(2 * np.pi))
+    return lp
+
+
+def sample(theta, K=10, sigma=0.3, rng=None):
+    dt = 1.0 / K
+    chain = [rng.standard_normal()]
+    for k in range(K):
+        mean = chain[-1] + velocity(chain[-1], k * dt, theta) * dt
+        chain.append(mean + sigma * np.sqrt(dt) * rng.standard_normal())
+    return np.array(chain)
+
+
+rng = np.random.default_rng(0)
+theta_old, theta_new = 0.50, 0.60
+chain = sample(theta_old, rng=rng)
+lp_old, lp_new = log_prob(chain, theta_old), log_prob(chain, theta_new)
+print("final action a_K       = %.3f" % chain[-1])
+print("log pi_old(chain)      = %.3f" % lp_old)
+print("log pi_new(chain)      = %.3f" % lp_new)
+print("PPO ratio pi_new/pi_old = %.3f" % np.exp(lp_new - lp_old))
+
+# sanity check: with sigma -> 0 the chain becomes the deterministic ODE and a_K -> theta
+finals = [sample(theta_old, sigma=1e-4, rng=rng)[-1] for _ in range(3)]
+print("ODE limit a_K:", np.round(finals, 3))
+```
+
+出力は次のとおりです。
+
+```text
+final action a_K       = 0.441
+log pi_old(chain)      = 10.467
+log pi_new(chain)      = 8.617
+PPO ratio pi_new/pi_old = 0.157
+ODE limit a_K: [0.5 0.5 0.5]
+```
+
+対数尤度が正なのは、各ステップの密度が狭く（$\sigma\sqrt{\Delta} \approx 0.095$）、密度の値が 1 を超えるためです。サンプルされた行動 0.441 は $\theta_\text{old} = 0.5$ より*小さい*ので、$\theta = 0.6$ に変えるとこの連鎖の確率は約 6 分の 1 になります（$\rho = 0.157$）。この行動のアドバンテージが正なら、PPO は $\theta$ をそちらへ下げることになります。$\sigma \to 0$ では連鎖は決定的な ODE になり、必ず $\theta$ で終わります。尤度が存在するのはノイズのおかげです。pi0 では $v_\theta$ が行動エキスパート、$a$ が 50 ステップの行動チャンクですが、計算の仕組みは同じです。
+
+下の図は、この議論の二つの部分、つまりノイズの入った連鎖と、ノイズの大きさによって比が $\theta$ にどれほど敏感に反応するかを示しています。
+
+{% include blog_figure.liquid path="assets/img/blog/embodied-ai/02-update-flow-noise.svg" caption="左：おもちゃのフロー方策の $\sigma = 0.3$ でのノイズ入りデノイジング連鎖 25 本（橙）と、決定的な ODE の連鎖 6 本（破線）。どれも $\theta_\text{old} = 0.5$ に向かいます。各ステップにガウス密度を与えているのはノイズです。右：サンプルした一本の連鎖の PPO の比 $\rho$ が、$\theta$ を 0.5 から動かすとどう変わるかを三つのノイズの大きさで示したもの。$\sigma = 0.3$ の曲線は計算例の連鎖です（$a_K = 0.44$、$\theta = 0.6$ で $\rho = 0.157$）。$\sigma$ が小さいと比はすぐにクリップ帯（灰色）を出てしまい、$\sigma$ が大きいと信号は平坦で弱くなります。" %}
+
+共通するのは**分業**です。模倣や大規模な事前学習が事前知識と意味を与え、RL が精度と信頼性の最後の一歩を担います。その方法は方策勾配（pi_RL、SimpleVLA-RL）の場合も、価値に基づく再ラベル付け（Recap）の場合もあります。
+
+*前の節からの変化：*第 6 節の「今日の操作は模倣学習が主流」という記述は、事前学習については今も正しいです。しかし最終的な信頼性のためには、RL による微調整が産業界の標準になり、シミュレータだけでなく実機が直接使われています。
+
 ## 代表的な論文
 
 | 論文 | 会議・論文誌 | 年 | リンク | 意義 |
@@ -432,6 +549,23 @@ flowchart LR
 | Kaufmann et al., *Champion-level drone racing using deep reinforcement learning* | Nature | 2023 | [DOI](https://doi.org/10.1038/s41586-023-06419-4) | RL が人間のチャンピオンに勝利 |
 | Ma et al., *Eureka: human-level reward design via coding large language models* | ICLR | 2024 | [arXiv](https://arxiv.org/abs/2310.12931) | LLM が書く報酬 |
 | Radosavovic et al., *Real-world humanoid locomotion with reinforcement learning* | Science Robotics | 2024 | [arXiv](https://arxiv.org/abs/2303.03381) | 人型ロボットのための Transformer 方策 |
+| He et al., *HOVER: versatile neural whole-body controller for humanoid robots* | ICRA | 2025 | [arXiv](https://arxiv.org/abs/2410.21229) | 多くの指令モードを一つの方策で |
+| Luo et al., *Precise and dexterous robotic manipulation via human-in-the-loop reinforcement learning*（HIL-SERL） | arXiv（2024 年 10 月） | 2024 | [arXiv](https://arxiv.org/abs/2410.21845) | 実用的な実世界 RL |
+| He et al., *ASAP: aligning simulation and real-world physics for learning agile humanoid whole-body skills* | RSS | 2025 | [arXiv](https://arxiv.org/abs/2502.01143) | デルタ行動モデルで動力学ギャップを埋める |
+| Chen et al., *ConRFT: a reinforced fine-tuning method for VLA models via consistency policy* | RSS | 2025 | [arXiv](https://arxiv.org/abs/2502.05450) | オフラインからオンラインへの実機 VLA 微調整 |
+| Xie et al., *KungfuBot: physics-based humanoid whole-body control for learning highly-dynamic skills* | NeurIPS | 2025 | [arXiv](https://arxiv.org/abs/2506.12851) | 適応的な追従許容幅 |
+| Liu et al., *What can RL bring to VLA generalization? An empirical study* | NeurIPS | 2025 | [arXiv](https://arxiv.org/abs/2505.19789) | VLA での PPO と SFT の比較 |
+| Lu et al., *VLA-RL: towards masterful and general robotic manipulation with scalable reinforcement learning* | arXiv プレプリント（2025 年 5 月） | 2025 | [arXiv](https://arxiv.org/abs/2505.18719) | 事前学習済み VLA のオンライン RL |
+| Chen et al., *GMT: general motion tracking for humanoid whole-body control* | arXiv プレプリント（2025 年 6 月） | 2025 | [arXiv](https://arxiv.org/abs/2506.14770) | 大規模モーションライブラリに一つの追従器 |
+| Liao et al., *BeyondMimic: from motion tracking to versatile humanoid control via guided diffusion* | arXiv プレプリント（2025 年 8 月） | 2025 | [arXiv](https://arxiv.org/abs/2508.08241) | オープンな追従パイプライン + ガイド付き拡散 |
+| Zhang et al., *Track any motions under any disturbances*（Any2Track） | arXiv プレプリント（2025 年 9 月） | 2025 | [arXiv](https://arxiv.org/abs/2509.13833) | オンライン適応付きの追従 |
+| Li et al., *SimpleVLA-RL: scaling VLA training via reinforcement learning* | arXiv プレプリント（2025 年 9 月） | 2025 | [arXiv](https://arxiv.org/abs/2509.09674) | VLA の結果報酬 RL |
+| Chen et al., *pi_RL: online RL fine-tuning for flow-based vision-language-action models* | arXiv プレプリント（2025 年 10 月） | 2025 | [arXiv](https://arxiv.org/abs/2510.25889) | フロー方策に尤度を与える |
+| Luo et al., *SONIC: supersizing motion tracking for natural humanoid whole-body control* | Science Robotics | 2026 | [arXiv](https://arxiv.org/abs/2511.07820) | 基盤タスクとしての動作追従 |
+| Physical Intelligence, *pi\*0.6: a VLA that learns from experience* | arXiv プレプリント（2025 年 11 月） | 2025 | [arXiv](https://arxiv.org/abs/2511.14759) | アドバンテージ条件付き RL（Recap） |
+| Xu et al., *RL Token: bootstrapping online RL with vision-language-action models* | arXiv プレプリント（2026 年 4 月） | 2026 | [arXiv](https://arxiv.org/abs/2604.23073) | 凍結 VLA 上の小さなオンライン actor-critic |
+| Zhang et al., *X-WBC: a cross-embodiment foundation model for humanoid whole-body control* | CoRL（採択） | 2026 | [arXiv](https://arxiv.org/abs/2609.15213) | 複数のヒューマノイドに一つのコントローラ |
+| Dong et al., *Reinforcement learning for real-time vision-language-action policies* | arXiv プレプリント（2026 年 9 月） | 2026 | [arXiv](https://arxiv.org/abs/2609.18207) | 遅い VLA のチャンクに高速な RL 編集 |
 
 ## 学習リソース
 
@@ -455,6 +589,19 @@ flowchart LR
 4. `PointReach` で学習した方策を、極端なパラメータの `RandomizedPointReach` で評価し、ランダム化して学習した方策と比べましょう。
    真の減衰係数を観測に加え（「特権」入力）、どれだけ役立つかを調べましょう。
 5. 同じタスクに SAC（リプレイバッファ、ツイン Q、tanh ガウス、自動 $\alpha$）を実装し、必要な環境ステップ数を PPO と比べましょう。
+6. Flow-Noise のコードで、`sigma=0.1` と `sigma=1.0` で PPO の比を計算し直しましょう（`sample` と `log_prob` の両方に `sigma` を渡します）。$\sigma$ が小さいと比が極端になるのはなぜでしょうか。それは PPO のクリッピングにとって何を意味するでしょうか。
+
+   <details markdown="1"><summary>ヒント</summary>
+
+   シード 0 では、$\sigma = 1$ の比は約 $0.69$、$\sigma = 0.1$ ではほぼ $0$ です。$\theta$ を変えると各ステップの平均が一定量ずれ、対数密度はおよそ（ずれ）$^2/(\sigma^2\Delta)$ だけ変わるので、$1/\sigma^2$ に比例して大きくなります。ノイズが小さいとほとんどのサンプルがクリップ範囲に当たり、勾配の信号が消えます。pi_RL がノイズの大きさを調整または学習するのはこのためです。
+   </details>
+
+7. 追従報酬の図では、関節が 40 ms の遅れで $\hat q(t) = 0.6\sin(1.5\pi t)$ に追従します。最大誤差と、その誤差での $\sigma = 0.1, 0.25, 0.5$ の報酬を見積もりましょう。
+
+   <details markdown="1"><summary>ヒント</summary>
+
+   遅れ $\delta$ が小さければ $e \approx \dot{\hat q}\,\delta$ で、最大速度は $0.6 \cdot 1.5\pi$ rad/s なので $e_\text{max} \approx 0.6 \cdot 1.5\pi \cdot 0.04 \approx 0.113$ rad です。よって $r = \exp(-e^2/\sigma^2) \approx 0.28$、$0.82$、$0.95$ となります。遅れていることを方策にはっきり伝えられるのは最小の $\sigma$ だけです。
+   </details>
 
 **次回：**[シミュレーションプラットフォーム]({{ '/blog/2026/embodied-ai-03-simulation-platforms/' | relative_url }})。
 これらの学習がすべて行われる場所です。
