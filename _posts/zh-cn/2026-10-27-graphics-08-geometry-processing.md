@@ -14,7 +14,7 @@ related_posts: false
 
 ## 为什么重要
 
-[光栅化]({{ '/blog/2026/graphics-02-rasterization/' | relative_url }})和[路径追踪]({{ '/blog/2026/graphics-05-ray-and-path-tracing/' | relative_url }})都把三角网格当作给定输入。本文讨论这些网格从哪里来、我们如何对它们进行操作。三角网格是电影、游戏、CAD、三维扫描和 3D 打印的通用语言，如今也是三维生成的通用语言。扫描仪或神经场给出的是点或隐式函数，必须把它们变成网格；美术制作的网格需要平滑、细化、为细节层次（LOD）做简化，还要展开以便贴图。神经重建（[从高斯得到表面]({{ '/blog/2026/neural-rendering-05-3dgs-frontiers/' | relative_url }})）最后用到的也是同样的工具：Marching Cubes、泊松重建和网格简化。
+[光栅化]({{ '/blog/2026/graphics-02-rasterization/' | relative_url }})和[路径追踪]({{ '/blog/2026/graphics-05-ray-and-path-tracing/' | relative_url }})都把三角网格当作给定输入。本文讨论这些网格从哪里来、我们如何对它们进行操作。三角网格是电影、游戏、CAD、三维扫描和 3D 打印的通用语言，如今也是三维生成的通用语言。扫描仪或神经场给出的是点或隐式函数，必须把它们变成网格；美术制作的网格需要平滑、细分、为细节层次（LOD）做简化，还要展开以便贴图。神经重建（[从高斯得到表面]({{ '/blog/2026/neural-rendering-05-3dgs-frontiers/' | relative_url }})）最后用到的也是同样的工具：Marching Cubes、泊松重建和网格简化。
 
 我们会用 NumPy 从零实现每一个工具：半边结构、基于余切拉普拉斯的曲率、平滑、Loop 细分、二次误差简化、Tutte 嵌入、Marching Squares 与 Marching Tetrahedra、球体追踪（sphere tracing）以及泊松重建。
 
@@ -22,7 +22,7 @@ related_posts: false
 
 - 向量、叉积、矩阵和最小二乘（[第 1 篇]({{ '/blog/2026/graphics-01-roadmap-and-math/' | relative_url }})）。
 - 三角形、重心坐标和索引网格（[第 2 篇]({{ '/blog/2026/graphics-02-rasterization/' | relative_url }})）。
-- 一点曲面上的微积分：法线、梯度，以及拉普拉斯算子 $\Delta f = \partial^2 f/\partial x^2 + \partial^2 f/\partial y^2$ 的概念。
+- 少量曲面上的微积分知识：法线、梯度，以及拉普拉斯算子 $\Delta f = \partial^2 f/\partial x^2 + \partial^2 f/\partial y^2$ 的概念。
 - 会用 NumPy 的 Python。稀疏线性代数有帮助但不是必需的：本文所有例子都足够小，用稠密矩阵即可。
 
 ## 1. 形状的表示
@@ -150,7 +150,7 @@ $$
 (\mathbf{L}f)_i = \sum_{j \in N(i)} w_{ij}\,(f_j - f_i), \qquad w_{ij} = \tfrac12\big(\cot\alpha_{ij} + \cot\beta_{ij}\big).
 $$
 
-$\mathbf{L}$ 是对称的，各行之和为零。要得到逐点的值，需要除以与顶点 $i$ 相关的面积 $A_i$：相邻三角形面积的三分之一（**重心面积**），或者 Meyer 等人更精确的**混合 Voronoi 面积**。于是
+其中 $N(i)$ 是顶点 $i$ 的邻居集合；Dirichlet 能量对 $f$ 的梯度就是 $-\mathbf{L}f$，所以 $\mathbf{L}$ 是负半定的。$\mathbf{L}$ 还是对称的，各行之和为零。要得到逐点的值，需要除以与顶点 $i$ 相关的面积 $A_i$：相邻三角形面积的三分之一（**重心面积**），或者 Meyer 等人更精确的**混合 Voronoi 面积**。于是
 
 $$
 \Delta_S\mathbf{x}_i \approx \frac{1}{A_i}\sum_{j} w_{ij}(\mathbf{x}_j - \mathbf{x}_i) = -2H_i\mathbf{n}_i, \qquad H_i = -\tfrac12\,(\Delta_S\mathbf{x}_i)\cdot\mathbf{n}_i.
@@ -196,7 +196,7 @@ def vertex_areas(V, F):                                   # barycentric: 1/3 of 
 
 ### 由角亏得到高斯曲率
 
-高斯曲率的离散形式更简单。把内部顶点 $i$ 周围的三角形摊平到平面上：如果各角 $\theta_{ij}$ 之和恰好是 $2\pi$，这个顶点就是平的。**角亏（angle defect）**
+高斯曲率的离散形式更简单。把内部顶点 $i$ 周围的三角形摊平到平面上：如果各角之和 $\sum\theta$ 恰好是 $2\pi$，这个顶点就是平的。**角亏（angle defect）**
 
 $$
 \delta_i = 2\pi - \sum_{f \ni i} \theta_f^{(i)}
@@ -210,7 +210,7 @@ $$
 \sum_i \delta_i = 2\pi\chi .
 $$
 
-数值例子：正八面体每个顶点有四个等边三角形的角，所以 $\delta = 2\pi - 4\cdot\frac{\pi}{3} = \frac{2\pi}{3}$，六个顶点之和为 $4\pi = 2\pi\cdot 2$。证明纯粹是计数：每个三角形三个角之和为 $\pi$，所以 $\sum_i\delta_i = 2\pi V - \pi F$，再利用 $2E = 3F$ 就得到 $2\pi(V - E + F)$。
+数值例子：正八面体每个顶点有四个等边三角形的角，所以 $\delta = 2\pi - 4\cdot\frac{\pi}{3} = \frac{2\pi}{3}$，六个顶点之和为 $4\pi = 2\pi\cdot 2$。证明纯粹是计数：每个三角形三个角之和为 $\pi$，所以 $\sum_i\delta_i = 2\pi V - \pi F$，再利用 $2E = 3F$（即 $F/2 = E - F$）就得到 $2\pi(V - E + F)$。
 
 ```python
 def gaussian_curvature(V, F):
@@ -231,7 +231,7 @@ $$
 
 外半部分（$\cos v > 0$）像球面，$K > 0$；内半部分像鞍面，$K < 0$；而高斯–博内定理说两者必须恰好抵消，因为 $\chi = 0$。在下面的 $48\times24$ 环面上，所有角亏之和为 $-3\times10^{-13}$（舍入误差），与公式相比的最大逐点误差：$K$ 为 $0.03$（$K$ 的取值范围是 $-4.2$ 到 $1.8$），$H$ 为 $0.006$（使用精确法向）。
 
-{% include blog_figure.liquid path="assets/img/blog/graphics/08-curvature.svg" caption="$48\times24$ 环面（$R=1$，$r=0.4$）上的离散曲率，用上面的代码计算。左：由角亏得到的高斯曲率，红色为 $K>0$（外侧），蓝色为 $K<0$（洞的内侧）。中：由余切拉普拉斯得到的平均曲率。右：沿管的一圈的数值与精确公式的比较；标记点应当紧贴曲线。标题打印出所有角亏之和，在舍入误差内为零，正如 $\chi=0$ 时高斯–博内定理所要求的。" %}
+{% include blog_figure.liquid path="assets/img/blog/graphics/08-curvature.svg" caption="$48\times24$ 环面（$R=1$，$r=0.4$）上的离散曲率，用上面的代码计算。左：由角亏得到的高斯曲率，红色为 $K>0$（外侧），蓝色为 $K<0$（洞的内侧）。中：由余切拉普拉斯得到的平均曲率。右：沿管的一圈的数值与精确公式的比较（红色为 $K$，蓝色为 $H$；圆点和方块是离散值，曲线是精确公式）；标记点应当紧贴曲线。标题打印出所有角亏之和，在舍入误差内为零，正如 $\chi=0$ 时高斯–博内定理所要求的。" %}
 
 ## 4. 平滑与光顺
 
@@ -302,6 +302,8 @@ for name, S in [("laplacian", X), ("taubin", Y), ("implicit", Z)]:
 
 曲线是一维网格，所以能直观看到滤波器作用在形状上。把 `L` 换成网格拉普拉斯，同样的代码就能用于三角网格。
 
+下图把三种滤波器作用在同一条带噪声的曲线上，灰色是初始曲线，青、紫、红依次对应更多的迭代（隐式一栏对应更多步）。
+
 {% include blog_figure.liquid path="assets/img/blog/graphics/08-smoothing.svg" caption="平滑脚本中带噪声的五瓣曲线。显式拉普拉斯平滑（$\lambda=0.5$）在 10 次迭代内去掉噪声，然后抹平花瓣并让整条曲线不断收缩。Taubin 平滑去掉噪声，但保留了花瓣和尺寸。$h=25$ 的隐式光顺一步就做了强烈平滑。右：相对初始值的围合面积；拉普拉斯的曲线持续下降（1000 次迭代后为 0.59），Taubin 的曲线保持在 1 附近，最终高出 3%，这正是其传递函数预言的轻微低频增益。" %}
 
 ## 5. 细分曲面
@@ -358,6 +360,8 @@ for level in range(3):
     V, F = loop_subdivide(V, F)
     print(level + 1, len(V), "vertices", len(F), "faces")   # 18/32, 66/128, 258/512
 ```
+
+如下图所示，每细分一次面数乘以 4，曲面同时向控制网格内部收缩。
 
 {% include blog_figure.liquid path="assets/img/blog/graphics/08-loop-subdivision.svg" caption="对顶部顶点被拉高的八面体做 Loop 细分，用 `loop_subdivide` 计算。每一层面数乘以 4。由于 Loop 是逼近型，曲面收缩到控制笼（虚线：第 0 层的八面体）内部，并很快变得光滑；原来的六个顶点度数为 4，在每一层都保持为奇异顶点。" %}
 
@@ -468,6 +472,8 @@ def qem_simplify(V, F, target):
 
 每个顶点的版本计数器 `ver` 是一种标准的惰性删除技巧：不去更新堆内的条目，而是压入新条目，并忽略弹出时顶点在压入之后已经变化过的条目。生产实现（meshoptimizer、PyMeshLab 的二次误差抽取、CGAL 的 `Surface_mesh_simplification`）还加入了考虑 UV 和法线的属性二次型、保护边界的平面，以及对细薄部分的保护。
 
+下图展示同一个网格被简化到越来越少的面时，顶点集中在哪里。
+
 {% include blog_figure.liquid path="assets/img/blog/graphics/08-qem.svg" caption="用 `qem_simplify` 对一个凹凸、拉长的球（1,280 个面的 icosphere）做 QEM 边坍缩，简化到 400、150 和 60 个面。强弯曲区域保留更多顶点，因为在那里坍缩会让曲面偏离许多不同的平面；较平坦的区域先被简化，最后只剩大三角形。" %}
 
 ## 7. 参数化
@@ -500,7 +506,9 @@ def tutte(V, F, loop, L):
     return UV
 ```
 
-{% include blog_figure.liquid path="assets/img/blog/graphics/08-tutte.svg" caption="一个带凸起的 $16\times16$ 网格曲面片（左；橙色为其边界），按弧长把边界固定在单位圆上后摊平。中：均匀权重的 Tutte 嵌入；右：余切权重的调和映射。每个三角形按面积比（二维比三维，均已归一化）的 $\log_2$ 着色：蓝色三角形缩小，红色变大。凸起的三维面积远大于它的投影面积，在两种映射中都被压缩；比较两种权重把剩余失真放在了哪里。标题给出最大比值。" %}
+用均匀权重时，`L` 就是 $\mathbf{A}-\mathbf{D}$（$\mathbf{A}$ 为邻接矩阵，$\mathbf{D}$ 为度数对角矩阵）；用余切权重时就是上一节的 `cotan_laplacian`。下图在一个带凸起的曲面片上比较这两种权重。
+
+{% include blog_figure.liquid path="assets/img/blog/graphics/08-tutte.svg" caption="一个带凸起的 $16\times16$ 网格曲面片（左；橙色为其边界），按弧长把边界固定在单位圆上后摊平。中：均匀权重的 Tutte 嵌入；右：余切权重的调和映射。每个三角形按面积比（二维比三维，均已归一化）的 $\log_2$ 着色：蓝色三角形缩小，红色变大。凸起的三维面积远大于它的投影面积，在两种映射中都被压缩；比较两种权重把剩余失真放在了哪里。各标题给出该映射中 $\log_2$ 面积比绝对值的最大值。" %}
 
 ### LSCM 与 ARAP
 
@@ -523,7 +531,7 @@ def tutte(V, F, loop, L):
 
 ### Marching Squares 与 Marching Cubes
 
-要得到网格，就在网格点上采样 $f$ 并寻找变号的位置。在二维中，**Marching Squares** 独立地处理每个单元。四个角点各自在内或在外，共 $2^4 = 16$ 种情况。在端点符号不同的每条边上，用线性插值放置交点：
+要得到网格，就在规则格点上采样 $f$ 并寻找变号的位置。在二维中，**Marching Squares** 独立地处理每个单元。四个角点各自在内或在外，共 $2^4 = 16$ 种情况。在端点符号不同的每条边上，用线性插值放置交点：
 
 $$
 \mathbf{x} = \mathbf{x}_a + t(\mathbf{x}_b - \mathbf{x}_a), \qquad t = \frac{f_a}{f_a - f_b}.
@@ -563,17 +571,19 @@ segs = marching_squares(circle, np.linspace(-1, 1, 12), np.linspace(-1, 1, 12))
 print(len(segs), "segments")                                  # 24
 ```
 
+下图把这段代码用在一个二维 SDF 上，并比较两种单元数。
+
 {% include blog_figure.liquid path="assets/img/blog/graphics/08-marching-squares.svg" caption="左：一个二维 SDF（圆与方框的平滑并）及其等值线；粗线为 $f=0$。中：在 $11\times11$ 个单元上做 Marching Squares；蓝色实心点在内部（$f<0$），红色空心点在外部，紫色线段是输出，灰色虚线是真实零集。右：在 $35\times35$ 个单元上，输出在视觉上已经精确。沿曲线方向的精度由线性插值而不是网格决定；网格决定的是哪些细节根本能被分辨出来。" %}
 
 你可以实时运行同一个算法。小部件中的 SDF 是三个圆的平滑并。
 
 {% include widget.liquid name="graphics-marching-squares" height="440" caption="在实时 SDF 上运行的 Marching Squares。用鼠标或手指拖动三个圆心，并改变单元数。蓝点在内部（$f<0$），红色空心点在外部，紫色线段是输出，虚线是细网格得到的参考曲线。取消勾选线性插值，每个交点都会放在边的中点，可以看到由此产生的阶梯。单元很少时，圆团之间的细颈会消失或断开：网格决定了哪些特征根本能被分辨出来。" %}
 
-**Marching Cubes**（Lorensen 和 Cline 1987）是同样的思想推广到三维：8 个角点给出 $2^8 = 256$ 种情况，按对称性约化为 15 类，每类存成一张三角形表。原始表中有歧义面，可能留下孔洞；后来的版本（渐近判定、Marching Cubes 33）修复了这一点。一个更简单的近亲 **Marching Tetrahedra** 把每个立方体分成 6 个四面体；四面体在对称意义下只有 3 种情况（一个角在内：一个三角形；两个在内：一个四边形；没有：什么都不输出），因此没有歧义，代价是三角形更多。图中使用它，是因为整个算法在图形脚本里只占 25 行。
+**Marching Cubes**（Lorensen 和 Cline 1987）是同样的思想推广到三维：8 个角点给出 $2^8 = 256$ 种情况，按对称性约化为 15 类，每类存成一张三角形表。原始表中有歧义面，可能留下孔洞；后来的版本（渐近判定、Marching Cubes 33）修复了这一点。一个更简单的近亲 **Marching Tetrahedra** 把每个立方体分成 6 个四面体；四面体在对称意义下只有 3 种情况（一个角在内：一个三角形；两个在内：一个四边形；没有在内：什么都不输出；三个或四个在内的情况与它们互为补集），因此没有歧义，代价是三角形更多。图中使用它，是因为整个算法在图形脚本里只占 25 行。
 
 {% include blog_figure.liquid path="assets/img/blog/graphics/08-marching-tets.svg" caption="用 Marching Tetrahedra 从 SDF（一个环面与一个球的平滑并）中提取的三维等值面，在 $26^3$ 个网格点上采样。每个三角形都来自曲面穿过的某个单元中的一个四面体；着色使用三角形法线。" %}
 
-Marching Cubes 把顶点放在网格边上，所以会把尖锐特征磨圆。**对偶轮廓（dual contouring）**（Ju 等 2002）则在曲面穿过的每个单元*内部*放一个顶点，位置是最小化由交点及其法线（Hermite 数据）构成的 QEF（与 QEM 相同的二次型思想）的点，再把相邻单元的顶点连起来。它能重现尖锐的角和棱，并支持自适应八叉树。Neural Dual Contouring（Chen 等 2022）学习这些顶点该放在哪里。
+Marching Cubes 把顶点放在网格边上，所以会把尖锐特征磨圆。**对偶轮廓（dual contouring）**（Ju 等 2002）则在曲面穿过的每个单元*内部*放一个顶点，位置是最小化由交点及其法线（Hermite 数据）构成的 QEF（二次误差函数，quadratic error function；与 QEM 相同的二次型思想）的点，再把相邻单元的顶点连起来。它能重现尖锐的角和棱，并支持自适应八叉树。Neural Dual Contouring（Chen 等 2022）学习这些顶点该放在哪里。
 
 ### 球体追踪
 
@@ -585,15 +595,17 @@ $$
 
 当 $f < \varepsilon$（命中）或 $t > t_{\max}$（未命中）时停止。远离表面时步长很大；接近掠射角时步长变得很小，这是该方法的弱点。Shadertoy 风格的演示和许多神经场渲染器都建立在这个循环之上。
 
+下图在同一个 SDF 中追踪三条光线，注意步长如何随到表面的距离变化。
+
 {% include blog_figure.liquid path="assets/img/blog/graphics/08-sphere-tracing.svg" caption="从黑色方块出发、穿过 Marching Squares 图中 SDF 的三条球体追踪光线。每个圆的半径是当前点的 $f$，它与表面相切而不穿过表面，所以下一个点位于圆周上。紫色光线正面命中，只需几步；橙色光线以浅角度接近方框顶部，沿表面前进时步长逐渐变小；绿色光线未命中并离开区域。图例给出步数。" %}
 
 ## 9. 从点重建
 
-扫描仪、深度相机或运动恢复结构流水线（[神经渲染第 1 篇]({{ '/blog/2026/neural-rendering-01-cameras-and-multiview-geometry/' | relative_url }})）产生的是点，而不是网格。重建要恢复出一个水密（watertight）的表面。
+扫描仪、深度相机或运动恢复结构（structure from motion，SfM）流水线（[神经渲染第 1 篇]({{ '/blog/2026/neural-rendering-01-cameras-and-multiview-geometry/' | relative_url }})）产生的是点，而不是网格。重建要恢复出一个水密（watertight）的表面。
 
 **法线估计。** 对每个点取 $k$ 个最近邻并拟合平面：法线是邻居 $3\times3$ 协方差矩阵最小特征值对应的特征向量（PCA，Hoppe 等 1992）。PCA 只给出一条直线而非方向，所以法线还必须一致地**定向**，经典做法是沿邻域图的最小生成树传播，翻转每条法线使之与邻居一致。
 
-**泊松重建（Poisson reconstruction）**（Kazhdan、Bolitho 和 Hoppe 2006）。设 $\chi$ 为实体的指示函数：内部为 1，外部为 0。它的梯度除表面外处处为零，在表面上指向内部。所以有向法线平滑成的向量场 $\vec V$（指向外部）就是 $-\nabla\chi$ 的一个采样。求梯度与之最匹配的 $\chi$：
+**泊松重建（Poisson reconstruction）**（Kazhdan、Bolitho 和 Hoppe 2006）。设 $\chi$ 为实体的指示函数：内部为 1，外部为 0（这里的 $\chi$ 与前面的欧拉示性数无关）。它的梯度除表面外处处为零，在表面上指向内部。所以把有向法线（指向外部）平滑后得到的向量场 $\vec V$，就是 $-\nabla\chi$ 的一个采样。求梯度与 $-\vec V$ 最接近的 $\chi$：
 
 $$
 \min_\chi \int \lVert\nabla\chi + \vec V\rVert^2 \quad\Longrightarrow\quad \Delta\chi = -\nabla\cdot\vec V .
@@ -641,13 +653,15 @@ print("iso-value", round(float(iso), 4))                     # 0.0485
 
 用质心定向的技巧只适用于像这样的星形形状；它在这里代替上面描述的生成树传播。
 
+下图是这段代码的运行结果。
+
 {% include blog_figure.liquid path="assets/img/blog/graphics/08-poisson-2d.svg" caption="用脚本做的二维泊松重建。左：140 个带噪声的采样点及其 PCA 法线。中：$\Delta\chi=-\nabla\cdot\vec V$ 的解 $\chi$，外部低、内部高，白线为穿过采样点的等值线。右：该等值线（紫色）与真实曲线（虚线）的对比：即使在随机采样稀疏的地方，它也是一条闭合、光滑的曲线。" %}
 
 ### 神经隐式曲面
 
 如今多视图重建常常经由神经场完成。**NeuS**（Wang 等 2021）把表面表示为 SDF 网络的零等值集，并用 logistic 函数把 SDF 转换为体密度，使 [NeRF 式体渲染]({{ '/blog/2026/neural-rendering-02-nerf/' | relative_url }})在表面处无偏。它加入 **eikonal** 损失 $(\lVert\nabla f\rVert - 1)^2$ 让 $f$ 保持为距离函数。**Neuralangelo**（Li 等 2023）使用多分辨率哈希网格（[快速辐射场]({{ '/blog/2026/neural-rendering-03-fast-radiance-fields/' | relative_url }})），配合数值梯度和由粗到细的训练来处理大场景。在高斯这一侧，[2D Gaussian Splatting 和 Gaussian Opacity Fields]({{ '/blog/2026/neural-rendering-05-3dgs-frontiers/' | relative_url }}) 让高斯变得更像表面，再提取网格：用 TSDF 融合加 Marching Cubes，或在高斯中心上做 Marching Tetrahedra。所有这些流水线最终都落到第 8 节的提取，通常还有第 6 节的简化。
 
-一个较新的方向绕开了场：自回归 Transformer 像美术一样逐个 token 生成网格。MeshGPT（CVPR 2024）学习三角形 token 的词表。MeshAnything（ICLR 2025）、EdgeRunner（ICLR 2025）和 Meshtron（2024 年 12 月的预印本）把它扩展到有数千个面、类似美术制作的网格，以点云或图像为条件。它们之所以出现，是因为 Marching Cubes 得到的网格稠密且不规则，而美术和游戏引擎需要紧凑、结构良好的拓扑。
+一个较新的方向绕开了场：自回归 Transformer 像美术师一样逐个 token 生成网格。MeshGPT（CVPR 2024）学习三角形 token 的词表。MeshAnything（ICLR 2025）、EdgeRunner（ICLR 2025）和 Meshtron（2024 年 12 月的预印本）把它扩展到有数千个面、类似美术制作的网格，以点云或图像为条件。它们之所以出现，是因为 Marching Cubes 得到的网格稠密且不规则，而美术和游戏引擎需要紧凑、结构良好的拓扑。
 
 ## 10. 工具
 
@@ -657,14 +671,14 @@ print("iso-value", round(float(iso), 4))                     # 0.0485
 | --- | --- | --- |
 | [libigl](https://libigl.github.io/) | C++ 纯头文件，Python 绑定 | 拉普拉斯、曲率、参数化（LSCM、ARAP）、布尔运算；矩阵风格的 API，与本文很接近 |
 | [CGAL](https://www.cgal.org/) | C++ | 稳健的精确谓词、Delaunay、简化、重网格化、泊松、布尔运算 |
-| [OpenMesh](https://www.graphics.rwth-aachen.de/software/openmesh/) | C++、Python | 半边数据结构、抽取、细分 |
+| [OpenMesh](https://www.graphics.rwth-aachen.de/software/openmesh/) | C++、Python | 半边数据结构、简化、细分 |
 | [geometry-central](https://geometry-central.net/) + [Polyscope](https://polyscope.run/) | C++、Python | 内蕴三角化、DDG 算子；快速三维查看器 |
-| [PyMeshLab](https://pymeshlab.readthedocs.io/) | Python | MeshLab 的全部滤镜：屏蔽泊松、二次误差抽取、清理 |
+| [PyMeshLab](https://pymeshlab.readthedocs.io/) | Python | MeshLab 的全部滤镜：屏蔽泊松、二次误差简化、清理 |
 | [trimesh](https://trimesh.org/) | Python | 加载、修复、射线查询、布尔运算、各种便利功能 |
 | [Open3D](https://www.open3d.org/) | C++、Python | 点云、法线估计、泊松、TSDF 融合 |
-| Blender（`bpy`、`bmesh`） | Python | 用脚本调用建模算子、细分、抽取和 UV 展开 |
+| Blender（`bpy`、`bmesh`） | Python | 用脚本调用建模算子、细分、简化和 UV 展开 |
 
-例如，Open3D 用四个调用就完成了第 9 节：
+例如，Open3D 用三个调用（法线估计、法线定向、泊松重建）就完成了第 9 节，前两行只是准备一份示例点云：
 
 ```python
 import open3d as o3d  # pip install open3d
@@ -694,7 +708,7 @@ print(rec)
 | Pinkall & Polthier, *Computing discrete minimal surfaces and their conjugates* | Experimental Mathematics | 1993 | [DOI](https://doi.org/10.1080/10586458.1993.10504266) | 余切公式 |
 | Taubin, *A signal processing approach to fair surface design* | SIGGRAPH | 1995 | [DOI](https://doi.org/10.1145/218380.218473) | 把网格平滑看作滤波；无收缩的 $\lambda\vert\mu$ |
 | Hart, *Sphere tracing* | The Visual Computer | 1996 | [DOI](https://doi.org/10.1007/s003710050084) | 距离函数的安全光线步进 |
-| Garland & Heckbert, *Surface simplification using quadric error metrics* | SIGGRAPH | 1997 | [DOI](https://doi.org/10.1145/258734.258849) | QEM 边坍缩，至今仍是默认的抽取算法 |
+| Garland & Heckbert, *Surface simplification using quadric error metrics* | SIGGRAPH | 1997 | [DOI](https://doi.org/10.1145/258734.258849) | QEM 边坍缩，至今仍是默认的简化算法 |
 | Desbrun, Meyer, Schröder & Barr, *Implicit fairing of irregular meshes using diffusion and curvature flow* | SIGGRAPH | 1999 | [DOI](https://doi.org/10.1145/311535.311576) | 隐式积分与用于平滑的余切拉普拉斯 |
 | Lévy, Petitjean, Ray & Maillot, *Least squares conformal maps* | ACM TOG (SIGGRAPH) | 2002 | [DOI](https://doi.org/10.1145/566654.566590) | 自由边界的共形参数化，一次线性求解 |
 | Ju, Losasso, Schaefer & Warren, *Dual contouring of Hermite data* | ACM TOG (SIGGRAPH) | 2002 | [DOI](https://doi.org/10.1145/566654.566586) | 通过 QEF 顶点从隐式数据得到尖锐特征 |
@@ -723,7 +737,7 @@ print(rec)
 
 ## 练习
 
-1. 用边界角亏 $\pi - \sum\theta$ 证明带边界网格的离散高斯–博内定理，并在图形脚本的 `grid_patch` 上数值验证。
+1. 用边界角亏 $\pi - \sum\theta$ 证明带边界网格的离散高斯–博内定理，并在图形脚本（`bin/figures/graphics/graphics_08.py`）的 `grid_patch` 上数值验证。
 2. 把 `mean_curvature` 中的重心面积换成混合 Voronoi 面积（Meyer 等：非钝角三角形用 Voronoi 面积，否则用三角形面积的一半或四分之一），并与环面的精确曲率比较误差。
 3. 为封闭四边形网格实现 Catmull–Clark 细分并应用到立方体上。细分几层之后，曲面离球面有多远？
 4. 给 `qem_simplify` 加一个保护边界的项：对每条边界边，加入一个经过该边、垂直于其所在面的平面的二次型，并赋予较大权重。简化网格曲面片并比较边界。

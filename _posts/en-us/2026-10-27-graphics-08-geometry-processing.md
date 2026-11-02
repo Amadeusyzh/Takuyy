@@ -150,7 +150,7 @@ $$
 (\mathbf{L}f)_i = \sum_{j \in N(i)} w_{ij}\,(f_j - f_i), \qquad w_{ij} = \tfrac12\big(\cot\alpha_{ij} + \cot\beta_{ij}\big).
 $$
 
-$\mathbf{L}$ is symmetric and its rows sum to zero. To get a pointwise value we divide by an area $A_i$ associated with vertex $i$: one third of the incident triangle areas (the **barycentric** area), or the more accurate **mixed Voronoi** area of Meyer et al. Then
+Here $N(i)$ is the set of neighbours of vertex $i$, and the gradient of the Dirichlet energy with respect to $f$ is $-\mathbf{L}f$, so $\mathbf{L}$ is negative semi-definite. $\mathbf{L}$ is also symmetric and its rows sum to zero. To get a pointwise value we divide by an area $A_i$ associated with vertex $i$: one third of the incident triangle areas (the **barycentric** area), or the more accurate **mixed Voronoi** area of Meyer et al. Then
 
 $$
 \Delta_S\mathbf{x}_i \approx \frac{1}{A_i}\sum_{j} w_{ij}(\mathbf{x}_j - \mathbf{x}_i) = -2H_i\mathbf{n}_i, \qquad H_i = -\tfrac12\,(\Delta_S\mathbf{x}_i)\cdot\mathbf{n}_i.
@@ -196,7 +196,7 @@ Two cautions. Cotangents become negative for angles above $90^\circ$, so on mesh
 
 ### Gaussian curvature from the angle defect
 
-Gaussian curvature has an even simpler discrete form. Flatten the triangles around an interior vertex $i$ into the plane: if the corner angles $\theta_{ij}$ add up to exactly $2\pi$ the vertex is flat. The **angle defect**
+Gaussian curvature has an even simpler discrete form. Flatten the triangles around an interior vertex $i$ into the plane: if the corner angles add up ($\sum\theta$) to exactly $2\pi$ the vertex is flat. The **angle defect**
 
 $$
 \delta_i = 2\pi - \sum_{f \ni i} \theta_f^{(i)}
@@ -210,7 +210,7 @@ $$
 \sum_i \delta_i = 2\pi\chi .
 $$
 
-Worked example: on an octahedron, each vertex has four equilateral corners, so $\delta = 2\pi - 4\cdot\frac{\pi}{3} = \frac{2\pi}{3}$, and the six vertices sum to $4\pi = 2\pi\cdot 2$. The proof is pure counting: the corner angles of each triangle add up to $\pi$, so $\sum_i\delta_i = 2\pi V - \pi F$, and with $2E = 3F$ this is $2\pi(V - E + F)$.
+Worked example: on an octahedron, each vertex has four equilateral corners, so $\delta = 2\pi - 4\cdot\frac{\pi}{3} = \frac{2\pi}{3}$, and the six vertices sum to $4\pi = 2\pi\cdot 2$. The proof is pure counting: the corner angles of each triangle add up to $\pi$, so $\sum_i\delta_i = 2\pi V - \pi F$, and with $2E = 3F$ (that is, $F/2 = E - F$) this is $2\pi(V - E + F)$.
 
 ```python
 def gaussian_curvature(V, F):
@@ -231,7 +231,7 @@ $$
 
 The outer half ($\cos v > 0$) is sphere-like with $K > 0$; the inner half is saddle-like with $K < 0$; and Gauss–Bonnet says the two must cancel exactly, since $\chi = 0$. On the $48\times24$ torus below, the sum of all angle defects is $-3\times10^{-13}$ (rounding), and the largest pointwise errors against the formulas are $0.03$ for $K$ (which ranges from $-4.2$ to $1.8$) and $0.006$ for $H$ (with the exact normals).
 
-{% include blog_figure.liquid path="assets/img/blog/graphics/08-curvature.svg" caption="Discrete curvature on a $48\times24$ torus ($R=1$, $r=0.4$), computed with the code above. Left: Gaussian curvature from the angle defect, red where $K>0$ (outside) and blue where $K<0$ (inside the hole). Middle: mean curvature from the cotan Laplacian. Right: the values along one ring of the tube against the exact formulas; the markers should sit close to the curves. The title prints the sum of all angle defects, zero up to rounding, as Gauss–Bonnet requires for $\chi=0$." %}
+{% include blog_figure.liquid path="assets/img/blog/graphics/08-curvature.svg" caption="Discrete curvature on a $48\times24$ torus ($R=1$, $r=0.4$), computed with the code above. Left: Gaussian curvature from the angle defect, red where $K>0$ (outside) and blue where $K<0$ (inside the hole). Middle: mean curvature from the cotan Laplacian. Right: the values along one ring of the tube against the exact formulas (red: $K$, blue: $H$; dots and squares are the discrete values, curves the exact formulas); the markers should sit close to the curves. The title prints the sum of all angle defects, zero up to rounding, as Gauss–Bonnet requires for $\chi=0$." %}
 
 ## 4. Smoothing and fairing
 
@@ -302,6 +302,8 @@ for name, S in [("laplacian", X), ("taubin", Y), ("implicit", Z)]:
 
 The curve case is a 1D mesh, so you can see the filters act on a shape. The same code works on a triangle mesh by replacing `L` with the mesh Laplacian.
 
+The figure below applies the three filters to the same noisy curve; grey is the initial curve, and cyan, purple and red correspond to more and more iterations (more steps in the implicit panel).
+
 {% include blog_figure.liquid path="assets/img/blog/graphics/08-smoothing.svg" caption="Smoothing the noisy five-lobed curve of the script. Explicit Laplacian smoothing ($\lambda=0.5$) removes the noise within 10 iterations, then erases the lobes and keeps shrinking the whole curve. Taubin smoothing removes the noise but keeps the lobes and the size. Implicit fairing with $h=25$ smooths heavily in a single step. Right: enclosed area relative to the start; the Laplacian curve keeps falling (0.59 after 1,000 iterations), while the Taubin curve stays near 1 and ends 3% above it, the slight low-frequency gain predicted by its transfer function." %}
 
 ## 5. Subdivision surfaces
@@ -358,6 +360,8 @@ for level in range(3):
     V, F = loop_subdivide(V, F)
     print(level + 1, len(V), "vertices", len(F), "faces")   # 18/32, 66/128, 258/512
 ```
+
+As the figure below shows, every subdivision step multiplies the face count by 4 while the surface shrinks inside the control mesh.
 
 {% include blog_figure.liquid path="assets/img/blog/graphics/08-loop-subdivision.svg" caption="Loop subdivision of an octahedron whose top vertex is pulled up, computed with `loop_subdivide`. Each level multiplies the face count by 4. The surface shrinks inside the control cage (dashed: the level-0 octahedron), because Loop is approximating, and quickly becomes smooth; the six original vertices have valence 4 and stay extraordinary at every level." %}
 
@@ -468,6 +472,8 @@ def qem_simplify(V, F, target):
 
 The per-vertex version counter `ver` is a standard lazy-deletion trick: instead of updating entries inside the heap, we push fresh ones and ignore any popped entry whose vertices changed since it was pushed. Production implementations (meshoptimizer, PyMeshLab's quadric decimation, CGAL's `Surface_mesh_simplification`) add attribute-aware quadrics for UVs and normals, boundary-preserving planes, and protection of thin parts.
 
+The figure below shows where the vertices end up when the same mesh is simplified to fewer and fewer faces.
+
 {% include blog_figure.liquid path="assets/img/blog/graphics/08-qem.svg" caption="QEM edge collapse with `qem_simplify` on a bumpy, elongated sphere (an icosphere with 1,280 faces), down to 400, 150 and 60 faces. Strongly curved regions keep more vertices, because collapsing there moves the surface away from many different planes; flatter regions are simplified first and end up with large triangles." %}
 
 ## 7. Parameterization
@@ -500,7 +506,9 @@ def tutte(V, F, loop, L):
     return UV
 ```
 
-{% include blog_figure.liquid path="assets/img/blog/graphics/08-tutte.svg" caption="A $16\times16$ grid patch with a bump (left; orange: its boundary) flattened with the boundary pinned to the unit circle by arc length. Middle: Tutte embedding with uniform weights; right: harmonic map with cotan weights. Each triangle is colored by $\log_2$ of its area ratio (2D over 3D, both normalized): blue triangles shrank, red ones grew. The bump, which has much more 3D area than its footprint, is compressed in both maps; compare where the two weightings put the remaining distortion. The titles report the worst ratio." %}
+With uniform weights, `L` is $\mathbf{A}-\mathbf{D}$ ($\mathbf{A}$ the adjacency matrix, $\mathbf{D}$ the diagonal matrix of valences); with cotan weights it is the `cotan_laplacian` of the previous section. The figure below compares the two on a patch with a bump.
+
+{% include blog_figure.liquid path="assets/img/blog/graphics/08-tutte.svg" caption="A $16\times16$ grid patch with a bump (left; orange: its boundary) flattened with the boundary pinned to the unit circle by arc length. Middle: Tutte embedding with uniform weights; right: harmonic map with cotan weights. Each triangle is colored by $\log_2$ of its area ratio (2D over 3D, both normalized): blue triangles shrank, red ones grew. The bump, which has much more 3D area than its footprint, is compressed in both maps; compare where the two weightings put the remaining distortion. Each title reports the largest absolute $\log_2$ area ratio of its map." %}
 
 ### LSCM and ARAP
 
@@ -563,17 +571,19 @@ segs = marching_squares(circle, np.linspace(-1, 1, 12), np.linspace(-1, 1, 12))
 print(len(segs), "segments")                                  # 24
 ```
 
+The figure below runs this code on a 2D SDF and compares two cell counts.
+
 {% include blog_figure.liquid path="assets/img/blog/graphics/08-marching-squares.svg" caption="Left: a 2D SDF (smooth union of a circle and a box) with its level sets; the thick line is $f=0$. Middle: marching squares on $11\times11$ cells; filled blue dots are inside ($f<0$), open red dots outside, purple segments are the output and the dashed gray curve the true zero set. Right: on $35\times35$ cells the output is visually exact. Linear interpolation, not the grid, sets the accuracy along the curve; the grid sets which details can be resolved at all." %}
 
 You can run the same algorithm live. In the widget the SDF is a smooth union of three circles.
 
 {% include widget.liquid name="graphics-marching-squares" height="440" caption="Marching squares on a live SDF. Drag the three circle centres with the mouse or a finger and change the number of cells. Blue dots are inside ($f<0$), open red dots outside, purple segments are the output and the dashed curve is a fine-grid reference. Untick linear interpolation to put every crossing at the edge midpoint and see the staircase it causes. With very few cells, small necks between the blobs disappear or break apart: the grid sets which features can be resolved at all." %}
 
-**Marching cubes** (Lorensen and Cline 1987) is the same idea in 3D: 8 corners give $2^8 = 256$ cases, reduced by symmetry to 15 classes, each stored as a table of triangles. The original table has ambiguous faces that can leave holes; later versions (asymptotic decider, Marching Cubes 33) fix them. A simpler cousin, **marching tetrahedra**, splits each cube into 6 tetrahedra; a tetrahedron has only 3 cases up to symmetry (one corner inside: a triangle; two inside: a quad; none: nothing), so there are no ambiguities, at the cost of more triangles. The figure uses it because the whole algorithm fits in 25 lines of the figure script.
+**Marching cubes** (Lorensen and Cline 1987) is the same idea in 3D: 8 corners give $2^8 = 256$ cases, reduced by symmetry to 15 classes, each stored as a table of triangles. The original table has ambiguous faces that can leave holes; later versions (asymptotic decider, Marching Cubes 33) fix them. A simpler cousin, **marching tetrahedra**, splits each cube into 6 tetrahedra; a tetrahedron has only 3 cases up to symmetry (one corner inside: a triangle; two inside: a quad; none inside: nothing; three or four inside are the complements of these), so there are no ambiguities, at the cost of more triangles. The figure uses it because the whole algorithm fits in 25 lines of the figure script.
 
 {% include blog_figure.liquid path="assets/img/blog/graphics/08-marching-tets.svg" caption="A 3D isosurface extracted with marching tetrahedra from an SDF, a torus smoothly united with a sphere, sampled on $26^3$ grid points. Every triangle comes from one tetrahedron in one cell that the surface crosses; shading uses the triangle normals." %}
 
-Marching cubes places vertices on grid edges, so it rounds off sharp features. **Dual contouring** (Ju et al. 2002) instead puts one vertex *inside* each cell that the surface crosses, at the point minimizing a QEF (the same quadric idea as QEM) built from the crossing points and their normals (Hermite data), and connects vertices of neighboring cells. It reproduces sharp corners and edges and supports adaptive octrees. Neural Dual Contouring (Chen et al. 2022) learns where to place these vertices.
+Marching cubes places vertices on grid edges, so it rounds off sharp features. **Dual contouring** (Ju et al. 2002) instead puts one vertex *inside* each cell that the surface crosses, at the point minimizing a QEF (quadratic error function; the same quadric idea as QEM) built from the crossing points and their normals (Hermite data), and connects vertices of neighboring cells. It reproduces sharp corners and edges and supports adaptive octrees. Neural Dual Contouring (Chen et al. 2022) learns where to place these vertices.
 
 ### Sphere tracing
 
@@ -585,6 +595,8 @@ $$
 
 stopping when $f < \varepsilon$ (hit) or $t > t_{\max}$ (miss). Far from surfaces the steps are large; near grazing angles they become tiny, which is the method's weakness. Shadertoy-style demos and many neural-field renderers are built on this loop.
 
+The figure below traces three rays through the same SDF; watch how the step length follows the distance to the surface.
+
 {% include blog_figure.liquid path="assets/img/blog/graphics/08-sphere-tracing.svg" caption="Sphere tracing three rays from the black square through the SDF of the marching-squares figure. Each circle has radius $f$ at the current point and touches the surface without crossing it, so the next point lies on its rim. The purple ray hits head-on in a few steps; the orange ray approaches the top of the box at a shallow angle, so its steps shrink as it runs along the surface; the green ray misses and leaves the domain. The legend counts the steps." %}
 
 ## 9. Reconstruction from points
@@ -593,7 +605,7 @@ A scanner, a depth camera or a structure-from-motion pipeline ([neural-rendering
 
 **Normal estimation.** For each point take its $k$ nearest neighbors and fit a plane: the normal is the eigenvector of the neighbors' $3\times3$ covariance matrix with the smallest eigenvalue (PCA, Hoppe et al. 1992). PCA only gives a line, not a direction, so normals must then be **oriented** consistently, classically by propagating along a minimum spanning tree of the neighborhood graph, flipping each normal to agree with its neighbor.
 
-**Poisson reconstruction** (Kazhdan, Bolitho and Hoppe 2006). Let $\chi$ be the indicator function of the solid: 1 inside, 0 outside. Its gradient is zero everywhere except on the surface, where it points inward. So the oriented normals, smoothed into a vector field $\vec V$ (pointing outward), are a sample of $-\nabla\chi$. Find $\chi$ whose gradient best matches:
+**Poisson reconstruction** (Kazhdan, Bolitho and Hoppe 2006). Let $\chi$ be the indicator function of the solid: 1 inside, 0 outside (this $\chi$ is unrelated to the Euler characteristic above). Its gradient is zero everywhere except on the surface, where it points inward. So the oriented normals, smoothed into a vector field $\vec V$ (pointing outward), are a sample of $-\nabla\chi$. Find $\chi$ whose gradient best matches:
 
 $$
 \min_\chi \int \lVert\nabla\chi + \vec V\rVert^2 \quad\Longrightarrow\quad \Delta\chi = -\nabla\cdot\vec V .
@@ -641,6 +653,8 @@ print("iso-value", round(float(iso), 4))                     # 0.0485
 
 The centroid trick for orientation only works for star-shaped shapes like this one; it stands in for the spanning-tree propagation described above.
 
+The figure below shows what this code produces.
+
 {% include blog_figure.liquid path="assets/img/blog/graphics/08-poisson-2d.svg" caption="Poisson reconstruction in 2D with the script. Left: 140 noisy samples and their PCA normals. Middle: the solution $\chi$ of $\Delta\chi=-\nabla\cdot\vec V$, low outside and high inside, with the level set through the samples (white). Right: that level set (purple) against the true curve (dashed): a closed, smooth curve, even where the random samples are sparse." %}
 
 ### Neural implicit surfaces
@@ -664,7 +678,7 @@ You rarely write all of this yourself. The standard libraries:
 | [Open3D](https://www.open3d.org/) | C++, Python | point clouds, normal estimation, Poisson, TSDF fusion |
 | Blender (`bpy`, `bmesh`) | Python | modeling operators, subdivision, decimation and UV unwrap from scripts |
 
-For example, Open3D does Section 9 in four calls:
+For example, Open3D does Section 9 in three calls (normal estimation, normal orientation, Poisson reconstruction); the first two lines only prepare a sample point cloud:
 
 ```python
 import open3d as o3d  # pip install open3d
@@ -723,7 +737,7 @@ print(rec)
 
 ## Exercises
 
-1. Prove the discrete Gauss–Bonnet theorem for a mesh with boundary, using the boundary defect $\pi - \sum\theta$. Check it numerically on the `grid_patch` of the figure script.
+1. Prove the discrete Gauss–Bonnet theorem for a mesh with boundary, using the boundary defect $\pi - \sum\theta$. Check it numerically on the `grid_patch` of the figure script (`bin/figures/graphics/graphics_08.py`).
 2. Replace the barycentric areas in `mean_curvature` with mixed Voronoi areas (Meyer et al.: the Voronoi area for non-obtuse triangles, half or a quarter of the triangle area otherwise) and compare the error against the exact torus curvature.
 3. Implement Catmull–Clark subdivision for a closed quad mesh and apply it to a cube. After a few levels, how far is the surface from a sphere?
 4. Add a boundary-preserving term to `qem_simplify`: for each boundary edge, add the quadric of a plane through the edge perpendicular to its face, with a large weight. Simplify the grid patch and compare the boundary.
