@@ -3,7 +3,11 @@
 set -euo pipefail
 
 sudo apt-get update -qq
-sudo apt-get install -y -qq fonts-wqy-zenhei jq >/dev/null
+sudo apt-get install -y -qq fonts-wqy-zenhei jq bubblewrap >/dev/null
+# Claude Code isolates tool subprocesses (and scrubs credentials from them) with bubblewrap.
+# Ubuntu 24.04 restricts unprivileged user namespaces through AppArmor; allow them on this throwaway VM.
+sudo sysctl -q -w kernel.apparmor_restrict_unprivileged_userns=0 || true
+bwrap --ro-bind / / --dev /dev --proc /proc --unshare-pid true && echo "bubblewrap works"
 
 python -m pip install -q --upgrade pip
 python -m pip install -q numpy scipy matplotlib requests
