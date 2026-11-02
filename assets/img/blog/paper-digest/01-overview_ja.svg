@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 520" width="900" height="520" font-family="Noto Sans CJK JP, Noto Sans JP, Hiragino Sans, Yu Gothic, Meiryo, DejaVu Sans, sans-serif" font-size="17">
+<rect width="900" height="520" fill="#fff"/>
+<g stroke="#000" stroke-opacity="0.12">
+<line x1="240" y1="20" x2="240" y2="380"/><line x1="315" y1="20" x2="315" y2="380"/><line x1="390" y1="20" x2="390" y2="380"/><line x1="465" y1="20" x2="465" y2="380"/><line x1="540" y1="20" x2="540" y2="380"/><line x1="615" y1="20" x2="615" y2="380"/><line x1="690" y1="20" x2="690" y2="380"/><line x1="765" y1="20" x2="765" y2="380"/><line x1="840" y1="20" x2="840" y2="380"/>
+</g>
+<g>
+<rect x="240" y="32" width="150" height="36" fill="#9467bd"/><rect x="390" y="32" width="375" height="36" fill="#cdbfe3"/>
+<rect x="240" y="92" width="525" height="36" fill="#cdbfe3"/>
+<rect x="240" y="152" width="300" height="36" fill="#9467bd"/><rect x="540" y="152" width="225" height="36" fill="#cdbfe3"/>
+<rect x="240" y="212" width="525" height="36" fill="#cdbfe3"/>
+<rect x="240" y="272" width="225" height="36" fill="#9467bd"/><rect x="465" y="272" width="300" height="36" fill="#cdbfe3"/>
+<rect x="240" y="332" width="225" height="36" fill="#9467bd"/><rect x="465" y="332" width="300" height="36" fill="#cdbfe3"/>
+</g>
+<g fill="#222" font-size="18">
+<text x="775" y="56">7</text><text x="775" y="116">7</text><text x="775" y="176">7</text><text x="775" y="236">7</text><text x="775" y="296">7</text><text x="775" y="356">7</text>
+</g>
+<g fill="#222">
+<path d="M270,20 L284,20 L277,29 Z"/>
+<path d="M270,140 L284,140 L277,149 Z"/>
+<path d="M270,200 L284,200 L277,209 Z"/><path d="M345,200 L359,200 L352,209 Z"/><path d="M420,200 L434,200 L427,209 Z"/>
+<path d="M270,320 L284,320 L277,329 Z"/><path d="M345,320 L359,320 L352,329 Z"/>
+</g>
+<g text-anchor="end" fill="#222">
+<text x="228" y="56">グラフィックス</text>
+<text x="228" y="116">エンジン・リアルタイム</text>
+<text x="228" y="176">ニューラルレンダリング</text>
+<text x="228" y="236">世界モデル</text>
+<text x="228" y="296">身体性 AI</text>
+<text x="228" y="356">HCI / XR</text>
+</g>
+<line x1="240" y1="380" x2="840" y2="380" stroke="#222" stroke-width="1.2"/>
+<g text-anchor="middle" fill="#222" font-size="15">
+<text x="240" y="402">0</text><text x="315" y="402">1</text><text x="390" y="402">2</text><text x="465" y="402">3</text><text x="540" y="402">4</text><text x="615" y="402">5</text><text x="690" y="402">6</text><text x="765" y="402">7</text><text x="840" y="402">8</text>
+<text x="540" y="432" font-size="17">本号の掲載数</text>
+</g>
+<g font-size="15" fill="#222">
+<rect x="150" y="470" width="26" height="18" fill="#9467bd"/><text x="184" y="485">採択・出版済み</text>
+<rect x="390" y="470" width="26" height="18" fill="#cdbfe3"/><text x="424" y="485">プレプリント</text>
+<path d="M552,472 L566,472 L559,481 Z" fill="#222"/><text x="574" y="485">コード公開（1 本につき 1 個）</text>
+</g>
+</svg>

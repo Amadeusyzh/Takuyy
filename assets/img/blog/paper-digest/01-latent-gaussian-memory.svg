@@ -1,0 +1,68 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 420" width="900" height="420" font-family="DejaVu Sans, Arial, Helvetica, sans-serif" font-size="17">
+<defs>
+<marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 Z" fill="#222"/></marker>
+<marker id="ahg" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 Z" fill="#2ca02c"/></marker>
+</defs>
+<rect width="900" height="420" fill="#fff"/>
+<!-- memory: ground plane and Gaussians with latent features -->
+<path d="M30,300 L110,250 L340,250 L260,300 Z" fill="#f1f1f1" stroke="#ccc"/>
+<g fill-opacity="0.5" stroke-width="1.5">
+<ellipse cx="105" cy="150" rx="42" ry="17" transform="rotate(-20 105 150)" fill="#1f77b4" stroke="#1f77b4"/>
+<ellipse cx="185" cy="105" rx="30" ry="13" transform="rotate(25 185 105)" fill="#2ca02c" stroke="#2ca02c"/>
+<ellipse cx="160" cy="205" rx="46" ry="16" transform="rotate(8 160 205)" fill="#9467bd" stroke="#9467bd"/>
+<ellipse cx="245" cy="160" rx="28" ry="20" transform="rotate(-35 245 160)" fill="#ff7f0e" stroke="#ff7f0e"/>
+</g>
+<!-- newly spawned Gaussians (dashed) -->
+<g fill="none" stroke="#2ca02c" stroke-width="2" stroke-dasharray="5,4">
+<ellipse cx="300" cy="95" rx="26" ry="12" transform="rotate(15 300 95)"/>
+<ellipse cx="305" cy="225" rx="30" ry="13" transform="rotate(-10 305 225)"/>
+</g>
+<!-- latent feature bars f_k (4 channels shown) -->
+<g>
+<rect x="54" y="168" width="7" height="14" fill="#444"/><rect x="62" y="162" width="7" height="20" fill="#888"/><rect x="70" y="172" width="7" height="10" fill="#444"/><rect x="78" y="165" width="7" height="17" fill="#888"/>
+<rect x="208" y="70" width="7" height="10" fill="#444"/><rect x="216" y="64" width="7" height="16" fill="#888"/><rect x="224" y="60" width="7" height="20" fill="#444"/><rect x="232" y="72" width="7" height="8" fill="#888"/>
+<rect x="110" y="226" width="7" height="18" fill="#444"/><rect x="118" y="234" width="7" height="10" fill="#888"/><rect x="126" y="228" width="7" height="16" fill="#444"/><rect x="134" y="222" width="7" height="22" fill="#888"/>
+<rect x="268" y="176" width="7" height="12" fill="#444"/><rect x="276" y="168" width="7" height="20" fill="#888"/><rect x="284" y="178" width="7" height="10" fill="#444"/><rect x="292" y="172" width="7" height="16" fill="#888"/>
+</g>
+<!-- annotation for one Gaussian -->
+<line x1="105" y1="150" x2="70" y2="98" stroke="#555" stroke-width="1.2"/>
+<text x="20" y="70" font-size="16" font-style="italic">G<tspan baseline-shift="sub" font-size="12">k</tspan><tspan baseline-shift="baseline"> = (&#956;</tspan><tspan baseline-shift="sub" font-size="12">k</tspan><tspan baseline-shift="baseline">, &#931;</tspan><tspan baseline-shift="sub" font-size="12">k</tspan><tspan baseline-shift="baseline">, &#945;</tspan><tspan baseline-shift="sub" font-size="12">k</tspan><tspan baseline-shift="baseline">, f</tspan><tspan baseline-shift="sub" font-size="12">k</tspan><tspan baseline-shift="baseline">)</tspan></text>
+<text x="40" y="200" font-size="14" font-style="italic" fill="#444">f<tspan baseline-shift="sub" font-size="11">k</tspan></text>
+<!-- camera -->
+<g transform="translate(40,330)">
+<rect x="0" y="0" width="34" height="24" rx="3" fill="#555"/>
+<path d="M34,6 L48,0 L48,24 L34,18 Z" fill="#555"/>
+</g>
+<line x1="90" y1="336" x2="150" y2="230" stroke="#999" stroke-width="1.4" stroke-dasharray="4,4"/>
+<line x1="90" y1="336" x2="300" y2="290" stroke="#999" stroke-width="1.4" stroke-dasharray="4,4"/>
+<text x="40" y="380" font-style="italic">&#960;<tspan baseline-shift="sub" font-size="12">t</tspan></text>
+<!-- splat to latent map -->
+<line x1="335" y1="180" x2="383" y2="180" stroke="#222" stroke-width="2" marker-end="url(#ah)"/>
+<g stroke="#fff" stroke-width="1">
+<rect x="390" y="140" width="20" height="20" fill="#1f77b4" fill-opacity="0.55"/><rect x="410" y="140" width="20" height="20" fill="#1f77b4" fill-opacity="0.35"/><rect x="430" y="140" width="20" height="20" fill="#2ca02c" fill-opacity="0.5"/><rect x="450" y="140" width="20" height="20" fill="#2ca02c" fill-opacity="0.65"/><rect x="470" y="140" width="20" height="20" fill="#cccccc"/><rect x="490" y="140" width="20" height="20" fill="#cccccc"/>
+<rect x="390" y="160" width="20" height="20" fill="#1f77b4" fill-opacity="0.7"/><rect x="410" y="160" width="20" height="20" fill="#5a6fa8" fill-opacity="0.6"/><rect x="430" y="160" width="20" height="20" fill="#ff7f0e" fill-opacity="0.35"/><rect x="450" y="160" width="20" height="20" fill="#ff7f0e" fill-opacity="0.6"/><rect x="470" y="160" width="20" height="20" fill="#ff7f0e" fill-opacity="0.45"/><rect x="490" y="160" width="20" height="20" fill="#cccccc"/>
+<rect x="390" y="180" width="20" height="20" fill="#9467bd" fill-opacity="0.45"/><rect x="410" y="180" width="20" height="20" fill="#9467bd" fill-opacity="0.7"/><rect x="430" y="180" width="20" height="20" fill="#9467bd" fill-opacity="0.6"/><rect x="450" y="180" width="20" height="20" fill="#c27a6b" fill-opacity="0.55"/><rect x="470" y="180" width="20" height="20" fill="#ff7f0e" fill-opacity="0.3"/><rect x="490" y="180" width="20" height="20" fill="#cccccc"/>
+<rect x="390" y="200" width="20" height="20" fill="#9467bd" fill-opacity="0.3"/><rect x="410" y="200" width="20" height="20" fill="#9467bd" fill-opacity="0.5"/><rect x="430" y="200" width="20" height="20" fill="#9467bd" fill-opacity="0.4"/><rect x="450" y="200" width="20" height="20" fill="#cccccc"/><rect x="470" y="200" width="20" height="20" fill="#cccccc"/><rect x="490" y="200" width="20" height="20" fill="#cccccc"/>
+</g>
+<text x="450" y="128" text-anchor="middle" font-style="italic">z</text>
+<!-- DiT -->
+<line x1="516" y1="180" x2="566" y2="180" stroke="#222" stroke-width="2" marker-end="url(#ah)"/>
+<rect x="570" y="140" width="110" height="80" rx="12" fill="#e8e0f5" stroke="#9467bd" stroke-width="2.5"/>
+<text x="625" y="187" text-anchor="middle" font-size="20">DiT</text>
+<line x1="625" y1="96" x2="625" y2="136" stroke="#222" stroke-width="2" marker-end="url(#ah)"/>
+<text x="635" y="108" font-style="italic">a<tspan baseline-shift="sub" font-size="13">t</tspan></text>
+<line x1="684" y1="180" x2="724" y2="180" stroke="#222" stroke-width="2" marker-end="url(#ah)"/>
+<!-- output chunk -->
+<g stroke="#555">
+<rect x="730" y="150" width="70" height="52" fill="#dbe9f6"/>
+<rect x="746" y="160" width="70" height="52" fill="#d3e5f3"/>
+<rect x="762" y="170" width="70" height="52" fill="#cbe0f0"/>
+<rect x="778" y="180" width="70" height="52" fill="#c3dbed"/>
+</g>
+<text x="790" y="260" text-anchor="middle" font-style="italic">x<tspan baseline-shift="sub" font-size="13">t+1..t+4</tspan></text>
+<!-- memory update loop -->
+<path d="M800,272 C800,370 420,380 330,260" fill="none" stroke="#2ca02c" stroke-width="2.2" marker-end="url(#ahg)"/>
+<text x="560" y="350" text-anchor="middle" fill="#2ca02c" font-size="20">+ / &#8635;</text>
+<!-- compositing formula -->
+<text x="450" y="405" text-anchor="middle" font-size="18" font-style="italic">z(p) = &#8721;<tspan baseline-shift="sub" font-size="13">k</tspan><tspan baseline-shift="baseline"> T</tspan><tspan baseline-shift="sub" font-size="13">k</tspan><tspan baseline-shift="baseline"> &#945;</tspan><tspan baseline-shift="sub" font-size="13">k</tspan><tspan baseline-shift="baseline"> G</tspan><tspan baseline-shift="sub" font-size="13">k</tspan><tspan baseline-shift="baseline">(p) f</tspan><tspan baseline-shift="sub" font-size="13">k</tspan></text>
+</svg>

@@ -1,0 +1,50 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 980 450" width="980" height="450" font-family="DejaVu Sans, Arial, Helvetica, sans-serif" font-size="16">
+<rect width="980" height="450" fill="#fff"/>
+<!-- lanes; x = 100 + 26.5 * (days since 2026-10-01) -->
+<g>
+<rect x="88" y="18" width="872" height="64" fill="#9467bd" fill-opacity="0.07"/>
+<rect x="88" y="83" width="872" height="64" fill="#ff7f0e" fill-opacity="0.07"/>
+<rect x="88" y="148" width="872" height="64" fill="#1f77b4" fill-opacity="0.07"/>
+<rect x="88" y="213" width="872" height="64" fill="#2ca02c" fill-opacity="0.07"/>
+<rect x="88" y="278" width="872" height="64" fill="#d62728" fill-opacity="0.07"/>
+<rect x="88" y="343" width="872" height="64" fill="#0f9fb0" fill-opacity="0.07"/>
+</g>
+<g stroke="#000" stroke-opacity="0.15">
+<line x1="100" y1="18" x2="100" y2="407"/><line x1="285.5" y1="18" x2="285.5" y2="407"/><line x1="471" y1="18" x2="471" y2="407"/><line x1="656.5" y1="18" x2="656.5" y2="407"/><line x1="842" y1="18" x2="842" y2="407"/>
+</g>
+<line x1="88" y1="407" x2="960" y2="407" stroke="#222" stroke-width="1.2"/>
+<g text-anchor="middle" fill="#222" font-size="15">
+<text x="100" y="428">10/1</text><text x="285.5" y="428">10/8</text><text x="471" y="428">10/15</text><text x="656.5" y="428">10/22</text><text x="842" y="428">10/29</text>
+</g>
+<g text-anchor="end" font-weight="bold" font-size="15">
+<text x="80" y="55" fill="#9467bd">GFX</text>
+<text x="80" y="120" fill="#ff7f0e">ENG</text>
+<text x="80" y="185" fill="#1f77b4">NR</text>
+<text x="80" y="250" fill="#2ca02c">WM</text>
+<text x="80" y="315" fill="#d62728">EAI</text>
+<text x="80" y="380" fill="#0f9fb0">XR</text>
+</g>
+<!-- dots -->
+<g stroke="#fff" stroke-width="1.5">
+<g fill="#9467bd"><circle cx="153" cy="50" r="7"/><circle cx="285.5" cy="50" r="7"/><circle cx="418" cy="50" r="7"/><circle cx="577" cy="50" r="7"/><circle cx="709.5" cy="50" r="7"/><circle cx="789" cy="50" r="7"/><circle cx="842" cy="50" r="7"/></g>
+<g fill="#ff7f0e"><circle cx="100" cy="115" r="7"/><circle cx="179.5" cy="115" r="7"/><circle cx="206" cy="115" r="7"/><circle cx="259" cy="115" r="7"/><circle cx="285.5" cy="115" r="7"/><circle cx="312" cy="115" r="7"/><circle cx="471" cy="115" r="7"/></g>
+<g fill="#1f77b4"><circle cx="497.5" cy="180" r="7"/><circle cx="524" cy="180" r="7"/><circle cx="550.5" cy="180" r="7"/><circle cx="630" cy="180" r="7"/><circle cx="683" cy="180" r="7"/><circle cx="762.5" cy="180" r="7"/><circle cx="842" cy="180" r="7"/></g>
+<g fill="#2ca02c"><circle cx="444.5" cy="245" r="7"/><circle cx="603.5" cy="245" r="7"/><circle cx="630" cy="245" r="7"/><circle cx="683" cy="245" r="7"/><circle cx="762.5" cy="245" r="7"/><circle cx="789" cy="245" r="7"/><circle cx="842" cy="245" r="7"/></g>
+<g fill="#d62728"><circle cx="312" cy="310" r="7"/><circle cx="603.5" cy="286" r="7"/><circle cx="603.5" cy="302" r="7"/><circle cx="603.5" cy="318" r="7"/><circle cx="603.5" cy="334" r="7"/><circle cx="762.5" cy="310" r="7"/><circle cx="789" cy="310" r="7"/></g>
+<g fill="#0f9fb0"><circle cx="391.5" cy="367" r="7"/><circle cx="391.5" cy="383" r="7"/><circle cx="577" cy="359" r="7"/><circle cx="577" cy="375" r="7"/><circle cx="577" cy="391" r="7"/><circle cx="630" cy="375" r="7"/><circle cx="789" cy="375" r="7"/></g>
+</g>
+<!-- entry numbers: above single dots, right of stacked dots -->
+<g fill="#222" font-size="12" text-anchor="middle">
+<text x="153" y="38">03</text><text x="285.5" y="38">01</text><text x="418" y="38">02</text><text x="577" y="38">04</text><text x="709.5" y="38">06</text><text x="789" y="38">05</text><text x="842" y="38">07</text>
+<text x="100" y="103">08</text><text x="179.5" y="103">09</text><text x="206" y="103">10</text><text x="259" y="103">11</text><text x="285.5" y="103">12</text><text x="312" y="103">13</text><text x="471" y="103">14</text>
+<text x="497.5" y="168">15</text><text x="524" y="168">16</text><text x="550.5" y="168">17</text><text x="630" y="168">18</text><text x="683" y="168">19</text><text x="762.5" y="168">20</text><text x="842" y="168">21</text>
+<text x="444.5" y="233">22</text><text x="603.5" y="233">23</text><text x="630" y="233">24</text><text x="683" y="233">25</text><text x="762.5" y="233">26</text><text x="789" y="233">27</text><text x="842" y="233">28</text>
+<text x="312" y="298">29</text><text x="762.5" y="298">34</text><text x="789" y="298">35</text>
+<text x="630" y="363">41</text><text x="789" y="363">42</text>
+</g>
+<g fill="#222" font-size="12">
+<text x="614" y="290">30</text><text x="614" y="306">31</text><text x="614" y="322">32</text><text x="614" y="338">33</text>
+<text x="402" y="371">36</text><text x="402" y="387">37</text>
+<text x="588" y="363">38</text><text x="588" y="379">39</text><text x="588" y="395">40</text>
+</g>
+</svg>
