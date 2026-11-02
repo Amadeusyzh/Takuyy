@@ -57,12 +57,18 @@ How to integrate (keep all existing content):
   - `graphics-engine-05-physics-and-simulation-engines` from post 03;
   - `graphics-09-animation-and-characters` from posts 02 and 06 (physics-based characters, motion capture);
   - `graphics-engine-06-ai-meets-graphics-engines` from post 05 (world models and data factories).
-- Figures: add 1-3 per post where they help, computed from verified data or toy runs. For example:
+- Figures: add 2-4 per post where they help, computed from verified data or toy runs. For example:
   - a VLA family tree or timeline from 2023 to 2026;
   - dataset scale against embodiment count, from verified numbers;
   - a schematic of a new architecture pattern.
   - Put them in `bin/figures/embodied-ai/embodied_ai_updates.py`, writing
     `assets/img/blog/embodied-ai/0N-update-*.svg`.
+- Widget: `embodied-ai-vla-explorer`, an interactive family tree and timeline of the VLA and robot
+  foundation models from 2023 to 2026 that you verified.
+  - Filter by action head (discrete tokens, diffusion, flow matching), open weights, and embodiment.
+  - Tap an entry to see a summary, its status and its link.
+  - Embed it in post 05.
+  - Keep the data inline in the JS, ASCII only.
 - Append a "2025-2026" section to `docs/reading-lists/embodied-ai.md`.
 
 Commit after each post, or after every two posts. If the budget runs short, prioritize posts 05, 03 and 02.

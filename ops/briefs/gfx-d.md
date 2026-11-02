@@ -59,7 +59,9 @@ Data and figures:
   - a "trend map" linking topics to the blog chapters that teach the prerequisites;
   - one or two explanatory schematics for especially important papers (for example a method diagram).
 - Draw these yourself from the paper's description. Never copy figures from papers.
-- No widget is required.
+- Widget: `graphics-frontiers-explorer`, built from the same data.
+  - Filter by topic and status.
+  - Tap a work to see its summary, its link and the chapter it builds on.
 
 Also append a "2026 frontiers" section to `docs/reading-lists/graphics.md`.
 

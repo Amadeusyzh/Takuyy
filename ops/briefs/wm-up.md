@@ -46,13 +46,19 @@ How to integrate (keep all existing content):
 - Cross-link the new graphics-engine series:
   - `graphics-engine-06-ai-meets-graphics-engines` (neural game engines) from posts 01, 03 and 04;
   - `graphics-engine-05-physics-and-simulation-engines` where simulation is discussed.
-- Figures: add 1-3 per post where they help, computed by NumPy/matplotlib from your verified data or from
+- Figures: add 2-4 per post where they help, computed by NumPy/matplotlib from your verified data or from
   real toy runs. For example:
   - a 2024-2026 timeline of world models;
   - a scatter of reported resolution or fps against memory horizon, from verified numbers only;
   - a schematic of a new architecture idea.
   - Put them in a new script `bin/figures/world-models/world_models_updates.py`, writing
     `assets/img/blog/world-models/0N-update-*.svg`.
+- Widget: `world-models-timeline`, an interactive, filterable timeline of the 2024-2026 world models you
+  verified.
+  - Filter by type: interactive video, 3D/4D generation, latent RL, JEPA, evaluation.
+  - Tap an entry to see a two-line summary, its status and its link.
+  - Embed it in post 03, and in 04 and 05 if useful.
+  - Keep the data inline in the JS, ASCII only (\u escapes).
 - Append a "2025-2026" section to `docs/reading-lists/world-models.md`.
 
 Commit after each post, or after every two posts. Quality and accuracy come first. If the budget runs short,

@@ -6,6 +6,28 @@ trilingual (English / Simplified Chinese / Japanese) academic website. This repo
 afterwards. Nobody will answer questions during your run: make sensible decisions, write them down, and
 keep going until your assignment is done.
 
+## Purpose and audience: learning from scratch
+
+These posts are a from-scratch learning path, and the owner will study from them personally. Content
+quality comes first: depth, clarity, correctness, visualization and interactivity.
+
+- Write for a motivated learner who is new to this specific topic. Assume linear algebra, calculus, Python
+  and some ML.
+- Define every symbol before you use it.
+- Build each idea in this order:
+  1. intuition, with a picture;
+  2. the formula, derived step by step;
+  3. a small worked numeric example;
+  4. code that reproduces it;
+  5. a figure or widget showing the result in space or as a plot.
+- Pair every important formula with a figure that shows its meaning (axes, 3D geometry, before and after,
+  step-by-step processes, real toy runs), so that the abstract maths connects to space.
+- Interaction helps learning. Every new post needs at least the widgets named in its brief, and a second one
+  where another idea clearly benefits from manipulation. Each widget needs short instructions in all three
+  languages, sensible defaults, and touch support.
+- Where helpful, end each exercise with a brief hint or answer inside
+  `<details markdown="1"><summary>Hint</summary> ... </details>` (localize the summary text).
+
 ## Date and knowledge
 
 Today is 2026-11-02. Your training data may end months earlier, so anything after early 2026 must come from
@@ -161,9 +183,11 @@ Your tools are restricted on purpose:
 
 ## Budget
 
-A hard spending cap stops your run when it is reached. Work in order of importance:
-- Finish, verify and commit one post at a time, rather than leaving several half-written.
-- Do not burn budget on repeated full-site builds. Build once per post, plus once at the end.
+Your budget is generous, and content comes first. Spend it on depth, clarity, figures and interactivity, not
+on waste. A hard cap still stops the run when it is reached, so:
+- Finish, verify and commit one post at a time, in all three languages, rather than leaving several
+  half-written.
+- Do not rebuild the whole site after every small edit. Build once or twice per post, plus once at the end.
 - If you are running low, finish the current post properly and list what is left in your report.
 
 ## Final report (your last message)

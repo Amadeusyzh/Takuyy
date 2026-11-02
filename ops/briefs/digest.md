@@ -75,7 +75,11 @@ Categories, in this order:
 - A timeline of the window.
 - 2-4 explanatory schematics for the most important papers, drawn by you (never copy paper figures).
 
-No widget is required.
+Widget: `paper-digest-explorer`, an interactive explorer of this issue.
+- Filter by category and by connection to CG (representation, rendering, geometry, simulation, animation,
+  interaction).
+- Tap a paper to see its one-paragraph summary and links.
+- Keep the data inline in the JS, ASCII only (\u escapes).
 
 The deadline is tight and this post is the owner's showcase, so make it excellent. Commit a first complete
 version as soon as all six categories are written, then improve and extend it.
