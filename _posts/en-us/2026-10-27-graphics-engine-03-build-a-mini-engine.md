@@ -265,9 +265,9 @@ $$
 
 where $\text{stride}$ is `byteStride` if present and otherwise the packed element size (12 bytes for a `VEC3` of `FLOAT`).
 
-**Worked example.** An interleaved vertex buffer stores position (12 bytes), normal (12) and UV (8) per vertex, so `byteStride = 32`. The `NORMAL` accessor has `byteOffset = 12`. The normal of vertex 2 starts at $0 + 12 + 2 \cdot 32 = 76$, and its $z$ component is at $76 + 2 \cdot 4 = 84$.
+**Worked example.** An interleaved vertex buffer stores position (12 bytes), normal (12) and UV (8) per vertex, so `byteStride = 32`. The `NORMAL` accessor has `byteOffset = 12`. The normal of vertex 2 starts at $0 + 12 + 2 \cdot 32 = 76$, and its $z$ component is at $76 + 2 \cdot 4 = 84$. The figure below draws this interleaved layout byte by byte; find the cell with the thick border.
 
-{% include blog_figure.liquid path="assets/img/blog/graphics-engine/03-accessor-layout.svg" caption="Byte layout of that interleaved bufferView: three accessors (POSITION at offset 0, NORMAL at 12, TEXCOORD_0 at 24) share one stride of 32 bytes. The highlighted cell is the worked example, byte 84 = the z of the normal of vertex 2. The index accessor lives in a second, tightly packed bufferView." %}
+{% include blog_figure.liquid path="assets/img/blog/graphics-engine/03-accessor-layout.svg" caption="Byte layout of that interleaved bufferView: the red, green and blue cells are the 4-byte components of position, normal and UV; three accessors (POSITION at offset 0, NORMAL at 12, TEXCOORD_0 at 24) share one stride of 32 bytes, so consecutive elements of one accessor are 32 bytes apart. The cell with the thick border is the worked example, byte 84 = the z of the normal of vertex 2. The index accessor lives in a second, tightly packed bufferView that is not drawn." %}
 
 The loader below handles `.gltf` and `.glb`, external and embedded buffers and images, normalized integer attributes, and computes normals if a file has none. It deliberately skips sparse accessors, skins, morph targets, animations, cameras and extensions (good exercises). Note what the GLB header looks like: the magic number `0x46546C67` (the ASCII bytes `glTF`), the version 2, then chunks tagged `JSON` and `BIN`.
 
@@ -532,7 +532,7 @@ $$
 
 Dragging changes $\psi$ and $\phi$ (pitch is clamped below $\pm 90°$ so that the `up` vector of `lookAt` never becomes parallel to the view direction), the wheel scales $r$ geometrically (each notch by 10 %, so zooming feels the same at every distance), and WASD moves the target in the camera's horizontal plane.
 
-{% include blog_figure.liquid path="assets/img/blog/graphics-engine/03-orbit-camera.svg" caption="The orbit camera with the default parameters ($r = 4$, $\psi = 0.6$, $\phi = 0.35$): the eye $\mathbf{e}$ on the sphere around the target, and the camera basis computed by `lookAt` (red $x$ to the right, green $y$ up, blue $z$ pointing backwards, away from the target). The frustum is drawn with the 60° field of view, cut at 1.5 units for legibility." %}
+{% include blog_figure.liquid path="assets/img/blog/graphics-engine/03-orbit-camera.svg" caption="The orbit camera with the default parameters ($r = 4$, $\psi = 0.6$, $\phi = 0.35$): the eye $\mathbf{e}$ on the sphere around the target $\mathbf{t}$; the arcs mark the yaw $\psi$ (in the horizontal plane, measured from the $+z$ axis) and the pitch $\phi$, and the thin dashed lines are the world axes; the three arrows at the eye are the camera basis computed by `lookAt` (red $x_c$ to the right, green $y_c$ up, blue $z_c$ pointing backwards, away from the target). The frustum is drawn with the 60° field of view, cut at 1.5 units for legibility." %}
 
 As the figure shows, the camera's $z$ axis points *away* from what it looks at, which is why the projection matrix has $-1$ in its last row.
 
@@ -601,7 +601,7 @@ The camera is updated once per *rendered* frame, not in the fixed simulation ste
 
 ## 6. A PBR material shader in WGSL
 
-The theory is in [graphics post 04]({{ '/blog/2026/graphics-04-physically-based-rendering/' | relative_url }}); here we only translate it. For one directional light with radiance-scaled color $E_L$ arriving from direction $\mathbf{l}$, the outgoing radiance toward the viewer $\mathbf{v}$ is
+The theory is in [graphics post 04]({{ '/blog/2026/graphics-04-physically-based-rendering/' | relative_url }}); here we only translate it. For one directional light whose color (already multiplied by its intensity) is $E_L$, arriving from direction $\mathbf{l}$ at a surface with normal $\mathbf{n}$, the outgoing radiance toward the viewer $\mathbf{v}$ is
 
 $$
 L_o = \Big( \underbrace{(1 - F)(1 - m)\,\frac{\mathbf{c}}{\pi}}_{\text{diffuse}} + \underbrace{D(\mathbf{h})\, V(\mathbf{v}, \mathbf{l})\, F(\mathbf{v}, \mathbf{h})}_{\text{specular}} \Big)\, E_L\, (\mathbf{n} \cdot \mathbf{l})\, s,
@@ -738,15 +738,17 @@ $$
 \mathbf{q} = P_L V_L \begin{pmatrix}\mathbf{p}\\ 1\end{pmatrix}, \qquad (u, v) = \Big(\tfrac{q_x + 1}{2},\ \tfrac{1 - q_y}{2}\Big), \qquad \text{lit} \iff q_z - b < \text{shadowMap}(u, v),
 $$
 
-where $b$ is a small depth bias.
+where $b$ is a small depth bias. The `shadowFactor` function of the Section 6 shader does not compare just once: it compares at each of the 3x3 texels around $(u, v)$ (and for each comparison the hardware also bilinearly filters the 2x2 neighboring texels) and averages the results. This is percentage-closer filtering (PCF), and it softens the shadow edges. A point outside the light's orthographic box (`inside` is false in the code) is always treated as lit.
+
+In the figure below, the left panel shows the light's orthographic box and the projection of the point $\mathbf{p}$ along the light direction; the right panel is the corresponding depth map. Compare the depth stored at the marked texel in the right panel with the depth of $\mathbf{p}$ itself.
 
 {% include blog_figure.liquid path="assets/img/blog/graphics-engine/03-shadow-geometry.svg" caption="The shadow pass, computed. Left: the light's orthographic frustum (yellow box) around a toy scene (ground, sphere, box); the light direction is the arrow. The point $\mathbf{p}$ on the ground (black) projects along the light direction to texel $(u, v)$; the first surface on that ray is the sphere, so $\mathbf{p}$ is in shadow. Right: the depth map actually rendered from the light (darker = closer to the light), with $(u, v)$ marked; the stored depth is smaller than $\mathbf{p}$'s own depth." %}
 
-**Shadow acne and bias.** A shadow-map texel covers a finite patch of the receiver. On a surface tilted by angle $\theta$ to the light, the depth inside one texel of world size $w$ varies by up to $\tfrac{w}{2}\tan\theta$ around the stored center value, so without bias half of the surface shadows itself in a striped pattern (**acne**). Too much bias detaches shadows from their casters (**peter-panning**). The minimal bias grows with the slope, which is why GPUs offer a *slope-scaled* depth bias in the rasterizer.
+**Shadow acne and bias.** A shadow-map texel covers a finite patch of the receiver. On a tilted surface whose normal makes an angle $\theta$ with the light direction ($\theta = 0$ means facing the light), the depth inside one texel of world size $w$ varies by up to $\tfrac{w}{2}\tan\theta$ around the stored center value, so without bias half of the surface shadows itself in a striped pattern (**acne**). Too much bias detaches shadows from their casters (**peter-panning**). The minimal bias grows with the slope, which is why GPUs offer a *slope-scaled* depth bias in the rasterizer.
 
-**Worked example.** A scene of radius $R = 5$ m with a 2048² map has texels of $w = 2R/2048 \approx 4.9$ mm. On a 45° slope the depth error is up to $w/2 \approx 2.4$ mm; in normalized depth (range $2R = 10$ m) that is $2.4 \times 10^{-4}$. A constant `shadowBias` of $5 \times 10^{-4}$ alone covers slopes up to $\arctan(5/2.44) \approx 64°$; for steeper surfaces the rasterizer's slope-scaled bias (`depthBiasSlopeScale` in the shadow pipeline) does the work.
+**Worked example.** A scene of radius $R = 5$ m with a 2048² map has texels of $w = 2R/2048 \approx 4.9$ mm. On a 45° slope the depth error is up to $w/2 \approx 2.4$ mm; in normalized depth (range $2R = 10$ m) that is $2.4 \times 10^{-4}$. A constant `shadowBias` of $5 \times 10^{-4}$ alone covers slopes up to $\arctan(5/2.44) \approx 64°$; for steeper surfaces the rasterizer's slope-scaled bias (`depthBiasSlopeScale` in the shadow pipeline) does the work. The figure below reproduces acne in 2D and plots the required bias against the slope angle.
 
-{% include blog_figure.liquid path="assets/img/blog/graphics-engine/03-shadow-bias.svg" caption="Shadow acne, computed in 2D. Left: a receiver tilted by 30° under a light from above; the shadow map stores one depth per texel (the stair steps). Without bias, the receiver points shown in red lie behind their own texel's stored depth and are wrongly shadowed, in a regular stripe pattern. Right: the bias needed to remove acne, $\tfrac{w}{2}\tan\theta$, versus the slope angle, against a constant bias (flat line) and a constant-plus-slope-scaled bias (curve)." %}
+{% include blog_figure.liquid path="assets/img/blog/graphics-engine/03-shadow-bias.svg" caption="Shadow acne, computed in 2D. Left: a receiver tilted by 30° under a light from above; the shadow map stores one depth per texel (the stair steps). Without bias, the receiver points shown in red lie behind their own texel's stored depth and are wrongly shadowed, in a regular stripe pattern. Right: the bias needed to remove acne, $\tfrac{w}{2}\tan\theta$, versus the slope angle, against a constant bias (red dashed horizontal line, just enough for 30°) and a constant-plus-slope-scaled bias (green curve); the light red region is the range of slopes where the constant bias is too small and acne still appears, and the gray dotted vertical line marks the 30° used in the left panel." %}
 
 The widget below runs exactly the shader's test, `depth - bias <= stored`, on a 2D scene and compares it with exact visibility. Start with zero bias to see the acne stripes, raise the bias until they vanish, then keep raising it and watch light leak under the box (peter-panning). Turn on the slope-scaled term and tilt the light: it removes acne on the slope with a much smaller constant bias.
 
@@ -1454,7 +1456,7 @@ export class DebugPanel {
 
 {% include blog_figure.liquid path="assets/img/blog/graphics-engine/03-frame-budget.svg" localized="true" caption="A CPU timing model of the render loop (assumed per-call costs, stated in the figure script; not a measurement). Left: CPU frame time versus number of objects for three submission strategies: one buffer write and one bind group per object (naive), one batched write with dynamic offsets (this engine), and instancing. The dashed lines are the 60 Hz and 120 Hz budgets. Right: where the time goes at 3,000 objects." %}
 
-The figure is a model, not a measurement, but its message matches what profilers show in practice: per-object API calls dominate the CPU long before the GPU is busy. Our engine's single `writeBuffer` and dynamic offsets move the knee far to the right; instancing (one draw for many copies of a mesh) or GPU-driven rendering (post 02) move it further.
+Look at the left panel first: the curve of the naive approach is the first to cross the 60 Hz budget line. In the right panel, under the model's assumptions, 3,000 objects cost about 40 ms for the naive approach (about 30 ms of it for the per-object writes and bind group creation), about 11 ms for our engine, and about 1.7 ms with instancing. The figure is a model, not a measurement, but its message matches what profilers show in practice: per-object API calls dominate the CPU long before the GPU is busy. Our engine's single `writeBuffer` and dynamic offsets move the knee far to the right; instancing (one draw for many copies of a mesh) or GPU-driven rendering (post 02) move it further.
 
 ### 10.1 The engine running
 
@@ -1562,7 +1564,7 @@ With this skeleton, the natural extensions are the topics of the rest of the ser
    192 bytes per object (256 minus 64). Sort the draw list by mesh, write matrices contiguously per mesh, and pass the first slot as `firstInstance`.
    </details>
 3. **Normal maps.** Extend the loader to read `TANGENT` and `normalTexture` and perturb `N` in the shader with the TBN matrix. What should happen when a file has no tangents?
-4. **Cascaded shadows.** Split the camera frustum into 3 cascades at distances chosen by $z_i = \lambda\, z_i^{\log} + (1-\lambda)\, z_i^{\text{lin}}$, with $z_i^{\log} = n (f/n)^{i/3}$ and $z_i^{\text{lin}} = n + (f-n)\, i/3$, and fit one orthographic light matrix per cascade.
+4. **Cascaded shadows.** Split the camera frustum into 3 cascades at distances chosen by $z_i = \lambda\, z_i^{\log} + (1-\lambda)\, z_i^{\text{lin}}$, where $\lambda \in [0, 1]$ blends the logarithmic and linear splits, $z_i^{\log} = n (f/n)^{i/3}$, $z_i^{\text{lin}} = n + (f-n)\, i/3$, and $i = 0, 1, 2, 3$ gives the cascade boundaries, and fit one orthographic light matrix per cascade.
 5. **Test the loader.** Build a 3-vertex glTF in memory (JSON plus a 36-byte buffer encoded as a `data:` URI), parse it with `readAccessor`, and assert the positions; then add an interleaved version with `byteStride = 32` and check the worked example of Section 4.
    <details markdown="1"><summary>Hint</summary>
    `readAccessor` only needs `json` and an array of `ArrayBuffer`s, so you can call it directly in Node without `fetch`.
