@@ -506,6 +506,88 @@ learned 1 kHz controller of this kind under a VLA
 - **Real-time EXPO-FT** (Dong et al., arXiv preprint, September 2026) keeps the slow VLA as the proposer of action
   chunks and trains a light RL "edit" policy that corrects them at a high rate for dynamic manipulation.
 
+### Worked example: a likelihood for a flow policy
+
+Why does pi_RL need Flow-Noise? A flow policy (post 5) draws $a_0 \sim \mathcal{N}(0, 1)$ and integrates a learned
+velocity $v_\theta(a, \tau)$ from $\tau = 0$ to $1$ in $K$ Euler steps of size $\Delta = 1/K$. Done deterministically,
+the final action is a fixed function of $a_0$, and PPO's ratio $\pi_\theta(a\mid s)/\pi_{\theta_\text{old}}(a\mid s)$
+has no simple form. Flow-Noise adds Gaussian noise of standard deviation $\sigma\sqrt{\Delta}$ to every step:
+
+$$
+a_{k+1} = a_k + v_\theta(a_k, \tau_k)\,\Delta + \sigma\sqrt{\Delta}\,\varepsilon_k,\qquad \varepsilon_k \sim \mathcal{N}(0, 1).
+$$
+
+Now each step is a Gaussian with mean $a_k + v_\theta\Delta$, so the whole chain $a_{0:K}$ has the log-likelihood
+
+$$
+\log \pi_\theta(a_{0:K}) = \log\mathcal{N}(a_0; 0, 1) + \sum_{k=0}^{K-1} \log\mathcal{N}\!\left(a_{k+1};\, a_k + v_\theta(a_k,\tau_k)\Delta,\, \sigma^2\Delta\right),
+$$
+
+and the PPO ratio is $\rho = \exp(\log\pi_{\theta}(a_{0:K}) - \log\pi_{\theta_\text{old}}(a_{0:K}))$, evaluated on the chain that
+was actually sampled. The toy below uses a one-dimensional "policy" whose only parameter $\theta$ is the action that the
+straight-line flow $v_\theta(a,\tau) = (\theta - a)/(1-\tau)$ heads for:
+
+```python
+import numpy as np
+
+
+def velocity(a, tau, theta):
+    # straight-line (rectified) flow from noise to the action theta: v = (theta - a) / (1 - tau)
+    return (theta - a) / (1.0 - tau)
+
+
+def log_prob(chain, theta, sigma=0.3):
+    """log-likelihood of a whole denoising chain a_0 -> a_K under Flow-Noise."""
+    K = len(chain) - 1
+    dt = 1.0 / K
+    std = sigma * np.sqrt(dt)
+    lp = -0.5 * chain[0] ** 2 - 0.5 * np.log(2 * np.pi)          # a_0 ~ N(0, 1)
+    for k in range(K):
+        mean = chain[k] + velocity(chain[k], k * dt, theta) * dt  # Euler step
+        lp += -0.5 * ((chain[k + 1] - mean) / std) ** 2 - np.log(std * np.sqrt(2 * np.pi))
+    return lp
+
+
+def sample(theta, K=10, sigma=0.3, rng=None):
+    dt = 1.0 / K
+    chain = [rng.standard_normal()]
+    for k in range(K):
+        mean = chain[-1] + velocity(chain[-1], k * dt, theta) * dt
+        chain.append(mean + sigma * np.sqrt(dt) * rng.standard_normal())
+    return np.array(chain)
+
+
+rng = np.random.default_rng(0)
+theta_old, theta_new = 0.50, 0.60
+chain = sample(theta_old, rng=rng)
+lp_old, lp_new = log_prob(chain, theta_old), log_prob(chain, theta_new)
+print("final action a_K       = %.3f" % chain[-1])
+print("log pi_old(chain)      = %.3f" % lp_old)
+print("log pi_new(chain)      = %.3f" % lp_new)
+print("PPO ratio pi_new/pi_old = %.3f" % np.exp(lp_new - lp_old))
+
+# sanity check: with sigma -> 0 the chain becomes the deterministic ODE and a_K -> theta
+finals = [sample(theta_old, sigma=1e-4, rng=rng)[-1] for _ in range(3)]
+print("ODE limit a_K:", np.round(finals, 3))
+```
+
+It prints:
+
+```text
+final action a_K       = 0.441
+log pi_old(chain)      = 10.467
+log pi_new(chain)      = 8.617
+PPO ratio pi_new/pi_old = 0.157
+ODE limit a_K: [0.5 0.5 0.5]
+```
+
+The log-likelihoods are positive because each step's density is narrow ($\sigma\sqrt{\Delta} \approx 0.095$), so its
+values exceed 1. The sampled action 0.441 lies *below* $\theta_\text{old} = 0.5$, so moving to $\theta = 0.6$ makes this
+chain about six times less likely ($\rho = 0.157$). If the action had a positive advantage, PPO would therefore push
+$\theta$ down, towards it. With $\sigma \to 0$ the chain becomes the deterministic ODE and always ends at $\theta$; the
+noise is what makes the likelihood exist. In pi0, $v_\theta$ is the action expert and $a$ is a 50-step action chunk, but
+the bookkeeping is the same.
+
 The common thread is the **division of labour**: imitation or large-scale pre-training supplies the prior and the
 semantics, and RL supplies the last mile of precision and reliability, either with policy gradients (pi_RL,
 SimpleVLA-RL) or with value-based relabelling (Recap).
@@ -581,6 +663,26 @@ robots are used directly, not only simulators.
    trained with randomization. Add the true damping to the observation (a "privileged" input) and see how much it helps.
 5. Implement SAC for the same task (replay buffer, twin Q, tanh Gaussian, automatic $\alpha$) and compare the number of
    environment steps needed with PPO.
+6. In the Flow-Noise code, rerun the PPO ratio with `sigma=0.1` and `sigma=1.0` (pass `sigma` to both `sample` and
+   `log_prob`). Why does the ratio become extreme when $\sigma$ is small, and what does that mean for PPO's clipping?
+
+   <details markdown="1"><summary>Hint</summary>
+
+   With seed 0 the ratio is about $0.69$ for $\sigma = 1$ and practically $0$ for $\sigma = 0.1$. Changing $\theta$
+   shifts every step's mean by a fixed amount, and the log-density changes by roughly (shift)$^2/(\sigma^2\Delta)$, so
+   it grows like $1/\sigma^2$. Small noise makes almost every sample hit the clip range, and the gradient signal
+   vanishes; pi_RL tunes or learns the noise level for this reason.
+   </details>
+
+7. In the tracking-reward figure the joint follows $\hat q(t) = 0.6\sin(1.5\pi t)$ with a 40 ms lag. Estimate the
+   largest error and the reward at that error for $\sigma = 0.1, 0.25, 0.5$.
+
+   <details markdown="1"><summary>Hint</summary>
+
+   For a small lag $\delta$, $e \approx \dot{\hat q}\,\delta$, and the largest speed is $0.6 \cdot 1.5\pi$ rad/s, so
+   $e_\text{max} \approx 0.6 \cdot 1.5\pi \cdot 0.04 \approx 0.113$ rad. Then $r = \exp(-e^2/\sigma^2) \approx 0.28$, $0.82$
+   and $0.95$. Only the smallest $\sigma$ clearly tells the policy that it is late.
+   </details>
 
 **Next:** [Simulation platforms]({{ '/blog/2026/embodied-ai-03-simulation-platforms/' | relative_url }}),
 the engines where all this training happens.

@@ -486,6 +486,12 @@ flowchart TB
 4. 阅读 OpenVLA 和 pi0 的论文，用与上面 Mermaid 图相同的风格画出两者的架构。标出哪些权重是预训练的、哪些是从零训练的，以及
    梯度从哪里流过。
 5. 为你实验室中的 VLA 设计一个评测方案：列出泛化维度、每个条件的试验次数，以及如何估计成功率的置信区间。
+6. 在 VLA 浏览器中选择“Flow”和“Open weights only”。列表中每年有多少个开放权重的流匹配模型？2025 年那些模型的“基于”曲线大多追溯到哪个更早的模型？
+
+   <details markdown="1"><summary>提示</summary>
+
+   2024 年 1 个（pi0），2025 年 7 个（pi0.5、GR00T N1、N1.5、N1.6、SmolVLA、WALL-OSS、X-VLA），2026 年 3 个（N1.7、RDT2、MolmoAct2）。在这个列表中，2025 年的开放流模型大多追溯到 pi0 或 GR00T 系列；有几个（X-VLA、WALL-OSS）没有记录父节点，这只说明列表里没有记录。别忘了这个列表是精选的。
+   </details>
 
 **下一篇：**[具身智能遇上 XR 与 HCI]({{ '/blog/2026/embodied-ai-06-embodied-ai-meets-xr-and-hci/' | relative_url }})，人、头显与机器人
 在这里相遇。

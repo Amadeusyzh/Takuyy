@@ -429,6 +429,78 @@ $$
 - **RL Token**（Xu 等，arXiv 预印本，2026 年 4 月）从冻结的 VLA 中引出一个紧凑的“RL token”，在其上在线训练小型 actor-critic，任务中的精细阶段在真实机器人上几小时内就能改进。
 - **Real-time EXPO-FT**（Dong 等，arXiv 预印本，2026 年 9 月）保留慢速 VLA 作为动作块的提议者，再训练一个轻量的 RL“编辑”策略，以高频率修正动作块，用于动态操作。
 
+### 计算示例：流策略的似然
+
+pi_RL 为什么需要 Flow-Noise？流策略（第 5 篇）先采样 $a_0 \sim \mathcal{N}(0, 1)$，再用 $K$ 个步长为 $\Delta = 1/K$ 的欧拉步，把学到的速度场 $v_\theta(a, \tau)$ 从 $\tau = 0$ 积分到 $1$。如果确定性地积分，最终动作只是 $a_0$ 的一个固定函数，PPO 的比率 $\pi_\theta(a\mid s)/\pi_{\theta_\text{old}}(a\mid s)$ 没有简单的形式。Flow-Noise 在每一步加入标准差为 $\sigma\sqrt{\Delta}$ 的高斯噪声：
+
+$$
+a_{k+1} = a_k + v_\theta(a_k, \tau_k)\,\Delta + \sigma\sqrt{\Delta}\,\varepsilon_k,\qquad \varepsilon_k \sim \mathcal{N}(0, 1).
+$$
+
+这样每一步都是均值为 $a_k + v_\theta\Delta$ 的高斯分布，整条链 $a_{0:K}$ 的对数似然为
+
+$$
+\log \pi_\theta(a_{0:K}) = \log\mathcal{N}(a_0; 0, 1) + \sum_{k=0}^{K-1} \log\mathcal{N}\!\left(a_{k+1};\, a_k + v_\theta(a_k,\tau_k)\Delta,\, \sigma^2\Delta\right),
+$$
+
+PPO 比率就是在实际采样到的链上计算的 $\rho = \exp(\log\pi_{\theta}(a_{0:K}) - \log\pi_{\theta_\text{old}}(a_{0:K}))$。下面的玩具例子使用一维“策略”，它唯一的参数 $\theta$ 是直线流 $v_\theta(a,\tau) = (\theta - a)/(1-\tau)$ 的目标动作：
+
+```python
+import numpy as np
+
+
+def velocity(a, tau, theta):
+    # straight-line (rectified) flow from noise to the action theta: v = (theta - a) / (1 - tau)
+    return (theta - a) / (1.0 - tau)
+
+
+def log_prob(chain, theta, sigma=0.3):
+    """log-likelihood of a whole denoising chain a_0 -> a_K under Flow-Noise."""
+    K = len(chain) - 1
+    dt = 1.0 / K
+    std = sigma * np.sqrt(dt)
+    lp = -0.5 * chain[0] ** 2 - 0.5 * np.log(2 * np.pi)          # a_0 ~ N(0, 1)
+    for k in range(K):
+        mean = chain[k] + velocity(chain[k], k * dt, theta) * dt  # Euler step
+        lp += -0.5 * ((chain[k + 1] - mean) / std) ** 2 - np.log(std * np.sqrt(2 * np.pi))
+    return lp
+
+
+def sample(theta, K=10, sigma=0.3, rng=None):
+    dt = 1.0 / K
+    chain = [rng.standard_normal()]
+    for k in range(K):
+        mean = chain[-1] + velocity(chain[-1], k * dt, theta) * dt
+        chain.append(mean + sigma * np.sqrt(dt) * rng.standard_normal())
+    return np.array(chain)
+
+
+rng = np.random.default_rng(0)
+theta_old, theta_new = 0.50, 0.60
+chain = sample(theta_old, rng=rng)
+lp_old, lp_new = log_prob(chain, theta_old), log_prob(chain, theta_new)
+print("final action a_K       = %.3f" % chain[-1])
+print("log pi_old(chain)      = %.3f" % lp_old)
+print("log pi_new(chain)      = %.3f" % lp_new)
+print("PPO ratio pi_new/pi_old = %.3f" % np.exp(lp_new - lp_old))
+
+# sanity check: with sigma -> 0 the chain becomes the deterministic ODE and a_K -> theta
+finals = [sample(theta_old, sigma=1e-4, rng=rng)[-1] for _ in range(3)]
+print("ODE limit a_K:", np.round(finals, 3))
+```
+
+输出：
+
+```text
+final action a_K       = 0.441
+log pi_old(chain)      = 10.467
+log pi_new(chain)      = 8.617
+PPO ratio pi_new/pi_old = 0.157
+ODE limit a_K: [0.5 0.5 0.5]
+```
+
+对数似然为正，是因为每一步的密度很窄（$\sigma\sqrt{\Delta} \approx 0.095$），密度值大于 1。采样到的动作 0.441 *低于* $\theta_\text{old} = 0.5$，所以改成 $\theta = 0.6$ 后这条链的概率约降为六分之一（$\rho = 0.157$）。如果这个动作的优势为正，PPO 就会把 $\theta$ 往下推，朝它靠近。当 $\sigma \to 0$ 时，链退化为确定性的 ODE，总是停在 $\theta$；正是噪声让似然得以存在。在 pi0 中，$v_\theta$ 是动作专家，$a$ 是 50 步的动作块，但计算方式完全相同。
+
 共同的主线是**分工**：模仿学习或大规模预训练提供先验和语义，RL 负责最后一公里的精度和可靠性，方式可以是策略梯度（pi_RL、SimpleVLA-RL），也可以是基于价值的重新标注（Recap）。
 
 *与前文相比的变化：*第 6 节说“模仿学习主导了今天的操作任务”，就预训练而言仍然成立；但对最终的可靠性来说，RL 微调已成为工业界的标准做法，而且直接使用真实机器人，不再只用仿真器。
@@ -494,5 +566,18 @@ $$
 4. 在 `PointReach` 上训练，然后在参数取极端值的 `RandomizedPointReach` 上评估，并与用随机化训练的策略比较。把真实阻尼加入
    观测（"特权"输入），看看能帮多少。
 5. 为同一任务实现 SAC（回放缓冲区、双 Q、tanh 高斯、自动 $\alpha$），并比较它与 PPO 所需的环境步数。
+6. 在 Flow-Noise 代码中，分别用 `sigma=0.1` 和 `sigma=1.0` 重新计算 PPO 比率（`sample` 和 `log_prob` 都要传入 `sigma`）。为什么 $\sigma$ 小时比率会变得极端？这对 PPO 的裁剪意味着什么？
+
+   <details markdown="1"><summary>提示</summary>
+
+   用种子 0 时，$\sigma = 1$ 的比率约为 $0.69$，$\sigma = 0.1$ 时几乎为 $0$。改变 $\theta$ 会让每一步的均值平移一个固定量，对数密度的变化大约是（平移量）$^2/(\sigma^2\Delta)$，因此按 $1/\sigma^2$ 增长。噪声太小时几乎每个样本都会触到裁剪范围，梯度信号消失；pi_RL 因此要调节或学习噪声大小。
+   </details>
+
+7. 在跟踪奖励图中，关节以 40 ms 的滞后跟随 $\hat q(t) = 0.6\sin(1.5\pi t)$。估计最大误差，以及该误差下 $\sigma = 0.1, 0.25, 0.5$ 时的奖励。
+
+   <details markdown="1"><summary>提示</summary>
+
+   滞后 $\delta$ 很小时 $e \approx \dot{\hat q}\,\delta$，最大速度为 $0.6 \cdot 1.5\pi$ rad/s，所以 $e_\text{max} \approx 0.6 \cdot 1.5\pi \cdot 0.04 \approx 0.113$ rad。于是 $r = \exp(-e^2/\sigma^2) \approx 0.28$、$0.82$ 和 $0.95$。只有最小的 $\sigma$ 能清楚地告诉策略“你慢了”。
+   </details>
 
 **下一篇：**[仿真平台]({{ '/blog/2026/embodied-ai-03-simulation-platforms/' | relative_url }})，所有这些训练发生的地方。

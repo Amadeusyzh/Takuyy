@@ -507,6 +507,17 @@ not just an announcement. Isaac Lab can run on Newton. The Genesis row stays as 
    plot the distribution of final box positions after a push.
 5. Implement a 1-D XPBD chain (10 particles, distance constraints) in NumPy and show that increasing the iteration
    count changes the stiffness with plain PBD but not with XPBD.
+6. World models as simulators (update section): name two ways a learned video world model can give a wrong verdict
+   when it is used to evaluate a policy, and design one check for each.
+
+   <details markdown="1"><summary>Hint</summary>
+
+   Typical failures are *hallucinated success* (the model renders the object in the gripper although the actions
+   could not have grasped it), *drift* over long horizons, and *action insensitivity* (the video barely changes when the
+   actions change). Checks: replay the same start with zero or random actions and confirm that the predicted outcome
+   changes; and, as in the Veo evaluator work above, rank several policies in the world model and compare the ranking with
+   real-robot results.
+   </details>
 
 **Next:** [Imitation learning]({{ '/blog/2026/embodied-ai-04-imitation-learning/' | relative_url }}): learning from
 demonstrations instead of rewards.

@@ -609,6 +609,16 @@ claim in section 4 that robot learning has no clean scaling laws still holds for
    Mark which weights are pre-trained, which are trained from scratch, and where gradients flow.
 5. Design an evaluation protocol for a VLA in your lab: list the generalization axes, the number of trials per
    condition, and how you would estimate confidence intervals for success rates.
+6. In the VLA explorer, select *Flow* and *Open weights only*. How many open flow-matching models does the list contain
+   per year, and which earlier model do most of the "builds on" curves of the 2025 ones lead back to?
+
+   <details markdown="1"><summary>Hint</summary>
+
+   One in 2024 (pi0), seven in 2025 (pi0.5, GR00T N1, N1.5, N1.6, SmolVLA, WALL-OSS, X-VLA) and three in 2026 (N1.7,
+   RDT2, MolmoAct2). Within this list the open flow models of 2025 trace back mostly to pi0 or to the GR00T line; several
+   (X-VLA, WALL-OSS) have no recorded parent, which only means that the list does not record one. Remember that the list
+   is a curated selection.
+   </details>
 
 **Next:** [Embodied AI meets XR and HCI]({{ '/blog/2026/embodied-ai-06-embodied-ai-meets-xr-and-hci/' | relative_url }}),
 where humans, headsets and robots meet.

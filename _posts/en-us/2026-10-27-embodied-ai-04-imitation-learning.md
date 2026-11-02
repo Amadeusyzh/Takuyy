@@ -480,6 +480,16 @@ and number of distinct scenes are the more informative units, and human data has
    the velocity $A^0 - \epsilon$; sample by integrating the ODE with 10 Euler steps.
 5. Implement ACT-style temporal ensembling on top of the diffusion sampler (query every step, average overlapping
    predictions with exponential weights) and compare smoothness with receding-horizon execution.
+6. Dataset scale (update section): convert the hours in the dataset-scale figure to frames at 30 fps for EgoScale
+   (20,854 h) and DROID (350 h). Why does the raw ratio overstate how much more useful the human data is for a robot?
+
+   <details markdown="1"><summary>Hint</summary>
+
+   $20{,}854 \cdot 3600 \cdot 30 \approx 2.25\times 10^9$ frames against $350 \cdot 3600 \cdot 30 \approx 3.8\times 10^7$,
+   a ratio of about 60. But human video has no robot actions: the actions must be estimated (hand poses, retargeting),
+   the body and the camera differ from the robot's, and many frames show no manipulation. Papers therefore mix it with a
+   much smaller amount of robot data and report scaling *trends*, not one-to-one exchange rates.
+   </details>
 
 **Next:** [Vision-Language-Action models]({{ '/blog/2026/embodied-ai-05-vision-language-action-models/' | relative_url }}),
 where imitation learning meets foundation models.

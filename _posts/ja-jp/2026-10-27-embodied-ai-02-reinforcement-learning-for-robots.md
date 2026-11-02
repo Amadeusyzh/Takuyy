@@ -446,6 +446,78 @@ $$
 - **RL Token**（Xu ら、arXiv プレプリント、2026 年 4 月）は、凍結した VLA からコンパクトな「RL トークン」を取り出し、その上で小さな actor-critic をオンラインで学習します。タスクの精密な段階が実機上で数時間で改善します。
 - **Real-time EXPO-FT**（Dong ら、arXiv プレプリント、2026 年 9 月）は、遅い VLA を行動チャンクの提案役として残し、軽量な RL の「編集」方策がそれを高い頻度で修正する仕組みで、動的な操作に使います。
 
+### 計算例：フロー方策の尤度
+
+pi_RL はなぜ Flow-Noise を必要とするのでしょうか。フロー方策（第 5 回）は $a_0 \sim \mathcal{N}(0, 1)$ をサンプルし、学習した速度場 $v_\theta(a, \tau)$ を幅 $\Delta = 1/K$ の $K$ 回のオイラーステップで $\tau = 0$ から $1$ まで積分します。決定的に積分すると最終行動は $a_0$ の固定された関数にすぎず、PPO の比 $\pi_\theta(a\mid s)/\pi_{\theta_\text{old}}(a\mid s)$ は簡単な形を持ちません。Flow-Noise は各ステップに標準偏差 $\sigma\sqrt{\Delta}$ のガウスノイズを加えます。
+
+$$
+a_{k+1} = a_k + v_\theta(a_k, \tau_k)\,\Delta + \sigma\sqrt{\Delta}\,\varepsilon_k,\qquad \varepsilon_k \sim \mathcal{N}(0, 1).
+$$
+
+すると各ステップは平均 $a_k + v_\theta\Delta$ のガウス分布になり、連鎖 $a_{0:K}$ 全体の対数尤度は
+
+$$
+\log \pi_\theta(a_{0:K}) = \log\mathcal{N}(a_0; 0, 1) + \sum_{k=0}^{K-1} \log\mathcal{N}\!\left(a_{k+1};\, a_k + v_\theta(a_k,\tau_k)\Delta,\, \sigma^2\Delta\right)
+$$
+
+となります。PPO の比は、実際にサンプルした連鎖の上で $\rho = \exp(\log\pi_{\theta}(a_{0:K}) - \log\pi_{\theta_\text{old}}(a_{0:K}))$ として計算します。次のおもちゃの例では一次元の「方策」を使い、その唯一のパラメータ $\theta$ は直線フロー $v_\theta(a,\tau) = (\theta - a)/(1-\tau)$ が向かう行動です。
+
+```python
+import numpy as np
+
+
+def velocity(a, tau, theta):
+    # straight-line (rectified) flow from noise to the action theta: v = (theta - a) / (1 - tau)
+    return (theta - a) / (1.0 - tau)
+
+
+def log_prob(chain, theta, sigma=0.3):
+    """log-likelihood of a whole denoising chain a_0 -> a_K under Flow-Noise."""
+    K = len(chain) - 1
+    dt = 1.0 / K
+    std = sigma * np.sqrt(dt)
+    lp = -0.5 * chain[0] ** 2 - 0.5 * np.log(2 * np.pi)          # a_0 ~ N(0, 1)
+    for k in range(K):
+        mean = chain[k] + velocity(chain[k], k * dt, theta) * dt  # Euler step
+        lp += -0.5 * ((chain[k + 1] - mean) / std) ** 2 - np.log(std * np.sqrt(2 * np.pi))
+    return lp
+
+
+def sample(theta, K=10, sigma=0.3, rng=None):
+    dt = 1.0 / K
+    chain = [rng.standard_normal()]
+    for k in range(K):
+        mean = chain[-1] + velocity(chain[-1], k * dt, theta) * dt
+        chain.append(mean + sigma * np.sqrt(dt) * rng.standard_normal())
+    return np.array(chain)
+
+
+rng = np.random.default_rng(0)
+theta_old, theta_new = 0.50, 0.60
+chain = sample(theta_old, rng=rng)
+lp_old, lp_new = log_prob(chain, theta_old), log_prob(chain, theta_new)
+print("final action a_K       = %.3f" % chain[-1])
+print("log pi_old(chain)      = %.3f" % lp_old)
+print("log pi_new(chain)      = %.3f" % lp_new)
+print("PPO ratio pi_new/pi_old = %.3f" % np.exp(lp_new - lp_old))
+
+# sanity check: with sigma -> 0 the chain becomes the deterministic ODE and a_K -> theta
+finals = [sample(theta_old, sigma=1e-4, rng=rng)[-1] for _ in range(3)]
+print("ODE limit a_K:", np.round(finals, 3))
+```
+
+出力は次のとおりです。
+
+```text
+final action a_K       = 0.441
+log pi_old(chain)      = 10.467
+log pi_new(chain)      = 8.617
+PPO ratio pi_new/pi_old = 0.157
+ODE limit a_K: [0.5 0.5 0.5]
+```
+
+対数尤度が正なのは、各ステップの密度が狭く（$\sigma\sqrt{\Delta} \approx 0.095$）、密度の値が 1 を超えるためです。サンプルされた行動 0.441 は $\theta_\text{old} = 0.5$ より*小さい*ので、$\theta = 0.6$ に変えるとこの連鎖の確率は約 6 分の 1 になります（$\rho = 0.157$）。この行動のアドバンテージが正なら、PPO は $\theta$ をそちらへ下げることになります。$\sigma \to 0$ では連鎖は決定的な ODE になり、必ず $\theta$ で終わります。尤度が存在するのはノイズのおかげです。pi0 では $v_\theta$ が行動エキスパート、$a$ が 50 ステップの行動チャンクですが、計算の仕組みは同じです。
+
 共通するのは**分業**です。模倣や大規模な事前学習が事前知識と意味を与え、RL が精度と信頼性の最後の一歩を担います。その方法は方策勾配（pi_RL、SimpleVLA-RL）の場合も、価値に基づく再ラベル付け（Recap）の場合もあります。
 
 *前の節からの変化：*第 6 節の「今日の操作は模倣学習が主流」という記述は、事前学習については今も正しいです。しかし最終的な信頼性のためには、RL による微調整が産業界の標準になり、シミュレータだけでなく実機が直接使われています。
@@ -513,6 +585,19 @@ $$
 4. `PointReach` で学習した方策を、極端なパラメータの `RandomizedPointReach` で評価し、ランダム化して学習した方策と比べましょう。
    真の減衰係数を観測に加え（「特権」入力）、どれだけ役立つかを調べましょう。
 5. 同じタスクに SAC（リプレイバッファ、ツイン Q、tanh ガウス、自動 $\alpha$）を実装し、必要な環境ステップ数を PPO と比べましょう。
+6. Flow-Noise のコードで、`sigma=0.1` と `sigma=1.0` で PPO の比を計算し直しましょう（`sample` と `log_prob` の両方に `sigma` を渡します）。$\sigma$ が小さいと比が極端になるのはなぜでしょうか。それは PPO のクリッピングにとって何を意味するでしょうか。
+
+   <details markdown="1"><summary>ヒント</summary>
+
+   シード 0 では、$\sigma = 1$ の比は約 $0.69$、$\sigma = 0.1$ ではほぼ $0$ です。$\theta$ を変えると各ステップの平均が一定量ずれ、対数密度はおよそ（ずれ）$^2/(\sigma^2\Delta)$ だけ変わるので、$1/\sigma^2$ に比例して大きくなります。ノイズが小さいとほとんどのサンプルがクリップ範囲に当たり、勾配の信号が消えます。pi_RL がノイズの大きさを調整または学習するのはこのためです。
+   </details>
+
+7. 追従報酬の図では、関節が 40 ms の遅れで $\hat q(t) = 0.6\sin(1.5\pi t)$ に追従します。最大誤差と、その誤差での $\sigma = 0.1, 0.25, 0.5$ の報酬を見積もりましょう。
+
+   <details markdown="1"><summary>ヒント</summary>
+
+   遅れ $\delta$ が小さければ $e \approx \dot{\hat q}\,\delta$ で、最大速度は $0.6 \cdot 1.5\pi$ rad/s なので $e_\text{max} \approx 0.6 \cdot 1.5\pi \cdot 0.04 \approx 0.113$ rad です。よって $r = \exp(-e^2/\sigma^2) \approx 0.28$、$0.82$、$0.95$ となります。遅れていることを方策にはっきり伝えられるのは最小の $\sigma$ だけです。
+   </details>
 
 **次回：**[シミュレーションプラットフォーム]({{ '/blog/2026/embodied-ai-03-simulation-platforms/' | relative_url }})。
 これらの学習がすべて行われる場所です。

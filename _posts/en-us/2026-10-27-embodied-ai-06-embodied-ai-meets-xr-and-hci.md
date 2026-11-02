@@ -499,6 +499,19 @@ pre-training), and the scaling evidence is in.
 5. Pick one of the research opportunities above and write a one-page proposal: the question, the system you would build,
    the data you would collect, and how you would evaluate it.
 
+6. Human-to-robot transfer (update section): for each of the three routes from human video to robot actions, say what
+   must be estimated from the video and which error you expect to dominate on a parallel-jaw gripper.
+
+   <details markdown="1"><summary>Hint</summary>
+
+   Sharing the action space needs 3D wrist and hand trajectories in a frame aligned with the robot's; errors in hand
+   depth and the loss of finger degrees of freedom when mapping to a gripper dominate. Editing the pixels (Phantom,
+   Masquerade) needs a hand-arm segmentation and pose good enough to inpaint the human and render the robot; rendering
+   artefacts and pose errors dominate. Distilling from web video (ZeroMimic) must estimate where and how the hand grasps
+   and the wrist motion afterwards, from uncalibrated footage; camera and scale ambiguity and imprecise grasp points
+   dominate.
+   </details>
+
 **Where to go next:** this is the last post of the embodied AI track. The
 [world-models track]({{ '/blog/category/world-models/' | relative_url }}) explores the predictive models touched on here
 in depth, and the [roadmap posts]({{ '/blog/category/roadmap/' | relative_url }}) connect all tracks into one study plan.

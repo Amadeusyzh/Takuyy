@@ -401,6 +401,12 @@ MSE BC:    mean y 0.022 (collapses to the average, i.e. into the obstacle)
 3. 实现 10 步的 DDIM 采样，测量左/右比例和轨迹质量的变化。
 4. 用流匹配替代扩散目标：采样 $t\sim U(0,1)$，令 $A^t = (1-t)\epsilon + t A^0$，回归速度 $A^0 - \epsilon$；采样时用 10 个欧拉步积分 ODE。
 5. 在扩散采样器之上实现 ACT 式的时间集成（每步查询，用指数权重平均重叠的预测），并与滚动时域执行比较平滑度。
+6. 数据规模（进展一节）：把数据规模图中 EgoScale（20,854 小时）和 DROID（350 小时）的小时数按 30 fps 换算成帧数。为什么这个原始比值会夸大人类数据对机器人的用处？
+
+   <details markdown="1"><summary>提示</summary>
+
+   $20{,}854 \cdot 3600 \cdot 30 \approx 2.25\times 10^9$ 帧，对比 $350 \cdot 3600 \cdot 30 \approx 3.8\times 10^7$ 帧，比值约为 60。但人类视频没有机器人动作：动作必须估计出来（手部姿态、重定向），身体和相机都与机器人不同，而且很多帧里根本没有操作。因此论文会把它与少得多的机器人数据混合，报告的是扩展*趋势*，而不是一比一的换算率。
+   </details>
 
 **下一篇：**[视觉-语言-动作模型]({{ '/blog/2026/embodied-ai-05-vision-language-action-models/' | relative_url }})，模仿学习在这里与
 基础模型相遇。
