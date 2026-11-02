@@ -130,3 +130,59 @@
 - [NVIDIA-RTX/NRD](https://github.com/NVIDIA-RTX/NRD)（实时降噪器）、[NVIDIA-RTX/RTXDI](https://github.com/NVIDIA-RTX/RTXDI)（生产级 ReSTIR）。
 - [InteractiveComputerGraphics/PositionBasedDynamics](https://github.com/InteractiveComputerGraphics/PositionBasedDynamics)、[NVIDIA/warp](https://github.com/NVIDIA/warp)、[taichi-dev/taichi](https://github.com/taichi-dev/taichi)、[google-deepmind/mujoco](https://github.com/google-deepmind/mujoco)。
 - 本站首页实验室（Lab）：GPU 路径追踪器（GGX、NEE+MIS、à-trous 降噪）与 XPBD 布料，源码见 `assets/js/lab-pathtracer.js`、`assets/js/lab.js`。
+
+## Chapters 10-11（第 10 篇：体积与参与介质；第 11 篇：实时渲染技术）
+
+### 阶段 9：体积与参与介质（对应第 10 篇）
+
+| 论文 | 出处 | 年份 | 链接 | 说明 |
+| --- | --- | --- | --- | --- |
+| Henyey & Greenstein, *Diffuse Radiation in the Galaxy* | Astrophysical Journal | 1941 | [DOI](https://doi.org/10.1086/144246) | 单参数 HG 相函数 |
+| Kajiya & Von Herzen, *Ray Tracing Volume Densities* | SIGGRAPH | 1984 | [DOI](https://doi.org/10.1145/964965.808594) | 把辐射传输方程引入图形学 |
+| Nishita et al., *Display of the Earth Taking into Account Atmospheric Scattering* | SIGGRAPH | 1993 | [DOI](https://doi.org/10.1145/166117.166140) | 基于物理的单次散射天空 |
+| Max, *Optical Models for Direct Volume Rendering* | IEEE TVCG | 1995 | [DOI](https://doi.org/10.1109/2945.468400) | 发射-吸收模型，NeRF 渲染积分的前身 |
+| Jensen et al., *A Practical Model for Subsurface Light Transport* | SIGGRAPH | 2001 | [DOI](https://doi.org/10.1145/383259.383319) | 偶极子 BSSRDF |
+| Draine, *Scattering by Interstellar Dust Grains. I.* | Astrophysical Journal | 2003 | [DOI](https://doi.org/10.1086/379118) | Draine 相函数 |
+| Bruneton & Neyret, *Precomputed Atmospheric Scattering* | CGF (EGSR) | 2008 | [DOI](https://doi.org/10.1111/j.1467-8659.2008.01245.x) | 4D 查找表的多次散射天空 |
+| Museth, *VDB: High-Resolution Sparse Volumes with Dynamic Topology* | ACM TOG | 2013 | [DOI](https://doi.org/10.1145/2487228.2487235) | OpenVDB |
+| Novák, Selle & Jarosz, *Residual Ratio Tracking for Estimating Attenuation in Participating Media* | ACM TOG | 2014 | [DOI](https://doi.org/10.1145/2661229.2661292) | ratio / residual ratio tracking |
+| Wronski, *Volumetric Fog* | SIGGRAPH Advances | 2014 | [课程页面](https://advances.realtimerendering.com/s2014/index.html) | froxel 体积雾 |
+| Schneider, *The Real-time Volumetric Cloudscapes of Horizon: Zero Dawn* | SIGGRAPH Advances | 2015 | [课程页面](https://advances.realtimerendering.com/s2015/index.html) | 实时体积云 |
+| Hillaire, *Towards Unified and Physically-Based Volumetric Lighting in Frostbite* | SIGGRAPH Advances | 2015 | [课程页面](https://advances.realtimerendering.com/s2015/index.html) | 能量守恒的 froxel 积分 |
+| Jimenez et al., *Separable Subsurface Scattering* | CGF | 2015 | [DOI](https://doi.org/10.1111/cgf.12529) | 屏幕空间可分离 SSS |
+| Christensen & Burley, *Approximate Reflectance Profiles for Efficient Subsurface Scattering* | Pixar Tech. Memo 15-04 | 2015 | — | 归一化扩散剖面 |
+| Kutz et al., *Spectral and Decomposition Tracking for Rendering Heterogeneous Volumes* | ACM TOG | 2017 | [DOI](https://doi.org/10.1145/3072959.3073665) | 谱 tracking 与分解 tracking |
+| Fong et al., *Production Volume Rendering* | SIGGRAPH Courses | 2017 | [DOI](https://doi.org/10.1145/3084873.3084907) | 电影级体积渲染实践 |
+| Novák et al., *Monte Carlo Methods for Volumetric Light Transport Simulation* | CGF (EG STAR) | 2018 | [DOI](https://doi.org/10.1111/cgf.13383) | 体积蒙特卡洛综述（首选） |
+| Miller, Georgiev & Jarosz, *A Null-Scattering Path Integral Formulation of Light Transport* | ACM TOG | 2019 | [DOI](https://doi.org/10.1145/3306346.3323025) | 空散射路径积分 |
+| Hillaire, *A Scalable and Production Ready Sky and Atmosphere Rendering Technique* | CGF (EGSR) | 2020 | [DOI](https://doi.org/10.1111/cgf.14050) | 动态 LUT 天空 |
+| Museth, *NanoVDB* | SIGGRAPH Talks | 2021 | [DOI](https://doi.org/10.1145/3450623.3464653) | GPU 上的 VDB |
+| Jendersie & d'Eon, *An Approximate Mie Scattering Function for Fog and Cloud Rendering* | SIGGRAPH Talks | 2023 | [DOI](https://doi.org/10.1145/3587421.3595409) | HG + Draine 拟合 Mie |
+
+### 阶段 10：实时渲染技术（对应第 11 篇）
+
+| 论文 | 出处 | 年份 | 链接 | 说明 |
+| --- | --- | --- | --- | --- |
+| Reeves, Salesin & Cook, *Rendering Antialiased Shadows with Depth Maps* | SIGGRAPH | 1987 | [DOI](https://doi.org/10.1145/37401.37435) | PCF |
+| Saito & Takahashi, *Comprehensible Rendering of 3-D Shapes* | SIGGRAPH | 1990 | [DOI](https://doi.org/10.1145/97880.97901) | G-buffer |
+| Ramamoorthi & Hanrahan, *An Efficient Representation for Irradiance Environment Maps* | SIGGRAPH | 2001 | [DOI](https://doi.org/10.1145/383259.383317) | 9 个 SH 系数的辐照度 |
+| Sloan, Kautz & Snyder, *Precomputed Radiance Transfer* | SIGGRAPH | 2002 | [DOI](https://doi.org/10.1145/566570.566612) | PRT |
+| Reinhard et al., *Photographic Tone Reproduction for Digital Images* | ACM TOG | 2002 | [DOI](https://doi.org/10.1145/566654.566575) | Reinhard 色调映射 |
+| Fernando, *Percentage-Closer Soft Shadows* | SIGGRAPH Sketches | 2005 | [DOI](https://doi.org/10.1145/1187112.1187153) | PCSS |
+| Donnelly & Lauritzen, *Variance Shadow Maps* | I3D | 2006 | [DOI](https://doi.org/10.1145/1111411.1111440) | VSM |
+| Zhang et al., *Parallel-Split Shadow Maps for Large-Scale Virtual Environments* | VRCIA | 2006 | [DOI](https://doi.org/10.1145/1128923.1128975) | 级联阴影与实用切分 |
+| Mittring, *Finding Next Gen: CryEngine 2* | SIGGRAPH Courses | 2007 | [DOI](https://doi.org/10.1145/1281500.1281671) | SSAO |
+| Annen et al., *Exponential Shadow Maps* | Graphics Interface | 2008 | [GI](https://graphicsinterface.org/proceedings/gi2008/gi2008-20) | ESM |
+| Bavoil, Sainz & Dimitrov, *Image-Space Horizon-Based Ambient Occlusion* | SIGGRAPH Talks | 2008 | [DOI](https://doi.org/10.1145/1401032.1401061) | HBAO |
+| Lauritzen, Salvi & Lefohn, *Sample Distribution Shadow Maps* | I3D | 2011 | [DOI](https://doi.org/10.1145/1944745.1944761) | SDSM |
+| Crassin et al., *Interactive Indirect Illumination Using Voxel Cone Tracing* | CGF (PG) | 2011 | [DOI](https://doi.org/10.1111/j.1467-8659.2011.02063.x) | 体素锥追踪 |
+| Olsson, Billeter & Assarsson, *Clustered Deferred and Forward Shading* | HPG | 2012 | [DOI](https://doi.org/10.2312/EGGH/HPG12/087-096) | 分簇着色 |
+| Cigolle et al., *A Survey of Efficient Representations for Independent Unit Vectors* | JCGT | 2014 | [JCGT](https://jcgt.org/published/0003/02/01/) | 八面体法线编码 |
+| McGuire & Mara, *Efficient GPU Screen-Space Ray Tracing* | JCGT | 2014 | [JCGT](https://jcgt.org/published/0003/04/04/) | SSR 的 DDA 步进 |
+| Peters & Klein, *Moment Shadow Mapping* | I3D | 2015 | [DOI](https://doi.org/10.1145/2699276.2699277) | 矩阴影贴图 |
+| Jimenez et al., *Practical Realtime Strategies for Accurate Indirect Occlusion* | Activision TR | 2016 | [报告](https://research.activision.com/publications/archives/atvi-tr-16-01practical-realtime-strategies-for-accurate-indirect-occlusion) | GTAO |
+| Majercik et al., *Dynamic Diffuse Global Illumination with Ray-Traced Irradiance Fields* | JCGT | 2019 | [JCGT](https://jcgt.org/published/0008/02/01/) | DDGI |
+
+无论文的重要演讲与规范：Salvi, *An Excursion in Temporal Supersampling*（GDC 2016，方差裁剪）；Hable, *Uncharted 2: HDR Lighting*（GDC 2010）；Narkowicz, [ACES filmic tone mapping curve](https://knarkowicz.wordpress.com/2016/01/06/aces-filmic-tone-mapping-curve/)（2016）；[Khronos PBR Neutral](https://github.com/KhronosGroup/ToneMapping)（2024）。
+
+代码：[sebh/UnrealEngineSkyAtmosphere](https://github.com/sebh/UnrealEngineSkyAtmosphere)、[ebruneton/precomputed_atmospheric_scattering](https://github.com/ebruneton/precomputed_atmospheric_scattering)、[AcademySoftwareFoundation/openvdb](https://github.com/AcademySoftwareFoundation/openvdb)（含 NanoVDB）、[mitsuba-renderer/mitsuba3](https://github.com/mitsuba-renderer/mitsuba3)、[RenderDoc](https://renderdoc.org/)。
