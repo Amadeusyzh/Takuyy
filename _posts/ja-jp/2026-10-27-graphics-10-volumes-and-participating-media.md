@@ -643,7 +643,7 @@ print(alpha.round(4), T.round(4), w.round(4), w.sum().round(4), (w * c).sum().ro
 
 - Pharr、Jakob、Humphreys『Physically Based Rendering』第 4 版。[pbr-book.org](https://pbr-book.org/4ed/contents) で無料公開されています。第 11 章（ボリューム散乱）と第 14 章（ボリュームの光輸送）は、1〜7 節の内容をすべてヌル散乱パストレーシングで実装しています。
 - Fong、Wrenninge、Kulla、Habel, *Production Volume Rendering*, SIGGRAPH 2017 コース（[DOI](https://doi.org/10.1145/3084873.3084907)）：映画のレンダラーが実際にボリュームをどう扱っているか。
-- 上の Novák ら 2018 のサーベイは、tracking 推定量についての最良の単一の参考文献です。
+- 上の Novák ら 2018 のサーベイは、tracking 推定量について、最も頼りになる参考文献です。
 - Sébastien Hillaire によるオープンソースの空のサンプル [UnrealEngineSkyAtmosphere](https://github.com/sebh/UnrealEngineSkyAtmosphere) と、Eric Bruneton の [precomputed_atmospheric_scattering](https://github.com/ebruneton/precomputed_atmospheric_scattering)。どちらもシェーダーコードが読みやすいです。
 - [OpenVDB](https://github.com/AcademySoftwareFoundation/openvdb)（NanoVDB を含みます）と [Mitsuba 3](https://github.com/mitsuba-renderer/mitsuba3)。Mitsuba 3 のボリュームパストレーサーは通読できるほど短いです。
 - [Scratchapixel](https://www.scratchapixel.com/) には、C++ コード付きのやさしい連載形式のボリュームレンダリング入門があります。
@@ -664,7 +664,7 @@ print(alpha.round(4), T.round(4), w.round(4), w.sum().round(4), (w * c).sum().ro
    混合密度は凸結合なので、「成分を選んでからサンプリングする」とちょうどその分布から引けます。pdf と関数が同一なので、重みの補正は不要です。
    </details>
 
-4. ratio tracking のコードの全体的な上界を**区分的**な上界に置き換えてください。$[0, 10]$ を 10 セルに分け、各セルで $\sigma_t$ の最大値を使い、セル境界ごとに指数サンプリングをやり直します（指数分布の無記憶性によりこれは正しい手順です）。同じ分散で、全体の上界と参照回数を比べてください。
+4. ratio tracking のコードの全体的な上界を**区分的**な上界に置き換えてください。$[0, 10]$ を 10 セルに分け、各セルで $\sigma_t$ の最大値を使い、セル境界ごとに指数サンプリングをやり直します（指数分布の無記憶性によりこれは正しい手順です）。同じ分散を達成するのに必要な参照回数を、全体の上界を使った場合と比べてください。
 
 5. 均質媒質での ratio tracking の分散 $e^{-2\sigma d}(e^{\sigma^2 d/\bar\sigma} - 1)$ をポアソン和から導き、$\sigma = 1$、$d = 1$、$\bar\sigma \in \{1, 2, 4, 8\}$ のシミュレーションと照らし合わせてください。
 

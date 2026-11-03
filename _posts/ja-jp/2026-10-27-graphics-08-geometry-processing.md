@@ -529,7 +529,7 @@ def tutte(V, F, loop, L):
 | オフセット / 丸め | $f - r$ |
 | 法線 | $\mathbf{n} = \nabla f / \lVert\nabla f\rVert$ |
 
-（min、max、滑らかな min の後の結果は厳密な SDF ではなく距離の上界にすぎませんが、下のスフィアトレーシングには安全に使えます。）DeepSDF、NeuS、Neuralangelo のようなニューラルフィールドは $f$ をネットワークで表しますが、この節の内容はすべてそのまま当てはまります。
+（min、max、滑らかな min の後の結果は厳密な SDF ではなく距離の下界（真の距離以下の値）にすぎませんが、下のスフィアトレーシングには安全に使えます。）DeepSDF、NeuS、Neuralangelo のようなニューラルフィールドは $f$ をネットワークで表しますが、この節の内容はすべてそのまま当てはまります。
 
 ### Marching Squares と Marching Cubes
 

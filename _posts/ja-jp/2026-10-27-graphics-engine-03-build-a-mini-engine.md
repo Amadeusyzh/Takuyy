@@ -251,11 +251,11 @@ export class Resources {
 
 ## 4. glTF 2.0 の読み込み
 
-[glTF 2.0](https://registry.khronos.org/glTF/specs/2.0/glTF-2.0.html) は「3D の JPEG」です。JSON によるシーン記述とバイナリバッファからなり、別々のファイル（`.gltf` + `.bin` + 画像）としても、1 つのバイナリ `.glb` にまとめた形でも扱えます。GPU バッファへ直接読み込めるように設計されており、まさにそのためにその構造はエンジンのデータ設計の教材になります。
+[glTF 2.0](https://registry.khronos.org/glTF/specs/2.0/glTF-2.0.html) は「3D の JPEG」です。JSON によるシーン記述とバイナリバッファからなり、別々のファイル（`.gltf` + `.bin` + 画像）としても、1 つのバイナリ `.glb` にまとめた形でも扱えます。GPU バッファへ直接読み込めるように設計されており、だからこそその構造がエンジンのデータ設計の教材になります。
 
 {% include blog_figure.liquid path="assets/img/blog/graphics-engine/03-gltf-structure.svg" caption="glTF 2.0 ファイルの参照チェーン。メッシュ 1 つの小さな例について描いています。すべての矢印は、トップレベルの配列への整数インデックスです。ジオメトリは node → mesh → primitive → accessor → bufferView → buffer とたどり、見た目は primitive → material → texture → image と sampler とたどります。このローダはまさにこれらの矢印をたどります。" %}
 
-図は上から読んでください。**シーン**（scene）はルートの**ノード**（node）を列挙します。ノードはローカル変換（4x4 の `matrix`、または `translation`、クォータニオンの `rotation`、`scale` で、$T R S$ として合成されます）、任意の `children`、任意の**メッシュ**（mesh）を持ちます。メッシュは**プリミティブ**（primitive）のリストで、各プリミティブは 1 回のドローコールに相当します。頂点属性の集合（`POSITION`、`NORMAL`、`TEXCOORD_0` など）、任意の `indices`、そして**マテリアル**（material）からなります。すべての属性は**アクセッサ**（accessor）で、これは **bufferView**（`componentType`、`type`、`count` を持つ型付きのビュー）への参照です。bufferView は **buffer** のバイト範囲（`byteOffset`、`byteLength`、任意の `byteStride`）です。
+図は上から読んでください。**シーン**（scene）はルートの**ノード**（node）を列挙します。ノードはローカル変換（4x4 の `matrix`、または `translation`、クォータニオンの `rotation`、`scale` で、$T R S$ として合成されます）、任意の `children`、任意の**メッシュ**（mesh）を持ちます。メッシュは**プリミティブ**（primitive）のリストで、各プリミティブは 1 回のドローコールに相当します。頂点属性の集合（`POSITION`、`NORMAL`、`TEXCOORD_0` など）、任意の `indices`、そして**マテリアル**（material）からなります。すべての属性は**アクセッサ**（accessor）です。アクセッサは **bufferView** 内の型付きのビュー（`componentType`、`type`、`count` を持つ）で、bufferView は **buffer** のバイト範囲（`byteOffset`、`byteLength`、任意の `byteStride`）です。
 
 唯一の算術は、アクセッサの要素 $i$、成分 $c$ のアドレスです。
 
@@ -1564,7 +1564,7 @@ export class DebugPanel {
    オブジェクトあたり 192 バイトです（256 から 64 を引いた値）。描画リストをメッシュ順にソートし、メッシュごとに行列を連続して書き込み、最初のスロットを `firstInstance` として渡します。
    </details>
 3. **法線マップ。** ローダを拡張して `TANGENT` と `normalTexture` を読み込み、シェーダで TBN 行列を使って `N` を摂動させてください。ファイルに接線がない場合は、どうするべきでしょうか。
-4. **カスケードシャドウ。** カメラの視錐台を、$z_i = \lambda\, z_i^{\log} + (1-\lambda)\, z_i^{\text{lin}}$（ただし $\lambda \in [0, 1]$ は対数分割と線形分割の混合係数、$z_i^{\log} = n (f/n)^{i/3}$、$z_i^{\text{lin}} = n + (f-n)\, i/3$、$i = 0, 1, 2, 3$ が各カスケードの境界を与えます） で選んだ距離で 3 つのカスケードに分割し、カスケードごとに 1 つの正射影ライト行列をフィットさせてください。
+4. **カスケードシャドウ。** カメラの視錐台を、$z_i = \lambda\, z_i^{\log} + (1-\lambda)\, z_i^{\text{lin}}$（ただし $\lambda \in [0, 1]$ は対数分割と線形分割の混合係数、$z_i^{\log} = n (f/n)^{i/3}$、$z_i^{\text{lin}} = n + (f-n)\, i/3$、$i = 0, 1, 2, 3$ が各カスケードの境界を与えます）で選んだ距離で 3 つのカスケードに分割し、カスケードごとに 1 つの正射影ライト行列をフィットさせてください。
 5. **ローダのテスト。** メモリ上で 3 頂点の glTF（JSON と、`data:` URI として符号化した 36 バイトのバッファ）を作り、`readAccessor` でパースして位置をアサートしてください。次に `byteStride = 32` のインターリーブ版を追加し、第 4 節の計算例を確認しましょう。
    <details markdown="1"><summary>ヒント</summary>
    `readAccessor` に必要なのは `json` と `ArrayBuffer` の配列だけなので、`fetch` なしで Node 上で直接呼び出せます。
