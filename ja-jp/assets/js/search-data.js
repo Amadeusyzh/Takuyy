@@ -210,7 +210,7 @@ ninja.data = [{
         
           title: "プロダクションエンジンの内部：Unreal Engine 5、Unity 6、Godot 4、Bevy ほか",
         
-        description: "現代のエンジンは難題をどう解いているのか。Nanite のクラスタ階層と LOD カット、Lumen のサーフェスキャッシュと距離場トレーシング、Virtual Shadow Maps、時間的アップスケーリング、Unity の Render Graph と GPU Resident Drawer、Godot の RenderingDevice、Bevy の抽出フェーズ、そしてそれらのソースコードの読み方を解説します。",
+        description: "現代のエンジンは難題をどう解いているのか。Nanite のクラスター階層と LOD カット、Lumen のサーフェスキャッシュと距離場トレーシング、Virtual Shadow Maps、時間的アップスケーリング、Unity の Render Graph と GPU Resident Drawer、Godot の RenderingDevice、Bevy の抽出フェーズ、そしてそれらのソースコードの読み方を解説します。",
         section: "記事",
         handler: () => {
           
