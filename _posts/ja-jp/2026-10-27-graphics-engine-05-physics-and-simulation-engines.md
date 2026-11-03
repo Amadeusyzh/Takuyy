@@ -119,7 +119,7 @@ GJK はサポート点からなる**単体**（simplex）を成長させます�
 3. $\mathbf{p}$ を $S$ に加えます。原点を含む領域に対応する部分単体（頂点、辺、または単体全体）だけを残し、その要素から原点へ向かう方向を $\mathbf{d}$ にします。
 4. 単体が原点を囲んだら**衝突**です。そうでなければ 2 に戻ります。
 
-2D では「辺 $\mathbf{ab}$ に垂直で原点を向く方向」をベクトル三重積 $(\mathbf{ab}\times\mathbf{ao})\times\mathbf{ab} = \mathbf{ao}\,(\mathbf{ab}\cdot\mathbf{ab}) - \mathbf{ab}\,(\mathbf{ab}\cdot\mathbf{ao})$ で計算します。三角形 $\mathbf{abc}$（$\mathbf{a}$ が最新の点）では、同じ計算を 2 本の辺 $\mathbf{ab}$、$\mathbf{ac}$ に適用します（コード中の `ab_perp`、`ac_perp` は 3 つ目の頂点から遠ざかる向きです）。原点がある辺の外側にあれば、反対側の頂点を捨ててその法線方向に探索を続け、どちらの辺の内側にもあれば原点は三角形の内側にあり、衝突です。辺 $\mathbf{bc}$ は前の反復で除外済みです。アルゴリズム全体が 1 画面に収まります。
+2D では「辺 $\mathbf{ab}$ に垂直で原点を向く方向」をベクトル三重積 $(\mathbf{ab}\times\mathbf{ao})\times\mathbf{ab}$ $= \mathbf{ao}\,(\mathbf{ab}\cdot\mathbf{ab}) - \mathbf{ab}\,(\mathbf{ab}\cdot\mathbf{ao})$ で計算します。三角形 $\mathbf{abc}$（$\mathbf{a}$ が最新の点）では、同じ計算を 2 本の辺 $\mathbf{ab}$、$\mathbf{ac}$ に適用します（コード中の `ab_perp`、`ac_perp` は 3 つ目の頂点から遠ざかる向きです）。原点がある辺の外側にあれば、反対側の頂点を捨ててその法線方向に探索を続け、どちらの辺の内側にもあれば原点は三角形の内側にあり、衝突です。辺 $\mathbf{bc}$ は前の反復で除外済みです。アルゴリズム全体が 1 画面に収まります。
 
 ```python
 import numpy as np

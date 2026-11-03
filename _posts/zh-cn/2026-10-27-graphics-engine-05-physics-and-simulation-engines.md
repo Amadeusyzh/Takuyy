@@ -119,7 +119,7 @@ GJK 用支撑点构建一个不断增长的**单纯形**（simplex）：点、�
 3. 把 $\mathbf{p}$ 加入 $S$。只保留其区域包含原点的子单纯形（顶点、边或整个单纯形），并令 $\mathbf{d}$ 从该特征指向原点。
 4. 若单纯形包围了原点：**碰撞**。否则回到第 2 步。
 
-在二维中，"垂直于边 $\mathbf{ab}$ 并指向原点"的方向用向量三重积计算：$(\mathbf{ab}\times\mathbf{ao})\times\mathbf{ab} = \mathbf{ao}\,(\mathbf{ab}\cdot\mathbf{ab}) - \mathbf{ab}\,(\mathbf{ab}\cdot\mathbf{ao})$。对三角形 $\mathbf{abc}$（$\mathbf{a}$ 是最新的点），同样的计算用在 $\mathbf{ab}$、$\mathbf{ac}$ 两条边上（代码中的 `ab_perp`、`ac_perp` 指向远离第三个顶点的一侧）：原点若在某条边的外侧，就丢掉对面的顶点，沿该法线继续搜索；若在两条边的内侧，原点就在三角形内部，发生碰撞。边 $\mathbf{bc}$ 在上一轮已经排除。整个算法一屏就能写完：
+在二维中，"垂直于边 $\mathbf{ab}$ 并指向原点"的方向用向量三重积计算：$(\mathbf{ab}\times\mathbf{ao})\times\mathbf{ab}$ $= \mathbf{ao}\,(\mathbf{ab}\cdot\mathbf{ab}) - \mathbf{ab}\,(\mathbf{ab}\cdot\mathbf{ao})$。对三角形 $\mathbf{abc}$（$\mathbf{a}$ 是最新的点），同样的计算用在 $\mathbf{ab}$、$\mathbf{ac}$ 两条边上（代码中的 `ab_perp`、`ac_perp` 指向远离第三个顶点的一侧）：原点若在某条边的外侧，就丢掉对面的顶点，沿该法线继续搜索；若在两条边的内侧，原点就在三角形内部，发生碰撞。边 $\mathbf{bc}$ 在上一轮已经排除。整个算法一屏就能写完：
 
 ```python
 import numpy as np
