@@ -14,15 +14,15 @@ related_posts: false
 
 ## なぜ重要か
 
-[ジオメトリ処理]({{ '/blog/2026/graphics-08-geometry-processing/' | relative_url }})でメッシュが手に入りました。この記事ではそれを動かします。キャラクターアニメーションは、ゲーム、映画、VR アバター、テレプレゼンスを支えています。同じ数学が、今ではヒューマノイドロボットも動かしています。関節の階層と順運動学は、[エンボディード AI のロボット運動学]({{ '/blog/2026/embodied-ai-01-robotics-foundations/' | relative_url }})そのものです。[強化学習]({{ '/blog/2026/embodied-ai-02-reinforcement-learning-for-robots/' | relative_url }})で訓練した物理ベースのキャラクターは、2025〜2026 年に実機のヒューマノイドで動くモーショントラッカーになりました。そして [XR のアバター]({{ '/blog/2026/embodied-ai-06-embodied-ai-meets-xr-and-hci/' | relative_url }})は、スキニングされ、リターゲットされたキャラクターです。
+[ジオメトリ処理]({{ '/blog/2026/graphics-08-geometry-processing/' | relative_url }})でメッシュが手に入りました。この記事ではそれを動かします。キャラクターアニメーションは、ゲーム、映画、VR アバター、テレプレゼンスを支えています。同じ数学が、今ではヒューマノイドロボットも動かしています。関節の階層と順運動学は、[身体性 AI のロボット運動学]({{ '/blog/2026/embodied-ai-01-robotics-foundations/' | relative_url }})そのものです。[強化学習]({{ '/blog/2026/embodied-ai-02-reinforcement-learning-for-robots/' | relative_url }})で訓練した物理ベースのキャラクターは、2025〜2026 年に実機のヒューマノイドで動くモーショントラッカーになりました。そして [XR のアバター]({{ '/blog/2026/embodied-ai-06-embodied-ai-meets-xr-and-hci/' | relative_url }})は、スキニング（skinning）され、リターゲットされたキャラクターです。
 
-キーフレームから学習ベースのモーションまでを順にたどります。スプラインは値を時間方向に補間し、クォータニオンは回転を補間します。骨格とスキンがメッシュを変形し、逆運動学が手足を配置します。キャプチャとリターゲティングが実際の動きを取り込み、データ駆動・物理ベース・生成的な手法が新しい動きを作ります。
+キーフレームから学習ベースのモーションまでを順にたどります。スプラインは値を時間方向に補間し、クォータニオンは回転を補間します。骨格とスキンがメッシュを変形し、逆運動学（inverse kinematics, IK）が手足を配置します。キャプチャとリターゲティングが実際の動きを取り込み、データ駆動・物理ベース・生成的な手法が新しい動きを作ります。
 
 ## 前提知識
 
 - 行列、同次変換、slerp を含むクォータニオン（[第 1 回]({{ '/blog/2026/graphics-01-roadmap-and-math/' | relative_url }})）。
 - 時間積分と、PD に似た拘束力（[第 7 回]({{ '/blog/2026/graphics-07-physically-based-simulation/' | relative_url }})）。
-- 最後の数節では、強化学習の基礎（[エンボディード AI 第 2 回]({{ '/blog/2026/embodied-ai-02-reinforcement-learning-for-robots/' | relative_url }})）と拡散モデル（[世界モデル第 2 回]({{ '/blog/2026/world-models-02-generative-modeling-foundations/' | relative_url }})）。
+- 最後の数節では、強化学習の基礎（[身体性 AI 第 2 回]({{ '/blog/2026/embodied-ai-02-reinforcement-learning-for-robots/' | relative_url }})）と拡散モデル（[世界モデル第 2 回]({{ '/blog/2026/world-models-02-generative-modeling-foundations/' | relative_url }})）。
 
 ## 1. キーフレームとスプライン
 
@@ -131,7 +131,7 @@ $$
 
 ### 指数写像と角速度
 
-対数は回転をベクトルに変えます。$\mathbf{r} = 2\log q$ は**回転ベクトル**（軸 × 角度）で、$SO(3)$ の**指数写像（exponential map）**です。回転ベクトルは微積分をするのに適した場所です。動く姿勢 $q(t)$ の角速度 $\boldsymbol\omega$（物体座標系）は
+対数は回転をベクトルに変えます。$\mathbf{r} = 2\log q$ は**回転ベクトル**（rotation vector、軸 × 角度）で、$SO(3)$ の**指数写像（exponential map）**です。回転ベクトルは微積分をするのに適した場所です。動く姿勢 $q(t)$ の角速度 $\boldsymbol\omega$（物体座標系）は
 
 $$
 (0, \boldsymbol\omega) = 2\,q^{-1}\dot q
@@ -210,7 +210,7 @@ $$
 \mathbf{G}_j = \mathbf{G}_{p(j)}\,\mathbf{T}_j^{\text{local}}, \qquad \mathbf{G}_{\text{root}} = \mathbf{T}_{\text{root}}^{\text{local}} .
 $$
 
-関節を親が子より先に来る順で保存しておけば、FK は 1 本のループです。**バインドポーズ（bind pose）**（レストポーズ。T ポーズや A ポーズが多い）はメッシュをモデリングしたときの姿勢です。その大域変換 $\mathbf{B}_j$ を保存しておき、その逆行列 $\mathbf{B}_j^{-1}$、すなわち**逆バインド行列（inverse bind matrices）**で、頂点をモデル空間から関節 $j$ の局所座標系へ写します。これは[エンボディード AI 第 1 回]({{ '/blog/2026/embodied-ai-01-robotics-foundations/' | relative_url }})のロボットアームの運動学的連鎖と同じ剛体変換の連鎖です。違いはキャラクターの木が枝分かれすることだけです。
+関節を親が子より先に来る順で保存しておけば、FK は 1 本のループです。**バインドポーズ（bind pose）**（レストポーズ。T ポーズや A ポーズが多い）はメッシュをモデリングしたときの姿勢です。その大域変換 $\mathbf{B}_j$ を保存しておき、その逆行列 $\mathbf{B}_j^{-1}$、すなわち**逆バインド行列（inverse bind matrices）**で、頂点をモデル空間から関節 $j$ の局所座標系へ写します。これは[身体性 AI 第 1 回]({{ '/blog/2026/embodied-ai-01-robotics-foundations/' | relative_url }})のロボットアームの運動学的連鎖と同じ剛体変換の連鎖です。違いはキャラクターの木が枝分かれすることだけです。
 
 ```python
 import numpy as np
@@ -346,7 +346,7 @@ $$
 
 ## 6. キャラクターの逆運動学
 
-アニメーターやゲームは、逆の問題を絶えず必要とします。手を*ここ*に置き、足を*そこ*に着けたいのです。[エンボディード AI 第 1 回]({{ '/blog/2026/embodied-ai-01-robotics-foundations/' | relative_url }})ではヤコビアンに基づく一般的なソルバ（擬似逆行列と減衰最小二乗法）を導出しました。ここでは、キャラクターアニメーションで主流の 3 つの手法を紹介します。
+アニメーターやゲームは、逆の問題を絶えず必要とします。手を*ここ*に置き、足を*そこ*に着けたいのです。[身体性 AI 第 1 回]({{ '/blog/2026/embodied-ai-01-robotics-foundations/' | relative_url }})ではヤコビアンに基づく一般的なソルバ（擬似逆行列と減衰最小二乗法）を導出しました。ここでは、キャラクターアニメーションで主流の 3 つの手法を紹介します。
 
 ### 解析的な 2 ボーン IK
 
@@ -501,7 +501,7 @@ $$
 
 4 つの項は、クリップの関節回転、関節速度、エンドエフェクタ位置、重心に一致することへの報酬です。ハット付きの量は参照クリップの値、$w$ は各項の重み、$k$ は指数部のスケール係数です（ここでの $k_p$、$k_v$ は上の PD ゲインとは無関係です）。うまくいった鍵は二つの工夫です。参照状態初期化（エピソードをクリップのランダムなフレームから始める）と早期終了（キャラクターが転んだら止める）です。**AMP**（Peng ら 2021）は手作りの追従報酬を GAN 型の識別器に置き換えます。識別器はキャラクターの状態遷移とモーションデータセットの遷移を見分けます。これで、クリップを選ばなくても、タスク報酬（あそこへ行け）と「データのように動け」を組み合わせられます。**ASE**（Peng ら 2022）は、敵対的な目的と多様性の目的で大きな潜在スキル空間を事前学習し、上位のコントローラは潜在変数を選ぶだけで済むようにします。**PHC**（Luo ら 2023）は単一の方策で AMASS のほぼすべてを追従し、転倒から回復し、映像や VR の入力からアバターを動かします。**MaskedMimic**（Tessler ら 2024）は制御をモーションのインペインティングとして扱います。全身トラッカーを蒸留して訓練した一つの方策が、任意の制約の部分集合（関節目標、VR の頭と両手、テキスト、物体の目標）を受け付けます。後続研究には、運動学的なモーション生成器と物理トラッカーを交互に回してパルクールのデータを増やす **PARC**（Xu ら、SIGGRAPH 2025）や、MaskedMimic を全身での物体操作に広げた **MaskedManipulator**（Tessler ら、SIGGRAPH Asia 2025）があります。
 
-**ヒューマノイドロボットへの橋（2026 年 11 月時点）。** 同じレシピが 2024〜2026 年に実機へ移りました。人間の動きをロボットにリターゲットし（第 7 節）、大規模並列シミュレータ（[エンボディード AI 第 3 回]({{ '/blog/2026/embodied-ai-03-simulation-platforms/' | relative_url }})）でドメインランダム化を使って追従方策を訓練し、ゼロショットで実機に載せます。
+**ヒューマノイドロボットへの橋（2026 年 11 月時点）。** 同じレシピが 2024〜2026 年に実機へ移りました。人間の動きをロボットにリターゲットし（第 7 節）、大規模並列シミュレータ（[身体性 AI 第 3 回]({{ '/blog/2026/embodied-ai-03-simulation-platforms/' | relative_url }})）でドメインランダム化（domain randomization）を使って追従方策を訓練し、ゼロショットで実機に載せます。
 
 - **H2O**（He ら、IROS 2024）と **HumanPlus**（Fu ら、CoRL 2024）は、これを人間のオペレータのリアルタイム遠隔操作とシャドーイングに使いました。
 - **ASAP**（He ら、RSS 2025）は実機の実行データから残差の「デルタ行動」モデルを学習し、俊敏なスキルの sim-to-real ギャップを埋めます。
@@ -527,7 +527,7 @@ $$
 ## 試してみよう
 
 - 上のスキニングのウィジェットで、LBS の幅が半分になるねじれ角を探し、等しい重みのときの式 $r'/r = \lvert\cos(\theta/2)\rvert$ と比べてください。
-- ドラッグで IK を試すなら、[エンボディード AI 第 1 回]({{ '/blog/2026/embodied-ai-01-robotics-foundations/' | relative_url }})のアームのウィジェットが第 6 節のヤコビアン版を解きます。[ホームページのラボ]({{ '/' | relative_url }}#lab)の布は、物理ベースのキャラクターの土台である[第 7 回]({{ '/blog/2026/graphics-07-physically-based-simulation/' | relative_url }})の物理で動いています。
+- ドラッグで IK を試すなら、[身体性 AI 第 1 回]({{ '/blog/2026/embodied-ai-01-robotics-foundations/' | relative_url }})のアームのウィジェットが第 6 節のヤコビアン版を解きます。[ホームページのラボ]({{ '/' | relative_url }}#lab)の布は、物理ベースのキャラクターの土台である[第 7 回]({{ '/blog/2026/graphics-07-physically-based-simulation/' | relative_url }})の物理で動いています。
 
 ## 代表的な論文
 

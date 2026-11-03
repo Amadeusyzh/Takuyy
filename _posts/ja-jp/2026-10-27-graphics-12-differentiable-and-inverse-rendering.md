@@ -39,7 +39,7 @@ $$
 \frac{\partial \mathcal{L}}{\partial \theta} = \Big(\frac{\partial I}{\partial \theta}\Big)^{\!\top} \frac{\partial \mathcal{L}}{\partial I},
 $$
 
-ベクトル $\partial\mathcal{L}/\partial I$（ピクセルごとに 1 つの数）は簡単に計算できます。難しいことはすべてヤコビアン $\partial I/\partial\theta$ にありますが、これを陽に組み立てることはありません。リバースモード微分（reverse-mode differentiation）が、$\partial\mathcal{L}/\partial I$ にこれをその場で掛けてくれるからです。
+ベクトル $\partial\mathcal{L}/\partial I$（ピクセルごとに 1 つの数）は簡単に計算できます。難しいことはすべてヤコビアン（Jacobian）$\partial I/\partial\theta$ にありますが、これを陽に組み立てることはありません。リバースモード微分（reverse-mode differentiation）が、$\partial\mathcal{L}/\partial I$ にこれをその場で掛けてくれるからです。
 
 {% include blog_figure.liquid path="assets/img/blog/graphics/12-pipeline.svg" localized="true" caption="合成による解析のループ。順方向パスでは現在のシーンパラメータ $\theta$ をレンダリングして写真と比較します。逆方向パス（赤の破線）では $\partial\mathcal{L}/\partial\theta$ をレンダラーを通して逆向きに伝え、オプティマイザが $\theta$ を更新できるようにします。" %}
 
@@ -133,13 +133,13 @@ FD of sampled pixel, h = 0.1: 1.500
 
 ### 一般則：内部項と境界項
 
-2 次元では、同じ計算が**レイノルズの輸送定理**（Reynolds transport theorem、動く領域に対するライプニッツの法則）になります。ピクセル $P$ の面積を $\lvert P\rvert$、値を $I = \frac{1}{\lvert P\rvert}\int_P f(\mathbf{x},\theta)\,d\mathbf{x}$ とし、$f$ が曲線 $\Gamma(\theta)$（シルエットのエッジ）をまたいで跳ぶとします。$\Gamma$ 上の点で、$\mathbf{n}$ を単位法線、$f^{-}$ を $\mathbf{n}$ が指す向きと反対側（物体の内側）の値、$f^{+}$ を反対側の値、$\mathbf{v} = \partial\mathbf{x}_\Gamma/\partial\theta$ を $\theta$ が変化したときの境界点の速度とします。すると次が成り立ちます。
+2 次元では、同じ計算が**レイノルズの輸送定理**（Reynolds transport theorem、動く領域に対するライプニッツの法則）になります。ピクセル $P$ の面積を $\lvert P\rvert$、値を $I = \frac{1}{\lvert P\rvert}\int_P f(\mathbf{x},\theta)\,d\mathbf{x}$ とし、$f$ が曲線 $\Gamma(\theta)$（シルエットのエッジ）をまたいで跳ぶとします。$\Gamma$ 上の点で、$\mathbf{n}$ を単位法線、$f^{-}$ を $\mathbf{n}$ が指す向きの逆側（物体の内側）の値、$f^{+}$ をもう一方の側の値、$\mathbf{v} = \partial\mathbf{x}_\Gamma/\partial\theta$ を $\theta$ が変化したときの境界点の速度とします。すると次が成り立ちます。
 
 $$
 \frac{dI}{d\theta} = \underbrace{\frac{1}{\lvert P\rvert}\int_P \frac{\partial f}{\partial\theta}\,d\mathbf{x}}_{\text{interior term}} \; + \; \underbrace{\frac{1}{\lvert P\rvert}\int_{\Gamma\cap P} \big(f^{-}-f^{+}\big)\,(\mathbf{v}\cdot\mathbf{n})\,d\ell}_{\text{boundary term}}.
 $$
 
-内部項は、シェーダー（シェーディング、テクスチャ、光源）の自動微分が与えてくれるものです。境界項は、それが取りこぼすものです。値の跳び、かけるエッジが法線方向に動く速さを、ピクセル内にあるエッジの部分に沿って積分したものです。導出の概略はこうです。小さなステップ $\delta\theta$ の間に、エッジは幅 $(\mathbf{v}\cdot\mathbf{n})\,\delta\theta$ の細い帯を掃きます。この帯の中で値は $f^{+}$ から $f^{-}$ に変わるので、積分値はエッジの単位長さあたり $(f^{-}-f^{+})(\mathbf{v}\cdot\mathbf{n})\,\delta\theta$ だけ変化します。次の図の左のパネルがその帯を示し、右のパネルは、単位ピクセルを横切る直線エッジ $\mathbf{n}\cdot\mathbf{x}=\theta$（$\mathbf{v}\cdot\mathbf{n}=1$、$f^{-}-f^{+}=1$）について、この式を数値的に確かめています。被覆された面積の微分は、ピクセル内にあるエッジの長さ $\ell(\theta)$ に等しくなります。
+内部項は、シェーダー（シェーディング、テクスチャ、光源）の自動微分が与えてくれるものです。境界項は、それが取りこぼすものです。値の跳びに、エッジが法線方向に動く速さを掛け、ピクセル内にあるエッジの部分に沿って積分したものです。導出の概略はこうです。小さなステップ $\delta\theta$ の間に、エッジは幅 $(\mathbf{v}\cdot\mathbf{n})\,\delta\theta$ の細い帯を掃きます。この帯の中で値は $f^{+}$ から $f^{-}$ に変わるので、積分値はエッジの単位長さあたり $(f^{-}-f^{+})(\mathbf{v}\cdot\mathbf{n})\,\delta\theta$ だけ変化します。次の図の左のパネルがその帯を示し、右のパネルは、単位ピクセルを横切る直線エッジ $\mathbf{n}\cdot\mathbf{x}=\theta$（$\mathbf{v}\cdot\mathbf{n}=1$、$f^{-}-f^{+}=1$）について、この式を数値的に確かめています。被覆された面積の微分は、ピクセル内にあるエッジの長さ $\ell(\theta)$ に等しくなります。
 
 {% include blog_figure.liquid path="assets/img/blog/graphics/12-reynolds.svg" caption="左：エッジ $\mathbf{n}\cdot\mathbf{x}=\theta$ が $\delta\theta$ だけ動くと、被覆された領域（紫）は面積がおよそ $\ell\,\delta\theta$ の帯（オレンジ）の分だけ増えます。右：単位ピクセルの被覆面積 $A(\theta)$（多角形クリッピングで計算）、その有限差分による微分（太いオレンジ）、そしてクリップされたエッジの長さ $\ell(\theta)$（破線）。後の 2 つは一致しており、これがレイノルズの輸送定理の境界項です。" %}
 
@@ -247,7 +247,7 @@ $$
 \mathbf{u} = (\mathbf{I} + \lambda \mathbf{L})\,\mathbf{x},
 $$
 
-ここで $\mathbf{L}$ はメッシュのラプラシアン、$\lambda$ は平滑化の重みで、$\mathbf{x}$ の代わりに $\mathbf{u}$ を最適化します。$\mathbf{M} = \mathbf{I}+\lambda\mathbf{L}$（対称）とおくと、連鎖律から $\nabla\_{\mathbf{u}} = \mathbf{M}^{-1}\nabla\_{\mathbf{x}}$ となるので、$\mathbf{u}$ に対する勾配ステップ $\Delta\mathbf{u} = -\eta\,\nabla_{\mathbf{u}}\mathcal{L}$（$\eta$ はステップ幅）は頂点を次のように動かします。
+ここで $\mathbf{L}$ はメッシュのラプラシアン（Laplacian）、$\lambda$ は平滑化の重みで、$\mathbf{x}$ の代わりに $\mathbf{u}$ を最適化します。$\mathbf{M} = \mathbf{I}+\lambda\mathbf{L}$（対称）とおくと、連鎖律から $\nabla\_{\mathbf{u}} = \mathbf{M}^{-1}\nabla\_{\mathbf{x}}$ となるので、$\mathbf{u}$ に対する勾配ステップ $\Delta\mathbf{u} = -\eta\,\nabla_{\mathbf{u}}\mathcal{L}$（$\eta$ はステップ幅）は頂点を次のように動かします。
 
 $$
 \Delta\mathbf{x} = \mathbf{M}^{-1}\Delta\mathbf{u} = -\eta\,(\mathbf{I}+\lambda\mathbf{L})^{-2}\,\nabla_{\mathbf{x}}\mathcal{L}.
@@ -283,7 +283,7 @@ $$
 
 **なお不連続のまま残るもの。**
 
-- *ソート*：3DGS は、各レイに沿った個々の寄与の真の深度ではなく、ガウシアンの*中心*の深度で（タイルごとに）ソートします。カメラが動いて、重なり合う 2 つのガウシアンの順序が入れ替わると、合成結果が跳びます。これが「ポッピング」アーティファクトで、勾配が無視する $\theta$ における不連続性でもあります（下の右のパネル）。
+- *ソート*：3DGS は、各レイに沿った個々の寄与の真の深度ではなく、ガウシアンの*中心*の深度で（タイルごとに）ソートします。カメラが動いて、重なり合う 2 つのガウシアンの順序が入れ替わると、合成結果が跳びます。これが「ポッピング」（popping）アーティファクトで、勾配が無視する $\theta$ における不連続性でもあります（下の右のパネル）。
 - *打ち切り*：ガウシアンは約 3 標準偏差で打ち切られ、不透明度のしきい値を下回るものはスキップされるため、小さな跳びが生じます。
 - *最終的なハードな表面*：オプティマイザが密度を非常に鋭くする（不透明な表面）と、滑らかさはまた失われます。
 
@@ -434,7 +434,7 @@ print(torch.sigmoid(a_raw).detach(), (0.05 + 0.95 * torch.sigmoid(r_raw)).item()
 
 2026 年 11 月時点で、特に活発な方向が 3 つあります。以下の状況は arXiv または出版社で確認したものです。
 
-**ガウスプリミティブの微分可能レンダリングとレイトレーシング。** Gaussian splatting のラスタライザは近似的にソートするため、二次レイを追えません。*3D Gaussian Ray Tracing*（Moenne-Loccoz et al., SIGGRAPH Asia 2024）は、境界メッシュのプロキシを通じてハードウェアレイトレーシングで粒子をトレースし、各レイに沿って正しい順序で処理し、すべてを微分可能に保ちます。*3DGUT*（Wu et al., CVPR 2025）は代わりにアンセンテッド変換を使って、歪んだカメラを通してガウシアンを射影し、ラスタライゼーションの枠組みの中で二次レイを可能にします。*EVER*（Mai et al., arXiv preprint 2410.01804, 2024）は、密度が一定の楕円体を*厳密な*ボリューム積分でレンダリングし、構成上ポッピングを取り除きます。逆レンダリングの側では、*IRGS*（Gu et al., CVPR 2025）が、微分可能な 2D ガウシアンのレイトレーシングを使って、マテリアルと照明を復元する際の相互反射を考慮しており、その後継の *IRGS++*（arXiv preprint 2607.22780, 2026 年 7 月）は、重点サンプリングとデノイズによって金属にまで拡張しています。*UTrice*（Liu et al., arXiv preprint 2512.04421, 2025 年 12 月）は、三角形そのものをプリミティブとして、単一の微分可能なレイトレーサーとラスタライザで使います。
+**ガウスプリミティブの微分可能レンダリングとレイトレーシング。** Gaussian splatting のラスタライザは近似的にソートするため、二次レイを追えません。*3D Gaussian Ray Tracing*（Moenne-Loccoz et al., SIGGRAPH Asia 2024）は、境界メッシュのプロキシを通じてハードウェアレイトレーシングで粒子をトレースし、各レイに沿って正しい順序で処理し、すべてを微分可能に保ちます。*3DGUT*（Wu et al., CVPR 2025）は代わりにアンセンテッド変換（unscented transform）を使って、歪んだカメラを通してガウシアンを射影し、ラスタライゼーションの枠組みの中で二次レイを可能にします。*EVER*（Mai et al., arXiv preprint 2410.01804, 2024）は、密度が一定の楕円体を*厳密な*ボリューム積分でレンダリングし、構成上ポッピングを取り除きます。逆レンダリングの側では、*IRGS*（Gu et al., CVPR 2025）が、微分可能な 2D ガウシアンのレイトレーシングを使って、マテリアルと照明を復元する際の相互反射を考慮しており、その後継の *IRGS++*（arXiv preprint 2607.22780, 2026 年 7 月）は、重点サンプリングとデノイズによって金属にまで拡張しています。*UTrice*（Liu et al., arXiv preprint 2512.04421, 2025 年 12 月）は、三角形そのものをプリミティブとして、単一の微分可能なレイトレーサーとラスタライザで使います。
 
 **物理とレンダリングの結合。** 微分可能なシミュレータ（[第 7 回]({{ '/blog/2026/graphics-07-physically-based-simulation/' | relative_url }})）が生成したジオメトリを微分可能なレンダラーが画像化するなら、勾配は動画のピクセルから物理パラメータへ逆向きに流れます。これが動画からの*システム同定*（system identification）です。*PAC-NeRF*（Li et al., ICLR 2023）は、放射輝度場を微分可能な物質点法（material point method, MPM）と結合して、多視点動画からマテリアルパラメータを推定します。*PhysGaussian*（Xie et al., CVPR 2024）は、同じガウシアンを MPM シミュレーションとレンダリングの両方に使います。*PhysTwin*（Jiang et al., arXiv preprint 2503.17973, 2025）は、ガウシアンでレンダリングされるバネ-質点モデルを、変形物体のまばらな動画にフィッティングします。*MOSIV*（Liu et al., ICLR 2026）は、微分可能なシミュレータを通じて、複数物体のシーンでの物体ごとのマテリアルパラメータを同定します。
 

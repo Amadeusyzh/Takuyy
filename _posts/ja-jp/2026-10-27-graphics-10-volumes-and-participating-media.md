@@ -19,7 +19,7 @@ related_posts: false
 ## 前提知識
 
 - 放射輝度、BRDF、レンダリング方程式（[第 04 回]({{ '/blog/2026/graphics-04-physically-based-rendering/' | relative_url }})）。
-- モンテカルロ積分、重点的サンプリング、次イベント推定、ロシアンルーレット（[第 05 回]({{ '/blog/2026/graphics-05-ray-and-path-tracing/' | relative_url }})）。
+- モンテカルロ積分、重点的サンプリング（importance sampling）、次イベント推定（next event estimation）、ロシアンルーレット（Russian roulette）。いずれも[第 05 回]({{ '/blog/2026/graphics-05-ray-and-path-tracing/' | relative_url }})で扱いました。
 - 基本的な確率：指数分布、逆 CDF サンプリング、ポアソン過程（必要な箇所で復習します）。
 
 ## 1. 媒質の中で光に何が起こるか
@@ -587,7 +587,7 @@ $$
 \qquad T_i = \prod_{j<i}(1 - \alpha_j).
 $$
 
-これは**手前から奥へのアルファ合成**（front-to-back alpha compositing）、つまり "over" 演算子です。NeRF の式は、5 節のエネルギー保存の区間規則で $\sigma_s/\sigma_t$ を放射色に置き換えたものにほかなりません。3D Gaussian Splatting も同じ和を使いますが、各 $\alpha_i$ は密度のサンプルではなく、投影されたガウシアンから得ます。重み $w_i = T_i\alpha_i$ の和は $1 - T_N \le 1$ なので、深さ方向の確率分布のように振る舞います。NeRF の階層的サンプリングは、まさにこれを使って細かいサンプルを配置します。
+これは**手前から奥へのアルファ合成**（front-to-back alpha compositing）、つまり "over" 演算子です。NeRF の式は、5 節のエネルギー保存の区間規則で $\sigma_s/\sigma_t$ を放射色に置き換えたものにほかなりません。3D ガウシアンスプラッティングも同じ和を使いますが、各 $\alpha_i$ は密度のサンプルではなく、投影されたガウシアンから得ます。重み $w_i = T_i\alpha_i$ の和は $1 - T_N \le 1$ なので、深さ方向の確率分布のように振る舞います。NeRF の階層的サンプリングは、まさにこれを使って細かいサンプルを配置します。
 
 **数値例。** $\sigma = (1, 3)$、$\delta = 0.5$、色 $c = (0.9, 0.2)$ の 2 サンプル：$\alpha = (0.393, 0.777)$、$T = (1, 0.607)$、$w = (0.393, 0.471)$ です。重みの和は $0.865 = 1 - e^{-2}$ で、ちょうど 1 から全体の透過率を引いた値になり、$\hat C = 0.9(0.393) + 0.2(0.471) = 0.448$ です。
 
