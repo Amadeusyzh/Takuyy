@@ -14,20 +14,20 @@ related_posts: false
 
 ## なぜ重要か
 
-[第 1 回]({{ '/blog/2026/graphics-engine-01-anatomy-of-an-engine/' | relative_url }})では、エンジンをレイヤ、ゲームループ、データ指向のストレージ、そしてエンティティ・コンポーネント・システム（ECS, entity component system）に分解しました。[第 2 回]({{ '/blog/2026/graphics-engine-02-gpu-apis-and-render-graphs/' | relative_url }})では、明示的な GPU API、同期、レンダーグラフ（render graph）を説明しました。この回では、それらの考え方をもう一度組み立て直します。JavaScript と WGSL（WebGPU Shading Language）で、約 900 行の**小さくても本物のエンジン**を書きます。このエンジンは glTF 2.0 モデルを読み込み、物理ベース（physically based）のマテリアルでシェーディングし、影を落とし、固定タイムステップのシミュレーションを実行し、シーンを ECS に保持し、宣言されたパスリストからパスをスケジューリングし、GPU タイムスタンプクエリ（timestamp query）で自分自身を計測します。
+[第 1 回]({{ '/blog/2026/graphics-engine-01-anatomy-of-an-engine/' | relative_url }})では、エンジンをレイヤー、ゲームループ、データ指向のストレージ、そしてエンティティ・コンポーネント・システム（ECS, entity component system）に分解しました。[第 2 回]({{ '/blog/2026/graphics-engine-02-gpu-apis-and-render-graphs/' | relative_url }})では、明示的な GPU API、同期、レンダーグラフ（render graph）を説明しました。この回では、それらの考え方をもう一度組み立て直します。JavaScript と WGSL（WebGPU Shading Language）で、約 900 行の**小さくても本物のエンジン**を書きます。このエンジンは glTF 2.0 モデルを読み込み、物理ベース（physically based）のマテリアルでシェーディングし、影を落とし、固定タイムステップのシミュレーションを実行し、シーンを ECS に保持し、宣言されたパスリストからパスをスケジューリングし、GPU タイムスタンプクエリ（timestamp query）で自分自身を計測します。
 
-目的は、[次の回]({{ '/blog/2026/graphics-engine-04-inside-production-engines/' | relative_url }})で扱うエンジンと張り合うことではありません。各部品を一度ずつ自分で書いておけば、それらのソースコードを読んだときにすべてのレイヤを見分けられるようになることが目的です。
+目的は、[次の回]({{ '/blog/2026/graphics-engine-04-inside-production-engines/' | relative_url }})で扱うエンジンと張り合うことではありません。各部品を一度ずつ自分で書いておけば、それらのソースコードを読んだときにすべてのレイヤーを見分けられるようになることが目的です。
 
 ## 前提知識
 
-- [第 01 回]({{ '/blog/2026/graphics-engine-01-anatomy-of-an-engine/' | relative_url }})のエンジンのレイヤ、ゲームループ、ECS。および[第 02 回]({{ '/blog/2026/graphics-engine-02-gpu-apis-and-render-graphs/' | relative_url }})のデバイス、キュー、バインドグループ（bind group）、パイプライン。
+- [第 01 回]({{ '/blog/2026/graphics-engine-01-anatomy-of-an-engine/' | relative_url }})のエンジンのレイヤー、ゲームループ、ECS。および[第 02 回]({{ '/blog/2026/graphics-engine-02-gpu-apis-and-render-graphs/' | relative_url }})のデバイス、キュー、バインドグループ（bind group）、パイプライン。
 - [グラフィックス第 01 回]({{ '/blog/2026/graphics-01-roadmap-and-math/' | relative_url }})の同次座標（homogeneous coordinates）とカメラ変換、および[グラフィックス第 02 回]({{ '/blog/2026/graphics-02-rasterization/' | relative_url }})のラスタライゼーションパイプライン。
 - [グラフィックス第 04 回]({{ '/blog/2026/graphics-04-physically-based-rendering/' | relative_url }})のマイクロファセット BRDF（ここでは導出し直さず実装します）と、[グラフィックス第 03 回]({{ '/blog/2026/graphics-03-shading-and-textures/' | relative_url }})のシャドウマップの考え方。
-- モダンな JavaScript（ES モジュール、クラス、`async`/`await`）と、WebGPU が使えるブラウザ。2026 年 11 月時点では、Chrome と Edge は Windows、macOS、ChromeOS でバージョン 113 以降（[Chrome ブログ](https://developer.chrome.com/blog/webgpu-release)）、最近の Android 端末ではバージョン 121 以降、Safari 26 は macOS、iOS、iPadOS、visionOS（[WebKit ブログ](https://webkit.org/blog/17333/webkit-features-in-safari-26-0/)）、Firefox は Windows でバージョン 141（[リリースノート](https://www.firefox.com/en-US/firefox/141.0/releasenotes/)）、Apple シリコン搭載 Mac でバージョン 147 が対応しています。
+- モダンな JavaScript（ES モジュール、クラス、`async`/`await`）と、WebGPU が使えるブラウザ。2026 年 11 月時点では、Chrome と Edge は Windows、macOS、ChromeOS でバージョン 113 以降（[Chrome ブログ](https://developer.chrome.com/blog/webgpu-release)）、最近の Android 端末ではバージョン 121 以降、Safari 26 は macOS、iOS、iPadOS、visionOS（[WebKit ブログ](https://webkit.org/blog/17333/webkit-features-in-safari-26-0/)）、Firefox は Windows でバージョン 141（[リリースノート](https://www.firefox.com/en-US/firefox/141.0/releasenotes/)）、Apple シリコン搭載 Mac でバージョン 147 から対応しています。
 
 ## 1. 作るものとモジュール境界
 
-*mini* と名付けるこのエンジンは、第 01 回のレイヤをそのまま備え、厳格なルールを一つ課します。**モジュールは、自分より下のレイヤからのみ import できる**というルールです。GPU レイヤはエンティティを一切知らず、ECS は GPU を一切知らず、レンダラは ECS を読むだけで決して変更しません。
+*mini* と名付けるこのエンジンは、第 01 回のレイヤーをそのまま備え、厳格なルールを一つ課します。**モジュールは、自分より下のレイヤーからのみ import できる**というルールです。GPU レイヤーはエンティティを一切知らず、ECS は GPU を一切知らず、レンダラは ECS を読むだけで決して変更しません。
 
 ```text
 mini-engine/
@@ -251,11 +251,11 @@ export class Resources {
 
 ## 4. glTF 2.0 の読み込み
 
-[glTF 2.0](https://registry.khronos.org/glTF/specs/2.0/glTF-2.0.html) は「3D の JPEG」です。JSON によるシーン記述とバイナリバッファからなり、別々のファイル（`.gltf` + `.bin` + 画像）としても、1 つのバイナリ `.glb` にまとめた形でも扱えます。GPU バッファへ直接読み込めるように設計されており、まさにそのためにその構造はエンジンのデータ設計の教材になります。
+[glTF 2.0](https://registry.khronos.org/glTF/specs/2.0/glTF-2.0.html) は「3D の JPEG」です。JSON によるシーン記述とバイナリバッファからなり、別々のファイル（`.gltf` + `.bin` + 画像）としても、1 つのバイナリ `.glb` にまとめた形でも扱えます。GPU バッファへ直接読み込めるように設計されており、だからこそその構造がエンジンのデータ設計の教材になります。
 
 {% include blog_figure.liquid path="assets/img/blog/graphics-engine/03-gltf-structure.svg" caption="glTF 2.0 ファイルの参照チェーン。メッシュ 1 つの小さな例について描いています。すべての矢印は、トップレベルの配列への整数インデックスです。ジオメトリは node → mesh → primitive → accessor → bufferView → buffer とたどり、見た目は primitive → material → texture → image と sampler とたどります。このローダはまさにこれらの矢印をたどります。" %}
 
-図は上から読んでください。**シーン**（scene）はルートの**ノード**（node）を列挙します。ノードはローカル変換（4x4 の `matrix`、または `translation`、クォータニオンの `rotation`、`scale` で、$T R S$ として合成されます）、任意の `children`、任意の**メッシュ**（mesh）を持ちます。メッシュは**プリミティブ**（primitive）のリストで、各プリミティブは 1 回のドローコールに相当します。頂点属性の集合（`POSITION`、`NORMAL`、`TEXCOORD_0` など）、任意の `indices`、そして**マテリアル**（material）からなります。すべての属性は**アクセッサ**（accessor）で、これは **bufferView**（`componentType`、`type`、`count` を持つ型付きのビュー）への参照です。bufferView は **buffer** のバイト範囲（`byteOffset`、`byteLength`、任意の `byteStride`）です。
+図は上から読んでください。**シーン**（scene）はルートの**ノード**（node）を列挙します。ノードはローカル変換（4x4 の `matrix`、または `translation`、クォータニオンの `rotation`、`scale` で、$T R S$ として合成されます）、任意の `children`、任意の**メッシュ**（mesh）を持ちます。メッシュは**プリミティブ**（primitive）のリストで、各プリミティブは 1 回のドローコールに相当します。頂点属性の集合（`POSITION`、`NORMAL`、`TEXCOORD_0` など）、任意の `indices`、そして**マテリアル**（material）からなります。すべての属性は**アクセッサ**（accessor）です。アクセッサは **bufferView** 内の型付きのビュー（`componentType`、`type`、`count` を持つ）で、bufferView は **buffer** のバイト範囲（`byteOffset`、`byteLength`、任意の `byteStride`）です。
 
 唯一の算術は、アクセッサの要素 $i$、成分 $c$ のアドレスです。
 
@@ -601,7 +601,7 @@ export class OrbitCamera {
 
 ## 6. WGSL による PBR マテリアルシェーダ
 
-理論は[グラフィックス第 04 回]({{ '/blog/2026/graphics-04-physically-based-rendering/' | relative_url }})にあり、ここではそれをコードに写すだけです。色（強度を掛け済み）が $E_L$ の 1 つの平行光源が、法線 $\mathbf{n}$ の面に方向 $\mathbf{l}$ から到来するとき、視点方向 $\mathbf{v}$ への出射放射輝度は次のようになります。
+理論は[グラフィックス第 04 回]({{ '/blog/2026/graphics-04-physically-based-rendering/' | relative_url }})にあり、ここではそれをコードに写すだけです。色（強度を掛け済み）が $E_L$ の 1 つの平行光源が、法線 $\mathbf{n}$ の面に方向 $\mathbf{l}$ から到来するとき、視点方向 $\mathbf{v}$ への出射放射輝度（outgoing radiance）は次のようになります。
 
 $$
 L_o = \Big( \underbrace{(1 - F)(1 - m)\,\frac{\mathbf{c}}{\pi}}_{\text{diffuse}} + \underbrace{D(\mathbf{h})\, V(\mathbf{v}, \mathbf{l})\, F(\mathbf{v}, \mathbf{h})}_{\text{specular}} \Big)\, E_L\, (\mathbf{n} \cdot \mathbf{l})\, s,
@@ -986,11 +986,11 @@ startLoop({
 });
 ```
 
-`render` 内のシステムの順序は、小さな**スケジュール**（schedule）です。入力 → カメラ → 補間 → トランスフォーム → ライト → 描画。エンジンはこれを明示的に表現します（Bevy のスケジュールとシステムセット、Unity のシステムグループ、Unreal のティックグループ）。トランスフォームシステムが実行される前にトランスフォームを読むシステムは、前フレームのデータを見ることになり、1 フレーム遅れのバグという典型的な不具合を招くからです。
+`render` 内のシステムの順序は、小さな**スケジュール**（schedule）です。入力 → カメラ → 補間 → トランスフォーム → ライト → 描画。エンジンはこの順序を明示的に表現します（Bevy のスケジュールとシステムセット、Unity のシステムグループ、Unreal のティックグループ）。トランスフォームシステムが実行される前にトランスフォームを読むシステムは前フレームのデータを見てしまい、1 フレーム遅れという典型的なバグを招くからです。
 
 ## 9. 小さなパスリスト（60 行のフレームグラフ）
 
-第 02 回では**レンダーグラフ**を説明しました。各パスが読み書きするリソースを宣言し、グラフがパスの順序を決め、結果を誰も使わないパスを取り除き、各リソースの生存期間（lifetime）を導出します。これにより、一時的なメモリをエイリアスでき、バリアを自動的に配置できます。WebGPU はバリアを代わりに挿入してくれますが、残りの 3 つの利点は数行で実現できます。
+第 02 回では**レンダーグラフ**を説明しました。各パスが読み書きするリソースを宣言し、グラフがパスの順序を決め、結果を誰も使わないパスを取り除き、各リソースの生存期間（lifetime）を導出します。これにより、一時的なメモリをエイリアス（aliasing、同じメモリの再利用）でき、バリアを自動的に配置できます。WebGPU はバリアを代わりに挿入してくれますが、残りの 3 つの利点は数行で実現できます。
 
 ```js
 // src/render/passes.js
@@ -1504,7 +1504,7 @@ export class DebugPanel {
    ```
 
 2. **ゴールデンイメージ（golden image）。** 固定のシーンを固定のカメラでヘッドレスに描画し（Playwright や Puppeteer 経由で WebGPU を有効にした Chrome、または CI 上のネイティブ Dawn や wgpu）、保存しておいた参照画像と、許容誤差を持つ指標（ピクセルごとの誤差と、しきい値を超えたピクセルの割合）で比較します。GPU が異なれば結果がわずかに異なるためです。
-3. **検証をテストにする。** すべてのテストを、検証エラーが失敗として扱われる状態で実行します（WebGPU ではエラースコープ、ネイティブの Vulkan では検証レイヤ）。
+3. **検証をテストにする。** すべてのテストを、検証エラーが失敗として扱われる状態で実行します（WebGPU ではエラースコープ、ネイティブの Vulkan では検証レイヤー）。
 4. **性能回帰テスト。** 固定のカメラパスに対して GPU タイムスタンプと CPU 時間を記録し、あるパスが、たとえば 10 % 遅くなったらビルドを失敗させます。
 
 ## 13. パフォーマンス上の落とし穴
@@ -1523,7 +1523,7 @@ export class DebugPanel {
 
 この骨格から、自然に広がる拡張は、シリーズの残りの話題そのものです。
 
-- **クラスタードライティング**（clustered lighting）による数百個の光源の扱い: 視錐台を 3D のクラスタのグリッドに分割し、コンピュートパスで光源をクラスタに割り当て、PBR シェーダではそのクラスタの光源だけをループします（アルゴリズムは第 02 回で説明しました）。
+- **クラスタードライティング**（clustered lighting）による数百個の光源の扱い: 視錐台を 3D のクラスターのグリッドに分割し、コンピュートパスで光源をクラスターに割り当て、PBR シェーダではそのクラスターの光源だけをループします（アルゴリズムは第 02 回で説明しました）。
 - **イメージベースドライティング**（image-based lighting）: 定数のアンビエント項を、事前フィルタ済みの環境マップと BRDF のルックアップテーブルに置き換えます（[グラフィックス第 04 回]({{ '/blog/2026/graphics-04-physically-based-rendering/' | relative_url }})）。
 - **アセットパイプライン**: オフラインの「クッカー」（Node または Python）で、glTF を、生成したミップマップ、圧縮テクスチャ（KTX2/Basis Universal）、量子化した頂点、メッシュレット（meshlet）を含む GPU 向けのバイナリ形式に変換し、さらにコンテンツハッシュを付けて、変更されたアセットだけを再ビルドするようにします。
 - **エディタ**: エンティティのインスペクタ、ギズモ、シリアライズ可能なコンポーネントの上に築いたアンドゥ/リドゥ、シェーダとアセットのホットリロード。
@@ -1550,7 +1550,7 @@ export class DebugPanel {
 - Rust で同じ道のりをたどる [Learn Wgpu](https://sotrh.github.io/learn-wgpu/) と、C++ 向けの [Vulkan Tutorial](https://vulkan-tutorial.com/)。シャドウマッピングとアクネを図で説明している [LearnOpenGL](https://learnopengl.com/Advanced-Lighting/Shadows/Shadow-Mapping)。
 - Romain Guy と Mathias Agopian による [Physically Based Rendering in Filament](https://google.github.io/filament/Filament.md.html)。第 6 節のシェーダについて、導出からコードまでを最も明快にたどれる文書です。
 - Glenn Fiedler の [Fix Your Timestep!](https://gafferongames.com/post/fix_your_timestep/)。第 2 節のループについての古典的な記事です。Robert Nystrom の [Game Programming Patterns](https://gameprogrammingpatterns.com/)（ゲームループ、更新メソッド、ダーティフラグ、コンポーネントの各章）。
-- Jason Gregory, *Game Engine Architecture*（第 3 版、CRC Press、2018）。この回のすべてのレイヤを、製品規模で扱っています。
+- Jason Gregory, *Game Engine Architecture*（第 3 版、CRC Press、2018）。この回のすべてのレイヤーを、製品規模で扱っています。
 - ツール: [RenderDoc](https://renderdoc.org/)、[WebGPU Inspector](https://github.com/brendan-duncan/webgpu_inspector)、Chrome の `chrome://gpu`。
 
 ## 演習
@@ -1564,7 +1564,7 @@ export class DebugPanel {
    オブジェクトあたり 192 バイトです（256 から 64 を引いた値）。描画リストをメッシュ順にソートし、メッシュごとに行列を連続して書き込み、最初のスロットを `firstInstance` として渡します。
    </details>
 3. **法線マップ。** ローダを拡張して `TANGENT` と `normalTexture` を読み込み、シェーダで TBN 行列を使って `N` を摂動させてください。ファイルに接線がない場合は、どうするべきでしょうか。
-4. **カスケードシャドウ。** カメラの視錐台を、$z_i = \lambda\, z_i^{\log} + (1-\lambda)\, z_i^{\text{lin}}$（ただし $\lambda \in [0, 1]$ は対数分割と線形分割の混合係数、$z_i^{\log} = n (f/n)^{i/3}$、$z_i^{\text{lin}} = n + (f-n)\, i/3$、$i = 0, 1, 2, 3$ が各カスケードの境界を与えます） で選んだ距離で 3 つのカスケードに分割し、カスケードごとに 1 つの正射影ライト行列をフィットさせてください。
+4. **カスケードシャドウ。** カメラの視錐台を、$z_i = \lambda\, z_i^{\log} + (1-\lambda)\, z_i^{\text{lin}}$（ただし $\lambda \in [0, 1]$ は対数分割と線形分割の混合係数、$z_i^{\log} = n (f/n)^{i/3}$、$z_i^{\text{lin}} = n + (f-n)\, i/3$、$i = 0, 1, 2, 3$ が各カスケードの境界を与えます）で選んだ距離で 3 つのカスケードに分割し、カスケードごとに 1 つの正射影ライト行列をフィットさせてください。
 5. **ローダのテスト。** メモリ上で 3 頂点の glTF（JSON と、`data:` URI として符号化した 36 バイトのバッファ）を作り、`readAccessor` でパースして位置をアサートしてください。次に `byteStride = 32` のインターリーブ版を追加し、第 4 節の計算例を確認しましょう。
    <details markdown="1"><summary>ヒント</summary>
    `readAccessor` に必要なのは `json` と `ArrayBuffer` の配列だけなので、`fetch` なしで Node 上で直接呼び出せます。

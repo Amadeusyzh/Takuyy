@@ -19,7 +19,7 @@ related_posts: false
 ## 前提知識
 
 - 放射輝度、BRDF、レンダリング方程式（[第 04 回]({{ '/blog/2026/graphics-04-physically-based-rendering/' | relative_url }})）。
-- モンテカルロ積分、重点的サンプリング、次イベント推定、ロシアンルーレット（[第 05 回]({{ '/blog/2026/graphics-05-ray-and-path-tracing/' | relative_url }})）。
+- モンテカルロ積分、重点的サンプリング（importance sampling）、次イベント推定（next event estimation）、ロシアンルーレット（Russian roulette）。いずれも[第 05 回]({{ '/blog/2026/graphics-05-ray-and-path-tracing/' | relative_url }})で扱いました。
 - 基本的な確率：指数分布、逆 CDF サンプリング、ポアソン過程（必要な箇所で復習します）。
 
 ## 1. 媒質の中で光に何が起こるか
@@ -587,7 +587,7 @@ $$
 \qquad T_i = \prod_{j<i}(1 - \alpha_j).
 $$
 
-これは**手前から奥へのアルファ合成**（front-to-back alpha compositing）、つまり "over" 演算子です。NeRF の式は、5 節のエネルギー保存の区間規則で $\sigma_s/\sigma_t$ を放射色に置き換えたものにほかなりません。3D Gaussian Splatting も同じ和を使いますが、各 $\alpha_i$ は密度のサンプルではなく、投影されたガウシアンから得ます。重み $w_i = T_i\alpha_i$ の和は $1 - T_N \le 1$ なので、深さ方向の確率分布のように振る舞います。NeRF の階層的サンプリングは、まさにこれを使って細かいサンプルを配置します。
+これは**手前から奥へのアルファ合成**（front-to-back alpha compositing）、つまり "over" 演算子です。NeRF の式は、5 節のエネルギー保存の区間規則で $\sigma_s/\sigma_t$ を放射色に置き換えたものにほかなりません。3D ガウシアンスプラッティングも同じ和を使いますが、各 $\alpha_i$ は密度のサンプルではなく、投影されたガウシアンから得ます。重み $w_i = T_i\alpha_i$ の和は $1 - T_N \le 1$ なので、深さ方向の確率分布のように振る舞います。NeRF の階層的サンプリングは、まさにこれを使って細かいサンプルを配置します。
 
 **数値例。** $\sigma = (1, 3)$、$\delta = 0.5$、色 $c = (0.9, 0.2)$ の 2 サンプル：$\alpha = (0.393, 0.777)$、$T = (1, 0.607)$、$w = (0.393, 0.471)$ です。重みの和は $0.865 = 1 - e^{-2}$ で、ちょうど 1 から全体の透過率を引いた値になり、$\hat C = 0.9(0.393) + 0.2(0.471) = 0.448$ です。
 
@@ -643,7 +643,7 @@ print(alpha.round(4), T.round(4), w.round(4), w.sum().round(4), (w * c).sum().ro
 
 - Pharr、Jakob、Humphreys『Physically Based Rendering』第 4 版。[pbr-book.org](https://pbr-book.org/4ed/contents) で無料公開されています。第 11 章（ボリューム散乱）と第 14 章（ボリュームの光輸送）は、1〜7 節の内容をすべてヌル散乱パストレーシングで実装しています。
 - Fong、Wrenninge、Kulla、Habel, *Production Volume Rendering*, SIGGRAPH 2017 コース（[DOI](https://doi.org/10.1145/3084873.3084907)）：映画のレンダラーが実際にボリュームをどう扱っているか。
-- 上の Novák ら 2018 のサーベイは、tracking 推定量についての最良の単一の参考文献です。
+- 上の Novák ら 2018 のサーベイは、tracking 推定量について、最も頼りになる参考文献です。
 - Sébastien Hillaire によるオープンソースの空のサンプル [UnrealEngineSkyAtmosphere](https://github.com/sebh/UnrealEngineSkyAtmosphere) と、Eric Bruneton の [precomputed_atmospheric_scattering](https://github.com/ebruneton/precomputed_atmospheric_scattering)。どちらもシェーダーコードが読みやすいです。
 - [OpenVDB](https://github.com/AcademySoftwareFoundation/openvdb)（NanoVDB を含みます）と [Mitsuba 3](https://github.com/mitsuba-renderer/mitsuba3)。Mitsuba 3 のボリュームパストレーサーは通読できるほど短いです。
 - [Scratchapixel](https://www.scratchapixel.com/) には、C++ コード付きのやさしい連載形式のボリュームレンダリング入門があります。
@@ -664,7 +664,7 @@ print(alpha.round(4), T.round(4), w.round(4), w.sum().round(4), (w * c).sum().ro
    混合密度は凸結合なので、「成分を選んでからサンプリングする」とちょうどその分布から引けます。pdf と関数が同一なので、重みの補正は不要です。
    </details>
 
-4. ratio tracking のコードの全体的な上界を**区分的**な上界に置き換えてください。$[0, 10]$ を 10 セルに分け、各セルで $\sigma_t$ の最大値を使い、セル境界ごとに指数サンプリングをやり直します（指数分布の無記憶性によりこれは正しい手順です）。同じ分散で、全体の上界と参照回数を比べてください。
+4. ratio tracking のコードの全体的な上界を**区分的**な上界に置き換えてください。$[0, 10]$ を 10 セルに分け、各セルで $\sigma_t$ の最大値を使い、セル境界ごとに指数サンプリングをやり直します（指数分布の無記憶性によりこれは正しい手順です）。同じ分散を達成するのに必要な参照回数を、全体の上界を使った場合と比べてください。
 
 5. 均質媒質での ratio tracking の分散 $e^{-2\sigma d}(e^{\sigma^2 d/\bar\sigma} - 1)$ をポアソン和から導き、$\sigma = 1$、$d = 1$、$\bar\sigma \in \{1, 2, 4, 8\}$ のシミュレーションと照らし合わせてください。
 
