@@ -9,6 +9,7 @@ world models and embodied AI. This file is the contract every post must follow.
 | `categories` / `series` key | Topic |
 | --- | --- |
 | `graphics` | Computer graphics from scratch: math, rasterization, shading, PBR, ray/path tracing, real-time RT, simulation, geometry processing, animation, volumes, real-time techniques, differentiable rendering, research frontiers |
+| `3d-vision` | 3D vision fundamentals: camera models, calibration, features, two-view and multi-view geometry, SfM, SLAM, depth and MVS, 3D representations, reconstruction, 3D vision for AR/VR |
 | `neural-rendering` | Cameras & multi-view geometry, NeRF, fast radiance fields, 3D Gaussian Splatting and its extensions |
 | `graphics-engine` | Game/graphics engine architecture, GPU APIs and render graphs, building a mini engine, production engines, physics and simulation engines, AI + engines (the bridge to world models and embodied AI) |
 | `world-models` | Model-based RL, video world simulators, 3D/4D world generation, JEPA, evaluation |
@@ -25,7 +26,7 @@ Use exactly one category per post, equal to its series key.
 - File name: `2026-10-27-<series>-<NN>-<slug>.md`, e.g. `2026-10-27-graphics-03-shading.md`.
 - The `date` must not be in the future (posts with future dates are not built). Use the fixed date
   `2026-10-27` and encode the order in the time: base hour per track, minute = NN.
-  - graphics `09:NN`, neural-rendering `12:NN`, graphics-engine `13:NN`, world-models `15:NN`, embodied-ai `18:NN`, roadmap `21:NN`.
+  - graphics `09:NN`, 3d-vision `11:NN`, neural-rendering `12:NN`, graphics-engine `13:NN`, world-models `15:NN`, embodied-ai `18:NN`, roadmap `21:NN`.
   - Exception: `paper-digest` posts are dated issues. They use the real publication date (never in the future at build
     time) and the file name `<date>-paper-digest-NN-<yyyy>-<months>.md`, e.g. `2026-11-02-paper-digest-01-2026-oct-nov.md`.
 - Chinese: Simplified Chinese, natural technical writing. Japanese: natural です/ます style.

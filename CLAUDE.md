@@ -23,8 +23,8 @@ LANG=C.UTF-8 bundle exec jekyll build --config _config.yml,/tmp/local.yml   # or
 - Publications: `_bibliography/papers.bib` (shared by all languages).
 - Interactive Lab (home page): `_includes/lab.liquid` + `assets/js/lab*.js` (hand-written WebGL 2:
   path tracer, ReSTIR, Gaussian World, XPBD cloth, foveated rendering).
-- Blog: `_posts/<lang>/`, five series (graphics, neural-rendering, graphics-engine, world-models,
-  embodied-ai), a dated paper-digest column (paper-digest) and a roadmap hub. Writing rules, including visualization rules, are in `docs/BLOG_GUIDE.md`; read
+- Blog: `_posts/<lang>/`, six series (graphics, 3d-vision, neural-rendering, graphics-engine,
+  world-models, embodied-ai), a dated paper-digest column (paper-digest) and a roadmap hub. Writing rules, including visualization rules, are in `docs/BLOG_GUIDE.md`; read
   it before adding or editing posts. Reading lists: `docs/reading-lists/`.
 - Blog figures: Python scripts in `bin/figures/<series>/` (shared style `bin/figures/style.py`)
   write SVGs to `assets/img/blog/<series>/`; interactive widgets are `assets/js/widgets/*.js`.

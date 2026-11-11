@@ -253,7 +253,7 @@ jekyll-archives:
       categories: "/blog/:type/:name/"
 
 display_tags: [] # these tags will be displayed on the front page of your blog
-display_categories: ["graphics", "neural-rendering", "graphics-engine", "world-models", "embodied-ai", "paper-digest", "roadmap"] # these categories will be displayed on the front page of your blog
+display_categories: ["graphics", "3d-vision", "neural-rendering", "graphics-engine", "world-models", "embodied-ai", "paper-digest", "roadmap"] # these categories will be displayed on the front page of your blog
 
 # -----------------------------------------------------------------------------
 # Jekyll Scholar
