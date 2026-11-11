@@ -180,7 +180,7 @@ lab:
   gw_understood: 'Understood:'
   gw_water: Water level
   gw_wind: Wind
-  intro: Five real-time graphics demos related to my research, written from scratch in WebGL and running entirely in your browser.
+  intro: Nine real-time graphics demos related to my research, written from scratch in WebGL and running entirely in your browser.
   light: Light size
   m_diffuse: Diffuse
   m_frosted: Frosted
@@ -240,8 +240,12 @@ lab:
   tab_cloth: Cloth · XPBD
   tab_fov: Foveated Rendering
   tab_gs: Gaussian World
+  tab_mpm: Materials · MPM
   tab_pt: Path Tracing
+  tab_rc: Radiance Cascades
   tab_rs: 'Many Lights · ReSTIR'
+  tab_sdf: SDF Sculpting
+  tab_sky: 'Clouds & Sky'
   tear: Tearing
   title: Interactive Lab
   v_albedo: Albedo
