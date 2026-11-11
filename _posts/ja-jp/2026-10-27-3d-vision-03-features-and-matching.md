@@ -542,7 +542,13 @@ $$
 N = \left\lceil \frac{\log(1 - p)}{\log(1 - w^s)} \right\rceil
 $$
 
-が得られます。**計算例**：ホモグラフィ（$s = 4$）で半分のマッチが誤り（$w = 0.5$）、$p = 0.99$ なら、$w^4 = 0.0625$ で $N = \lceil \log 0.01 / \log 0.9375 \rceil = \lceil -4.605 / -0.0645 \rceil = \lceil 71.4 \rceil = 72$ です。$w^s$ は $s$ について指数的に小さくなるので、最小サンプルの大きさは極めて重要です。
+が得られます。**計算例**：ホモグラフィ（$s = 4$）で半分のマッチが誤り（$w = 0.5$）、$p = 0.99$ なら $w^4 = 0.0625$ なので、反復回数は次のとおりです。
+
+$$
+N = \left\lceil \frac{\log 0.01}{\log 0.9375} \right\rceil = \left\lceil \frac{-4.605}{-0.0645} \right\rceil = \lceil 71.4 \rceil = 72
+$$
+
+$w^s$ は $s$ について指数的に小さくなるので、最小サンプルの大きさは極めて重要です。
 
 ```python
 def ransac_iterations(eps, s, p=0.99):

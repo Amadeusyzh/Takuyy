@@ -1576,6 +1576,15 @@ mjx-container[jax="CHTML"][display="true"] {
   max-width: 100%;
   padding: 0.2rem 0;
 }
+// an inline formula wider than its line (assets/js/mathjax-setup.js adds .mjx-wide) gets its own
+// horizontally scrollable line
+mjx-container.mjx-wide {
+  display: block;
+  overflow-x: auto;
+  overflow-y: hidden;
+  max-width: 100%;
+  padding: 0.15rem 0;
+}
 .blog-fig {
   margin: 1.6rem auto;
   max-width: var(--fig-w, 100%);

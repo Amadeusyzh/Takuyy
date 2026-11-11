@@ -542,7 +542,13 @@ $$
 N = \left\lceil \frac{\log(1 - p)}{\log(1 - w^s)} \right\rceil .
 $$
 
-**算例**：单应（$s = 4$），一半匹配是错的（$w = 0.5$），$p = 0.99$：$w^4 = 0.0625$，$N = \lceil \log 0.01 / \log 0.9375 \rceil = \lceil -4.605 / -0.0645 \rceil = \lceil 71.4 \rceil = 72$。由于 $w^s$ 随 $s$ 指数缩小，最小样本的大小影响巨大：
+**算例**：单应（$s = 4$），一半匹配是错的（$w = 0.5$），$p = 0.99$：$w^4 = 0.0625$，因此
+
+$$
+N = \left\lceil \frac{\log 0.01}{\log 0.9375} \right\rceil = \left\lceil \frac{-4.605}{-0.0645} \right\rceil = \lceil 71.4 \rceil = 72
+$$
+
+由于 $w^s$ 随 $s$ 指数缩小，最小样本的大小影响巨大：
 
 ```python
 def ransac_iterations(eps, s, p=0.99):

@@ -123,10 +123,12 @@ Each level owns a table of $T$ feature vectors of dimension $F$. To encode a poi
 
 1. At each level, scale $\mathbf x$ by $N_l$ and find the $2^d$ integer corners of the enclosing cell.
 2. Map each corner $\mathbf i$ to a table index. If the level's full grid fits, $(N_l+1)^d \le T$, use a one-to-one dense index. Otherwise use the **spatial hash**
+
    $$
    h(\mathbf i) = \Big( \bigoplus_{k=1}^{d} i_k\, \pi_k \Big) \bmod T,
    \qquad \pi_1 = 1,\ \pi_2 = 2\,654\,435\,761,\ \pi_3 = 805\,459\,861,
    $$
+
    where $\oplus$ is bitwise XOR.
 3. Look up the $2^d$ feature vectors and interpolate them (trilinearly for $d=3$) with the fractional position inside the cell.
 4. Concatenate the $L$ interpolated vectors (and optionally auxiliary inputs) into an $L\cdot F$-dimensional encoding, fed to a tiny MLP.

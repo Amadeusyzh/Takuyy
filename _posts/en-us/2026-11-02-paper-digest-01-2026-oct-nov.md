@@ -590,7 +590,7 @@ This issue's entries build on a small set of earlier works. If you read only a f
    </details>
 4. **Stochastic transparency.** Three Gaussians lie along a ray with opacities $0.5, 0.4, 0.6$ and colours $1, 0, 1$ (grey levels), front to back. Compute the alpha-blended colour. Then show that keeping each Gaussian with probability $\alpha_k$ and taking the nearest kept one (black if none is kept) has the same expected value.
    <details markdown="1"><summary>Hint</summary>
-   Blended: $0.5\cdot1 + 0.5\cdot0.4\cdot0 + 0.5\cdot0.6\cdot0.6\cdot1 = 0.5 + 0.18 = 0.68$. In the stochastic version the probability that Gaussian $k$ is the nearest kept one is $\alpha_k\prod_{l<k}(1-\alpha_l)$, which is exactly its blending weight $T_k\alpha_k$, so the expectations match. SteadySplats (entry 9) attacks the variance of this estimator.
+   Blended: the three terms are $0.5\cdot1 = 0.5$, $0.5\cdot0.4\cdot0 = 0$ and $0.5\cdot0.6\cdot0.6\cdot1 = 0.18$, so the colour is $0.68$. In the stochastic version the probability that Gaussian $k$ is the nearest kept one is $\alpha_k\prod_{l<k}(1-\alpha_l)$, which is exactly its blending weight $T_k\alpha_k$, so the expectations match. SteadySplats (entry 9) attacks the variance of this estimator.
    </details>
 5. **Make your own digest entry.** Use the arXiv API, for example `http://export.arxiv.org/api/query?search_query=cat:cs.GR+AND+submittedDate:[202611010000+TO+202611302359]`, to find one November 2026 paper, and write the four parts (what, how, new, connection to CG) in at most 150 words.
 

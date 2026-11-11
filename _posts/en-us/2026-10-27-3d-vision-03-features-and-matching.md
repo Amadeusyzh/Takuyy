@@ -542,7 +542,13 @@ $$
 N = \left\lceil \frac{\log(1 - p)}{\log(1 - w^s)} \right\rceil .
 $$
 
-**Worked example**: a homography ($s = 4$) with half the matches wrong ($w = 0.5$) and $p = 0.99$: $w^4 = 0.0625$ and $N = \lceil \log 0.01 / \log 0.9375 \rceil = \lceil -4.605 / -0.0645 \rceil = \lceil 71.4 \rceil = 72$. Because $w^s$ shrinks exponentially in $s$, the minimal sample size matters enormously:
+**Worked example**: a homography ($s = 4$) with half the matches wrong ($w = 0.5$) and $p = 0.99$: $w^4 = 0.0625$ and
+
+$$
+N = \left\lceil \frac{\log 0.01}{\log 0.9375} \right\rceil = \left\lceil \frac{-4.605}{-0.0645} \right\rceil = \lceil 71.4 \rceil = 72 .
+$$
+
+Because $w^s$ shrinks exponentially in $s$, the minimal sample size matters enormously:
 
 ```python
 def ransac_iterations(eps, s, p=0.99):

@@ -590,7 +590,7 @@ print(form_factor(np.zeros(3), ni, np.array([0.0, 2.0, 2.0]), nj, 0.1))  # ~0.00
    </details>
 4. **随机透明。** 一条光线上从前到后有三个高斯，不透明度为 $0.5, 0.4, 0.6$，颜色（灰度）为 $1, 0, 1$。计算 alpha 混合后的颜色。再证明：以概率 $\alpha_k$ 保留每个高斯、取最近的被保留者（若都没保留则为黑色），其期望值相同。
    <details markdown="1"><summary>提示</summary>
-   混合结果：$0.5\cdot1 + 0.5\cdot0.4\cdot0 + 0.5\cdot0.6\cdot0.6\cdot1 = 0.5 + 0.18 = 0.68$。在随机版本中，高斯 $k$ 成为最近被保留者的概率是 $\alpha_k\prod_{l<k}(1-\alpha_l)$，正好等于它的混合权重 $T_k\alpha_k$，所以期望相同。SteadySplats（条目 9）针对的就是这个估计量的方差。
+   混合结果：三项分别为 $0.5\cdot1 = 0.5$、$0.5\cdot0.4\cdot0 = 0$ 和 $0.5\cdot0.6\cdot0.6\cdot1 = 0.18$，所以颜色为 $0.68$。在随机版本中，高斯 $k$ 成为最近被保留者的概率是 $\alpha_k\prod_{l<k}(1-\alpha_l)$，正好等于它的混合权重 $T_k\alpha_k$，所以期望相同。SteadySplats（条目 9）针对的就是这个估计量的方差。
    </details>
 5. **写一个你自己的速递条目。** 用 arXiv API，例如 `http://export.arxiv.org/api/query?search_query=cat:cs.GR+AND+submittedDate:[202611010000+TO+202611302359]`，找一篇 2026 年 11 月的论文，并用不超过 150 字写出四个部分（做什么、怎么做、新在哪里、与 CG 的联系）。
 
