@@ -109,7 +109,7 @@ The contract for a demo worker (files for demo `<id>`):
 ## Process for every worker
 
 - You run in a git worktree. Start your branch from the latest main:
-  `git fetch origin main && git checkout -B w/<id> origin/main`.
+  `git fetch origin main && git checkout -B w/<id> FETCH_HEAD`.
 - Build the site:
   `/tmp/claude-0/-home-user-takuyy/0c443e9e-c3ce-5795-8d74-9c6cb688c2ab/scratchpad/tools/site-build-local <worktree>`
 - Check pages:
