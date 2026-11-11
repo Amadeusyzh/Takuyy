@@ -316,6 +316,39 @@ ninja.data = [{
             window.location.href = "/Takuyy/zh-cn/blog/2026/neural-rendering-01-cameras-and-multiview-geometry/";
           
         },
+      },{id: "post-特征与匹配-角点-sift-ransac-与学习式匹配器",
+        
+          title: "特征与匹配：角点、SIFT、RANSAC 与学习式匹配器",
+        
+        description: "如何在两幅图像中找到同一个点：结构张量与 Harris 角点、尺度空间与 SIFT、FAST/BRIEF/ORB、比值检验、RANSAC 及其后继（MSAC、LO-RANSAC、MAGSAC++）、SuperPoint、SuperGlue、LightGlue、LoFTR 与 RoMa、Lucas-Kanade 与 RAFT 光流，以及匹配器如何评测；每一步都配有 NumPy 代码。",
+        section: "文章",
+        handler: () => {
+          
+            window.location.href = "/Takuyy/zh-cn/blog/2026/3d-vision-03-features-and-matching/";
+          
+        },
+      },{id: "post-相机标定-单应矩阵-张正友标定法-以及结果有多可信",
+        
+          title: "相机标定：单应矩阵、张正友标定法，以及结果有多可信",
+        
+        description: "用棋盘格估计相机内参与镜头畸变：平面单应与归一化 DLT、张正友闭式解、Levenberg-Marquardt 优化、重投影误差与参数不确定度、标定板与亚像素角点、双目极线校正、手眼标定 AX = XB 与相机-IMU 标定，附合成数据上的 NumPy 与 OpenCV 代码。",
+        section: "文章",
+        handler: () => {
+          
+            window.location.href = "/Takuyy/zh-cn/blog/2026/3d-vision-02-camera-calibration/";
+          
+        },
+      },{id: "post-成像与相机模型-射影几何-针孔-镜头与坐标约定",
+        
+          title: "成像与相机模型：射影几何、针孔、镜头与坐标约定",
+        
+        description: "「三维视觉基础」系列第 1 篇：齐次坐标、无穷远点与消失点，针孔相机 P = K[R|t] 及其 RQ 分解，Brown-Conrady 与 Kannala-Brandt 畸变，卷帘快门，以及 OpenCV、OpenGL、COLMAP、NeRF 之间的坐标约定换算。",
+        section: "文章",
+        handler: () => {
+          
+            window.location.href = "/Takuyy/zh-cn/blog/2026/3d-vision-01-image-formation-and-camera-models/";
+          
+        },
       },{id: "post-2026-年图形学研究前沿-siggraph-siggraph-asia-与最新预印本在做什么",
         
           title: "2026 年图形学研究前沿：SIGGRAPH、SIGGRAPH Asia 与最新预印本在做什么",

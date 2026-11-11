@@ -316,6 +316,39 @@ ninja.data = [{
             window.location.href = "/Takuyy/blog/2026/neural-rendering-01-cameras-and-multiview-geometry/";
           
         },
+      },{id: "post-features-and-matching-corners-sift-ransac-and-learned-matchers",
+        
+          title: "Features and matching: corners, SIFT, RANSAC and learned matchers",
+        
+        description: "How to find the same point in two images: the structure tensor and Harris corners, scale space and SIFT, FAST/BRIEF/ORB, the ratio test, RANSAC and its descendants (MSAC, LO-RANSAC, MAGSAC++), SuperPoint, SuperGlue, LightGlue, LoFTR and RoMa, Lucas-Kanade and RAFT optical flow, and how matchers are evaluated, with NumPy code for every step.",
+        section: "Posts",
+        handler: () => {
+          
+            window.location.href = "/Takuyy/blog/2026/3d-vision-03-features-and-matching/";
+          
+        },
+      },{id: "post-camera-calibration-homographies-zhang-39-s-method-and-how-far-to-trust-the-result",
+        
+          title: "Camera calibration: homographies, Zhang&#39;s method and how far to trust the result",
+        
+        description: "Estimate a camera&#39;s intrinsics and lens distortion from a checkerboard: plane homographies and the normalized DLT, Zhang&#39;s closed form, Levenberg-Marquardt refinement, reprojection error and parameter uncertainty, calibration targets and subpixel corners, stereo rectification, hand-eye AX = XB and camera-IMU calibration, with NumPy and OpenCV code on synthetic data.",
+        section: "Posts",
+        handler: () => {
+          
+            window.location.href = "/Takuyy/blog/2026/3d-vision-02-camera-calibration/";
+          
+        },
+      },{id: "post-image-formation-and-camera-models-projective-geometry-pinholes-lenses-and-conventions",
+        
+          title: "Image formation and camera models: projective geometry, pinholes, lenses and conventions",
+        
+        description: "The first post of 3D Vision Fundamentals: homogeneous coordinates, points at infinity and vanishing points, the pinhole camera P = K[R|t] and its RQ decomposition, Brown-Conrady and Kannala-Brandt distortion, rolling shutter, and how to convert between OpenCV, OpenGL, COLMAP and NeRF conventions.",
+        section: "Posts",
+        handler: () => {
+          
+            window.location.href = "/Takuyy/blog/2026/3d-vision-01-image-formation-and-camera-models/";
+          
+        },
       },{id: "post-graphics-research-frontiers-2026-what-siggraph-siggraph-asia-and-the-latest-preprints-are-doing",
         
           title: "Graphics research frontiers 2026: what SIGGRAPH, SIGGRAPH Asia and the latest preprints are...",

@@ -316,6 +316,39 @@ ninja.data = [{
             window.location.href = "/Takuyy/ja-jp/blog/2026/neural-rendering-01-cameras-and-multiview-geometry/";
           
         },
+      },{id: "post-特徴とマッチング-コーナー-sift-ransac-学習型マッチャー",
+        
+          title: "特徴とマッチング：コーナー、SIFT、RANSAC、学習型マッチャー",
+        
+        description: "2 枚の画像で同じ点を見つける方法：構造テンソルと Harris コーナー、スケール空間と SIFT、FAST/BRIEF/ORB、比率テスト、RANSAC とその後継（MSAC、LO-RANSAC、MAGSAC++）、SuperPoint、SuperGlue、LightGlue、LoFTR、RoMa、Lucas-Kanade と RAFT のオプティカルフロー、そしてマッチャーの評価法を、各ステップの NumPy コード付きで解説します。",
+        section: "記事",
+        handler: () => {
+          
+            window.location.href = "/Takuyy/ja-jp/blog/2026/3d-vision-03-features-and-matching/";
+          
+        },
+      },{id: "post-カメラキャリブレーション-ホモグラフィ-zhang-の手法-そして結果をどこまで信じてよいか",
+        
+          title: "カメラキャリブレーション：ホモグラフィ、Zhang の手法、そして結果をどこまで信じてよいか",
+        
+        description: "チェッカーボードからカメラの内部パラメータとレンズ歪みを推定します。平面ホモグラフィと正規化 DLT、Zhang の閉形式解、Levenberg-Marquardt による精密化、再投影誤差とパラメータの不確かさ、キャリブレーションターゲットとサブピクセルコーナー、ステレオ平行化、ハンドアイ AX = XB、カメラ-IMU キャリブレーションを、合成データ上の NumPy と OpenCV のコードとともに解説します。",
+        section: "記事",
+        handler: () => {
+          
+            window.location.href = "/Takuyy/ja-jp/blog/2026/3d-vision-02-camera-calibration/";
+          
+        },
+      },{id: "post-画像形成とカメラモデル-射影幾何-ピンホール-レンズ-座標系の約束事",
+        
+          title: "画像形成とカメラモデル：射影幾何、ピンホール、レンズ、座標系の約束事",
+        
+        description: "「3D ビジョンの基礎」シリーズ第 1 回：同次座標、無限遠点と消失点、ピンホールカメラ P = K[R|t] とその RQ 分解、Brown-Conrady と Kannala-Brandt の歪み、ローリングシャッター、そして OpenCV・OpenGL・COLMAP・NeRF の座標系の変換方法を扱います。",
+        section: "記事",
+        handler: () => {
+          
+            window.location.href = "/Takuyy/ja-jp/blog/2026/3d-vision-01-image-formation-and-camera-models/";
+          
+        },
       },{id: "post-グラフィックス研究のフロンティア-2026-siggraph-siggraph-asia-と最新プレプリントの動向",
         
           title: "グラフィックス研究のフロンティア 2026：SIGGRAPH、SIGGRAPH Asia と最新プレプリントの動向",
