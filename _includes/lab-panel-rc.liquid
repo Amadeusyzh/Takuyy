@@ -1,0 +1,44 @@
+<div class="lab-panel" role="tabpanel" id="lab-rc" aria-labelledby="lab-tab-rc" data-lang="{{ site.active_lang | slice: 0, 2 }}" hidden>
+  <div class="lab-stage">
+    <canvas role="img" style="touch-action: none; cursor: crosshair"></canvas>
+    <span class="lab-hint"></span>
+    <span class="lab-stats"></span>
+  </div>
+  <div class="lab-controls">
+    <div class="lab-seg" role="group">
+      <button type="button" class="lab-b" data-tool="2" data-t="light"></button>
+      <button type="button" class="lab-b" data-tool="1" data-t="wall"></button>
+      <button type="button" class="lab-b" data-tool="0" data-t="erase"></button>
+    </div>
+    <div class="pt-swatches rc-swatches"></div>
+    <label><span data-t="brush"></span> <input type="range" data-input="brush" min="0.004" max="0.05" step="0.001"></label>
+  </div>
+  <div class="lab-controls">
+    <div class="lab-seg" role="group">
+      <button type="button" class="lab-b" data-view="0" data-t="vGI"></button>
+      <button type="button" class="lab-b" data-view="1" data-t="vSDF"></button>
+      <button type="button" class="lab-b" data-view="2" data-t="vProbes"></button>
+      <button type="button" class="lab-b" data-view="3" data-t="vRaw"></button>
+    </div>
+    <label class="rc-level"><span data-t="level"></span> <input type="range" data-input="level" min="0" max="4" step="1"> <span class="rc-level-v"></span></label>
+  </div>
+  <div class="lab-controls">
+    <label><span data-t="cascades"></span> <input type="range" data-input="cascades" min="1" max="7" step="1"> <span class="rc-casc-v"></span></label>
+    <div class="lab-seg" role="group">
+      <button type="button" class="lab-b" data-toggle="fix" data-t="fix"></button>
+      <button type="button" class="lab-b" data-toggle="bounce" data-t="bounce"></button>
+      <button type="button" class="lab-b" data-toggle="orbit" data-t="orbit"></button>
+    </div>
+    <label><span data-t="exposure"></span> <input type="range" data-input="exposure" min="-2" max="2" step="0.05"></label>
+  </div>
+  <div class="lab-controls">
+    <div class="lab-seg" role="group">
+      <button type="button" class="lab-b" data-preset="rooms" data-t="pRooms"></button>
+      <button type="button" class="lab-b" data-preset="penumbra" data-t="pPenumbra"></button>
+      <button type="button" class="lab-b" data-preset="neon" data-t="pNeon"></button>
+      <button type="button" class="lab-b" data-preset="pinhole" data-t="pPinhole"></button>
+    </div>
+    <button type="button" class="lab-b lab-solo" data-action="clear" data-t="clear"></button>
+  </div>
+  <p class="lab-caption"><span class="rc-caption"></span> <a class="rc-link" href="{{ '/blog/2026/graphics-11-real-time-rendering-techniques/' | relative_url }}"></a></p>
+</div>
