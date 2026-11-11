@@ -12,3 +12,6 @@ node_modules/
 vendor
 .idea
 .venv
+
+# Python bytecode from the figure scripts
+__pycache__/
