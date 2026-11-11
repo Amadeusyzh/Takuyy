@@ -948,7 +948,7 @@
     }
 
     // ------------------------------------------------------ stats, adaptivity
-    var fps = 0, times = [], adapted = 0, frameNo = 0, warm = 0;
+    var fps = 0, times = [], adapted = 0, frameNo = 0, warm = 0, slow = 0;
     function fmtNum(x) {
       return x >= 1e6 ? (x / 1e6).toFixed(1) + "M" : x >= 1e3 ? Math.round(x / 1e3) + "k" : String(x);
     }
@@ -1008,6 +1008,18 @@
       if (computed && lastComputed && dt > 0) {
         fps = fps ? fps * 0.9 + (1 / dt) * 0.1 : 1 / dt;
         if (adapted < 5 && panel.dataset.rcQuality !== "fixed") {
+          // very slow GPU: three frames in a row over 100 ms step down at once, without waiting
+          // for the 30-frame average below
+          slow = warm >= 3 && dt > 0.1 ? slow + 1 : 0;
+          if (slow >= 3 && SW > 160) {
+            adapted++;
+            qf *= 0.7;
+            allocScene();
+            dirty = 60;
+            slow = 0;
+            warm = 0;
+            times = [];
+          }
           if (warm++ >= 12) times.push(dt); // skip the first frames (shader warm-up)
           if (times.length === 30) {
             var avg = times.reduce(function (x, y) { return x + y; }, 0) / times.length;
