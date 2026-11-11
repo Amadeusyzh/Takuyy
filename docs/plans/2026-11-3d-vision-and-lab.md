@@ -119,6 +119,9 @@ The contract for a demo worker (files for demo `<id>`):
     indicative here. A full-network check runs on GitHub after the merge.
   - Figures, broken images, widget drags and console errors are reliable here.
   - Look at the element screenshots yourself.
+- Check inline math (the kramdown escaping rules in BLOG_GUIDE section 5):
+  `python3 /tmp/claude-0/-home-user-takuyy/0c443e9e-c3ce-5795-8d74-9c6cb688c2ab/scratchpad/scan/math_scan.py <worktree>/_site 3d-vision`
+  checks the built HTML and the post sources and must report `hits: 0`.
 - Research: WebSearch works. Most sites are blocked for WebFetch here (arXiv, ACM, CVF). Verify papers
   through search results that show the arXiv abstract, DOI or official page. Never invent ids, links,
   numbers or facts; leave out what you cannot verify. Mark recent work with its status (published,
