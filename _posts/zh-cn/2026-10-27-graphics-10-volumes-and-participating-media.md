@@ -666,7 +666,7 @@ print(alpha.round(4), T.round(4), w.round(4), w.sum().round(4), (w * c).sum().ro
 
 4. 把 ratio tracking 代码中的全局上界换成**分段**上界：把 $[0, 10]$ 分成 10 个单元，每个单元使用 $\sigma_t$ 在其中的最大值，并在每个单元边界处重新开始指数采样（指数分布的无记忆性保证这样做是正确的）。在相同方差下，与全局上界比较查询次数。
 
-5. 从泊松求和推导均匀介质下 ratio tracking 的方差 $e^{-2\sigma d}(e^{\sigma^2 d/\bar\sigma} - 1)$，并用 $\sigma = 1$、$d = 1$、$\bar\sigma \in \{1, 2, 4, 8\}$ 的模拟加以验证。
+5. 从泊松求和推导均匀介质下 ratio tracking 的方差 $e^{-2\sigma d}(e^{\sigma^2 d/\bar\sigma} - 1)$，并用 $\sigma = 1$、$d = 1$、$\bar\sigma \in \\{1, 2, 4, 8\\}$ 的模拟加以验证。
 
    <details markdown="1"><summary>提示</summary>
    $E[\langle T\rangle^2] = \sum_n e^{-\bar\sigma d}\frac{(\bar\sigma d)^n}{n!}(1-\sigma/\bar\sigma)^{2n}$ $= \exp\big(-\bar\sigma d + \bar\sigma d (1-\sigma/\bar\sigma)^2\big)$。展开平方，再减去 $T^2 = e^{-2\sigma d}$。

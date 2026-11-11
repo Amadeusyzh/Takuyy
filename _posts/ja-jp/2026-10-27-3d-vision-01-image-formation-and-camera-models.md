@@ -133,10 +133,10 @@ $H$ を制限すると、入れ子になった群の族が得られます。小�
 
 | 群 | 行列の形 | 自由度 | 保たれるもの |
 | --- | --- | --- | --- |
-| ユークリッド $SE(2)$ | $\begin{pmatrix} R & \mathbf t \\ \mathbf 0^\top & 1 \end{pmatrix}$ | 3 | 長さ、角度、面積 |
-| 相似 $\mathrm{Sim}(2)$ | $\begin{pmatrix} sR & \mathbf t \\ \mathbf 0^\top & 1 \end{pmatrix}$ | 4 | 角度、長さの比 |
-| アフィン $\mathrm{Aff}(2)$ | $\begin{pmatrix} A & \mathbf t \\ \mathbf 0^\top & 1 \end{pmatrix}$ | 6 | 平行性、面積比、無限遠直線 |
-| 射影 $PGL(3)$ | $\begin{pmatrix} A & \mathbf t \\ \mathbf v^\top & 1 \end{pmatrix}$ | 8 | 共線性、接続関係、複比 |
+| ユークリッド $SE(2)$ | $\begin{pmatrix} R & \mathbf t \\\\ \mathbf 0^\top & 1 \end{pmatrix}$ | 3 | 長さ、角度、面積 |
+| 相似 $\mathrm{Sim}(2)$ | $\begin{pmatrix} sR & \mathbf t \\\\ \mathbf 0^\top & 1 \end{pmatrix}$ | 4 | 角度、長さの比 |
+| アフィン $\mathrm{Aff}(2)$ | $\begin{pmatrix} A & \mathbf t \\\\ \mathbf 0^\top & 1 \end{pmatrix}$ | 6 | 平行性、面積比、無限遠直線 |
+| 射影 $PGL(3)$ | $\begin{pmatrix} A & \mathbf t \\\\ \mathbf v^\top & 1 \end{pmatrix}$ | 8 | 共線性、接続関係、複比 |
 
 射影とアフィンを分けるのは最下行の $\mathbf v^\top$ です。アフィン変換は無限遠点 $(d_1, d_2, 0)$ を別の無限遠点へ写すので、平行線は平行のままです。$\mathbf v \neq \mathbf 0$ の射影変換は第 3 座標を 0 でない値にします。方向が有限の点になり、平行線はそこで交わるようになります。
 
@@ -262,7 +262,7 @@ $$
 - $(c_x, c_y)$：**主点**（principal point）。光軸がセンサーと交わる位置で、画像中心に近いものの、ちょうど中心にあることはまれです。
 - $s$：**スキュー**（skew）。センサーの軸が直交していない場合だけ 0 でない値をとります。現代のカメラではほぼすべて $0$ ですが、トリミングされた画像や、せん断を含む補正を受けた画像では注意してください。
 
-すると $\tilde{\mathbf u} \sim K \mathbf x$ であり、逆向きの**逆投影**（back-projection）は $K^{-1}\tilde{\mathbf u}$、つまり画素の光線の方向です。水平画角は画像の幅 $W$ から求まります。主点が中央にあれば $\theta_x = 2\arctan\!\big(W / (2 f_x)\big)$ です。
+すると $\tilde{\mathbf u} \sim K \mathbf x$ であり、逆向きの**逆投影**（back-projection）は $K^{-1}\tilde{\mathbf u}$、つまり画素の光線の方向です。水平画角は画像の幅 $W$ から求まります。主点が中央にあれば $\theta_x = 2\arctan\\!\big(W / (2 f_x)\big)$ です。
 
 **計算例。** 焦点距離 $F = 4.0$ mm のレンズと画素ピッチ $1.6\ \mu$m のセンサーなら $f = 4.0 / 0.0016 = 2500$ 画素です。$(c_x, c_y) = (2000, 1500)$ の $4000 \times 3000$ 画像では、水平画角は $2\arctan(2000/2500) = 77.3°$ です。点 $\mathbf X_c = (0.5, -0.2, 4.0)$ m は $(x, y) = (0.125, -0.05)$ となり、$u = 2500 \cdot 0.125 + 2000 = 2312.5$、$v = 2500 \cdot (-0.05) + 1500 = 1375$ に写ります。
 
@@ -553,7 +553,7 @@ $T_{c2w}$ の各列は世界座標で表したカメラの軸とカメラ中心�
 
 ### 4.4 コード：COLMAP から NeRF と OpenGL への変換
 
-以下のコードは COLMAP の画像 1 枚（クォータニオン、並進、`PINHOLE` の内部パラメータ）を取り、OpenCV と OpenGL のカメラから世界への行列を作り、$K$ を再現する OpenGL の投影行列を作って、両方の経路が世界の点を同じ画素に写すことを確認します。この OpenGL の行列は[ラスタライゼーション]({{ '/blog/2026/graphics-02-rasterization/' | relative_url }})の視錐台行列を $f_x, f_y, c_x, c_y$ で表したものです。$(x, y, z)_{\text{CV}} = (x, -y, -z)_{\text{GL}}$ を $u = f_x x/z + s\,y/z + c_x$ に代入し、$u \in [0, W]$ を $x_{\text{ndc}} \in [-1, 1]$ に、$v \in [0, H]$ を $y_{\text{ndc}} \in [1, -1]$ に写せば導けます。
+以下のコードは COLMAP の画像 1 枚（クォータニオン、並進、`PINHOLE` の内部パラメータ）を取り、OpenCV と OpenGL のカメラから世界への行列を作り、$K$ を再現する OpenGL の投影行列を作って、両方の経路が世界の点を同じ画素に写すことを確認します。この OpenGL の行列は[ラスタライゼーション]({{ '/blog/2026/graphics-02-rasterization/' | relative_url }})の視錐台行列を $f_x, f_y, c_x, c_y$ で表したものです。$(x, y, z)\_{\text{CV}} = (x, -y, -z)\_{\text{GL}}$ を $u = f_x x/z + s\,y/z + c_x$ に代入し、$u \in [0, W]$ を $x_{\text{ndc}} \in [-1, 1]$ に、$v \in [0, H]$ を $y_{\text{ndc}} \in [1, -1]$ に写せば導けます。
 
 ```python
 import numpy as np

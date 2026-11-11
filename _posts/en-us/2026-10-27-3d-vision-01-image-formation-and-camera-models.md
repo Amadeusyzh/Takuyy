@@ -133,10 +133,10 @@ Restricting $H$ gives a nested family of groups. Each smaller group preserves mo
 
 | Group | Matrix form | DoF | Preserves |
 | --- | --- | --- | --- |
-| Euclidean $SE(2)$ | $\begin{pmatrix} R & \mathbf t \\ \mathbf 0^\top & 1 \end{pmatrix}$ | 3 | lengths, angles, areas |
-| Similarity $\mathrm{Sim}(2)$ | $\begin{pmatrix} sR & \mathbf t \\ \mathbf 0^\top & 1 \end{pmatrix}$ | 4 | angles, ratios of lengths |
-| Affine $\mathrm{Aff}(2)$ | $\begin{pmatrix} A & \mathbf t \\ \mathbf 0^\top & 1 \end{pmatrix}$ | 6 | parallelism, ratios of areas, the line at infinity |
-| Projective $PGL(3)$ | $\begin{pmatrix} A & \mathbf t \\ \mathbf v^\top & 1 \end{pmatrix}$ | 8 | collinearity, incidence, cross-ratio |
+| Euclidean $SE(2)$ | $\begin{pmatrix} R & \mathbf t \\\\ \mathbf 0^\top & 1 \end{pmatrix}$ | 3 | lengths, angles, areas |
+| Similarity $\mathrm{Sim}(2)$ | $\begin{pmatrix} sR & \mathbf t \\\\ \mathbf 0^\top & 1 \end{pmatrix}$ | 4 | angles, ratios of lengths |
+| Affine $\mathrm{Aff}(2)$ | $\begin{pmatrix} A & \mathbf t \\\\ \mathbf 0^\top & 1 \end{pmatrix}$ | 6 | parallelism, ratios of areas, the line at infinity |
+| Projective $PGL(3)$ | $\begin{pmatrix} A & \mathbf t \\\\ \mathbf v^\top & 1 \end{pmatrix}$ | 8 | collinearity, incidence, cross-ratio |
 
 The bottom row $\mathbf v^\top$ is what separates projective from affine. An affine map sends a point at infinity $(d_1, d_2, 0)$ to another point at infinity, so parallel lines stay parallel. A projective map with $\mathbf v \neq \mathbf 0$ gives it a nonzero third coordinate: the direction becomes a finite point, and parallel lines now meet there.
 
@@ -262,7 +262,7 @@ with these five **intrinsic parameters**:
 - $(c_x, c_y)$: the **principal point**, where the optical axis meets the sensor; close to the image centre but rarely exactly at it.
 - $s$: the **skew**, nonzero only if the sensor axes are not perpendicular. It is $0$ for practically all modern cameras, but keep it in mind for images that were cropped or rectified with a shear.
 
-Then $\tilde{\mathbf u} \sim K \mathbf x$, and the opposite direction, **back-projection**, is $K^{-1}\tilde{\mathbf u}$: the ray direction of a pixel. The horizontal field of view follows from the image width $W$: $\theta_x = 2\arctan\!\big(W / (2 f_x)\big)$ for a centred principal point.
+Then $\tilde{\mathbf u} \sim K \mathbf x$, and the opposite direction, **back-projection**, is $K^{-1}\tilde{\mathbf u}$: the ray direction of a pixel. The horizontal field of view follows from the image width $W$: $\theta_x = 2\arctan\\!\big(W / (2 f_x)\big)$ for a centred principal point.
 
 **Worked example.** A lens with $F = 4.0$ mm on a sensor with $1.6\ \mu$m pixels gives $f = 4.0 / 0.0016 = 2500$ px. For a $4000 \times 3000$ image with $(c_x, c_y) = (2000, 1500)$, the horizontal field of view is $2\arctan(2000/2500) = 77.3°$. A point at $\mathbf X_c = (0.5, -0.2, 4.0)$ m has $(x, y) = (0.125, -0.05)$ and lands at $u = 2500 \cdot 0.125 + 2000 = 2312.5$, $v = 2500 \cdot (-0.05) + 1500 = 1375$.
 
@@ -553,7 +553,7 @@ Even the pixel grid has conventions. In OpenCV, integer coordinates are pixel **
 
 ### 4.4 Code: converting COLMAP to NeRF and OpenGL
 
-The snippet below takes one COLMAP image (quaternion, translation, `PINHOLE` intrinsics), builds the OpenCV and OpenGL camera-to-world matrices, builds the OpenGL projection matrix that reproduces $K$, and checks that both routes put a world point at the same pixel. The OpenGL matrix is the frustum matrix of [rasterization]({{ '/blog/2026/graphics-02-rasterization/' | relative_url }}) with its entries expressed through $f_x, f_y, c_x, c_y$; it follows from substituting $(x, y, z)_{\text{CV}} = (x, -y, -z)_{\text{GL}}$ into $u = f_x x/z + s\,y/z + c_x$ and mapping $u \in [0, W]$ to $x_{\text{ndc}} \in [-1, 1]$ and $v \in [0, H]$ to $y_{\text{ndc}} \in [1, -1]$.
+The snippet below takes one COLMAP image (quaternion, translation, `PINHOLE` intrinsics), builds the OpenCV and OpenGL camera-to-world matrices, builds the OpenGL projection matrix that reproduces $K$, and checks that both routes put a world point at the same pixel. The OpenGL matrix is the frustum matrix of [rasterization]({{ '/blog/2026/graphics-02-rasterization/' | relative_url }}) with its entries expressed through $f_x, f_y, c_x, c_y$; it follows from substituting $(x, y, z)\_{\text{CV}} = (x, -y, -z)\_{\text{GL}}$ into $u = f_x x/z + s\,y/z + c_x$ and mapping $u \in [0, W]$ to $x_{\text{ndc}} \in [-1, 1]$ and $v \in [0, H]$ to $y_{\text{ndc}} \in [1, -1]$.
 
 ```python
 import numpy as np

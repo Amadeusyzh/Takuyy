@@ -666,7 +666,7 @@ Everything in this chapter carries over. Transmittance-based sampling becomes Ne
 
 4. Replace the global majorant in the ratio-tracking code with a **piecewise** majorant: split $[0, 10]$ into 10 cells, use the maximum of $\sigma_t$ in each, and restart the exponential sampling at each cell boundary (the memoryless property makes this valid). Compare the number of lookups with the global majorant at equal variance.
 
-5. Derive the homogeneous ratio-tracking variance $e^{-2\sigma d}(e^{\sigma^2 d/\bar\sigma} - 1)$ from the Poisson sum, and check it against a simulation with $\sigma = 1$, $d = 1$, $\bar\sigma \in \{1, 2, 4, 8\}$.
+5. Derive the homogeneous ratio-tracking variance $e^{-2\sigma d}(e^{\sigma^2 d/\bar\sigma} - 1)$ from the Poisson sum, and check it against a simulation with $\sigma = 1$, $d = 1$, $\bar\sigma \in \\{1, 2, 4, 8\\}$.
 
    <details markdown="1"><summary>Hint</summary>
    $E[\langle T\rangle^2] = \sum_n e^{-\bar\sigma d}\frac{(\bar\sigma d)^n}{n!}(1-\sigma/\bar\sigma)^{2n}$ $= \exp\big(-\bar\sigma d + \bar\sigma d (1-\sigma/\bar\sigma)^2\big)$. Expand the square and subtract $T^2 = e^{-2\sigma d}$.

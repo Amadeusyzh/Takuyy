@@ -456,7 +456,7 @@ flowchart LR
 
 {% include blog_figure.liquid path="assets/img/blog/graphics/01-coordinate-spaces.svg" localized="true" caption="各空間での同じ単位立方体（オレンジの点は (+,+,+) の角）。オブジェクト空間：自身のピボットが中心。ワールド空間：M = T(1,0,0) Ry(45°) で配置し、カメラは (2,2,5) から原点を見ています（灰色の視錐台、軸 r、u、−f）。ビュー空間：カメラが原点にあり −z を向きます。NDC：P と w による除算の後、視錐台は立方体 [−1,1]³ になり、近い部分が拡大され、z はカメラから遠ざかる向きになります（OpenGL の NDC は左手系）。スクリーン空間：ビューポート変換が NDC を 240×240 ピクセルの画像へ写し、0 行目が上端です。" %}
 
-頂点シェーダは $\mathbf{p}\_{\text{clip}} = P\,V\,M\,\mathbf{p}\_{\text{obj}}$ を計算します。そのため $P V M$ は **MVP 行列**と呼ばれます。第 02 回で $P$ とビューポート変換を構築します。**ビュー行列** $V$ はカメラ自身のワールド変換の逆です。カメラが $\mathbf{e}$ にあり、正規直交な右・上・後ろの軸が $\mathbf{r}, \mathbf{u}, -\mathbf{f}$ であれば、そのワールド行列は $C = \begin{pmatrix} \mathbf{r} & \mathbf{u} & -\mathbf{f} & \mathbf{e} \\ 0 & 0 & 0 & 1 \end{pmatrix}$ です。回転部分が直交なので、その逆は
+頂点シェーダは $\mathbf{p}\_{\text{clip}} = P\,V\,M\,\mathbf{p}\_{\text{obj}}$ を計算します。そのため $P V M$ は **MVP 行列**と呼ばれます。第 02 回で $P$ とビューポート変換を構築します。**ビュー行列** $V$ はカメラ自身のワールド変換の逆です。カメラが $\mathbf{e}$ にあり、正規直交な右・上・後ろの軸が $\mathbf{r}, \mathbf{u}, -\mathbf{f}$ であれば、そのワールド行列は $C = \begin{pmatrix} \mathbf{r} & \mathbf{u} & -\mathbf{f} & \mathbf{e} \\\\ 0 & 0 & 0 & 1 \end{pmatrix}$ です。回転部分が直交なので、その逆は
 
 $$
 V = C^{-1} = \begin{pmatrix} \mathbf{r}^\top & -\mathbf{r}\cdot\mathbf{e} \\ \mathbf{u}^\top & -\mathbf{u}\cdot\mathbf{e} \\ -\mathbf{f}^\top & \mathbf{f}\cdot\mathbf{e} \\ \mathbf{0}^\top & 1 \end{pmatrix}.

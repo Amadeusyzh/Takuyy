@@ -35,7 +35,7 @@ related_posts: false
 | インデックス付きメッシュ（indexed mesh） | 頂点配列 $V \in \mathbb{R}^{n\times 3}$ + 面配列 $F \in \mathbb{N}^{m\times 3}$ | 描画、保存 | 隣接クエリ（追加の構造が必要） |
 | ハーフエッジメッシュ（half-edge mesh） | インデックス付きメッシュ + 向き付き辺のレコード | 局所的な走査と編集 | 任意の非多様体入力 |
 | 点群（point cloud） | サンプル点 $\mathbf{p}_i$、場合により法線 $\mathbf{n}_i$ | 計測（LiDAR、深度カメラ、SfM） | トポロジー、穴のない描画 |
-| 陰関数 / SDF | 関数 $f:\mathbb{R}^3\to\mathbb{R}$、表面 $=\{f=0\}$ | 内外判定、ブーリアン演算、ブレンド | 描画に根の探索が必要、鋭い特徴 |
+| 陰関数 / SDF | 関数 $f:\mathbb{R}^3\to\mathbb{R}$、表面 $=\\{f=0\\}$ | 内外判定、ブーリアン演算、ブレンド | 描画に根の探索が必要、鋭い特徴 |
 | ボクセル（voxels） | 格子上の $f$ または占有値 | 単純、GPU 向き | メモリが $N^3$ で増える |
 | パラメトリック曲面（parametric） | パッチ $\mathbf{x}(u,v)$（Bézier、B スプライン、NURBS） | 厳密で滑らかな CAD 曲面 | パッチの接合、任意のトポロジー |
 
@@ -518,7 +518,7 @@ def tutte(V, F, loop, L):
 
 ## 8. 陰関数曲面
 
-陰関数曲面は、関数のゼロ集合 $S = \{\mathbf{x} : f(\mathbf{x}) = 0\}$ で、内部では $f < 0$ です。**符号付き距離関数（signed distance function, SDF）** はその特別な場合で、$\lvert f(\mathbf{x})\rvert = $ $S$ までの距離、したがってほとんど至るところで $\lVert\nabla f\rVert = 1$ です。SDF を使うと、いくつかの操作が簡単になります。
+陰関数曲面は、関数のゼロ集合 $S = \\{\mathbf{x} : f(\mathbf{x}) = 0\\}$ で、内部では $f < 0$ です。**符号付き距離関数（signed distance function, SDF）** はその特別な場合で、$\lvert f(\mathbf{x})\rvert = $ $S$ までの距離、したがってほとんど至るところで $\lVert\nabla f\rVert = 1$ です。SDF を使うと、いくつかの操作が簡単になります。
 
 | 操作 | 式 |
 | --- | --- |

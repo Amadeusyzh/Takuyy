@@ -94,7 +94,7 @@ A few practical details:
 - The weights satisfy $\sum_i w_i = 1 - T_{N+1} \le 1$. The remainder is the probability that the ray escapes; adding $(1-\sum_i w_i)\,\mathbf c_{\text{bg}}$ composites a background colour (the Blender synthetic scenes use white).
 - Multiply $\delta_i$ by $\lVert \mathbf d \rVert$ if ray directions are not normalized, so densities are in world units.
 - The last interval is set to a huge value ($10^{10}$) so that the final sample absorbs whatever is left.
-- Samples are **stratified**: $t_i \sim \mathcal U\!\left[t_n + \tfrac{i-1}{N}(t_f - t_n),\, t_n + \tfrac{i}{N}(t_f - t_n)\right]$. Jittering positions each iteration makes the MLP see a continuous set of locations instead of a fixed grid, which avoids aliasing to the sample positions.
+- Samples are **stratified**: $t_i \sim \mathcal U\\!\left[t_n + \tfrac{i-1}{N}(t_f - t_n),\, t_n + \tfrac{i}{N}(t_f - t_n)\right]$. Jittering positions each iteration makes the MLP see a continuous set of locations instead of a fixed grid, which avoids aliasing to the sample positions.
 
 Try it yourself: the widget below runs exactly this estimator with midpoint samples. Drag a bump in front of the blue surface or lower the surface's density and watch $T_i$, $w_i$ and the final colour respond; with very few samples the thin surface is missed or smeared.
 

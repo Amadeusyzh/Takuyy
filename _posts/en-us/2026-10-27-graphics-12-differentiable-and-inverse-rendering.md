@@ -279,7 +279,7 @@ $$
 
 with density $\sigma$, color $\mathbf{c}$ and transmittance $T$. If $\sigma$ is a smooth function of the network weights or grid values, $C$ is too: an occluder does not appear suddenly; its optical depth grows continuously. Visibility has become an exponential of an integral, which differentiates nicely. The left panel below compares the pixel value as an opaque box and as a Gaussian density blob slide across a ray.
 
-In [3D Gaussian Splatting]({{ '/blog/2026/neural-rendering-04-3d-gaussian-splatting/' | relative_url }}), each Gaussian contributes $\alpha\_i = o\_i \exp\!\big(-\tfrac12 \mathbf{d}^\top \Sigma\_i'^{-1}\mathbf{d}\big)$ to a pixel at offset $\mathbf{d}$ from its projected center, with opacity $o_i$ and 2D covariance $\Sigma_i'$, and the pixel is the front-to-back composite $C = \sum\_i \mathbf{c}\_i\,\alpha\_i \prod\_{j<i}(1-\alpha\_j)$. Every $\alpha_i$ is a smooth function of the mean, covariance and opacity, so gradients reach all of them without any boundary term.
+In [3D Gaussian Splatting]({{ '/blog/2026/neural-rendering-04-3d-gaussian-splatting/' | relative_url }}), each Gaussian contributes $\alpha\_i = o\_i \exp\\!\big(-\tfrac12 \mathbf{d}^\top \Sigma\_i'^{-1}\mathbf{d}\big)$ to a pixel at offset $\mathbf{d}$ from its projected center, with opacity $o_i$ and 2D covariance $\Sigma_i'$, and the pixel is the front-to-back composite $C = \sum\_i \mathbf{c}\_i\,\alpha\_i \prod\_{j<i}(1-\alpha\_j)$. Every $\alpha_i$ is a smooth function of the mean, covariance and opacity, so gradients reach all of them without any boundary term.
 
 **What remains discontinuous.**
 
@@ -502,6 +502,6 @@ As of November 2026, three directions are especially active. Statuses below were
 
 4. **Ambiguity in action.** In the sphere experiment (7.3), make the light irradiance $E$ a third unknown. Which quantities converge and which drift? Add a second light direction or a prior on $E$ and repeat.
 
-5. **Large Steps.** In the 2D curve toy, sweep $\lambda \in \{0, 1, 5, 20\}$ and plot the final error after 300 steps. Why does a very large $\lambda$ slow down fitting of the five lobes? (Use the eigenvalues $\mu_k = 2-2\cos(2\pi k/N)$ of the cycle-graph Laplacian.)
+5. **Large Steps.** In the 2D curve toy, sweep $\lambda \in \\{0, 1, 5, 20\\}$ and plot the final error after 300 steps. Why does a very large $\lambda$ slow down fitting of the five lobes? (Use the eigenvalues $\mu_k = 2-2\cos(2\pi k/N)$ of the cycle-graph Laplacian.)
 
 Next in the series: [research frontiers 2026]({{ '/blog/2026/graphics-13-research-frontiers-2026/' | relative_url }}), a tour of what SIGGRAPH, SIGGRAPH Asia and the other graphics venues published this year.

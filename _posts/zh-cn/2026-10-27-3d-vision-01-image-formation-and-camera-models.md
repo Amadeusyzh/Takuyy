@@ -133,10 +133,10 @@ $$
 
 | 群 | 矩阵形式 | 自由度 | 保持的量 |
 | --- | --- | --- | --- |
-| 欧氏 $SE(2)$ | $\begin{pmatrix} R & \mathbf t \\ \mathbf 0^\top & 1 \end{pmatrix}$ | 3 | 长度、角度、面积 |
-| 相似 $\mathrm{Sim}(2)$ | $\begin{pmatrix} sR & \mathbf t \\ \mathbf 0^\top & 1 \end{pmatrix}$ | 4 | 角度、长度之比 |
-| 仿射 $\mathrm{Aff}(2)$ | $\begin{pmatrix} A & \mathbf t \\ \mathbf 0^\top & 1 \end{pmatrix}$ | 6 | 平行性、面积之比、无穷远直线 |
-| 射影 $PGL(3)$ | $\begin{pmatrix} A & \mathbf t \\ \mathbf v^\top & 1 \end{pmatrix}$ | 8 | 共线性、关联关系、交比 |
+| 欧氏 $SE(2)$ | $\begin{pmatrix} R & \mathbf t \\\\ \mathbf 0^\top & 1 \end{pmatrix}$ | 3 | 长度、角度、面积 |
+| 相似 $\mathrm{Sim}(2)$ | $\begin{pmatrix} sR & \mathbf t \\\\ \mathbf 0^\top & 1 \end{pmatrix}$ | 4 | 角度、长度之比 |
+| 仿射 $\mathrm{Aff}(2)$ | $\begin{pmatrix} A & \mathbf t \\\\ \mathbf 0^\top & 1 \end{pmatrix}$ | 6 | 平行性、面积之比、无穷远直线 |
+| 射影 $PGL(3)$ | $\begin{pmatrix} A & \mathbf t \\\\ \mathbf v^\top & 1 \end{pmatrix}$ | 8 | 共线性、关联关系、交比 |
 
 区分射影与仿射的正是最后一行 $\mathbf v^\top$。仿射变换把无穷远点 $(d_1, d_2, 0)$ 映射到另一个无穷远点，所以平行线仍然平行。$\mathbf v \neq \mathbf 0$ 的射影变换会让第三个坐标变成非零：方向变成了一个有限点，平行线就在那里相交。
 
@@ -262,7 +262,7 @@ $$
 - $(c_x, c_y)$：**主点**（principal point），光轴与传感器的交点；接近图像中心，但很少恰好在中心。
 - $s$：**倾斜**（skew），只有传感器两轴不垂直时才非零。几乎所有现代相机的 $s$ 都是 $0$，但对于被裁剪或带剪切校正过的图像要留个心眼。
 
-于是 $\tilde{\mathbf u} \sim K \mathbf x$；反方向的**反投影**（back-projection）是 $K^{-1}\tilde{\mathbf u}$：一个像素的射线方向。水平视场角可以从图像宽度 $W$ 求出：主点居中时 $\theta_x = 2\arctan\!\big(W / (2 f_x)\big)$。
+于是 $\tilde{\mathbf u} \sim K \mathbf x$；反方向的**反投影**（back-projection）是 $K^{-1}\tilde{\mathbf u}$：一个像素的射线方向。水平视场角可以从图像宽度 $W$ 求出：主点居中时 $\theta_x = 2\arctan\\!\big(W / (2 f_x)\big)$。
 
 **算例。** 焦距 $F = 4.0$ mm 的镜头配上像元为 $1.6\ \mu$m 的传感器，得到 $f = 4.0 / 0.0016 = 2500$ 像素。对于 $4000 \times 3000$、$(c_x, c_y) = (2000, 1500)$ 的图像，水平视场角为 $2\arctan(2000/2500) = 77.3°$。点 $\mathbf X_c = (0.5, -0.2, 4.0)$ m 的归一化坐标为 $(x, y) = (0.125, -0.05)$，落在 $u = 2500 \cdot 0.125 + 2000 = 2312.5$，$v = 2500 \cdot (-0.05) + 1500 = 1375$。
 
@@ -553,7 +553,7 @@ $T_{c2w}$ 的各列是相机坐标轴和相机中心在世界坐标中的表示�
 
 ### 4.4 代码：把 COLMAP 转换为 NeRF 和 OpenGL
 
-下面的代码取 COLMAP 中的一张图像（四元数、平移、`PINHOLE` 内参），构建 OpenCV 和 OpenGL 的相机到世界矩阵，构建能复现 $K$ 的 OpenGL 投影矩阵，并检查两条路径把同一个世界点投到同一个像素上。这个 OpenGL 矩阵就是[光栅化]({{ '/blog/2026/graphics-02-rasterization/' | relative_url }})一文中的视锥矩阵，只是其元素用 $f_x, f_y, c_x, c_y$ 表示；把 $(x, y, z)_{\text{CV}} = (x, -y, -z)_{\text{GL}}$ 代入 $u = f_x x/z + s\,y/z + c_x$，再把 $u \in [0, W]$ 映射到 $x_{\text{ndc}} \in [-1, 1]$、$v \in [0, H]$ 映射到 $y_{\text{ndc}} \in [1, -1]$，就能推出它。
+下面的代码取 COLMAP 中的一张图像（四元数、平移、`PINHOLE` 内参），构建 OpenCV 和 OpenGL 的相机到世界矩阵，构建能复现 $K$ 的 OpenGL 投影矩阵，并检查两条路径把同一个世界点投到同一个像素上。这个 OpenGL 矩阵就是[光栅化]({{ '/blog/2026/graphics-02-rasterization/' | relative_url }})一文中的视锥矩阵，只是其元素用 $f_x, f_y, c_x, c_y$ 表示；把 $(x, y, z)\_{\text{CV}} = (x, -y, -z)\_{\text{GL}}$ 代入 $u = f_x x/z + s\,y/z + c_x$，再把 $u \in [0, W]$ 映射到 $x_{\text{ndc}} \in [-1, 1]$、$v \in [0, H]$ 映射到 $y_{\text{ndc}} \in [1, -1]$，就能推出它。
 
 ```python
 import numpy as np

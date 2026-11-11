@@ -249,7 +249,7 @@ To use it in the NeRF of post 2, normalize sample positions into $[0,1]^3$ (with
 Grid methods are fast but **alias**: a hash grid is queried at points, so the cone-based prefiltering of Mip-NeRF (integrated positional encoding) does not apply directly. **Zip-NeRF** (Barron et al., ICCV 2023) combines Mip-NeRF 360 with an Instant-NGP-style grid:
 
 - **Multisampling.** Each conical frustum is represented by a small set of points arranged on a spiral inside it, and the hash features of those points are averaged, approximating the integral of the feature over the frustum.
-- **Scale-aware downweighting.** Features from grid levels whose cell size is smaller than the frustum's footprint are attenuated: a feature at a level with resolution $n$ is scaled by $\operatorname{erf}\!\big(1/\sqrt{8\sigma^2 n^2}\big)$, where $\sigma$ is the standard deviation of the frustum's Gaussian. This is a soft version of IPE's $e^{-\sigma^2/2}$ factor.
+- **Scale-aware downweighting.** Features from grid levels whose cell size is smaller than the frustum's footprint are attenuated: a feature at a level with resolution $n$ is scaled by $\operatorname{erf}\\!\big(1/\sqrt{8\sigma^2 n^2}\big)$, where $\sigma$ is the standard deviation of the frustum's Gaussian. This is a soft version of IPE's $e^{-\sigma^2/2}$ factor.
 - **Anti-aliased interlevel loss** between the proposal networks and the NeRF, which removes the z-aliasing ("banding") of Mip-NeRF 360's proposal supervision.
 
 The figure illustrates the first two ideas.

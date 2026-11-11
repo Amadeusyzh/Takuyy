@@ -472,7 +472,7 @@ The output shows both effects at once. Under the 25° rotation and 0.8 scale cha
 
 ### 5.1 Nearest neighbours and the ratio test
 
-Given descriptors $\{\mathbf d_i\}$ in image 1 and $\{\mathbf d'_j\}$ in image 2, the obvious match for $i$ is its **nearest neighbour** $j^\ast = \arg\min_j \lVert \mathbf d_i - \mathbf d'_j \rVert$. The trouble is that every keypoint has a nearest neighbour, including the many that are not visible in image 2 at all, or that lie on repeated texture. An absolute distance threshold works poorly because some descriptors are much more distinctive than others.
+Given descriptors $\\{\mathbf d_i\\}$ in image 1 and $\\{\mathbf d'_j\\}$ in image 2, the obvious match for $i$ is its **nearest neighbour** $j^\ast = \arg\min_j \lVert \mathbf d_i - \mathbf d'_j \rVert$. The trouble is that every keypoint has a nearest neighbour, including the many that are not visible in image 2 at all, or that lie on repeated texture. An absolute distance threshold works poorly because some descriptors are much more distinctive than others.
 
 Lowe's **ratio test** compares the best distance $d_1$ with the second-best $d_2$ and keeps the match only if
 
@@ -528,7 +528,7 @@ Even after the ratio test, some matches are wrong, and for the geometry of the n
 
 1. Draw a **minimal sample** of $s$ correspondences, the fewest that determine the model: $s = 2$ for a line, 4 for a homography, 5 for an essential matrix, 7 or 8 for a fundamental matrix, 3 for a camera pose from 2D-3D matches (P3P).
 2. Fit the **hypothesis** to the sample.
-3. Compute the residual $e_i$ of every correspondence and the **consensus set** $\mathcal I = \{ i : e_i < t \}$.
+3. Compute the residual $e_i$ of every correspondence and the **consensus set** $\mathcal I = \\{ i : e_i < t \\}$.
 4. Keep the hypothesis with the largest consensus set; repeat $N$ times.
 5. Re-estimate the model from all inliers of the best hypothesis with least squares (and, for geometric models, a non-linear refinement).
 

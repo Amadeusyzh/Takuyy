@@ -349,7 +349,7 @@ $$
 
 を最小化することと同じです。ここで $\mathbf p$ はすべての未知数を、$\mathbf r(\mathbf p) \in \mathbb R^{2nN}$ はすべての残差を並べたものです。これは「ゴールドスタンダード」（gold standard）のコストです。DLT の代数誤差と違って、ノイズが実際に生じるピクセル空間で誤差を測ります。
 
-**回転のパラメータ化。** 回転行列は 9 要素ですが自由度は 3 です。各回転を**軸角ベクトル**（axis-angle）$\boldsymbol\omega \in \mathbb R^3$（向きが回転軸、長さが回転角）として保持し、Rodrigues の公式 $R = I + \sin\theta\,[\mathbf k]_\times + (1-\cos\theta)[\mathbf k]_\times^2$ で変換します。OpenCV も同じです（`rvec`）。したがって $\mathbf p$ の要素数は $9 + 6N$ です。
+**回転のパラメータ化。** 回転行列は 9 要素ですが自由度は 3 です。各回転を**軸角ベクトル**（axis-angle）$\boldsymbol\omega \in \mathbb R^3$（向きが回転軸、長さが回転角）として保持し、Rodrigues の公式 $R = I + \sin\theta\,[\mathbf k]\_\times + (1-\cos\theta)[\mathbf k]\_\times^2$ で変換します。OpenCV も同じです（`rvec`）。したがって $\mathbf p$ の要素数は $9 + 6N$ です。
 
 ### 4.2 Gauss-Newton 法と Levenberg-Marquardt 法
 

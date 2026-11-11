@@ -326,7 +326,7 @@ This section matters for AR and VR. A headset is a rendering system whose output
 
 **Intuition.** A holographic display uses a spatial light modulator (SLM), a screen of pixels that delay coherent laser light by a programmable phase $\varphi$ but cannot change its amplitude. In the simplest (far-field) setup, the image the viewer sees is the Fourier transform of the field leaving the SLM. So we need a phase pattern whose Fourier transform has a prescribed *amplitude* $A$, and we may choose the image-plane phase freely.
 
-**Formula.** With $\mathcal F$ the 2D Fourier transform, we want $\lvert\mathcal F\{e^{i\varphi}\}\rvert \approx A$. Gerchberg-Saxton alternates between the two planes and in each enforces what is known there:
+**Formula.** With $\mathcal F$ the 2D Fourier transform, we want $\lvert\mathcal F\\{e^{i\varphi}\\}\rvert \approx A$. Gerchberg-Saxton alternates between the two planes and in each enforces what is known there:
 
 $$
 \varphi^{(k)} = \arg \mathcal F^{-1}\!\left\{A\,e^{i\psi^{(k-1)}}\right\},
@@ -505,7 +505,7 @@ A cross-section of this chapter, one or two per topic. All entries are listed wi
 4. **Holography.** Run the Gerchberg-Saxton snippet with 1, 5, 20 and 100 iterations on a target of your choice, and plot the error. Then use a *constant* initial phase instead of a random one. What happens, and why does a random phase help?
 
    <details markdown="1"><summary>Hint</summary>
-   With a constant phase, $\mathcal F^{-1}\{A\}$ puts most of its energy into a few low-frequency SLM pixels. Forcing the amplitude to 1 flattens that spectrum, which acts like a strong high-pass filter: mainly the edges of the target survive, and the iteration tends to stagnate. A random phase spreads the energy evenly over the SLM, so the phase-only constraint loses less information, at the price of speckle.
+   With a constant phase, $\mathcal F^{-1}\\{A\\}$ puts most of its energy into a few low-frequency SLM pixels. Forcing the amplitude to 1 flattens that spectrum, which acts like a strong high-pass filter: mainly the edges of the target survive, and the iteration tends to stagnate. A random phase spreads the energy evenly over the SLM, so the phase-only constraint loses less information, at the price of speckle.
    </details>
 
 5. **Follow the field.** Open Ke-Sen Huang's SIGGRAPH Asia 2026 page, pick two papers that are not in this chapter, verify their status on arXiv or Crossref, and add them to `13-frontiers.json` with a topic, a month and the chapter they build on. Rerun the figure script and check the explorer.

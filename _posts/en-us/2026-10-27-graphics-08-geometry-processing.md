@@ -35,7 +35,7 @@ There is no single best way to store a 3D shape. Each representation makes some 
 | Indexed mesh | vertex array $V \in \mathbb{R}^{n\times 3}$ + face array $F \in \mathbb{N}^{m\times 3}$ | rendering, storage | adjacency queries (need extra structure) |
 | Half-edge mesh | indexed mesh + oriented edge records | local traversal and editing | arbitrary non-manifold input |
 | Point cloud | samples $\mathbf{p}_i$, maybe normals $\mathbf{n}_i$ | capture (LiDAR, depth, SfM) | topology, rendering without holes |
-| Implicit / SDF | a function $f:\mathbb{R}^3\to\mathbb{R}$, surface $=\{f=0\}$ | inside tests, booleans, blending | rendering needs root finding, sharp features |
+| Implicit / SDF | a function $f:\mathbb{R}^3\to\mathbb{R}$, surface $=\\{f=0\\}$ | inside tests, booleans, blending | rendering needs root finding, sharp features |
 | Voxels | $f$ or occupancy on a grid | simple, GPU friendly | memory grows as $N^3$ |
 | Parametric | patches $\mathbf{x}(u,v)$ (Bézier, B-spline, NURBS) | exact smooth CAD surfaces | stitching patches, arbitrary topology |
 
@@ -516,7 +516,7 @@ Fixing the boundary to a circle is what causes much of the distortion. **Least s
 
 ## 8. Implicit surfaces
 
-An implicit surface is the zero set $S = \{\mathbf{x} : f(\mathbf{x}) = 0\}$ of a function, with $f < 0$ inside. A **signed distance function** (SDF) is the special case $\lvert f(\mathbf{x})\rvert = $ distance to $S$, so $\lVert\nabla f\rVert = 1$ almost everywhere. SDFs make some operations trivial:
+An implicit surface is the zero set $S = \\{\mathbf{x} : f(\mathbf{x}) = 0\\}$ of a function, with $f < 0$ inside. A **signed distance function** (SDF) is the special case $\lvert f(\mathbf{x})\rvert = $ distance to $S$, so $\lVert\nabla f\rVert = 1$ almost everywhere. SDFs make some operations trivial:
 
 | Operation | Formula |
 | --- | --- |

@@ -279,7 +279,7 @@ $$
 
 其中 $\sigma$ 是密度，$\mathbf{c}$ 是颜色，$T$ 是透射率（transmittance）。如果 $\sigma$ 是网络权重或网格值的光滑函数，那么 $C$ 也是：遮挡物不会突然出现，它的光学深度（optical depth）是连续增长的。可见性变成了一个积分的指数，这很容易求导。下图左半部分比较了一个不透明的盒子和一个高斯密度团滑过一条光线时的像素值。
 
-在 [3D Gaussian Splatting]({{ '/blog/2026/neural-rendering-04-3d-gaussian-splatting/' | relative_url }}) 中，对于与其投影中心偏移 $\mathbf{d}$ 的像素，每个高斯贡献 $\alpha\_i = o\_i \exp\!\big(-\tfrac12 \mathbf{d}^\top \Sigma\_i'^{-1}\mathbf{d}\big)$，其中 $o_i$ 为不透明度，$\Sigma_i'$ 为二维协方差，像素则是由前到后的合成 $C = \sum\_i \mathbf{c}\_i\,\alpha\_i \prod\_{j<i}(1-\alpha\_j)$。每个 $\alpha_i$ 都是均值、协方差和不透明度的光滑函数，所以梯度无需任何边界项就能传到所有这些参数。
+在 [3D Gaussian Splatting]({{ '/blog/2026/neural-rendering-04-3d-gaussian-splatting/' | relative_url }}) 中，对于与其投影中心偏移 $\mathbf{d}$ 的像素，每个高斯贡献 $\alpha\_i = o\_i \exp\\!\big(-\tfrac12 \mathbf{d}^\top \Sigma\_i'^{-1}\mathbf{d}\big)$，其中 $o_i$ 为不透明度，$\Sigma_i'$ 为二维协方差，像素则是由前到后的合成 $C = \sum\_i \mathbf{c}\_i\,\alpha\_i \prod\_{j<i}(1-\alpha\_j)$。每个 $\alpha_i$ 都是均值、协方差和不透明度的光滑函数，所以梯度无需任何边界项就能传到所有这些参数。
 
 **仍然不连续的地方。**
 
@@ -502,6 +502,6 @@ print(torch.sigmoid(a_raw).detach(), (0.05 + 0.95 * torch.sigmoid(r_raw)).item()
 
 4. **歧义的实际表现。** 在球体实验（7.3）中，把光的辐照度 $E$ 作为第三个未知量。哪些量收敛，哪些量漂移？加入第二个光线方向或对 $E$ 的先验，然后重复实验。
 
-5. **Large Steps。** 在二维曲线玩具实验中，扫描 $\lambda \in \{0, 1, 5, 20\}$，并绘制 300 步之后的最终误差。为什么非常大的 $\lambda$ 会减慢对五个花瓣的拟合？（使用环图拉普拉斯算子的特征值 $\mu_k = 2-2\cos(2\pi k/N)$。）
+5. **Large Steps。** 在二维曲线玩具实验中，扫描 $\lambda \in \\{0, 1, 5, 20\\}$，并绘制 300 步之后的最终误差。为什么非常大的 $\lambda$ 会减慢对五个花瓣的拟合？（使用环图拉普拉斯算子的特征值 $\mu_k = 2-2\cos(2\pi k/N)$。）
 
 系列下一篇：[2026 年研究前沿]({{ '/blog/2026/graphics-13-research-frontiers-2026/' | relative_url }})，纵览 SIGGRAPH、SIGGRAPH Asia 及其他图形学会议今年发表的成果。

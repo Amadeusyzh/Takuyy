@@ -95,7 +95,7 @@ $$
 ### ツイストとスクリュー
 
 剛体の速度は**ツイスト**（twist）$\mathcal{V} = (\omega, v) \in \mathbb{R}^6$ で、
-$[\mathcal{V}] = \begin{bmatrix}[\omega] & v\\0&0\end{bmatrix} \in \mathfrak{se}(3)$ と書きます。Chasles の定理によれば、
+$[\mathcal{V}] = \begin{bmatrix}[\omega] & v\\\\0&0\end{bmatrix} \in \mathfrak{se}(3)$ と書きます。Chasles の定理によれば、
 あらゆる剛体運動はある軸まわりの回転とその軸に沿った並進の組み合わせ、すなわち**スクリュー運動**（screw motion）です。
 指数写像 $T = e^{[\mathcal{S}]\theta}$ は単位スクリュー軸 $\mathcal{S}$ と距離 $\theta$ を SE(3) の元に変換します。これが
 *Modern Robotics* 全体で使われる指数積（product of exponentials, PoE）公式の基礎です。ツイストの双対は**レンチ**（wrench）

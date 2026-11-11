@@ -349,7 +349,7 @@ $$
 
 where $\mathbf p$ stacks all unknowns and $\mathbf r(\mathbf p) \in \mathbb R^{2nN}$ stacks all residuals. This is the "gold standard" cost: it measures error in pixels, where the noise actually lives, unlike the algebraic error of the DLT.
 
-**Parameterizing rotations.** A rotation matrix has 9 entries but 3 degrees of freedom. We store each rotation as an **axis-angle vector** $\boldsymbol\omega \in \mathbb R^3$ (direction = axis, length = angle) and convert with Rodrigues' formula $R = I + \sin\theta\,[\mathbf k]_\times + (1-\cos\theta)[\mathbf k]_\times^2$. OpenCV does the same (`rvec`). So $\mathbf p$ has $9 + 6N$ entries.
+**Parameterizing rotations.** A rotation matrix has 9 entries but 3 degrees of freedom. We store each rotation as an **axis-angle vector** $\boldsymbol\omega \in \mathbb R^3$ (direction = axis, length = angle) and convert with Rodrigues' formula $R = I + \sin\theta\,[\mathbf k]\_\times + (1-\cos\theta)[\mathbf k]\_\times^2$. OpenCV does the same (`rvec`). So $\mathbf p$ has $9 + 6N$ entries.
 
 ### 4.2 Gauss-Newton and Levenberg-Marquardt
 

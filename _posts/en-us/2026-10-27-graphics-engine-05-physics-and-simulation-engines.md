@@ -114,7 +114,7 @@ The second equality holds because $(\mathbf{a}-\mathbf{b})\cdot\mathbf{d} = \mat
 
 GJK grows a **simplex** (a point, a segment, a triangle, and in 3D a tetrahedron) of support points:
 
-1. Start with any direction $\mathbf{d}$ and the simplex $S = \{ s(\mathbf{d}) \}$; set $\mathbf{d} = -S_0$ (towards the origin).
+1. Start with any direction $\mathbf{d}$ and the simplex $S = \\{ s(\mathbf{d}) \\}$; set $\mathbf{d} = -S_0$ (towards the origin).
 2. Get a new point $\mathbf{p} = s_{A\ominus B}(\mathbf{d})$. If $\mathbf{p}\cdot\mathbf{d} \le 0$, the farthest point of $A\ominus B$ in direction $\mathbf{d}$ does not even reach the origin, so the origin is outside: **no collision**.
 3. Add $\mathbf{p}$ to $S$. Keep only the sub-simplex (vertex, edge or the full simplex) whose region contains the origin, and set $\mathbf{d}$ to point from that feature towards the origin.
 4. If the simplex encloses the origin: **collision**. Otherwise go to 2.

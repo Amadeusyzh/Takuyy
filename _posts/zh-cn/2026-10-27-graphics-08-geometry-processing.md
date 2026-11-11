@@ -35,7 +35,7 @@ related_posts: false
 | 索引网格（indexed mesh） | 顶点数组 $V \in \mathbb{R}^{n\times 3}$ + 面数组 $F \in \mathbb{N}^{m\times 3}$ | 渲染、存储 | 邻接查询（需要额外结构） |
 | 半边网格（half-edge mesh） | 索引网格 + 有向边记录 | 局部遍历和编辑 | 任意非流形输入 |
 | 点云（point cloud） | 采样点 $\mathbf{p}_i$，可能带法线 $\mathbf{n}_i$ | 采集（LiDAR、深度相机、SfM） | 拓扑、无孔洞渲染 |
-| 隐式 / SDF | 函数 $f:\mathbb{R}^3\to\mathbb{R}$，表面 $=\{f=0\}$ | 内外判断、布尔运算、融合 | 渲染需要求根、尖锐特征 |
+| 隐式 / SDF | 函数 $f:\mathbb{R}^3\to\mathbb{R}$，表面 $=\\{f=0\\}$ | 内外判断、布尔运算、融合 | 渲染需要求根、尖锐特征 |
 | 体素（voxels） | 网格上的 $f$ 或占据值 | 简单、适合 GPU | 内存按 $N^3$ 增长 |
 | 参数曲面（parametric） | 曲面片 $\mathbf{x}(u,v)$（Bézier、B 样条、NURBS） | 精确光滑的 CAD 曲面 | 曲面片拼接、任意拓扑 |
 
@@ -516,7 +516,7 @@ def tutte(V, F, loop, L):
 
 ## 8. 隐式曲面
 
-隐式曲面是函数的零集 $S = \{\mathbf{x} : f(\mathbf{x}) = 0\}$，内部 $f < 0$。**有符号距离函数（signed distance function, SDF）** 是特例：$\lvert f(\mathbf{x})\rvert = $ 到 $S$ 的距离，所以几乎处处有 $\lVert\nabla f\rVert = 1$。SDF 让一些操作变得非常简单：
+隐式曲面是函数的零集 $S = \\{\mathbf{x} : f(\mathbf{x}) = 0\\}$，内部 $f < 0$。**有符号距离函数（signed distance function, SDF）** 是特例：$\lvert f(\mathbf{x})\rvert = $ 到 $S$ 的距离，所以几乎处处有 $\lVert\nabla f\rVert = 1$。SDF 让一些操作变得非常简单：
 
 | 操作 | 公式 |
 | --- | --- |

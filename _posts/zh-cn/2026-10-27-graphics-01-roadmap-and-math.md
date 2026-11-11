@@ -456,7 +456,7 @@ flowchart LR
 
 {% include blog_figure.liquid path="assets/img/blog/graphics/01-coordinate-spaces.svg" localized="true" caption="同一个单位立方体在各个空间中的样子（橙色点标出 (+,+,+) 角）。物体空间：以自身支点为中心。世界空间：由 M = T(1,0,0) Ry(45°) 放置，相机位于 (2,2,5) 并看向原点（灰色视锥，坐标轴 r、u、−f）。观察空间：相机位于原点，看向 −z。NDC：经过 P 和除以 w 之后，视锥变成立方体 [−1,1]³，靠近相机的部分被放大，并且 z 改为指向远离相机的方向（OpenGL 的 NDC 是左手系）。屏幕空间：视口变换把 NDC 映射到 240×240 像素的图像，第 0 行在最上方。" %}
 
-顶点着色器计算 $\mathbf{p}\_{\text{clip}} = P\,V\,M\,\mathbf{p}\_{\text{obj}}$，因此 $P V M$ 被称为 **MVP 矩阵**。第 02 篇会构造 $P$ 和视口变换。**视图矩阵** $V$ 是相机自身世界变换的逆。如果相机位于 $\mathbf{e}$，其正交归一的右/上/后方向轴为 $\mathbf{r}, \mathbf{u}, -\mathbf{f}$，那么它的世界矩阵是 $C = \begin{pmatrix} \mathbf{r} & \mathbf{u} & -\mathbf{f} & \mathbf{e} \\ 0 & 0 & 0 & 1 \end{pmatrix}$。由于旋转部分是正交的，其逆为
+顶点着色器计算 $\mathbf{p}\_{\text{clip}} = P\,V\,M\,\mathbf{p}\_{\text{obj}}$，因此 $P V M$ 被称为 **MVP 矩阵**。第 02 篇会构造 $P$ 和视口变换。**视图矩阵** $V$ 是相机自身世界变换的逆。如果相机位于 $\mathbf{e}$，其正交归一的右/上/后方向轴为 $\mathbf{r}, \mathbf{u}, -\mathbf{f}$，那么它的世界矩阵是 $C = \begin{pmatrix} \mathbf{r} & \mathbf{u} & -\mathbf{f} & \mathbf{e} \\\\ 0 & 0 & 0 & 1 \end{pmatrix}$。由于旋转部分是正交的，其逆为
 
 $$
 V = C^{-1} = \begin{pmatrix} \mathbf{r}^\top & -\mathbf{r}\cdot\mathbf{e} \\ \mathbf{u}^\top & -\mathbf{u}\cdot\mathbf{e} \\ -\mathbf{f}^\top & \mathbf{f}\cdot\mathbf{e} \\ \mathbf{0}^\top & 1 \end{pmatrix}.

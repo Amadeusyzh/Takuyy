@@ -92,7 +92,7 @@ $$
 ### 运动旋量与螺旋
 
 刚体的速度是一个**运动旋量**（twist）$\mathcal{V} = (\omega, v) \in \mathbb{R}^6$，记
-$[\mathcal{V}] = \begin{bmatrix}[\omega] & v\\0&0\end{bmatrix} \in \mathfrak{se}(3)$。Chasles 定理指出，任何刚体运动都是
+$[\mathcal{V}] = \begin{bmatrix}[\omega] & v\\\\0&0\end{bmatrix} \in \mathfrak{se}(3)$。Chasles 定理指出，任何刚体运动都是
 绕某轴的旋转加上沿该轴的平移，即**螺旋运动**（screw motion）；指数映射 $T = e^{[\mathcal{S}]\theta}$ 把单位螺旋轴
 $\mathcal{S}$ 与距离 $\theta$ 变为 SE(3) 的元素。这就是 *Modern Robotics* 全书使用的指数积（product of exponentials, PoE）
 公式的基础。运动旋量的对偶是**力旋量**（wrench）$\mathcal{F} = (m, f)$（力矩与力），功率为 $\mathcal{F}^\top\mathcal{V}$。

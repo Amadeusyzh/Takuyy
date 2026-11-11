@@ -666,7 +666,7 @@ print(alpha.round(4), T.round(4), w.round(4), w.sum().round(4), (w * c).sum().ro
 
 4. ratio tracking のコードの全体的な上界を**区分的**な上界に置き換えてください。$[0, 10]$ を 10 セルに分け、各セルで $\sigma_t$ の最大値を使い、セル境界ごとに指数サンプリングをやり直します（指数分布の無記憶性によりこれは正しい手順です）。同じ分散を達成するのに必要な参照回数を、全体の上界を使った場合と比べてください。
 
-5. 均質媒質での ratio tracking の分散 $e^{-2\sigma d}(e^{\sigma^2 d/\bar\sigma} - 1)$ をポアソン和から導き、$\sigma = 1$、$d = 1$、$\bar\sigma \in \{1, 2, 4, 8\}$ のシミュレーションと照らし合わせてください。
+5. 均質媒質での ratio tracking の分散 $e^{-2\sigma d}(e^{\sigma^2 d/\bar\sigma} - 1)$ をポアソン和から導き、$\sigma = 1$、$d = 1$、$\bar\sigma \in \\{1, 2, 4, 8\\}$ のシミュレーションと照らし合わせてください。
 
    <details markdown="1"><summary>ヒント</summary>
    $E[\langle T\rangle^2] = \sum_n e^{-\bar\sigma d}\frac{(\bar\sigma d)^n}{n!}(1-\sigma/\bar\sigma)^{2n}$ $= \exp\big(-\bar\sigma d + \bar\sigma d (1-\sigma/\bar\sigma)^2\big)$。2 乗を展開し、$T^2 = e^{-2\sigma d}$ を引きます。

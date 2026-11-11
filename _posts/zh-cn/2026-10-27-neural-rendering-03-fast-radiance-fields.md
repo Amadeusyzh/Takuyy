@@ -249,7 +249,7 @@ for step in range(1001):
 网格方法速度快，但会产生**混叠（alias）**：哈希网格是在点上查询的，因此 Mip-NeRF 基于圆锥的预滤波（集成位置编码，integrated positional encoding）无法直接适用。**Zip-NeRF**（Barron 等，ICCV 2023）把 Mip-NeRF 360 与 Instant-NGP 风格的网格结合了起来：
 
 - **多重采样（multisampling）。** 每个圆锥截头体（conical frustum）由其内部沿螺旋线排列的一小组点表示，对这些点的哈希特征取平均，以近似特征在截头体上的积分。
-- **尺度感知的降权（scale-aware downweighting）。** 来自单元尺寸小于截头体覆盖范围（footprint）的网格层级的特征会被衰减：分辨率为 $n$ 的层级上的特征乘以 $\operatorname{erf}\!\big(1/\sqrt{8\sigma^2 n^2}\big)$，其中 $\sigma$ 是截头体所对应高斯的标准差。这是 IPE 中 $e^{-\sigma^2/2}$ 因子的软化版本。
+- **尺度感知的降权（scale-aware downweighting）。** 来自单元尺寸小于截头体覆盖范围（footprint）的网格层级的特征会被衰减：分辨率为 $n$ 的层级上的特征乘以 $\operatorname{erf}\\!\big(1/\sqrt{8\sigma^2 n^2}\big)$，其中 $\sigma$ 是截头体所对应高斯的标准差。这是 IPE 中 $e^{-\sigma^2/2}$ 因子的软化版本。
 - **抗锯齿的层间损失（interlevel loss）**，作用于提议网络（proposal network）与 NeRF 之间，消除了 Mip-NeRF 360 提议监督中的 z 向混叠（“条带”，banding）。
 
 下图展示了前两个想法。

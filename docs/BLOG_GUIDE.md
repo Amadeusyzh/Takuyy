@@ -86,6 +86,15 @@ links at the bottom (see `_includes/series_nav.liquid`). Do not write those by h
 
   Inside tables, write `\vert` instead of `|`. Avoid `{{` / `{%` (Liquid) anywhere; if code needs them,
   wrap the block in `{% raw %}` ... `{% endraw %}`.
+- Kramdown does not know single-dollar math, so it treats the inside of `$...$` as Markdown. Inside
+  inline `$...$` (display `$$` blocks are safe):
+  - write `\_` for every `_` when the paragraph has two or more underscores (otherwise `_..._` turns
+    into italics): `$\mathbf p\_{\text{clip}}$`;
+  - write `\\{`, `\\}`, `\\!` for `\{`, `\}`, `\!` (kramdown eats one backslash): `$\\{1, 2\\}$`;
+  - write `\\\\` for a matrix row break: `$\begin{pmatrix} a \\\\ b \end{pmatrix}$`, or move the matrix
+    to display math.
+
+  After building, check the page HTML for `<em>` inside formulas and for a stray `!` or missing braces.
 - Code blocks must have a language tag (` ```python `, ` ```glsl `, ` ```cpp `) and be correct and
   self-contained (NumPy / PyTorch / GLSL / C++). Prefer short runnable snippets over pseudo-code.
 - Diagrams: Mermaid (enable it in front matter) or tables. Do **not** hot-link images from other sites.

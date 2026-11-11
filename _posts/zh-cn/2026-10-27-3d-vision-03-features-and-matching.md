@@ -472,7 +472,7 @@ steered=True   Hamming true pairs 23, other pairs 77, NN correct 65% (60 points)
 
 ### 5.1 最近邻与比值检验
 
-给定图像 1 中的描述子 $\{\mathbf d_i\}$ 和图像 2 中的 $\{\mathbf d'_j\}$，$i$ 最直接的匹配是其**最近邻** $j^\ast = \arg\min_j \lVert \mathbf d_i - \mathbf d'_j \rVert$。问题在于每个关键点都有最近邻，包括大量在图像 2 中根本不可见、或位于重复纹理上的点。绝对距离阈值效果不好，因为有些描述子比另一些更具区分性。
+给定图像 1 中的描述子 $\\{\mathbf d_i\\}$ 和图像 2 中的 $\\{\mathbf d'_j\\}$，$i$ 最直接的匹配是其**最近邻** $j^\ast = \arg\min_j \lVert \mathbf d_i - \mathbf d'_j \rVert$。问题在于每个关键点都有最近邻，包括大量在图像 2 中根本不可见、或位于重复纹理上的点。绝对距离阈值效果不好，因为有些描述子比另一些更具区分性。
 
 Lowe 的**比值检验**（ratio test）比较最佳距离 $d_1$ 和次佳距离 $d_2$，仅当
 
@@ -528,7 +528,7 @@ keypoints: 183 / 146   tentative matches: 85   correct (< 3 px): 83
 
 1. 抽取 $s$ 个对应构成的**最小样本**（minimal sample），即确定模型所需的最少数量：直线 $s = 2$，单应 4，本质矩阵 5，基础矩阵 7 或 8，由 2D-3D 匹配求相机位姿（P3P）为 3。
 2. 用样本拟合**假设**（hypothesis）。
-3. 计算每个对应的残差 $e_i$ 和**一致集**（consensus set）$\mathcal I = \{ i : e_i < t \}$。
+3. 计算每个对应的残差 $e_i$ 和**一致集**（consensus set）$\mathcal I = \\{ i : e_i < t \\}$。
 4. 保留一致集最大的假设；重复 $N$ 次。
 5. 用最佳假设的全部内点以最小二乘重新估计模型（对几何模型还要做非线性优化）。
 

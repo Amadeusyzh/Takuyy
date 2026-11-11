@@ -249,7 +249,7 @@ CPU（シングルスレッド）上でも、これは数百ステップ以内�
 グリッド手法は高速ですが、**エイリアシング（alias）**が生じます。ハッシュグリッドは点で問い合わせるため、Mip-NeRF の円錐に基づく事前フィルタリング（統合位置エンコーディング、integrated positional encoding）をそのまま適用できないのです。**Zip-NeRF**（Barron ら、ICCV 2023）は Mip-NeRF 360 と Instant-NGP 風のグリッドを組み合わせます。
 
 - **マルチサンプリング（multisampling）。** 各円錐台（conical frustum）を、その内部にらせん状に配置した少数の点の集合で表し、それらの点のハッシュ特徴を平均することで、円錐台上での特徴の積分を近似します。
-- **スケールを考慮した重み低減（scale-aware downweighting）。** セルサイズが円錐台のフットプリント（footprint）より小さいグリッドレベルからの特徴は減衰されます。解像度 $n$ のレベルの特徴は $\operatorname{erf}\!\big(1/\sqrt{8\sigma^2 n^2}\big)$ 倍されます。ここで $\sigma$ は円錐台のガウス分布の標準偏差です。これは IPE の $e^{-\sigma^2/2}$ 因子のソフト版です。
+- **スケールを考慮した重み低減（scale-aware downweighting）。** セルサイズが円錐台のフットプリント（footprint）より小さいグリッドレベルからの特徴は減衰されます。解像度 $n$ のレベルの特徴は $\operatorname{erf}\\!\big(1/\sqrt{8\sigma^2 n^2}\big)$ 倍されます。ここで $\sigma$ は円錐台のガウス分布の標準偏差です。これは IPE の $e^{-\sigma^2/2}$ 因子のソフト版です。
 - **アンチエイリアス化されたレベル間損失（interlevel loss）**を提案ネットワーク（proposal network）と NeRF の間に導入し、Mip-NeRF 360 の提案監督で生じていた z 方向のエイリアシング（「バンディング」、banding）を取り除きます。
 
 下の図は、最初の 2 つのアイデアを示しています。

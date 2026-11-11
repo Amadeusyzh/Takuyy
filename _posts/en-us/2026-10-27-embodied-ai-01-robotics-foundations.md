@@ -96,7 +96,7 @@ Drawn in 3D, the scene graph of a robot is just a chain of frames, each one plac
 ### Twists and screws
 
 The velocity of a rigid body is a **twist** $\mathcal{V} = (\omega, v) \in \mathbb{R}^6$, with
-$[\mathcal{V}] = \begin{bmatrix}[\omega] & v\\0&0\end{bmatrix} \in \mathfrak{se}(3)$. Chasles' theorem says
+$[\mathcal{V}] = \begin{bmatrix}[\omega] & v\\\\0&0\end{bmatrix} \in \mathfrak{se}(3)$. Chasles' theorem says
 every rigid motion is a rotation about an axis combined with a translation along it, a **screw motion**,
 and the exponential map $T = e^{[\mathcal{S}]\theta}$ turns a unit screw axis $\mathcal{S}$ and a distance
 $\theta$ into an element of SE(3). This is the foundation of the product-of-exponentials (PoE) formula

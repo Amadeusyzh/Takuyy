@@ -349,7 +349,7 @@ $$
 
 其中 $\mathbf p$ 把所有未知数堆在一起，$\mathbf r(\mathbf p) \in \mathbb R^{2nN}$ 把所有残差堆在一起。这是"金标准"（gold standard）代价：与 DLT 的代数误差不同，它以像素为单位度量误差，而噪声正是在像素空间中产生的。
 
-**旋转的参数化。**旋转矩阵有 9 个元素但只有 3 个自由度。我们把每个旋转存为**轴角向量**（axis-angle）$\boldsymbol\omega \in \mathbb R^3$（方向为旋转轴，长度为转角），用 Rodrigues 公式 $R = I + \sin\theta\,[\mathbf k]_\times + (1-\cos\theta)[\mathbf k]_\times^2$ 转换。OpenCV 也是这样做的（`rvec`）。因此 $\mathbf p$ 有 $9 + 6N$ 个元素。
+**旋转的参数化。**旋转矩阵有 9 个元素但只有 3 个自由度。我们把每个旋转存为**轴角向量**（axis-angle）$\boldsymbol\omega \in \mathbb R^3$（方向为旋转轴，长度为转角），用 Rodrigues 公式 $R = I + \sin\theta\,[\mathbf k]\_\times + (1-\cos\theta)[\mathbf k]\_\times^2$ 转换。OpenCV 也是这样做的（`rvec`）。因此 $\mathbf p$ 有 $9 + 6N$ 个元素。
 
 ### 4.2 Gauss-Newton 与 Levenberg-Marquardt
 
