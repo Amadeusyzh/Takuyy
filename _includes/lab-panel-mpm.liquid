@@ -1,0 +1,47 @@
+<div class="lab-panel" role="tabpanel" id="lab-mpm" aria-labelledby="lab-tab-mpm" data-lang="{{ site.active_lang | slice: 0, 2 }}" hidden>
+  <div class="lab-stage">
+    <canvas role="img" aria-label="MLS-MPM" style="touch-action: none; cursor: crosshair"></canvas>
+    <span class="lab-hint"></span>
+    <span class="lab-stats"></span>
+  </div>
+  <div class="lab-controls">
+    <div class="lab-seg" role="group">
+      <button type="button" class="lab-b" data-tool="push" data-t="push" aria-pressed="true"></button>
+      <button type="button" class="lab-b" data-tool="attract" data-t="attract" aria-pressed="false"></button>
+      <button type="button" class="lab-b" data-tool="add" data-t="add" aria-pressed="false"></button>
+    </div>
+    <div class="lab-seg" role="group">
+      <button type="button" class="lab-b" data-mat="0" data-t="water" aria-pressed="true"></button>
+      <button type="button" class="lab-b" data-mat="1" data-t="jelly" aria-pressed="false"></button>
+      <button type="button" class="lab-b" data-mat="2" data-t="snow" aria-pressed="false"></button>
+    </div>
+    <div class="lab-seg" role="group">
+      <button type="button" class="lab-b" data-scene="0" data-t="s0" aria-pressed="true"></button>
+      <button type="button" class="lab-b" data-scene="1" data-t="s1" aria-pressed="false"></button>
+      <button type="button" class="lab-b" data-scene="2" data-t="s2" aria-pressed="false"></button>
+      <button type="button" class="lab-b" data-scene="3" data-t="s3" aria-pressed="false"></button>
+    </div>
+    <button type="button" class="lab-b lab-solo" data-action="reset" data-t="reset"></button>
+  </div>
+  <div class="lab-controls">
+    <span style="display: inline-flex; align-items: center; gap: 0.5rem">
+      <span data-t="model"></span>
+      <span class="lab-seg" role="group">
+        <button type="button" class="lab-b" data-model="0" data-t="m0" aria-pressed="true"></button>
+        <button type="button" class="lab-b" data-model="1" data-t="m1" aria-pressed="false"></button>
+      </span>
+    </span>
+    <label><span data-t="stiff"></span> <input type="range" data-input="stiff" min="3" max="4.301" step="0.01"> <span class="mpm-e"></span></label>
+    <span style="display: inline-flex; align-items: center; gap: 0.5rem">
+      <span data-t="view"></span>
+      <span class="lab-seg" role="group">
+        <button type="button" class="lab-b" data-view="0" data-t="v0" aria-pressed="true"></button>
+        <button type="button" class="lab-b" data-view="1" data-t="v1" aria-pressed="false"></button>
+        <button type="button" class="lab-b" data-view="2" data-t="v2" aria-pressed="false"></button>
+        <button type="button" class="lab-b" data-view="3" data-t="v3" aria-pressed="false"></button>
+      </span>
+    </span>
+    <button type="button" class="lab-b lab-solo" data-action="pause" data-t="pause" aria-pressed="false"></button>
+  </div>
+  <p class="lab-caption"><span data-t="caption"></span> <span data-t="more"></span> <a href="{{ '/blog/2026/graphics-07-physically-based-simulation/' | relative_url }}" data-t="link1"></a> &middot; <a href="{{ '/blog/2026/graphics-engine-05-physics-and-simulation-engines/' | relative_url }}" data-t="link2"></a></p>
+</div>
