@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+# Usage: site-build-local [repo-dir]   (default: current directory)
+# Builds the Jekyll site of a worktree into <repo>/_site with the shared gem bundle; imagemagick off.
+set -o pipefail
+D="$(cd "${1:-$PWD}" && pwd)"
+cd "$D" || exit 1
+# reuse the installed gems: link vendor/ and the bundler config (both are git-ignored)
+[ -e vendor ] || ln -s /home/user/website/vendor vendor
+[ -f Gemfile.lock ] || cp /home/user/website/Gemfile.lock Gemfile.lock
+[ -f .bundle/config ] || { mkdir -p .bundle && cp /home/user/website/.bundle/config .bundle/config; }
+CFG=$(mktemp /tmp/local-XXXX.yml)
+printf 'imagemagick:\n  enabled: false\n' > "$CFG"
+LOG=$(mktemp /tmp/build-XXXX.log)
+LANG=C.UTF-8 \
+  bundle exec jekyll build --config "_config.yml,$CFG" > "$LOG" 2>&1
+code=$?
+grep -iE 'error|liquid|kramdown' "$LOG" | grep -viE 'deprecation|sass|Lexer' | head -30
+tail -2 "$LOG"
+echo "site-build exit code: $code (log: $LOG)"
+exit $code
