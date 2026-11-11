@@ -179,7 +179,7 @@ lab:
   gw_understood: 理解为：
   gw_water: 水位
   gw_wind: 风力
-  intro: 五个和我研究方向相关的实时图形学 demo，用 WebGL 从零手写，完全在你的浏览器里运行。
+  intro: 九个和我研究方向相关的实时图形学 demo，用 WebGL 从零手写，完全在你的浏览器里运行。
   light: 光源大小
   m_diffuse: 漫反射
   m_frosted: 磨砂玻璃
@@ -239,8 +239,12 @@ lab:
   tab_cloth: 布料 · XPBD
   tab_fov: 注视点渲染
   tab_gs: 高斯世界
+  tab_mpm: 材料 · MPM
   tab_pt: 路径追踪
+  tab_rc: 辐射级联
   tab_rs: '多光源 · ReSTIR'
+  tab_sdf: SDF 雕刻
+  tab_sky: 云与天空
   tear: 可撕裂
   title: 交互实验室
   v_albedo: 反照率

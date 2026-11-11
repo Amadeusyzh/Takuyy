@@ -179,7 +179,7 @@ lab:
   gw_understood: 解釈：
   gw_water: 水位
   gw_wind: 風
-  intro: 研究に関連する 5 つのリアルタイムグラフィックスデモです。WebGL でゼロから実装しており、すべてブラウザ上で動作します。
+  intro: 研究に関連する 9 つのリアルタイムグラフィックスデモです。WebGL でゼロから実装しており、すべてブラウザ上で動作します。
   light: 光源サイズ
   m_diffuse: 拡散
   m_frosted: すりガラス
@@ -239,8 +239,12 @@ lab:
   tab_cloth: 布 · XPBD
   tab_fov: 中心窩レンダリング
   tab_gs: ガウシアンワールド
+  tab_mpm: 材料 · MPM
   tab_pt: パストレーシング
+  tab_rc: ラディアンスカスケード
   tab_rs: '多光源 · ReSTIR'
+  tab_sdf: SDF スカルプト
+  tab_sky: 雲と空
   tear: 破れる
   title: インタラクティブラボ
   v_albedo: アルベド
