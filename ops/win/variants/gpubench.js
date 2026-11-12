@@ -999,7 +999,7 @@
 
   // ------------------------------------------------------------------ frame loop
   var maxScale = Math.min(window.devicePixelRatio || 1, 1.5);
-  var scale = Math.min(maxScale, 1);
+  var scale = 0.25; // bench: keep the demo's own frames cheap
   var frameTimes = [], lastT = 0, fps = 0, upgrades = 0, lastDown = 0;
   var halton = [];
   (function () {
@@ -1182,4 +1182,137 @@
     tried = true;
     start();
   }
+  // ---- measurement hook (not part of the demo): times single full-screen passes with gl.finish()
+  window.__sdfBench = function (cfgs, opts) {
+    opts = opts || {};
+    if (!started || !gl) return { error: "not started" };
+    visible = false; // stop the demo loop
+    if (raf) { cancelAnimationFrame(raf); raf = 0; }
+    gl.readPixels(0, 0, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, new Uint8Array(4));
+    if (fence) { gl.deleteSync(fence); fence = null; }
+    var out = [];
+    var px1 = new Uint8Array(4);
+    cfgs.forEach(function (c) {
+      loadPreset(c.preset);
+      if (c.nPrims) {
+        for (var j = 0; prims.length < c.nPrims; j++) {
+          var a = j * 2.399, r = 2.6 + 0.4 * (j % 3), ty = j % 4;
+          var pr = prim(ty, [r * Math.cos(a), c.far ? -20 : 0.45 + 0.25 * (j % 2), r * Math.sin(a)], BASE[ty], PALETTE[j % 8], 0, ty === 1 ? 0.5 : ty === 3 ? 0.3 : 0, ty === 3 ? 1.5708 : 0);
+          derive(pr);
+          prims.push(pr);
+        }
+        reorder();
+      }
+      if (c.k != null) st.k = c.k;
+      st.view = c.view || 0;
+      st.maxSteps = c.maxSteps || 128;
+      st.relax = !!c.relax;
+      st.soft = c.soft !== false;
+      st.ao = c.ao !== false;
+      st.sliceH = c.sliceH != null ? c.sliceH : 0.7;
+      var cm = c.cam || {};
+      cam.yaw = cm.yaw != null ? cm.yaw : CAM0.yaw;
+      cam.pitch = cm.pitch != null ? cm.pitch : CAM0.pitch;
+      cam.dist = cm.dist != null ? cm.dist : CAM0.dist;
+      updateBasis();
+      var w = c.w || 240, h = c.h || 135;
+      if (canvas.width !== w || canvas.height !== h) { canvas.width = w; canvas.height = h; }
+      if (w !== W || h !== H) allocate(w, h);
+      var times = [];
+      for (var rep = 0; rep < (c.reps || 3); rep++) {
+        var t0 = performance.now();
+        var u = P.u;
+        gl.bindFramebuffer(gl.FRAMEBUFFER, accFb);
+        gl.viewport(0, 0, W, H);
+        gl.useProgram(P.p);
+        gl.bindVertexArray(vao);
+        uploadScene(u);
+        gl.uniform1f(u.uK, Math.max(st.k, 1e-4));
+        gl.uniform3fv(u.uCamPos, basis.pos);
+        gl.uniform3fv(u.uCamR, basis.r);
+        gl.uniform3fv(u.uCamU, basis.u);
+        gl.uniform3fv(u.uCamF, basis.f);
+        gl.uniform1f(u.uTanHalf, tanHalf);
+        gl.uniform2f(u.uRes, W, H);
+        gl.uniform2f(u.uJitter, 0, 0);
+        gl.uniform1i(u.uView, st.view);
+        gl.uniform1i(u.uMaxSteps, st.maxSteps);
+        gl.uniform1f(u.uOmega, st.relax ? 1.6 : 1.0);
+        gl.uniform1i(u.uSoft, st.soft ? 1 : 0);
+        gl.uniform1i(u.uAO, st.ao ? 1 : 0);
+        gl.uniform1f(u.uSliceH, st.sliceH);
+        gl.uniform1i(u.uSel, -1);
+        gl.uniform1i(u.uProbeN, 0);
+        gl.disable(gl.BLEND);
+        gl.drawArrays(gl.TRIANGLES, 0, 3);
+        gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+        gl.useProgram(PB.p);
+        gl.activeTexture(gl.TEXTURE0);
+        gl.bindTexture(gl.TEXTURE_2D, accTex);
+        gl.uniform1i(PB.u.uTex, 0);
+        gl.drawArrays(gl.TRIANGLES, 0, 3);
+        gl.bindVertexArray(null);
+        gl.readPixels(0, 0, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, px1); // waits for the GPU (finish() does not in Chrome)
+        times.push(performance.now() - t0);
+      }
+      times.sort(function (a, b) { return a - b; });
+      var rec = { c: c, w: w, h: h, ms: Math.round(times[Math.floor(times.length / 2)] * 10) / 10, min: Math.round(times[0] * 10) / 10 };
+      out.push(rec);
+      if (opts.onEach) opts.onEach(rec, out);
+    });
+    return out;
+  };
+  // ---- auto-run for the Windows harness: run the configs one by one and write the results into the
+  // stats line (measure.js stores its text 15 s after the first frame).
+  (function () {
+    var R = [[240, 135, 3]];
+    var base = [
+      { preset: 0, view: 0 }, { preset: 0, view: 1 }, { preset: 0, view: 2 },
+      { preset: 1, view: 0 }, { preset: 2, view: 0 }, { preset: 2, view: 1 },
+      { preset: 0, view: 0, k: 1.0 }, { preset: 0, view: 0, k: 0 },
+      { preset: 0, view: 0, nPrims: 16 }, { preset: 0, view: 0, nPrims: 16, far: true },
+      { preset: 0, view: 0, soft: false }, { preset: 0, view: 0, ao: false },
+      { preset: 0, view: 0, cam: { pitch: 0.06, dist: 14 } }, { preset: 0, view: 1, maxSteps: 256, cam: { pitch: 0.06, dist: 14 } },
+      { preset: 0, view: 0, cam: { pitch: 0.06, dist: 3 } },
+      { preset: 2, view: 0, maxSteps: 256, nPrims: 16, cam: { pitch: 0.06, dist: 14 }, k: 1.0, soft: false },
+      { preset: 0, view: 0, w: 480, h: 270, reps: 2 }, { preset: 0, view: 0, w: 960, h: 540, reps: 1 }
+    ];
+    var list = [];
+    base.forEach(function (c) {
+      var o = {};
+      for (var key in c) o[key] = c[key];
+      if (!o.w) { o.w = R[0][0]; o.h = R[0][1]; o.reps = R[0][2]; }
+      if (!o.maxSteps) o.maxSteps = 128;
+      list.push(o);
+    });
+    var out = [], hl = null, benchStats = null;
+    function shaderInfo() {
+      try {
+        var ext = gl.getExtension("WEBGL_debug_shaders");
+        if (!ext) return { ext: false };
+        var sh = gl.getAttachedShaders(P.p), src = "";
+        for (var i = 0; i < sh.length; i++) if (gl.getShaderParameter(sh[i], gl.SHADER_TYPE) === gl.FRAGMENT_SHADER) src = ext.getTranslatedShaderSource(sh[i]);
+        function count(re) { var m = src.match(re); return m ? m.length : 0; }
+        var at = src.indexOf("mapObj");
+        return { ext: true, len: src.length, loop: count(/\[loop\]/g), LOOP: count(/\bLOOP\b/g), flatten: count(/\[flatten\]/g), FLATTEN: count(/\bFLATTEN\b/g),
+          branch: count(/\[branch\]/g), unroll: count(/\[unroll/g), head: src.slice(0, 600), mapObj: at >= 0 ? src.slice(at, at + 1800) : "" };
+      } catch (e) { return { err: String(e) }; }
+    }
+    function step(i) {
+      if (i >= list.length) { benchStats.textContent = "fps BENCH-DONE " + JSON.stringify({ r: out, hlsl: hl }); return; }
+      var r = window.__sdfBench([list[i]])[0];
+      out.push({ c: list[i], ms: r.ms, min: r.min });
+      benchStats.textContent = "fps BENCH " + JSON.stringify({ r: out });
+      setTimeout(function () { step(i + 1); }, 30);
+    }
+    function go() {
+      if (!started || !gl || accN < 2) { setTimeout(go, 100); return; }
+      benchStats = statsEl;
+      statsEl = document.createElement("span"); // the demo loop can no longer overwrite the results
+      hl = shaderInfo();
+      benchStats.textContent = "fps BENCH start";
+      setTimeout(function () { step(0); }, 50);
+    }
+    setTimeout(go, 100);
+  })();
 })();
