@@ -121,7 +121,7 @@
 | 论文 | 会议/期刊 | 年份 | 链接 | 说明 |
 | --- | --- | --- | --- | --- |
 | A survey of augmented reality (Azuma) | Presence | 1997 | https://doi.org/10.1162/pres.1997.6.4.355 | AR 的经典定义；把配准（registration）列为核心问题 |
-| Registration error analysis for augmented reality (Holloway) | Presence | 1997 | https://doi.org/10.1162/pres.1997.6.4.413 | 光学透视系统的端到端误差预算；中等头速下延迟误差已超过其他所有来源 |
+| Registration error analysis for augmented reality (Holloway) | Presence | 1997 | https://doi.org/10.1162/pres.1997.6.4.413 | 光学透视系统的端到端误差预算；即使在中等头速下，系统延迟也是最大的单一误差来源 |
 | Single point active alignment method (SPAAM) for optical see-through HMD calibration for AR (Tuceryan, Navab) | ISAR | 2000 | — | 用户参与的光学透视显示标定（第 149–158 页） |
 | General theory of remote gaze estimation using the pupil center and corneal reflections (Guestrin, Eizenman) | IEEE TBME | 2006 | https://doi.org/10.1109/TBME.2005.863952 | 瞳孔-角膜反射（PCCR）眼动追踪的三维理论 |
 | A multi-state constraint Kalman filter for vision-aided inertial navigation (Mourikis, Roumeliotis) | ICRA | 2007 | https://doi.org/10.1109/ROBOT.2007.364024 | MSCKF：移动设备上常用的 VIO 滤波框架 |
@@ -137,8 +137,8 @@
 | Towards indistinguishable augmented reality: a survey on optical see-through head-mounted displays (Itoh et al.) | ACM Computing Surveys | 2021 | https://doi.org/10.1145/3453157 | 光学透视显示的空间、时间与视觉真实感 |
 | NeuralPassthrough: learned real-time view synthesis for VR (Xiao et al.) | SIGGRAPH | 2022 | https://arxiv.org/abs/2207.02186 | 学习式透视视图合成 |
 | UmeTrack: unified multi-view end-to-end hand tracking for VR (Han et al.) | SIGGRAPH Asia | 2022 | https://arxiv.org/abs/2211.00099 | 多视角、多帧端到端输出世界坐标系下的手部姿态 |
-| Project Aria: a new tool for egocentric multi-modal AI research (Engel et al.) | arXiv 预印本（2023 年 8 月） | 2023 | https://arxiv.org/abs/2308.13561 | 带 SLAM、眼动与公开数据集的研究用眼镜平台 |
-| SceneScript: reconstructing scenes with an autoregressive structured language model (Avetisyan et al.) | ECCV | 2024 | https://arxiv.org/abs/2403.13064 | 已发表；把房间布局与物体表示为结构化命令序列 |
+| Project Aria: a new tool for egocentric multi-modal AI research (Engel et al.) | arXiv 预印本（2023 年 8 月；截至 2026 年 11 月仍为预印本） | 2023 | https://arxiv.org/abs/2308.13561 | 带 SLAM、眼动与公开数据集的研究用眼镜平台 |
+| SceneScript: reconstructing scenes with an autoregressive structured language model (Avetisyan et al.) | ECCV | 2024 | https://arxiv.org/abs/2403.13064 | 已发表（截至 2026 年 11 月）；把房间布局与物体表示为结构化命令序列 |
 
 **书籍、规范与代码**
 

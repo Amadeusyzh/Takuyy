@@ -82,7 +82,7 @@ def fig_frames():
     p_WA = np.array([0.55, 0.75, 0.75])
     frames["A"] = (R_WA, p_WA)
 
-    fig = plt.figure(figsize=(15, 7.4))
+    fig = plt.figure(figsize=(12, 6.2))
     ax = fig.add_subplot(121, projection="3d")
     ax.view_init(elev=20, azim=-58)
     # floor grid and table
@@ -117,7 +117,7 @@ def fig_frames():
     ax.plot(*np.c_[frames["E_L"][1], corner], color=ORANGE, lw=1.8)
     ax.text(*(corner + [0.03, 0.0, 0.05]), r"$\mathbf{X}_A$", color=PURPLE, fontsize=20)
     ax.set_xlim(-0.2, 1.2); ax.set_ylim(-0.8, 1.2); ax.set_zlim(0, 1.8)
-    ax.set_box_aspect((1.4, 2.0, 1.8))
+    ax.set_box_aspect((1.4, 2.0, 1.8), zoom=1.3)
 
     # right: the headset itself, in its body frame B (drawn as x, z, -y so that "up" is up)
     bx = fig.add_subplot(122, projection="3d")
@@ -146,7 +146,7 @@ def fig_frames():
         for z_ in zs:
             bx.plot(xs, [y_, y_], [z_, z_], color="#cccccc", lw=1)
     bx.set_xlim(-0.1, 0.1); bx.set_ylim(-0.1, 0.1); bx.set_zlim(-0.07, 0.07)
-    bx.set_box_aspect((1, 1, 0.7))
+    bx.set_box_aspect((1, 1, 0.7), zoom=1.3)
     for a3 in (ax, bx):
         a3.grid(False)
         for a in (a3.xaxis, a3.yaxis, a3.zaxis):
@@ -225,7 +225,7 @@ def fig_drift():
     P_a = dead_reckon(T, dt, np.zeros(3), b_a)
     P_g = dead_reckon(T, dt, b_g, np.zeros(3))
     t = np.arange(1, len(P_a) + 1) * dt
-    print("== IMU dead reckoning (post section 2.2)")
+    print("== IMU dead reckoning (post section 2.1)")
     for tt in (0.011, 0.033, 0.1, 1.0, 10.0):
         k = int(round(tt / dt)) - 1
         print(f"  t = {tt:6.3f} s  accel bias {np.linalg.norm(P_a[k]) * 1e6:12.2f} um"

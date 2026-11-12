@@ -155,29 +155,29 @@ t2, p2, est2, _, _ = vio_1d(cam_every=10**9)                    # never update: 
 print(f"IMU only: {abs(est2 - p2)[999] * 1e3:.1f} mm after 1 s, {abs(est2 - p2)[-1] * 1e3:.1f} mm after 4 s")
 ```
 
-With camera updates the error stays at 0.366 mm RMS (0.864 mm at worst) and the filter learns the bias, $0.0100$ m/s², exactly the true value. Without them the same IMU is 3.0 mm off after one second and 72.5 mm after four. Real headset VIO does this in 6DoF with a multi-state constraint Kalman filter (MSCKF, Mourikis and Roumeliotis 2007) or a sliding-window optimizer with IMU preintegration (Forster et al. 2017), both explained in post 06; it also estimates the camera-IMU extrinsics and time offset online, refining the factory calibration of post 02.
+With camera updates the error stays at 0.366 mm RMS (0.864 mm at worst) and the filter learns the bias, $0.0100$ m/s², the true value to four digits. Without them the same IMU is 3.0 mm off after one second and 72.5 mm after four. Real headset VIO does this in 6DoF with a multi-state constraint Kalman filter (MSCKF, Mourikis and Roumeliotis 2007) or a sliding-window optimizer with IMU preintegration (Forster et al. 2017), both explained in post 06; it also estimates the camera-IMU extrinsics and time offset online, refining the factory calibration of post 02.
 
 {% include blog_figure.liquid path="assets/img/blog/3d-vision/10-imu-drift.svg" caption="Left: position error of pure IMU integration for a headset at rest (snippet of section 2.1), with an accelerometer bias of 0.01 m/s² (orange) and a gyro bias of 0.1°/s (purple), on log-log axes. The dotted and dashed lines are $\tfrac12 b\_a t^2$ and $\tfrac16 g\,b\_g t^3$; the vertical lines mark one 90 Hz frame, one 30 Hz camera interval and one second. Right: the 1D toy VIO of section 2.2 between 2.0 and 2.5 s. The error (purple) jumps at each camera update (gray lines, every 33 ms) and drifts slightly in between; the shaded band is the filter's own $\pm2\sigma$." %}
 
 ### 2.3 Maps
 
-VIO alone still drifts slowly: rotation about gravity (yaw) and position are unobservable from inertial data, so their errors grow with distance travelled. Headsets therefore keep a **map**: keyframes with their features and 3D points, in the sense of post 06. The map serves three purposes. Revisiting a mapped place corrects the drift (loop closure). It is what spatial anchors attach to (section 9). And if it is saved, the next session can **relocalize** in it, so content placed yesterday reappears in the same place, and the play-area boundary of a VR headset does not have to be drawn again. Section 9 returns to how relocalization works.
+VIO alone still drifts slowly: gravity makes roll and pitch observable, but the global position and the rotation about gravity (yaw) are not observable from camera and IMU data, so their errors grow with distance travelled. Headsets therefore keep a **map**: keyframes with their features and 3D points, in the sense of post 06. The map serves three purposes. Revisiting a mapped place corrects the drift (loop closure). It is what spatial anchors attach to (section 9). And if it is saved, the next session can **relocalize** in it, so content placed yesterday reappears in the same place, and the play-area boundary of a VR headset does not have to be drawn again. Section 9 returns to how relocalization works.
 
 ## 3. Motion-to-photon latency and prediction
 
 ### 3.1 Where the latency comes from
 
-**Motion-to-photon latency** is the time between a head movement and the moment the display emits light that reflects it. The figure shows an illustrative 90 Hz pipeline. The application samples the predicted head pose (here at 2 ms), simulates and records draw commands on the CPU, the GPU renders both eye views, the compositor applies lens-distortion correction, and the display scans the frame out row by row over one refresh period of 11.1 ms. If the head pose were used only from the application's sample, the latency to the middle of the scan-out would be 23.6 ms. Every modern runtime therefore re-samples the head pose just before scan-out and corrects the finished image (section 3.4); then only 8.1 ms remain between the last pose sample and the photons.
+**Motion-to-photon latency** is the time between a head movement and the moment the display emits light that reflects it. The figure shows an illustrative 90 Hz pipeline. The application samples the predicted head pose (here at 2 ms), simulates and records draw commands on the CPU, the GPU renders both eye views, the compositor applies lens-distortion correction, and the display scans the frame out row by row over one refresh period of 11.1 ms. If the head pose were used only from the application's sample, the latency to the middle of the scan-out would be 23.6 ms. Headset runtimes therefore re-sample the head pose just before scan-out and corrects the finished image (section 3.4); then only 8.1 ms remain between the last pose sample and the photons.
 
 {% include blog_figure.liquid path="assets/img/blog/3d-vision/10-m2p-timeline.svg" localized="true" caption="An illustrative 90 Hz frame. The IMU is sampled at 1 kHz (ticks), the tracking cameras at 30 Hz. The application reads the head pose at 2 ms (orange dot) and the GPU renders until 15 ms; the late-warp stage reads the pose again at 17.5 ms (green dot) and re-projects the finished image. The display scans out from 20 to 31.1 ms (blue: row against time), so the photons of the middle row leave at 25.6 ms (red star). Without late warp the image is 23.6 ms old; with it, 8.1 ms." %}
 
 Two details matter. First, the display, like a rolling-shutter camera (post 01, section 3.5), does not show the whole image at once: the bottom rows appear up to a frame period after the top rows, so a runtime can predict a different pose for different parts of the image. Second, a display that keeps each frame lit for the whole refresh period smears it across the retina while the eye tracks a moving object; VR displays therefore use **low persistence**, lighting each frame only for a short fraction of the period.
 
-In OpenXR, the standard API between applications and headset runtimes, this machinery is visible in the frame loop: `xrWaitFrame` returns a `predictedDisplayTime`, specified as the middle of the interval during which the frame will be shown (the red star of the figure), and the application asks `xrLocateViews` for the eye poses at that future time. The runtime performs the prediction; the application only has to use the time it is given.
+In OpenXR, the standard API between applications and headset runtimes, this machinery is visible in the frame loop: `xrWaitFrame` returns a `predictedDisplayTime`, the runtime's prediction of when the frame will be displayed (the red star of the figure stands for this instant), and the application asks `xrLocateViews` for the eye poses at that future time. The runtime performs the prediction; the application only has to use the time it is given.
 
 ### 3.2 The cost of latency
 
-If the renderer uses the head yaw from $\Delta$ seconds ago, the drawn world is rotated by $\theta(t) - \theta(t - \Delta) \approx \omega\Delta$. For an ordinary head turn at $\omega = 100$°/s, a latency of $\Delta = 20$ ms gives $2° = 120'$: fifty display pixels at 25 px/°. Without prediction, the world visibly lags behind every head movement and springs back when the head stops. This is the error that Holloway (1997) found to dominate all other registration errors of an optical see-through system for even moderate head speeds.
+If the renderer uses the head yaw from $\Delta$ seconds ago, the drawn world is rotated by $\theta(t) - \theta(t - \Delta) \approx \omega\Delta$. For an ordinary head turn at $\omega = 100$°/s, a latency of $\Delta = 20$ ms gives $2° = 120'$: fifty display pixels at 25 px/°. Without prediction, the world visibly lags behind every head movement and springs back when the head stops. In Holloway's (1997) analysis of an optical see-through system, this delay error was the largest single source of registration error, even at moderate head speeds.
 
 ### 3.3 Prediction
 
@@ -238,7 +238,7 @@ The turn peaks at 187.5°/s and 962°/s². The maximum errors, without and (in p
 | 20 ms | $224.8'$ | $11.5'$ ($12.1'$) | $2.1'$ ($3.6'$) |
 | 40 ms | $448.7'$ | $46.0'$ ($46.7'$) | $12.5'$ ($15.3'$) |
 
-Three lessons. Prediction is enormously effective: at 20 ms it reduces a $3.7°$ error to a fifth of a degree. Its residual grows **quadratically** (constant velocity) or **cubically** (constant acceleration) with the horizon, so shortening the horizon is worth as much as improving the predictor. And noise eats into the gain of higher orders, more so at longer horizons; real head motion is also less smooth than a minimum-jerk curve, which hurts the higher-order predictor most at the start and end of a movement. Practical predictors (LaValle et al. 2014 describe the one of an early consumer headset) therefore use a low order, filter the gyro, and adapt how far they extrapolate to how fast the head is moving.
+Three lessons. Prediction is enormously effective: at 20 ms it reduces a $3.7°$ error to a fifth of a degree. Its residual grows **quadratically** (constant velocity) or roughly **cubically** (constant acceleration; the angular acceleration estimated over the last 10 ms adds a quadratic part) with the horizon, so shortening the horizon is worth as much as improving the predictor. And noise eats into the gain of higher orders, more so at longer horizons; real head motion is also less smooth than a minimum-jerk curve, which hurts the higher-order predictor most at the start and end of a movement. Practical predictors therefore keep the order low, filter the gyro and keep the horizon short; LaValle et al. (2014) describe the orientation tracking and prediction of an early consumer headset.
 
 {% include blog_figure.liquid path="assets/img/blog/3d-vision/10-prediction.svg" caption="Left: yaw error during the 60° minimum-jerk turn at $\Delta=20$ ms for no prediction (red), constant velocity (orange) and constant acceleration (purple, noise-free; the faint trace adds 0.2°/s gyro noise); the dashed gray curve is the head rate (right axis, peak 187.5°/s). The velocity predictor errs most where the acceleration peaks, near 130 and 470 ms; the acceleration predictor where the jerk peaks. Right: maximum error over the turn against the latency $\Delta$, with gyro noise. The dotted line is one display pixel at 25 px/°." %}
 
@@ -459,11 +459,11 @@ for Z in (0.3, 0.5, 0.7):
           f" (sqrt(2) Z^2/(f b) = {np.sqrt(2) * Z**2 / (f * b) * 1e3:.2f}), Monte Carlo {mc[:, 2].std() * 1e3:.2f} mm")
 ```
 
-With $f = 280$ px, a 10 cm baseline and 1 px keypoint noise, the depth uncertainty is 4.55 mm at 0.3 m, 12.63 mm at 0.5 m and 24.75 mm at 0.7 m, matching $\sqrt2 Z^2/(fb)$ and the Monte Carlo values (4.52, 12.25, 24.48 mm). Laterally the point is ten times better: $\sigma\_x$ = 0.76, 1.26, 1.77 mm. A fingertip is therefore known well in the image directions and poorly in depth, exactly when the hand is stretched out to touch something. Real systems reduce this with more views, with the hand model (bone lengths fix the scale between joints) and with temporal filtering, which is the next topic.
+With $f = 280$ px, a 10 cm baseline and 1 px keypoint noise, the depth uncertainty is 4.55 mm at 0.3 m, 12.63 mm at 0.5 m and 24.75 mm at 0.7 m, matching $\sqrt2 Z^2/(fb)$ and the Monte Carlo values (4.52, 12.25, 24.48 mm). Laterally the point is $2Z/b$ times better, 6 to 14 times here: $\sigma\_x \approx Z\sigma/(\sqrt2 f)$ = 0.76, 1.26, 1.77 mm. A fingertip is therefore known well in the image directions and poorly in depth, exactly when the hand is stretched out to touch something. Real systems reduce this with more views, with the hand model (bone lengths fix the scale between joints) and with temporal filtering, which is the next topic.
 
 ### 6.2 Jitter against lag: the 1€ filter
 
-Keypoint noise turns into jitter, which makes buttons hard to press; a strong low-pass filter removes jitter but adds lag, which makes the hand feel heavy. A fixed cutoff cannot satisfy both. The **1€ filter** of Casiez, Roussel and Vogel (2012) is a first-order low-pass filter whose cutoff frequency grows with the estimated speed: $f\_c = f\_{c,\min} + \beta\,\lvert\dot{\hat x}\rvert$. At rest the cutoff is low and jitter is suppressed; during a fast movement it rises and the lag shrinks.
+Keypoint noise turns into jitter, which makes buttons hard to press; a strong low-pass filter removes jitter but adds lag, which makes the hand feel heavy. A fixed cutoff cannot satisfy both. The **1€ filter** of Casiez, Roussel and Vogel (2012) is a first-order low-pass filter whose cutoff frequency grows with the estimated speed: $f\_c = f\_{c,\min} + \beta\,\lvert\dot{\hat x}\rvert$, where $\beta$ turns a speed in m/s into hertz and so has the unit 1/m. At rest the cutoff is low and jitter is suppressed; during a fast movement it rises and the lag shrinks.
 
 ```python
 import numpy as np
@@ -503,7 +503,7 @@ for name, y in [("raw", meas), ("low-pass 1 Hz", one_euro(meas, dt, 1.0, 0.0)),
 | raw | 1.95 mm | 4.3 mm |
 | low-pass 1 Hz | 0.34 mm | 53.4 mm |
 | low-pass 5 Hz | 0.79 mm | 18.6 mm |
-| 1€ (1 Hz, $\beta = 30$ s/m) | 0.46 mm | 10.5 mm |
+| 1€ (1 Hz, $\beta = 30$ m⁻¹) | 0.46 mm | 10.5 mm |
 
 The 1€ filter keeps almost all of the jitter reduction of the 1 Hz filter and lags five times less during the reach; it beats the 5 Hz filter on both counts. The two parameters are tuned as the authors suggest: first $f\_{c,\min}$ for acceptable jitter at rest, then $\beta$ for acceptable lag in fast motion. Pinch and grab gestures are then detected from distances between filtered fingertips, with hysteresis (different thresholds for closing and opening) so that the state does not flicker.
 
@@ -596,7 +596,7 @@ Without slip the pupil alone is slightly better, because subtracting the glint a
 
 {% include blog_figure.liquid path="assets/img/blog/3d-vision/10-eye.svg" localized="true" caption="Left: the simulated eye-camera image for the nine calibration gaze directions: pupil centres (purple), glints (orange crosses) and the pupil-glint vectors (gray). The faint markers are the same gaze directions after the headset slid down by 1 mm: pupil and glint both move up by about 17 px, while their difference changes much less. Right: mean gaze error inside the calibrated ±15° field against the slip, for the pupil alone and for PCCR." %}
 
-For foveated rendering, latency matters again: saccades, the fast jumps of the eye between fixations, reach several hundred degrees per second, and the rendering must move the high-resolution region before the eye lands. The [Interactive Lab]({{ '/' | relative_url }}#lab) on the home page has a foveated rendering demo in which you can see how the resolution can fall with eccentricity.
+For foveated rendering, latency matters again: saccades, the fast jumps of the eye between fixations, reach several hundred degrees per second, and the high-resolution region must reach the new gaze point soon after the eye lands, while visual sensitivity is still reduced after the saccade (saccadic suppression); otherwise the coarse periphery becomes visible. The [Interactive Lab]({{ '/' | relative_url }}#lab) on the home page has a foveated rendering demo in which you can see how the resolution can fall with eccentricity.
 
 ## 8. Scene understanding
 
@@ -674,7 +674,7 @@ The floor ($\mathbf n = (0, 0, 1)$, 3016 inliers), the two walls ($(1, 0, 0)$ an
 
 **Meshes.** A headset with a depth sensor, or with dense stereo, can fuse depth into a TSDF and extract a triangle mesh with marching cubes, as in posts 07 to 09, at a resolution of a few centimetres. The mesh serves physics (collisions), occlusion of virtual objects by real ones, and navigation. Its resolution limits occlusion edges: a 5 cm voxel cannot cut a virtual object cleanly along the edge of a hand, which is why hand occlusion usually uses the hand tracker's model instead.
 
-**Semantics.** Labels such as floor, wall, door, table, couch and screen turn geometry into something an application can reason about ("put the chessboard on a table", "never put content in front of a door"). Object detection on the images, projected onto the mesh, is one approach. SceneScript (Avetisyan et al. 2024) is an instructive alternative: from an egocentric video it predicts a structured description of the room's layout and objects as a sequence of commands (walls, doors, windows, boxes), trained on a large synthetic dataset. For applications, such a compact, editable representation can be more useful than a dense mesh. [Post 08]({{ '/blog/2026/3d-vision-08-3d-representations/' | relative_url }}) discussed the trade-offs between representations in general.
+**Semantics.** Labels such as floor, wall, door, table, couch and screen turn geometry into something an application can reason about ("put the chessboard on a table", "never put content in front of a door"). Object detection on the images, projected onto the mesh, is one approach. SceneScript (Avetisyan et al. 2024) is an instructive alternative: from an egocentric video it predicts a structured description of the room's layout and objects as a sequence of commands (walls, doors, windows, boxes), trained on a large synthetic dataset. For applications, such a compact, editable representation can be more useful than a dense mesh. Platforms expose such results as **semantic anchors**: ARKit's plane anchors carry a classification (wall, floor, ceiling, table, seat, window, door), and Meta's scene API represents walls, the floor, tables and couches as anchors with semantic labels, so an application can attach content to "the table" instead of to raw coordinates; section 9 explains how anchors keep it there. [Post 08]({{ '/blog/2026/3d-vision-08-3d-representations/' | relative_url }}) discussed the trade-offs between representations in general.
 
 ## 9. Spatial anchors and relocalization
 
@@ -731,7 +731,7 @@ for i, g, a in zip(place, world_err, anchor_err):
     print(f"placed after {i * 0.05:5.2f} m: world coordinates {g * 100:6.1f} cm, anchor-relative {a * 100:5.2f} cm")
 ```
 
-The drifting map closes the loop 1.19 m off. Objects stored in world coordinates end up between 0.8 cm (placed after 1.25 m of walking) and 104.6 cm (after 29.25 m) from where they belong, growing with the drift accumulated before they were placed. Objects stored relative to their anchor are all off by 0.42 cm: only the drift accumulated over the 0.75 m between the anchor's keyframe and the placement, acting on a lever arm of about 1.4 m, remains.
+The drifting map closes the loop 1.19 m off. Objects stored in world coordinates end up between 0.8 cm (placed after 1.25 m of walking) and 104.6 cm (after 29.25 m) from where they belong, growing with the drift accumulated before they were placed. Objects stored relative to their anchor are all off by 0.42 cm: only the drift accumulated over the 0.75 m between the anchor's keyframe and the placement, acting on a lever arm of about 1.07 m, remains: a heading error that grows evenly along a straight stretch acts like one rotation about the middle of the stretch, which is $\sqrt{0.375^2 + 1^2} \approx 1.07$ m from the object, and $0.225° \approx 3.9$ mrad times 1.07 m is 4.2 mm.
 
 {% include blog_figure.liquid path="assets/img/blog/3d-vision/10-anchors.svg" localized="true" caption="Top view of the anchor experiment. The true loop (black) and the drifting map before loop closure (orange dashed), which ends 1.19 m from its start. Stars: where the nine objects belong. Red crosses and arrows: objects stored in world coordinates, after the map has been corrected, up to 104.6 cm off. Green circles: the same objects stored relative to the nearest anchor (green squares, one every 2 m), each 0.42 cm off and hidden under its star." %}
 
@@ -743,7 +743,7 @@ $$
 T_{W_2A} = T_{W_2W_1}\,T_{W_1A}, \qquad T_{W_2W_1} = T_{W_2C}\,T_{CW_1},
 $$
 
-where $T\_{W\_2C}$ is the current tracking pose and $T\_{CW\_1}$ the relocalized one, both for the same image. Sharing anchors between devices works the same way: each device relocalizes in a common map (on a server for "cloud anchors") and composes its own transform. Relocalization must cope with changes in lighting and furniture between sessions, which is why learned features and matchers (post 03) have largely replaced hand-crafted ones here.
+where $T\_{W\_2C}$ is the current tracking pose and $T\_{CW\_1}$ the relocalized one, both for the same image. Sharing anchors between devices works the same way: each device relocalizes in a common map (on a server for "cloud anchors") and composes its own transform. Relocalization must cope with changes in lighting and furniture between sessions, which is one reason why learned features and matchers (post 03) are widely used for it.
 
 ## 10. Putting it together
 
@@ -786,8 +786,10 @@ A few engineering rules summarize the post:
 | Towards indistinguishable augmented reality: a survey on optical see-through head-mounted displays (Itoh, Langlotz, Sutton, Plopski) | ACM Computing Surveys | 2021 | [DOI](https://doi.org/10.1145/3453157) | Spatial, temporal and visual realism of OST displays |
 | NeuralPassthrough: learned real-time view synthesis for VR (Xiao et al.) | SIGGRAPH | 2022 | [arXiv](https://arxiv.org/abs/2207.02186) | Learned passthrough view synthesis |
 | UmeTrack: unified multi-view end-to-end hand tracking for VR (Han et al.) | SIGGRAPH Asia | 2022 | [arXiv](https://arxiv.org/abs/2211.00099) | End-to-end multi-view, multi-frame hand pose in world space |
-| Project Aria: a new tool for egocentric multi-modal AI research (Engel et al.) | arXiv preprint | 2023 | [arXiv](https://arxiv.org/abs/2308.13561) | A research glasses platform with SLAM, eye tracking and open datasets |
+| Project Aria: a new tool for egocentric multi-modal AI research (Engel et al.) | arXiv preprint (August 2023) | 2023 | [arXiv](https://arxiv.org/abs/2308.13561) | A research glasses platform with SLAM, eye tracking and open datasets |
 | SceneScript: reconstructing scenes with an autoregressive structured language model (Avetisyan et al.) | ECCV | 2024 | [arXiv](https://arxiv.org/abs/2403.13064) | Room layout and objects as a structured command sequence |
+
+Status as of November 2026: every entry is a peer-reviewed publication except Project Aria, which is an arXiv preprint.
 
 ## Learning resources
 
@@ -831,7 +833,7 @@ A few engineering rules summarize the post:
 
    <details markdown="1"><summary>Hint</summary>
 
-   The heading drift between the anchor keyframe and the placement is about $0.3°/\text{m}$ times the distance walked between them (now up to 3 m), and it acts on a lever arm of roughly the distance between anchor and content. Expect errors of several centimetres instead of 0.42 cm; the code changes are `anchors = np.arange(0, n, 120)` and `offset = np.array([0.0, 3.0, 1.0])`.
+   The heading drift between the anchor keyframe and the placement is about $0.3°/\text{m}$ times the distance walked between them (now up to 3.25 m), and it acts on a lever arm of roughly the distance from the middle of that stretch to the content. For 2.75 m of walking and content 3 m from the path that is $0.825° \approx 14.4$ mrad times about 3.3 m, or 4.8 cm; over all nine objects the code gives 1.2 to 5.8 cm instead of 0.42 cm. The code changes are `anchors = np.arange(0, n, 120)` and `offset = np.array([0.0, 3.0, 1.0])`.
    </details>
 
 ## Where to go next

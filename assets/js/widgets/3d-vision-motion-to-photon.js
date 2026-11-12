@@ -20,7 +20,7 @@
       lat: "latency \u0394", pred: "prediction", none: "none", vel: "constant velocity", acc: "constant acceleration",
       warp: "late warp (5 ms)", drift: "drift", dist: "distance d", noise: "jitter", ppd: "display",
       motion: "head motion", auto: "auto", drag: "drag", still: "still", reloc: "relocalize", pause: "pause", play: "play",
-      real: "real box", virt: "virtual box", zoom: "zoom on the left edge", px: "display pixels",
+      real: "real box", virt: "virtual box", zoom: "zoom on the left edge", px: "display pixels", px1: "display pixel",
       rot: "rotation part", trans: "translation part", total: "total", now: "now", rms: "RMS (4 s)",
       atobj: "at the object", hint: "Drag in the view to turn your head (drag mode), or let the auto mode turn it. " +
         "The zoom shows the display pixel grid around the box edge.",
@@ -30,7 +30,7 @@
       lat: "\u5ef6\u8fdf \u0394", pred: "\u9884\u6d4b", none: "\u65e0", vel: "\u6052\u901f\u5ea6", acc: "\u6052\u52a0\u901f\u5ea6",
       warp: "\u540e\u671f\u91cd\u6295\u5f71\uff085 ms\uff09", drift: "\u6f02\u79fb", dist: "\u8ddd\u79bb d", noise: "\u6296\u52a8", ppd: "\u663e\u793a",
       motion: "\u5934\u90e8\u8fd0\u52a8", auto: "\u81ea\u52a8", drag: "\u62d6\u52a8", still: "\u9759\u6b62", reloc: "\u91cd\u5b9a\u4f4d", pause: "\u6682\u505c", play: "\u7ee7\u7eed",
-      real: "\u771f\u5b9e\u76d2\u5b50", virt: "\u865a\u62df\u76d2\u5b50", zoom: "\u5de6\u8fb9\u7f18\u653e\u5927", px: "\u663e\u793a\u50cf\u7d20",
+      real: "\u771f\u5b9e\u76d2\u5b50", virt: "\u865a\u62df\u76d2\u5b50", zoom: "\u5de6\u8fb9\u7f18\u653e\u5927", px: "\u663e\u793a\u50cf\u7d20", px1: "\u663e\u793a\u50cf\u7d20",
       rot: "\u65cb\u8f6c\u90e8\u5206", trans: "\u5e73\u79fb\u90e8\u5206", total: "\u603b\u8ba1", now: "\u5f53\u524d", rms: "RMS\uff084 \u79d2\uff09",
       atobj: "\u7269\u4f53\u5904", hint: "\u5728\u89c6\u56fe\u4e2d\u62d6\u52a8\u6765\u8f6c\u5934\uff08\u62d6\u52a8\u6a21\u5f0f\uff09\uff0c\u6216\u8ba9\u81ea\u52a8\u6a21\u5f0f\u8f6c\u5934\u3002\u653e\u5927\u56fe\u663e\u793a\u76d2\u5b50\u8fb9\u7f18\u9644\u8fd1\u7684\u663e\u793a\u50cf\u7d20\u7f51\u683c\u3002",
       t: "\u65f6\u95f4\uff08\u79d2\uff09", err: "|\u8bef\u5dee|\uff08\u2032\uff09", rate: "\u5934\u90e8\u89d2\u901f\u5ea6", pxu: "\u50cf\u7d20"
@@ -39,7 +39,7 @@
       lat: "\u9045\u5ef6 \u0394", pred: "\u4e88\u6e2c", none: "\u306a\u3057", vel: "\u7b49\u901f\u5ea6", acc: "\u7b49\u52a0\u901f\u5ea6",
       warp: "\u5f8c\u6bb5\u30ea\u30d7\u30ed\u30b8\u30a7\u30af\u30b7\u30e7\u30f3\uff085 ms\uff09", drift: "\u30c9\u30ea\u30d5\u30c8", dist: "\u8ddd\u96e2 d", noise: "\u30b8\u30c3\u30bf", ppd: "\u30c7\u30a3\u30b9\u30d7\u30ec\u30a4",
       motion: "\u982d\u306e\u52d5\u304d", auto: "\u81ea\u52d5", drag: "\u30c9\u30e9\u30c3\u30b0", still: "\u9759\u6b62", reloc: "\u518d\u30ed\u30fc\u30ab\u30e9\u30a4\u30ba", pause: "\u4e00\u6642\u505c\u6b62", play: "\u518d\u751f",
-      real: "\u5b9f\u7269\u306e\u7bb1", virt: "\u4eee\u60f3\u306e\u7bb1", zoom: "\u5de6\u7aef\u306e\u62e1\u5927", px: "\u30c7\u30a3\u30b9\u30d7\u30ec\u30a4\u753b\u7d20",
+      real: "\u5b9f\u7269\u306e\u7bb1", virt: "\u4eee\u60f3\u306e\u7bb1", zoom: "\u5de6\u7aef\u306e\u62e1\u5927", px: "\u30c7\u30a3\u30b9\u30d7\u30ec\u30a4\u753b\u7d20", px1: "\u30c7\u30a3\u30b9\u30d7\u30ec\u30a4\u753b\u7d20",
       rot: "\u56de\u8ee2\u6210\u5206", trans: "\u4e26\u9032\u6210\u5206", total: "\u5408\u8a08", now: "\u73fe\u5728", rms: "RMS\uff084 \u79d2\uff09",
       atobj: "\u7269\u4f53\u4e0a", hint: "\u30d3\u30e5\u30fc\u3092\u30c9\u30e9\u30c3\u30b0\u3059\u308b\u3068\u982d\u304c\u56de\u308a\u307e\u3059\uff08\u30c9\u30e9\u30c3\u30b0\u30e2\u30fc\u30c9\uff09\u3002\u81ea\u52d5\u30e2\u30fc\u30c9\u3067\u306f\u81ea\u52d5\u3067\u56de\u308a\u307e\u3059\u3002\u62e1\u5927\u56f3\u306f\u7bb1\u306e\u7aef\u4ed8\u8fd1\u306e\u30c7\u30a3\u30b9\u30d7\u30ec\u30a4\u753b\u7d20\u683c\u5b50\u3067\u3059\u3002",
       t: "\u6642\u9593\uff08\u79d2\uff09", err: "|\u8aa4\u5dee|\uff08\u2032\uff09", rate: "\u982d\u306e\u89d2\u901f\u5ea6", pxu: "\u753b\u7d20"
@@ -127,16 +127,18 @@
     var row = document.createElement("div");
     row.style.cssText = "display:flex;flex-wrap:wrap;gap:8px;padding:4px 10px 6px;align-items:flex-start";
     root.appendChild(row);
-    function canvas(cursor) {
+    function canvas(cursor, touch) {
       var c = document.createElement("canvas");
-      c.style.cssText = "display:block;border-radius:6px;background:#fff;box-shadow:0 0 0 1px #ddd;touch-action:none" +
+      c.style.cssText = "display:block;border-radius:6px;background:#fff;box-shadow:0 0 0 1px #ddd;touch-action:" + touch +
         (cursor ? ";cursor:" + cursor : "");
       return c;
     }
-    var cv = canvas("ew-resize"), side = document.createElement("div");
+    // the view takes horizontal drags (head turns) but lets vertical swipes scroll the page;
+    // the zoom and plot canvases are display only
+    var cv = canvas("ew-resize", "pan-y"), side = document.createElement("div");
     side.style.cssText = "flex:1 1 240px;min-width:0;display:flex;flex-direction:column;gap:8px";
     row.appendChild(cv); row.appendChild(side);
-    var zc = canvas(), pc = canvas();
+    var zc = canvas(null, "auto"), pc = canvas(null, "auto");
     side.appendChild(zc); side.appendChild(pc);
     var info = document.createElement("div");
     info.style.cssText = "padding:2px 12px 10px;line-height:1.55;font-variant-numeric:tabular-nums";
@@ -238,12 +240,10 @@
       var lag = S.lat / 1000, lagR = S.warp ? Math.min(lag, WARP) : lag;
       var psiHat = predictYaw(lagR) + S.noise / 60 * gauss();
       var xHat = predictX(lag);
-      var jit = S.noise / 60 * gauss();
       var a0 = edgeAngle(st.psi, st.x);
       var eRot = -(psiHat - st.psi) * 60;                         // arcmin, rotation part
       var eAll = (edgeAngle(psiHat, xHat) - a0) * 60;
-      var eTr = eAll - eRot;
-      eAll += jit * 60 * 0;                                       // jitter already inside psiHat
+      var eTr = eAll - eRot;                                      // jitter is inside psiHat
       return { e: eAll, rot: eRot, tr: eTr, a0: a0, psiHat: psiHat, xHat: xHat };
     }
 
@@ -317,7 +317,7 @@
       zctx.font = "12px system-ui, sans-serif"; zctx.fillStyle = "#333"; zctx.textBaseline = "top";
       zctx.fillText(T.zoom + "  \u00b1" + half.toFixed(0) + "\u2032", 6, 3);
       zctx.textBaseline = "bottom";
-      zctx.fillText((cell * sc >= 5 ? "\u25a1 = 1 " + T.px + " (" + cell.toFixed(1) + "\u2032)" : ""), 6, ZH - 2);
+      zctx.fillText((cell * sc >= 5 ? "\u25a1 = 1 " + T.px1 + " (" + cell.toFixed(1) + "\u2032)" : ""), 6, ZH - 2);
     }
     function drawPlot() {
       pctx.fillStyle = "#fff"; pctx.fillRect(0, 0, PW, PH);
