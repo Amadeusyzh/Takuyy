@@ -16,7 +16,7 @@ related_posts: false
 
 [第 01 篇]({{ '/blog/2026/3d-vision-01-image-formation-and-camera-models/' | relative_url }})写下了相机模型：针孔投影 $P = K[R \mid \mathbf t]$ 加上一个畸变多项式。那里所有的数值都是给定的。可在实际中，没有人会把 $f_x$ 或 $k_1$ 直接交给你。镜头有标称焦距，但以像素为单位的有效焦距取决于对焦位置、传感器的确切位置和制造公差。主点可能偏离图像中心几十个像素，廉价广角镜头的畸变可以让角落的像素移动 30 像素甚至更多。
 
-**相机标定**（camera calibration）就是测量这些数值。它几乎是所有 3D 视觉项目的第一个实验：SfM、SLAM、双目深度、AR 配准、机器人抓取。这里的误差会传播到下游的一切。焦距长了 1%，运动相机估计出的每个深度大约都会被放大 1%；没有校正的畸变会把直线弄弯，从而破坏极线几何。本文从零搭建标准流程，在已知真值的合成数据上运行，与 OpenCV 对照，然后回答教程通常略过的问题：*这个结果有多可信，在图像的哪些区域可信？*
+**相机标定**（camera calibration）就是测量这些数值。它几乎是所有 3D 视觉项目的第一个实验：SfM、SLAM、双目深度、AR 配准、机器人抓取。这里的误差会传播到下游的一切。焦距长了 1%，由已知基线（双目相机，或移动了已知距离的相机）三角化得到的每个深度大约都会被放大 1%；没有校正的畸变会把直线弄弯，从而破坏极线几何。本文从零搭建标准流程，在已知真值的合成数据上运行，与 OpenCV 对照，然后回答教程通常略过的问题：*这个结果有多可信，在图像的哪些区域可信？*
 
 ## 预备知识
 
@@ -367,7 +367,7 @@ $$
 
 并自适应地调整 $\lambda$：如果这一步降低了代价，就接受它并减小 $\lambda$（更信任二次模型，接近 Gauss-Newton）；否则拒绝并增大 $\lambda$（步子更短，更接近缩放后的梯度下降）。Marquardt 用 $\mathrm{diag}(J^\top J)$ 缩放，使阻尼与各参数的单位无关；当 $f_x \approx 600$ 和 $k_2 \approx 0.07$ 处在同一个向量里时，这一点很重要。
 
-下面的代码是一个完整（虽然慢）的标定器：闭式初始化（畸变从零开始）、前向差分雅可比和 LM。实际的实现（OpenCV、Ceres）使用解析导数并利用稀疏性，但计算的是同一件事。
+下面的代码是一个完整（虽然慢）的标定器：闭式初始化（畸变从零开始）、前向差分雅可比和 LM。实际的实现（OpenCV，或基于 Ceres 的标定器）使用解析导数或自动微分并利用稀疏性，但计算的是同一件事。
 
 ```python
 def rvec_of(R):
@@ -458,7 +458,7 @@ fx fy cx cy: [601.06 596.97 325.19 235.49]
 k1 k2 p1 p2 k3: [-0.2806  0.0914  0.     -0.0005 -0.0526]
 ```
 
-（选项 `fix_k3` 和掩码 `free` 可以把 $k_3$ 固定为 0，第 5.3 节会用到。）RMS 误差从初始的 4.06 像素出发，两次迭代降到 0.42 像素，11 次后收敛于 0.4036 像素。现在 $K$ 的估计与真值相差 1-3 像素，$k_1 = -0.2806$ 与 $-0.28$ 相差不到 0.3%。
+（选项 `fix_k3` 和掩码 `free` 可以把 $k_3$ 固定为 0，第 5.3 节会用到。）RMS 误差从初始的 4.06 像素出发，两次迭代降到 0.42 像素，11 次后收敛于 0.4036 像素。现在 $K$ 的估计与真值相差不超过约 3 像素（最差的是 $c_x$，偏 3.2 像素），$k_1 = -0.2806$ 与 $-0.28$ 相差不到 0.3%。
 
 {% include blog_figure.liquid path="assets/img/blog/3d-vision/02-lm.svg" caption="左：解处 $1296\times 81$ 雅可比矩阵的稀疏模式（黑 = 非零）。前 9 列（内参，红线左侧）涉及所有残差；$f_x$ 和 $c_x$ 只影响 $u$ 行，$f_y$、$c_y$ 只影响 $v$ 行，因此出现条纹。每个 6 列的位姿块只涉及本视图的 108 个残差：块对角的'箭头'结构。右：在我们的数据上运行 LM。RMS 重投影误差在两次迭代内从 4.06 像素（闭式解，无畸变）降到 0.42 像素，最终稳定在 0.4036 像素，略低于 $\sqrt 2\,\sigma = 0.42$（点线）；每一步都被接受，所以阻尼 $\lambda$（橙色，右轴）每次迭代都缩小 3 倍。" %}
 
@@ -515,7 +515,7 @@ $$
 
 ### 5.2 参数不确定度：$\Sigma = \sigma^2 (J^\top J)^{-1}$
 
-在解 $\hat{\mathbf p}$ 附近，残差对扰动是线性的：$\mathbf r(\hat{\mathbf p} + \boldsymbol\delta) \approx \hat{\mathbf r} + J\boldsymbol\delta$。现在问：检测噪声 $\boldsymbol\varepsilon$ 变化时，估计会怎样移动？线性化问题的最小二乘解为 $\boldsymbol\delta = -(J^\top J)^{-1}J^\top\boldsymbol\varepsilon$。由 $\mathrm{Cov}(\boldsymbol\varepsilon) = \sigma^2 I$，
+在解 $\hat{\mathbf p}$ 附近，残差对扰动是线性的：$\mathbf r(\hat{\mathbf p} + \boldsymbol\delta) \approx \hat{\mathbf r} + J\boldsymbol\delta$。现在问：如果检测位置移动了一个噪声向量 $\boldsymbol\varepsilon$，估计会怎样移动？残差改变 $-\boldsymbol\varepsilon$，线性化问题变为 $\min \lVert J\boldsymbol\delta - \boldsymbol\varepsilon\rVert^2$，其最小二乘解为 $\boldsymbol\delta = (J^\top J)^{-1}J^\top\boldsymbol\varepsilon$。由 $\mathrm{Cov}(\boldsymbol\varepsilon) = \sigma^2 I$，
 
 $$
 \Sigma_{\mathbf p} = \mathrm{Cov}(\boldsymbol\delta) = (J^\top J)^{-1}J^\top(\sigma^2 I)J(J^\top J)^{-1} = \sigma^2 (J^\top J)^{-1}.
@@ -768,7 +768,7 @@ cv2.cornerSubPix [15.398 14.644] (error 0.037 px)
 | ChArUco | 白格中嵌入 ArUco 标记的棋盘格 | 每个角点有 ID：部分可见和遮挡都没问题，所以可以覆盖图像角落 | 需要良好的打印质量；标记要足够大才能解码 |
 | AprilGrid（Kalibr） | AprilTag 组成的网格；以标签角点为特征点 | ID 唯一、检测鲁棒，是 Kalibr 的默认标定板 | 角点是标签角点，比 X 型交点略不精确 |
 
-由于只有可识别的角点才能在部分可见时使用，**ChArUco** 是当今单相机标定最好的默认选择：它让你能把标定板推进图像四角，而第 5.3 节表明这一点最重要。无论用哪种，都要把它印在坚硬、**平整**的基材上（玻璃、铝塑板），并用卡尺**实测**方格边长，而不要相信打印机：标定板 1% 的尺度误差不会改变 $K$（它被标定板距离吸收了），但你由标定计算出的每个度量量（双目基线、手眼平移）都会继承这个误差。
+由于只有可识别的角点才能在部分可见时使用，**ChArUco** 是单相机标定的一个好的默认选择：它让你能把标定板推进图像四角，而第 5.3 节表明这一点最重要。无论用哪种，都要把它印在坚硬、**平整**的基材上（玻璃、铝塑板），并用卡尺**实测**方格边长，而不要相信打印机：标定板 1% 的尺度误差不会改变 $K$（它被标定板距离吸收了），但你由标定计算出的每个度量量（双目基线、手眼平移）都会继承这个误差。
 
 ## 7. 双目标定与极线校正
 
@@ -782,7 +782,7 @@ $$
 R = R_{2i}R_{1i}^\top,\quad \mathbf t = \mathbf t_{2i} - R\,\mathbf t_{1i}.
 $$
 
-每张图像给出一个估计；把它们平均作为初值，再对两台相机的内参、$(R, \mathbf t)$ 以及每张图像的一个标定板位姿做联合 LM（第二台相机的板位姿现在由此*推导*出来，这就把两台相机绑在了一起）。这就是 `cv2.stereoCalibrate`。我们的第二台相机位于右侧 12 cm 处，向内偏转 8°，内参和镜头略有不同。
+每张图像给出一个估计；把它们合并（对各视图取平均或中位数）作为初值，再对两台相机的内参、$(R, \mathbf t)$ 以及每张图像的一个标定板位姿做联合 LM（第二台相机的板位姿现在由此*推导*出来，这就把两台相机绑在了一起）。这就是 `cv2.stereoCalibrate`。我们的第二台相机位于右侧 12 cm 处，向内偏转 8°，内参和镜头略有不同。
 
 ```python
 # a second camera 12 cm to the right, toed in by 8 degrees (about y), with 2 degrees of tilt and 4 of roll
@@ -827,7 +827,7 @@ first shared view: mean |v_l - v_r| before 20.69 px, after rectification 0.326 p
 rectified baseline from P2: 120.04 mm
 ```
 
-看看旋转误差：如果分别标定每台相机的内参然后固定，误差为 0.76°；联合优化所有参数时为 0.07°。原因是第 5.3 节见过的一种耦合：主点的误差看起来像这台相机的一个小旋转。内参固定时，相对旋转必须吸收两台相机的主点误差；联合优化时，共享的观测把它们约束住了。这对双目深度影响很大：相对偏航角 0.76° 的误差会让每个像素的视差偏移 $f\cdot 0.0133 \approx 8$ 像素。
+看看旋转误差：如果分别标定每台相机的内参然后固定，误差为 0.76°；联合优化所有参数时为 0.07°。原因是第 5.3 节见过的一种耦合：主点的误差看起来像这台相机的一个小旋转。内参固定时，相对旋转必须吸收两台相机的主点误差；联合优化时，共享的观测把它们约束住了。数字也对得上：分别标定时，相机 1 的 $c_x$ 偏大 3.2 像素，相机 2 的偏小 5.4 像素，在 $f \approx 600$ 像素下 8.6 像素约等于 0.8° 的偏航；而 0.76° 的误差中确实有 0.75° 是绕 $y$ 轴的旋转。这对双目深度影响很大：相对偏航角 0.76° 的误差会让整幅图像的视差偏移约 $f\cdot 0.0133 \approx 8$ 像素。
 
 ### 7.2 极线校正
 
@@ -911,9 +911,9 @@ ours:   rotation error 0.042 deg, translation error 0.73 mm
 OpenCV: rotation error 0.042 deg, translation error 0.73 mm
 ```
 
-{% include blog_figure.liquid path="assets/img/blog/3d-vision/02-hand-eye.svg" caption="左：实验设置，机器人基座 $\lbrace b\rbrace$、四个夹爪工位（粗坐标轴）、通过同一个 $X$ 装在每个工位上的相机（细坐标轴，橙色连线），以及固定的标定板 $\lbrace t\rbrace$。右：100 次试验中 $X$ 误差的中位数（相机到标定板的位姿每轴加 0.05° 和 0.5 mm 的噪声）随工位数 $n$ 的变化，使用所有工位对。实线：一般的旋转；旋转误差从 0.16°（$n=3$）降到 0.04°（$n=20$），平移误差从 1.8 mm 降到 0.5 mm。虚线：所有旋转都绕同一竖直轴；此时 $X$ 绕该轴的旋转不可观测，无论加多少工位，误差都停留在 90° 左右和 100 mm 以上。" %}
+{% include blog_figure.liquid path="assets/img/blog/3d-vision/02-hand-eye.svg" caption="左：实验设置，机器人基座 $\lbrace b\rbrace$、四个夹爪工位（粗坐标轴）、通过同一个 $X$ 装在每个工位上的相机（细坐标轴，橙色连线）、固定的标定板 $\lbrace t\rbrace$，以及每台相机到它的视线（灰色点线）。右：100 次试验中 $X$ 误差的中位数（相机到标定板的位姿每轴加 0.05° 和 0.5 mm 的噪声）随工位数 $n$ 的变化，使用所有工位对。实线：一般的旋转；旋转误差从 0.16°（$n=3$）降到 0.04°（$n=20$），平移误差从 1.8 mm 降到 0.5 mm。虚线：所有旋转都绕同一竖直轴；此时 $X$ 绕该轴的旋转不可观测，无论加多少工位，误差都停留在 90° 左右和 100 mm 以上。" %}
 
-虚线展示的是经典的失败情形：运动必须包含绕**至少两个不平行轴**的旋转。只绕一个轴转动手腕的机器人（或在地面上行驶的移动机器人）无法用这种方法标定手眼变换。其他解法（Tsai 和 Lenz 1989、Daniilidis 的对偶四元数 1999，都可以在 `cv2.calibrateHandEye` 中使用）在旋转与平移的权衡上有所不同，但都需要这种多样性。变体：如果相机固定在世界中、观察夹爪上的标定板（"眼在手外"，eye-to-hand），同样的方程成立，只是角色互换；同时估计标定板位姿则得到 $AX = YB$（`cv2.calibrateRobotWorldHandEye`）。
+虚线展示的是经典的失败情形：运动必须包含绕**至少两个不平行轴**的旋转。只绕一个轴转动手腕的机器人（或在地面上行驶的移动机器人）无法用这种方法标定手眼变换。其他解法（Tsai 和 Lenz 1989、Daniilidis 的对偶四元数 1999，都可以在 `cv2.calibrateHandEye` 中使用）在运动的参数化方式上不同，也在于先后分别求解旋转和平移（Tsai-Lenz、Park-Martin）还是同时求解（Daniilidis），但都需要这种多样性。变体：如果相机固定在世界中、观察夹爪上的标定板（"眼在手外"，eye-to-hand），同样的方程成立，只是角色互换；同时估计标定板位姿则得到 $AX = YB$（`cv2.calibrateRobotWorldHandEye`）。
 
 ## 9. 相机-IMU 标定
 
@@ -923,9 +923,9 @@ OpenCV: rotation error 0.042 deg, translation error 0.73 mm
 - 两者时钟之间的**时间偏移** $t_d$：图像的相机时间戳通常并不是曝光的时刻；
 - IMU 的噪声模型（陀螺仪和加速度计的噪声密度与零偏随机游走），通常事先由一段长时间静止的记录测得（Allan 方差）。
 
-**时间偏移为什么重要，用数字说话。**以 $\omega = 2$ rad/s（约 115°/s，普通的转头速度）转动头部。$t_d = 5$ ms 的时钟偏移意味着 IMU 认为相机所看的方向与实际相差 $\omega t_d = 0.01$ rad。对我们的相机，在图像中心附近这相当于 $f\,\omega\,t_d = 600 \times 0.01 = 6$ 像素：是角点检测噪声的十五倍。对头显来说，这就是虚拟物体相对真实世界明显地"漂"。
+**时间偏移为什么重要，用数字说话。**以 $\omega = 2$ rad/s（约 115°/s，普通的转头速度）转动头部。$t_d = 5$ ms 的时钟偏移意味着 IMU 认为相机所看的方向与实际相差 $\omega t_d = 0.01$ rad。对我们的相机，在图像中心附近这相当于 $f\,\omega\,t_d = 600 \times 0.01 = 6$ 像素：是角点噪声 $\sigma = 0.3$ 像素的二十倍。对头显来说，这就是虚拟物体相对真实世界明显地"漂"。
 
-**Kalibr 的做法**（Furgale、Rehder 和 Siegwart 2013）。你拿着传感器在 AprilGrid 前挥动一两分钟，激励所有的旋转轴和加速度轴。IMU 的轨迹被建模为 $SE(3)$ 中的**连续时间 B 样条**（continuous-time B-spline），因此可以在任意时刻求它的位姿、角速度和加速度。然后一个大的非线性最小二乘问题同时估计样条、$T_{CI}$、$t_d$、重力和 IMU 零偏。它的残差包括：在（平移后的）图像时刻的网格角点重投影误差，加上陀螺仪残差（测量值减去样条角速度）和加速度计残差（测量值减去样条加速度和重力），各自按噪声加权。正是连续时间表示让时间偏移变得可估计，因为平移 $t_d$ 只是改变了图像残差在样条上的求值位置。论文报告时间偏移可以估计到 IMU 采样周期的一小部分。实践中：先运行 `kalibr_calibrate_cameras`，再用写有噪声参数的 `imu.yaml` 运行 `kalibr_calibrate_imu_camera`。Rehder 等（2016）把工具箱扩展到多个 IMU 和 IMU 内参。卷帘快门相机（第 01 篇 3.5 节）还需要一个随图像行增长的时间偏移。
+**Kalibr 的做法**（Furgale、Rehder 和 Siegwart 2013）。你拿着传感器在 AprilGrid 前挥动一两分钟，激励所有的旋转轴和加速度轴。IMU 的轨迹被建模为**连续时间 B 样条**（continuous-time B-spline，对位置和旋转的一种参数化分别建模），因此可以在任意时刻求它的位姿、角速度和加速度。然后一个大的非线性最小二乘问题同时估计样条、$T_{CI}$、$t_d$、重力和 IMU 零偏。它的残差包括：在（平移后的）图像时刻的网格角点重投影误差，加上陀螺仪残差（测量值减去样条角速度）和加速度计残差（测量值减去样条加速度和重力），各自按噪声加权。正是连续时间表示让时间偏移变得可估计，因为平移 $t_d$ 只是改变了图像残差在样条上的求值位置。论文报告时间偏移可以估计到 IMU 采样周期的一小部分。实践中：先运行 `kalibr_calibrate_cameras`，再用写有噪声参数的 `imu.yaml` 运行 `kalibr_calibrate_imu_camera`。Rehder 等（2016）把工具箱扩展到多个 IMU 和 IMU 内参。卷帘快门相机（第 01 篇 3.5 节）还需要一个随图像行增长的时间偏移。
 
 ## 10. 实用清单
 
@@ -948,7 +948,7 @@ OpenCV: rotation error 0.042 deg, translation error 0.73 mm
 | --- | --- | --- | --- | --- |
 | An Algorithm for Least-Squares Estimation of Nonlinear Parameters (Marquardt) | J. SIAM | 1963 | [DOI](https://doi.org/10.1137/0111030) | 所有标定求解器背后的阻尼方案 |
 | A versatile camera calibration technique for high-accuracy 3D machine vision metrology using off-the-shelf TV cameras and lenses (Tsai) | IEEE J. Robotics and Automation | 1987 | [DOI](https://doi.org/10.1109/JRA.1987.1087109) | 带径向畸变的经典两步标定 |
-| A new technique for fully autonomous and efficient 3D robotics hand/eye calibration (Tsai & Lenz) | IEEE Trans. Robotics and Automation | 1989 | [DOI](https://doi.org/10.1109/70.34770) | 第一个实用的 $AX = XB$ 求解器 |
+| A new technique for fully autonomous and efficient 3D robotics hand/eye calibration (Tsai & Lenz) | IEEE Trans. Robotics and Automation | 1989 | [DOI](https://doi.org/10.1109/70.34770) | 快速的闭式 $AX = XB$ 求解器，与 Shiu 和 Ahmad 的论文同年发表；至今仍是 OpenCV 的默认方法 |
 | Robot sensor calibration: solving AX = XB on the Euclidean group (Park & Martin) | IEEE Trans. Robotics and Automation | 1994 | [DOI](https://doi.org/10.1109/70.326576) | 李群视角；旋转的闭式最小二乘解 |
 | In Defense of the Eight-Point Algorithm (Hartley) | TPAMI | 1997 | [DOI](https://doi.org/10.1109/34.601246) | 线性估计器的坐标归一化 |
 | A four-step camera calibration procedure with implicit image correction (Heikkilä & Silvén) | CVPR | 1997 | [DOI](https://doi.org/10.1109/CVPR.1997.609468) | 径向与切向畸变、去畸变的逆模型、圆心偏差的校正 |
@@ -962,7 +962,7 @@ OpenCV: rotation error 0.042 deg, translation error 0.73 mm
 | Automatic generation and detection of highly reliable fiducial markers under occlusion (Garrido-Jurado et al.) | Pattern Recognition | 2014 | [DOI](https://doi.org/10.1016/j.patcog.2014.01.005) | ArUco 标记，ChArUco 标定板的基础 |
 | Extending Kalibr: Calibrating the extrinsics of multiple IMUs and of individual axes (Rehder et al.) | ICRA | 2016 | [DOI](https://doi.org/10.1109/ICRA.2016.7487628) | 多 IMU 与 IMU 内参标定 |
 | Why Having 10,000 Parameters in Your Camera Model Is Better Than Twelve (Schöps et al.) | CVPR | 2020 | [arXiv](https://arxiv.org/abs/1912.02908) | 通用相机模型以及参数化模型的偏差 |
-| GeoCalib: Learning Single-image Calibration with Geometric Optimization (Veicht et al.) | ECCV | 2024 | [arXiv](https://arxiv.org/abs/2409.06704) | 不用标定板，从单张图像估计内参和重力方向 |
+| GeoCalib: Learning Single-image Calibration with Geometric Optimization (Veicht et al.) | ECCV（已发表；截至 2026 年 11 月） | 2024 | [arXiv](https://arxiv.org/abs/2409.06704) | 不用标定板，从单张图像估计内参和重力方向 |
 
 ## 学习资源
 
@@ -994,14 +994,14 @@ OpenCV: rotation error 0.042 deg, translation error 0.73 mm
 
    <details markdown="1"><summary>提示</summary>
 
-   留出的角点正好位于图 (b) 中不确定度很大或无定义的区域，所以预期 $k_3$ 放开的模型留出误差为若干像素，$k_3 = 0$ 时较小，而训练视图上约为 0.4 像素。
+   两种标定在留出视图上都约为 1 像素（放开 $k_3$：每个视图 1.00-1.23 像素；$k_3 = 0$：0.93-1.15 像素），而训练视图上为 0.41 像素，所以 $k_3 = 0$ 的模型泛化得稍好。留出误差比图 (b) 在角落处的数值小得多，原因有二：PnP 会为每个留出视图重新拟合位姿，吸收一部分模型误差；留出的角点离中心最远约 331 像素，到不了图 (b) 最差的图像四角。尽管如此，留出误差是训练 RMS 的 2.5 倍，这清楚地提示模型在外推。
    </details>
 
 4. **解析雅可比。**把前向差分的 `jacobian` 换成 `project` 对 $f_x, f_y, c_x, c_y$（简单）以及 $k_1, k_2$（经由 $r^2$ 的链式法则）的解析导数。与数值雅可比对照，并比较两者的耗时。
 
    <details markdown="1"><summary>提示</summary>
 
-   $\partial u/\partial f_x = x_d$，$\partial u/\partial c_x = 1$，$\partial u/\partial k_1 = f_x\, x\, r^2$，$\partial u/\partial k_2 = f_x\, x\, r^4$；$v$ 类似。与数值雅可比的相对差应在 $10^{-5}$ 左右。
+   $\partial u/\partial f_x = x_d$，$\partial u/\partial c_x = 1$，$\partial u/\partial k_1 = f_x\, x\, r^2$，$\partial u/\partial k_2 = f_x\, x\, r^4$；$v$ 类似。两个雅可比的相对差小于 $10^{-9}$：$u$ 对其中每个参数单独来看都是线性的，所以前向差分没有截断误差，只有舍入误差。
    </details>
 
 5. **时间偏移。**一台头显的相机为 30 Hz，IMU 为 1000 Hz。标定时你以最高 3 rad/s 的速度转动它。如果要求时间偏移的误差在图像中心（$f = 450$ 像素）造成的误差小于 0.5 像素，$t_d$ 需要知道得多精确？
