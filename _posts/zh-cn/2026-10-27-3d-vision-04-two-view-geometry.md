@@ -726,7 +726,7 @@ $$
 
 4. 在它的实根以及 $\tau\to\infty$ 处计算代价，保留最小者，以垂足作为 $\hat{\mathbf x}\_1, \hat{\mathbf x}\_2$，变换回去，再求两条（现在精确相交的）射线的交点。
 
-结果是**射影不变**的：它不依赖坐标的选取，而中点法和 DLT 则不然。后来 Lindstrom 的 "Triangulation made easy"（CVPR 2010）给出了一个简短的迭代方案，两次迭代就以机器精度达到同一最优解，许多库采用的就是它。
+结果是**射影不变**的：它不依赖坐标的选取，而中点法和 DLT 则不然。后来 Lindstrom 的 "Triangulation made easy"（CVPR 2010）给出了一个简短的迭代方案，无需求解 6 次多项式就能达到同一最优解，是一种常用的更快替代。
 
 ```python
 def triangulate_midpoint(K, R, t, x1, x2):
@@ -833,7 +833,7 @@ asymmetric
   optimal  residual image 1: 0.299 px, image 2: 0.941 px, total 0.988 px; 3D RMS error 15.5 mm
 ```
 
-两种配置讲述了不同的故事。在主相机对中，两个相机从相近的距离观察这些点，三种方法相差不到 1%。在**非对称相机对**中，点距相机 1 为 1–2 m，距相机 2 为 4–5 m。中点法和 DLT 把几乎所有残差都放进图像 1（1.69 px 对 0.52 px）：它们度量的是三维距离或按深度加权的误差，因而在像素意义上不信任近处的相机。最优三角化按噪声模型的要求分配修正，总 RMS 为 0.988 px。这个数是有意义的：四个观测坐标、三个未知数，所以正确模型的残差平方有一个自由度，期望值为 $\sigma^2$；$\sigma = 1$ px 时总 RMS 应该约为 1 px，事实正是如此。线性方法给出 1.76 px，在 $2\sigma$ 阈值下会让一个 1 px 噪声的内点看起来像外点。三维精度的差别较小（16.0 mm 对 15.5 mm），所以用来初始化光束法平差时哪种方法都行；但如果像 SfM 系统那样用重投影误差来*检验*内点，就应该用最优方法（或 Lindstrom 的方法）。
+两种配置讲述了不同的故事。在主相机对中，两个相机从相近的距离观察这些点，三种方法相差不到 1%。在**非对称相机对**中，点距相机 1 为 1–2 m，距相机 2 为 4–5 m。中点法和 DLT 把几乎所有残差都放进图像 1（1.69 px 对 0.52 px）：它们度量的是三维距离或按深度加权的误差，因而在像素意义上不信任近处的相机。最优三角化按噪声模型的要求分配修正，总 RMS 为 0.988 px。这个数是有意义的：四个观测坐标、三个未知数，所以正确模型的残差平方有一个自由度，期望值为 $\sigma^2$；$\sigma = 1$ px 时总 RMS 应该约为 1 px，事实正是如此。线性方法给出 1.76 px：残差被放大得太多，按 1 px 噪声标定的检验（4.5 节的 95% 阈值）会拒掉许多真正的内点。三维精度的差别较小（16.0 mm 对 15.5 mm），所以用来初始化光束法平差时哪种方法都行；但如果像 SfM 系统那样用重投影误差来*检验*内点，就应该用最优方法（或 Lindstrom 的方法）。
 
 {% include blog_figure.liquid path="assets/img/blog/3d-vision/04-triangulation.svg" caption="上：非对称相机对中的一个带噪声的对应点（1 px 噪声），放大到观测点（黑色十字）周围 ±3 px，左为图像 1，右为图像 2。紫色直线是一对相匹配的极线，Hartley-Sturm 方法把修正后的点（绿色）放在其上。中点法（青色三角）和 DLT（橙色方块）估计的重投影几乎重合；它们在图像 1 中留下 1.83 和 1.81 px 的残差，在图像 2 中留下 0.57 和 0.58 px（总计 1.92 和 1.90 px），而最优估计留下 0.32 和 1.04 px，总计 1.09 px。下：每幅图像的 RMS 残差（柱）与总残差（菱形），对 200 个点的 20 次试验取平均；虚线是 1 px 噪声下总残差的期望值。左：主相机对，三者一致；右：非对称相机对。" %}
 
@@ -1055,7 +1055,7 @@ $$
 
 {% include blog_figure.liquid path="assets/img/blog/3d-vision/04-depth-uncertainty.svg" caption="左：误差为什么随深度增大，以一个像素很大的玩具校正相机对为例（$f=6$，$b=1.5$；细线是两个相机的像素边界）。这些单元是同一个左像素与视差为 2 到 8 的右像素共同看到的区域：整数视差 $d$ 只能说明点位于深度 $fb/(d+1)$ 与 $fb/(d-1)$ 之间，从 $d=8$ 时的 1.00–1.29 到 $d=2$ 时的 3–9。右：$f=500$ px、$\delta d=0.25$ px 时三种基线下的 $\delta Z=Z^2\delta d/(fb)$；在 5 m 处误差分别为 20.8、10.4 和 4.2 cm。" %}
 
-由此产生的权衡贯穿双目设计。更长的基线提高远距离精度，但会缩小两个视图在近处的重叠范围，增加遮挡，并且由于两个视图差别更大而使匹配更困难。车载双目的基线为几十厘米；手机和头显上的双目只有几厘米，这就是为什么它们的深度只在几米内可靠。
+由此产生的权衡贯穿双目设计。更长的基线提高远距离精度，但会缩小两个视图在近处的重叠范围，增加遮挡，并且由于两个视图差别更大而使匹配更困难。车载双目的基线通常为几十厘米；手机和小型设备上的紧凑双目相机只有几厘米，按上面的公式，这把它们的精确测距范围限制在几米以内。
 
 ### 8.3 一个合成立体对
 
@@ -1187,9 +1187,9 @@ SAD  7x7 : bad pixels (error > 1 px) 9.4%
 SAD 15x15: bad pixels (error > 1 px) 12.0%
 ```
 
-窗口大小是一个权衡。小窗口（3×3）包含的纹理太少，区分度不够：10.4% 的像素出错，像椒盐噪声一样散布，并覆盖弱纹理方块。大窗口（15×15）在平坦区域平均了足够的纹理，因而可靠，但在深度不连续处，它同时包含前景和背景的像素，而纹理更强的前景通常胜出：物体向外长出半个窗口。这种**前景膨胀**（foreground fattening）把误差推高到 12.0%。没有一种窗口大小处处适用，下一张图说明了这一点。
+窗口大小是一个权衡。小窗口（3×3）包含的纹理太少，区分度不够：10.4% 的像素出错，像椒盐噪声一样散布，并覆盖弱纹理方块。大窗口（15×15）收集到更多纹理，能恢复无纹理方块的更大部分（但仍不是全部），但在深度不连续处，它同时包含前景和背景的像素，而纹理更强的前景通常胜出：物体向外长出半个窗口。这种**前景膨胀**（foreground fattening）把误差推高到 12.0%。没有一种窗口大小处处适用，下一张图说明了这一点。
 
-{% include blog_figure.liquid path="assets/img/blog/3d-vision/04-block-matching.svg" caption="上：SAD 块匹配在 3×3、7×7 和 15×15 窗口下的视差图，以及 SAD 5×5 加半全局匹配（8.5 节）的结果；色标与真值相同。下：误差超过 1 px 的像素标为红色（灰色：没有可见匹配），标题是可见像素上的错误像素率：10.4%、9.4%、12.0% 和 4.9%。小窗口在无纹理方块上失败，并把误差撒满整幅图像；大窗口填满了方块，却让每个物体膨胀半个窗口；SGM 同时保住了边缘和无纹理方块，只留下 4 路径实现特有的水平条纹。" %}
+{% include blog_figure.liquid path="assets/img/blog/3d-vision/04-block-matching.svg" caption="上：SAD 块匹配在 3×3、7×7 和 15×15 窗口下的视差图，以及 SAD 5×5 加半全局匹配（8.5 节）的结果；色标与真值相同。下：误差超过 1 px 的像素标为红色（灰色：没有可见匹配），标题是可见像素上的错误像素率：10.4%、9.4%、12.0% 和 4.9%。小窗口在无纹理方块上失败，并把误差撒满整幅图像；大窗口恢复了方块的更多部分，却让每个物体膨胀半个窗口；SGM 保住了边缘，并把无纹理方块的大部分算对，剩下的误差呈 4 路径实现特有的水平条纹。" %}
 
 ### 8.5 半全局匹配
 
@@ -1208,7 +1208,7 @@ L_{\mathbf r}(\mathbf p - \mathbf r, d \pm 1) + P_1,\
 \min_k L_{\mathbf r}(\mathbf p - \mathbf r, k) + P_2 \Big) - \min_k L_{\mathbf r}(\mathbf p - \mathbf r, k),
 $$
 
-即：以相同视差继续不需代价，变化一个像素付出 $P\_1$，跳到任意视差付出 $P\_2$。减去前一个最小值不改变 argmin，但使数值保持有界。聚合代价为 $S(\mathbf p, d) = \sum\_{\mathbf r} L\_{\mathbf r}(\mathbf p, d)$，视差取其 WTA。这样每个像素都沿每条路径接收来自远处的证据：无纹理区域继承其有纹理边界的视差，但在数据项不支持的强图像边缘处，平滑不会越过。
+即：以相同视差继续不需代价，变化一个像素付出 $P\_1$，跳到任意视差付出 $P\_2$。减去前一个最小值不改变 argmin，但使数值保持有界。聚合代价为 $S(\mathbf p, d) = \sum\_{\mathbf r} L\_{\mathbf r}(\mathbf p, d)$，视差取其 WTA。这样每个像素都沿每条路径接收来自远处的证据：弱纹理区域可以继承其有纹理边界的视差；而在真正的深度跳变处，数据项明显不支持平滑，固定代价 $P\_2$ 允许视差在那里改变。
 
 另外两个想法使方法完整。**左右一致性检查**（left-right consistency check）以右图为参考再计算一张视差图，把两次视差不一致的像素标为无效；被遮挡的像素无法通过检查，因为它们的"匹配"是另一个表面。在我们的代码中，右图代价无需重新计算：右像素 $x$ 在视差 $d$ 下的代价就是左图在 $x + d$ 处的代价。Hirschmüller 的匹配代价基于**互信息**（mutual information），能处理辐射差异；census 和块代价是常见的替代。OpenCV 的 `StereoSGBM` 匹配小块，默认沿 5 个方向聚合（使用 `MODE_HH` 时为 8 个），其文档建议对绝对差之和（而非均值）取 $P\_1 = 8\cdot\text{channels}\cdot\text{blockSize}^2$、$P\_2 = 32\cdot\text{channels}\cdot\text{blockSize}^2$。
 
@@ -1260,7 +1260,7 @@ left-right check rejects 8.7% of pixels, 84% of the occluded ones; bad pixels am
 
 使用 5×5 SAD 代价时，SGM 把最好的块匹配的误差减半，从 9.4% 降到 4.9%。左右一致性检查随后去掉全部像素的 8.7%，其中包括 84% 真正被遮挡的像素，在保留下来的像素中只剩 2.3% 的错误像素。下一张图展示聚合沿一行图像对代价体做了什么。
 
-{% include blog_figure.liquid path="assets/img/blog/3d-vision/04-sgm.svg" caption="左：代价体沿第 $y=145$ 行的一个切片（暗 = 低代价，每列按其第 95 百分位数缩放），上为聚合前（5×5 SAD 代价 $C$），下为 SGM 聚合后（$S$）。白线：真实视差；青色点：每列的 argmin。聚合前，argmin 在无纹理方块（$x\approx 110$–$175$，真实 $d=21.8$）和遮挡条带中游移；聚合后，最小值在方块中沿着真实视差走，而有纹理区域保持不变。右：经过左右一致性检查后的 SGM 视差图；灰色像素被剔除（每个物体左侧的遮挡条带，以及零星的失败）；虚线标出左图中的那一行。" %}
+{% include blog_figure.liquid path="assets/img/blog/3d-vision/04-sgm.svg" caption="左：代价体沿第 $y=145$ 行的一个切片（暗 = 低代价，每列按其第 95 百分位数缩放），上为聚合前（5×5 SAD 代价 $C$），下为 SGM 聚合后（$S$）。白线：真实视差；青色点：每列的 argmin。聚合前，argmin 在无纹理方块（$x\approx 110$–$175$，真实 $d=21.8$）和遮挡条带中游移；聚合后，最小值在方块中基本沿着真实视差走，而有纹理区域保持不变。右：经过左右一致性检查后的 SGM 视差图；灰色像素被剔除（每个物体左侧的遮挡条带，以及零星的失败）；虚线标出左图中的那一行。" %}
 
 ### 8.6 动手试试：立体匹配实验室
 
@@ -1268,17 +1268,17 @@ left-right check rejects 8.7% of pixels, 84% of the occluded ones; bad pixels am
 
 {% include widget.liquid name="3d-vision-stereo-matching" height="620" caption="立体匹配实验室。左：左图；中：计算出的视差（灰色：被左右一致性检查剔除）；右：误差超过 1 px 的像素为红色（深灰：没有可见匹配）。在任意图像上点击或拖动以选择像素；图表显示其窗口代价 $C(d)$（橙色）、SGM 聚合代价 $S(d)$（紫色，已重新缩放）和真实视差（虚线）。滑块调整窗口大小、$P\_1$、$P\_2$、无纹理方块的纹理强度和图像噪声；纹理或噪声改变时会重新渲染图像。" %}
 
-可以试试：用块匹配时点击无纹理方块，比较 3×3 和 11×11 窗口；代价曲线从平坦而嘈杂变成一个清晰的谷。把方块纹理设为 0 并切换到 SGM：方块仍被正确填满，因为它的视差从边缘传播进来。把 $P\_2$ 提高到 120，观察倾斜面板和地面碎成一级级平台，因为任何超过一个像素的变化现在都代价高昂。
+可以试试：用块匹配时点击无纹理方块，比较 3×3 和 11×11 窗口；代价曲线从平坦而嘈杂变成一个清晰的谷。把方块纹理设为 0 再比较：块匹配把方块的大部分算错，而 SGM 仍能算对其中大部分，因为边缘处的视差沿路径向内传播；其余部分以条纹形式出错。然后把纹理调回 6，把 $P\_2$ 提高到 120：跳变变得极其昂贵，聚合会把视差拖过物体边界，误差沿边缘增加，尤其集中在数据项太弱、无力抵抗的无纹理方块上。
 
 ### 8.7 超越手工设计的立体匹配
 
-块匹配和 SGM 仍在许多相机和机器人中运行，因为它们行为可预测，并且在专用硬件上很快。大约从 2017 年起，学习式立体匹配主导了各项基准。GC-Net（Kendall 等，ICCV 2017）用学习的特征构建代价体，以 3D 卷积而非 SGM 对其正则化，并用可微的 soft argmin 读出亚像素视差。RAFT-Stereo（Lipson、Teed 和 Deng，3DV 2021）把第 03 篇的循环光流网络 RAFT 改造用于校正后的图像对。FoundationStereo（Wen 等，CVPR 2025）在约一百万对合成数据上训练，以一个冻结的单目深度模型作为先验，能够零样本泛化到真实基准。本节的结构在所有这些方法中都保留了下来：视差上的代价体、聚合和读出。[第 07 篇]({{ '/blog/2026/3d-vision-07-depth-estimation-and-multi-view-stereo/' | relative_url }})把代价体推广到两个以上的视图（平面扫描与多视图立体），并介绍单目深度估计。
+块匹配和 SGM 仍在许多相机和机器人中运行，因为它们行为可预测，并且在专用硬件上很快。大约从 2010 年代中期起，学习式方法在各项立体匹配基准上领先。GC-Net（Kendall 等，ICCV 2017）用学习的特征构建代价体，以 3D 卷积而非 SGM 对其正则化，并用可微的 soft argmin 读出亚像素视差。RAFT-Stereo（Lipson、Teed 和 Deng，3DV 2021）把第 03 篇的循环光流网络 RAFT 改造用于校正后的图像对。FoundationStereo（Wen 等；截至 2026 年 11 月已发表于 CVPR 2025）在约一百万对合成数据上训练，以一个冻结的单目深度模型作为先验，能够零样本泛化到真实基准。本节的结构在所有这些方法中都保留了下来：视差上的代价体、聚合和读出。[第 07 篇]({{ '/blog/2026/3d-vision-07-depth-estimation-and-multi-view-stereo/' | relative_url }})把代价体推广到两个以上的视图（平面扫描与多视图立体），并介绍单目深度估计。
 
 ## 动手试试
 
 - 在**极线小部件**（3.4 节）中选择"向前运动"预设，把点拖向视图 1 的中心。当点恰好位于主点时，极线在哪里？为什么？然后选择"双目"预设，确认对每个深度，极线都保持在该点所在的行上。
 - 仍在极线小部件中，把深度滑块分别设为 0.5 m 和 20 m，观察绿色点落在线上的什么位置。然后在俯视图中把基线调得很小：深度刻度挤成一团，这就是从内部看到的 7.4 节的近退化。
-- 在**立体匹配实验室**（8.6 节）中，找出纹理为 6 时块匹配能正确处理无纹理方块的最小窗口，然后打开左右一致性检查，看看它去掉了哪些像素。
+- 在**立体匹配实验室**（8.6 节）中，观察纹理为 6 时，窗口从 3×3 增大到 15×15 的过程中块匹配如何处理无纹理方块，以及大窗口在物体边界上付出的代价；然后打开左右一致性检查，看看它去掉了哪些像素。
 - 主页的[交互实验室]({{ '/' | relative_url }}#lab)展示渲染的一面：高斯溅射演示正是本篇这些带位姿的图像最终用来构建的那类场景。
 
 ## 代表性论文
@@ -1286,18 +1286,18 @@ left-right check rejects 8.7% of pixels, 84% of the occluded ones; bad pixels am
 | 论文 | 会议/期刊 | 年份 | 链接 | 意义 |
 | --- | --- | --- | --- | --- |
 | A computer algorithm for reconstructing a scene from two projections (Longuet-Higgins) | Nature | 1981 | [DOI](https://doi.org/10.1038/293133a0) | 本质矩阵与线性八点算法 |
-| Non-parametric local transforms for computing visual correspondence (Zabih, Woodfill) | ECCV | 1994 | [DOI](https://doi.org/10.1007/BFb0028345) | 鲁棒匹配代价 census 变换 |
+| Non-parametric local transforms for computing visual correspondence (Zabih, Woodfill) | ECCV | 1994 | — | 鲁棒匹配代价 census 变换 |
 | In defense of the eight-point algorithm (Hartley) | TPAMI | 1997 | [DOI](https://doi.org/10.1109/34.601246) | 坐标归一化使线性算法变得精确 |
 | Triangulation (Hartley, Sturm) | CVIU | 1997 | [DOI](https://doi.org/10.1006/cviu.1997.0547) | 通过 6 次多项式实现最优两视图三角化 |
 | The problem of degeneracy in structure and motion recovery from uncalibrated image sequences (Torr, Fitzgibbon, Zisserman) | IJCV | 1999 | — | 纯旋转与平面场景及其检测 |
-| Theory and practice of projective rectification (Hartley) | IJCV | 1999 | [DOI](https://doi.org/10.1023/A:1008115206617) | 仅由 $F$ 进行校正 |
-| Computing rectifying homographies for stereo vision (Loop, Zhang) | CVPR | 1999 | [DOI](https://doi.org/10.1109/CVPR.1999.786928) | 畸变最小的校正 |
+| Theory and practice of projective rectification (Hartley) | IJCV | 1999 | — | 仅由 $F$ 进行校正 |
+| Computing rectifying homographies for stereo vision (Loop, Zhang) | CVPR | 1999 | — | 畸变最小的校正 |
 | A taxonomy and evaluation of dense two-frame stereo correspondence algorithms (Scharstein, Szeliski) | IJCV | 2002 | [DOI](https://doi.org/10.1023/A:1014573219977) | 代价、聚合、优化、细化；Middlebury 基准 |
 | An efficient solution to the five-point relative pose problem (Nistér) | TPAMI | 2004 | [DOI](https://doi.org/10.1109/TPAMI.2004.17) | RANSAC 中使用的标定最小解 |
-| Two-view geometry estimation unaffected by a dominant plane (Chum, Werner, Matas) | CVPR | 2005 | [DOI](https://doi.org/10.1109/CVPR.2005.354) | DEGENSAC |
-| Recent developments on direct relative orientation (Stewénius, Engels, Nistér) | ISPRS J. Photogrammetry and Remote Sensing | 2006 | [DOI](https://doi.org/10.1016/j.isprsjprs.2006.03.005) | 基于 Gröbner 基的五点求解器 |
+| Two-view geometry estimation unaffected by a dominant plane (Chum, Werner, Matas) | CVPR | 2005 | — | DEGENSAC |
+| Recent developments on direct relative orientation (Stewénius, Engels, Nistér) | ISPRS J. Photogrammetry and Remote Sensing | 2006 | — | 基于 Gröbner 基的五点求解器 |
 | Stereo processing by semiglobal matching and mutual information (Hirschmüller) | TPAMI | 2008 | [DOI](https://doi.org/10.1109/TPAMI.2007.1166) | SGM |
-| Triangulation made easy (Lindstrom) | CVPR | 2010 | [DOI](https://doi.org/10.1109/CVPR.2010.5539785) | 快速迭代的最优三角化 |
+| Triangulation made easy (Lindstrom) | CVPR | 2010 | — | 快速迭代的最优三角化 |
 | ORB-SLAM: a versatile and accurate monocular SLAM system (Mur-Artal, Montiel, Tardós) | IEEE T-RO | 2015 | [arXiv](https://arxiv.org/abs/1502.00956) | 地图初始化时在单应与基础矩阵之间选择 |
 | End-to-end learning of geometry and context for deep stereo regression (Kendall et al.) | ICCV | 2017 | [arXiv](https://arxiv.org/abs/1703.04309) | 学习的代价体，3D 卷积与 soft argmin |
 | RAFT-Stereo: multilevel recurrent field transforms for stereo matching (Lipson, Teed, Deng) | 3DV | 2021 | [arXiv](https://arxiv.org/abs/2109.07547) | 用于立体匹配的循环细化 |

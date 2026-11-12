@@ -726,7 +726,7 @@ $$
 
 4. その実根と $\tau\to\infty$ でコストを評価して最小のものを残し、垂線の足を $\hat{\mathbf x}\_1, \hat{\mathbf x}\_2$ とし、元の座標に戻して（今度は厳密に交わる）光線の交点を求めます。
 
-結果は**射影不変**です。中点法や DLT と違い、座標の選び方に依存しません。後に Lindstrom の "Triangulation made easy"（CVPR 2010）が、2 回の反復で機械精度まで同じ最適解に達する短い反復法を示し、多くのライブラリがそれを使っています。
+結果は**射影不変**です。中点法や DLT と違い、座標の選び方に依存しません。後に Lindstrom の "Triangulation made easy"（CVPR 2010）が、6 次多項式を解かずに同じ最適解に達する短い反復法を示し、より高速な代替としてよく使われています。
 
 ```python
 def triangulate_midpoint(K, R, t, x1, x2):
@@ -833,7 +833,7 @@ asymmetric
   optimal  residual image 1: 0.299 px, image 2: 0.941 px, total 0.988 px; 3D RMS error 15.5 mm
 ```
 
-2 つの配置は異なる結果を示します。主ペアでは両方のカメラが同程度の距離から点を見ており、3 つの方法の差は 1% 以内です。**非対称ペア**では、点はカメラ 1 から 1〜2 m、カメラ 2 から 4〜5 m の位置にあります。中点法と DLT は残差のほとんどを画像 1 に押し込みます（1.69 px 対 0.52 px）。3 次元距離や奥行きで重み付けした誤差を測るため、画素の意味では近いカメラを信用しないのです。最適三角測量はノイズモデルが求めるとおりに補正を配分し、合計 RMS は 0.988 px です。この数には意味があります。観測座標は 4 つ、未知数は 3 つなので、正しいモデルの残差の 2 乗は自由度 1 で期待値 $\sigma^2$ を持ちます。$\sigma = 1$ px なら合計 RMS は約 1 px になるはずで、実際そうなっています。線形法は 1.76 px を報告し、$2\sigma$ の閾値では 1 px ノイズのインライアが外れ値に見えてしまいます。3 次元精度の差はそれより小さい（16.0 mm 対 15.5 mm）ので、バンドル調整の初期値としてはどの方法でも構いませんが、SfM システムのように再投影誤差でインライアを*判定する*なら、最適法（または Lindstrom の方法）を使いましょう。
+2 つの配置は異なる結果を示します。主ペアでは両方のカメラが同程度の距離から点を見ており、3 つの方法の差は 1% 以内です。**非対称ペア**では、点はカメラ 1 から 1〜2 m、カメラ 2 から 4〜5 m の位置にあります。中点法と DLT は残差のほとんどを画像 1 に押し込みます（1.69 px 対 0.52 px）。3 次元距離や奥行きで重み付けした誤差を測るため、画素の意味では近いカメラを信用しないのです。最適三角測量はノイズモデルが求めるとおりに補正を配分し、合計 RMS は 0.988 px です。この数には意味があります。観測座標は 4 つ、未知数は 3 つなので、正しいモデルの残差の 2 乗は自由度 1 で期待値 $\sigma^2$ を持ちます。$\sigma = 1$ px なら合計 RMS は約 1 px になるはずで、実際そうなっています。線形法は 1.76 px を報告します。残差が大きく膨らむため、1 px のノイズに合わせた判定（4.5 節の 95% 閾値）では本当のインライアの多くが棄却されてしまいます。3 次元精度の差はそれより小さい（16.0 mm 対 15.5 mm）ので、バンドル調整の初期値としてはどの方法でも構いませんが、SfM システムのように再投影誤差でインライアを*判定する*なら、最適法（または Lindstrom の方法）を使いましょう。
 
 {% include blog_figure.liquid path="assets/img/blog/3d-vision/04-triangulation.svg" caption="上：非対称ペアのノイズを含む 1 つの対応（1 px ノイズ）を、観測点（黒い十字）の周り ±3 px に拡大したもの。左が画像 1、右が画像 2。紫の線は対応するエピポーラ線の組で、Hartley-Sturm 法は補正後の点（緑）をこの上に置きます。中点法（シアンの三角）と DLT（オレンジの四角）の再投影はほぼ重なり、画像 1 に 1.83 px と 1.81 px、画像 2 に 0.57 px と 0.58 px の残差（合計 1.92 px と 1.90 px）を残します。一方、最適推定は 0.32 px と 1.04 px、合計 1.09 px です。下：画像ごとの RMS 残差（棒）と合計（菱形）を 200 点 × 20 回の試行で平均したもの。破線は 1 px ノイズでの合計の期待値です。左：主ペア、3 つが一致。右：非対称ペア。" %}
 
@@ -1055,7 +1055,7 @@ $$
 
 {% include blog_figure.liquid path="assets/img/blog/3d-vision/04-depth-uncertainty.svg" caption="左：誤差が奥行きとともに増える理由を、画素がとても大きいおもちゃの平行化ペアで示したもの（$f=6$、$b=1.5$。細い線は各カメラの画素境界）。セルは、同じ左画素と視差 2〜8 の右画素が共通に見る領域です。整数視差 $d$ は、点が奥行き $fb/(d+1)$ と $fb/(d-1)$ の間にあることしか教えてくれず、$d=8$ の 1.00–1.29 から $d=2$ の 3–9 まで広がります。右：$f=500$ px、$\delta d=0.25$ px での $\delta Z=Z^2\delta d/(fb)$ を 3 つの基線について描いたもの。5 m での誤差は 20.8、10.4、4.2 cm です。" %}
 
-ここから生じるトレードオフは、ステレオ設計全体を貫いています。基線を長くすると遠距離の精度は上がりますが、近距離での 2 つのビューの重なりが減り、遮蔽が増え、2 つのビューの違いが大きくなるのでマッチングも難しくなります。車載ステレオの基線は数十センチ、スマートフォンやヘッドセットのステレオは数センチで、そのため後者の深度が信頼できるのは数メートル以内に限られます。
+ここから生じるトレードオフは、ステレオ設計全体を貫いています。基線を長くすると遠距離の精度は上がりますが、近距離での 2 つのビューの重なりが減り、遮蔽が増え、2 つのビューの違いが大きくなるのでマッチングも難しくなります。車載ステレオの基線は通常数十センチ、スマートフォンや小型機器のコンパクトなステレオカメラは数センチで、上の式から、後者が精度よく測れる範囲は数メートル以内に限られます。
 
 ### 8.3 合成ステレオペア
 
@@ -1189,9 +1189,9 @@ SAD  7x7 : bad pixels (error > 1 px) 9.4%
 SAD 15x15: bad pixels (error > 1 px) 12.0%
 ```
 
-窓の大きさはトレードオフです。小さな窓（3×3）は判別に必要なテクスチャを含まず、10.4% の画素が誤り、ごま塩ノイズのように散らばってテクスチャの弱い箱を覆います。大きな窓（15×15）は平坦な領域では十分なテクスチャを平均できて信頼できますが、奥行きの不連続の近くでは前景と背景の両方の画素を含み、テクスチャの強い前景がたいてい勝ちます。物体が窓の半分だけ太るのです。この**前景の膨張**（foreground fattening）で誤差は 12.0% に上がります。次の図が示すように、どこでも通用する窓の大きさはありません。
+窓の大きさはトレードオフです。小さな窓（3×3）は判別に必要なテクスチャを含まず、10.4% の画素が誤り、ごま塩ノイズのように散らばってテクスチャの弱い箱を覆います。大きな窓（15×15）はより多くのテクスチャを集めて無地の箱のより多くの部分を復元します（それでも全部ではありません）が、奥行きの不連続の近くでは前景と背景の両方の画素を含み、テクスチャの強い前景がたいてい勝ちます。物体が窓の半分だけ太るのです。この**前景の膨張**（foreground fattening）で誤差は 12.0% に上がります。次の図が示すように、どこでも通用する窓の大きさはありません。
 
-{% include blog_figure.liquid path="assets/img/blog/3d-vision/04-block-matching.svg" caption="上：3×3、7×7、15×15 の窓による SAD ブロックマッチングの視差マップと、SAD 5×5 にセミグローバルマッチング（8.5 節）を加えた結果。色の尺度は真値と同じです。下：誤差が 1 px を超える画素を赤で示し（灰色：見える対応がない）、可視画素での誤り画素率は 10.4%、9.4%、12.0%、4.9% です。小さな窓は無地の箱で失敗して誤差をあちこちにばらまき、大きな窓は箱を埋めるものの各物体を窓の半分だけ太らせます。SGM は縁も無地の箱も保ちますが、4 方向実装に特有の横縞が残ります。" %}
+{% include blog_figure.liquid path="assets/img/blog/3d-vision/04-block-matching.svg" caption="上：3×3、7×7、15×15 の窓による SAD ブロックマッチングの視差マップと、SAD 5×5 にセミグローバルマッチング（8.5 節）を加えた結果。色の尺度は真値と同じです。下：誤差が 1 px を超える画素を赤で示し（灰色：見える対応がない）、可視画素での誤り画素率は 10.4%、9.4%、12.0%、4.9% です。小さな窓は無地の箱で失敗して誤差をあちこちにばらまき、大きな窓は箱のより多くを復元するものの各物体を窓の半分だけ太らせます。SGM は縁を保ち、無地の箱の大部分も正しく求めますが、残りの誤差は 4 方向実装に特有の横縞になります。" %}
 
 ### 8.5 セミグローバルマッチング
 
@@ -1210,7 +1210,7 @@ L_{\mathbf r}(\mathbf p - \mathbf r, d \pm 1) + P_1,\
 \min_k L_{\mathbf r}(\mathbf p - \mathbf r, k) + P_2 \Big) - \min_k L_{\mathbf r}(\mathbf p - \mathbf r, k)
 $$
 
-です。同じ視差で続けるならコストなし、1 だけ変えるなら $P\_1$、どこへでも跳ぶなら $P\_2$ です。直前の最小値を引いても argmin は変わらず、数値が有界に保たれます。集約コストは $S(\mathbf p, d) = \sum\_{\mathbf r} L\_{\mathbf r}(\mathbf p, d)$ で、視差はその WTA です。こうして各画素はすべての経路に沿って遠くから証拠を受け取ります。テクスチャのない領域はテクスチャのある縁の視差を受け継ぎますが、データ項が反対する強いエッジを越えて平滑化が及ぶことはありません。
+です。同じ視差で続けるならコストなし、1 だけ変えるなら $P\_1$、どこへでも跳ぶなら $P\_2$ です。直前の最小値を引いても argmin は変わらず、数値が有界に保たれます。集約コストは $S(\mathbf p, d) = \sum\_{\mathbf r} L\_{\mathbf r}(\mathbf p, d)$ で、視差はその WTA です。こうして各画素はすべての経路に沿って遠くから証拠を受け取ります。テクスチャの弱い領域はテクスチャのある縁の視差を受け継ぐことができ、一方で本当の奥行きの段差では、データ項がはっきり反対するので、固定の代価 $P\_2$ を払って視差が変わります。
 
 方法を完成させるアイデアがあと 2 つあります。**左右整合性チェック**（left-right consistency check）は右画像を基準に 2 枚目の視差マップを計算し、2 つの視差が食い違う画素を無効にします。遮蔽された画素の「対応」は別の表面なので、このチェックに通りません。本稿のコードでは右画像のコストを計算し直す必要はなく、右画素 $x$ の視差 $d$ でのコストは左のコストの $x + d$ の位置にあります。Hirschmüller のマッチングコストは**相互情報量**（mutual information）に基づいていて輝度の違いに対応できますが、census やブロックのコストもよく代わりに使われます。OpenCV の `StereoSGBM` は小さなブロックでマッチングし、既定では 5 方向（`MODE_HH` では 8 方向）に沿って集約します。ドキュメントは、絶対差の（平均ではなく）和に対して $P\_1 = 8\cdot\text{channels}\cdot\text{blockSize}^2$、$P\_2 = 32\cdot\text{channels}\cdot\text{blockSize}^2$ を勧めています。
 
@@ -1262,7 +1262,7 @@ left-right check rejects 8.7% of pixels, 84% of the occluded ones; bad pixels am
 
 5×5 の SAD コストで、SGM は最良のブロックマッチングの誤差を 9.4% から 4.9% へ半減させます。続く左右整合性チェックは全画素の 8.7% を除去し、その中には本当に遮蔽された画素の 84% が含まれます。残った画素での誤り画素は 2.3% です。次の図は、集約が画像の 1 行に沿ってコストボリュームに何をするかを示しています。
 
-{% include blog_figure.liquid path="assets/img/blog/3d-vision/04-sgm.svg" caption="左：行 $y=145$ に沿ったコストボリュームの断面（暗いほど低コスト。各列はその 95 パーセンタイルでスケール）。上は集約前（5×5 SAD コスト $C$）、下は SGM 集約後（$S$）。白線：真の視差。シアンの点：各列の argmin。集約前の argmin は無地の箱（$x\approx 110$–$175$、真の $d=21.8$）と遮蔽の帯でさまよいますが、集約後は箱の中で最小値が真の視差に沿い、テクスチャのある領域は変わりません。右：左右整合性チェック後の SGM 視差マップ。灰色の画素は除去されたもの（各物体の左の遮蔽帯と、散発的な失敗）。破線は左の図の行を示します。" %}
+{% include blog_figure.liquid path="assets/img/blog/3d-vision/04-sgm.svg" caption="左：行 $y=145$ に沿ったコストボリュームの断面（暗いほど低コスト。各列はその 95 パーセンタイルでスケール）。上は集約前（5×5 SAD コスト $C$）、下は SGM 集約後（$S$）。白線：真の視差。シアンの点：各列の argmin。集約前の argmin は無地の箱（$x\approx 110$–$175$、真の $d=21.8$）と遮蔽の帯でさまよいますが、集約後は箱の中で最小値がおおむね真の視差に沿い、テクスチャのある領域は変わりません。右：左右整合性チェック後の SGM 視差マップ。灰色の画素は除去されたもの（各物体の左の遮蔽帯と、散発的な失敗）。破線は左の図の行を示します。" %}
 
 ### 8.6 試してみよう：ステレオマッチング実験室
 
@@ -1270,17 +1270,17 @@ left-right check rejects 8.7% of pixels, 84% of the occluded ones; bad pixels am
 
 {% include widget.liquid name="3d-vision-stereo-matching" height="620" caption="ステレオマッチング実験室。左：左画像。中央：計算した視差（灰色：左右整合性チェックで除外）。右：誤差が 1 px を超える画素を赤で表示（濃い灰色：見える対応がない）。どの画像でもタップまたはドラッグで画素を選ぶと、窓のコスト $C(d)$（オレンジ）、SGM で集約したコスト $S(d)$（紫、スケール済み）、真の視差（破線）がグラフに出ます。スライダーで窓の大きさ、$P\_1$、$P\_2$、無地の箱のテクスチャ、画像ノイズを変えられます。テクスチャかノイズを変えると画像を描き直します。" %}
 
-試してほしいこと：ブロックマッチングで無地の箱をタップし、3×3 と 11×11 の窓を比べてください。コスト曲線は平らでノイズの多い形から、はっきりした谷に変わります。箱のテクスチャを 0 にして SGM に切り替えると、箱は依然として正しく埋まります。視差が縁から伝わってくるからです。$P\_2$ を 120 まで上げると、1 画素を超える変化がすべて高価になるため、傾いたパネルと床が平らな段々に割れていくのが見えます。
+試してほしいこと：ブロックマッチングで無地の箱をタップし、3×3 と 11×11 の窓を比べてください。コスト曲線は平らでノイズの多い形から、はっきりした谷に変わります。箱のテクスチャを 0 にして比べると、ブロックマッチングは箱の大部分を誤りますが、SGM はその大部分を正しく求めます。縁の視差が経路に沿って内側へ伝わるからです。残りは縞状に失敗します。次にテクスチャを 6 に戻して $P\_2$ を 120 まで上げると、跳びが非常に高価になるため集約が物体の境界を越えて視差を引きずり、誤差は縁に沿って、とりわけデータ項が弱くて抵抗できない無地の箱で増えます。
 
 ### 8.7 手作りのステレオを超えて
 
-ブロックマッチングと SGM は、挙動が予測可能で専用ハードウェア上で高速なため、今も多くのカメラやロボットで動いています。2017 年ごろからは、学習ベースのステレオがベンチマークを席巻しています。GC-Net（Kendall ら、ICCV 2017）は学習した特徴からコストボリュームを作り、SGM の代わりに 3D 畳み込みで正則化し、微分可能な soft argmin でサブピクセルの視差を読み出しました。RAFT-Stereo（Lipson、Teed、Deng、3DV 2021）は第 03 回の再帰的なオプティカルフローネットワーク RAFT を平行化ペアに適用しました。FoundationStereo（Wen ら、CVPR 2025）は約 100 万組の合成ペアで学習し、凍結した単眼深度モデルを事前知識として使い、実ベンチマークにゼロショットで汎化します。本節の構造、すなわち視差上のコストボリューム、集約、読み出しは、これらすべてに残っています。[第 07 回]({{ '/blog/2026/3d-vision-07-depth-estimation-and-multi-view-stereo/' | relative_url }})では、コストボリュームを 3 視点以上に一般化し（平面掃引とマルチビューステレオ）、単眼深度推定も扱います。
+ブロックマッチングと SGM は、挙動が予測可能で専用ハードウェア上で高速なため、今も多くのカメラやロボットで動いています。2010 年代半ばからは、学習ベースの手法がステレオのベンチマークで首位に立っています。GC-Net（Kendall ら、ICCV 2017）は学習した特徴からコストボリュームを作り、SGM の代わりに 3D 畳み込みで正則化し、微分可能な soft argmin でサブピクセルの視差を読み出しました。RAFT-Stereo（Lipson、Teed、Deng、3DV 2021）は第 03 回の再帰的なオプティカルフローネットワーク RAFT を平行化ペアに適用しました。FoundationStereo（Wen ら。2026 年 11 月時点で CVPR 2025 に発表済み）は約 100 万組の合成ペアで学習し、凍結した単眼深度モデルを事前知識として使い、実ベンチマークにゼロショットで汎化します。本節の構造、すなわち視差上のコストボリューム、集約、読み出しは、これらすべてに残っています。[第 07 回]({{ '/blog/2026/3d-vision-07-depth-estimation-and-multi-view-stereo/' | relative_url }})では、コストボリュームを 3 視点以上に一般化し（平面掃引とマルチビューステレオ）、単眼深度推定も扱います。
 
 ## 試してみよう
 
 - **エピポーラウィジェット**（3.4 節）で「前進」プリセットを選び、点をビュー 1 の中心に向かってドラッグしてください。点がちょうど主点にあるとき、エピポーラ線はどこにあり、それはなぜでしょうか。次に「ステレオ」プリセットを選び、どの奥行きでも線が点の行に留まることを確かめましょう。
 - 同じエピポーラウィジェットで奥行きスライダーを 0.5 m と 20 m にし、緑の点が線上のどこに来るかを見てください。次に上面図で基線をとても小さくすると、奥行きの目盛りが密集します。7.4 節の退化に近い状態を内側から見たものです。
-- **ステレオマッチング実験室**（8.6 節）で、テクスチャ 6 のときにブロックマッチングが無地の箱を正しく扱える最小の窓を探し、それから左右整合性チェックをオンにして、どの画素が除かれるかを見てください。
+- **ステレオマッチング実験室**（8.6 節）で、テクスチャ 6 で窓を 3×3 から 15×15 まで大きくしながら、ブロックマッチングが無地の箱をどう扱うか、大きな窓が物体の境界で何を犠牲にするかを観察し、それから左右整合性チェックをオンにして、どの画素が除かれるかを見てください。
 - ホームページの[インタラクティブラボ]({{ '/' | relative_url }}#lab)ではレンダリング側を見られます。ガウシアンスプラッティングのデモは、本稿のような姿勢付き画像から作られるシーンの典型です。
 
 ## 代表的な論文
@@ -1288,18 +1288,18 @@ left-right check rejects 8.7% of pixels, 84% of the occluded ones; bad pixels am
 | 論文 | 会議/論文誌 | 年 | リンク | 意義 |
 | --- | --- | --- | --- | --- |
 | A computer algorithm for reconstructing a scene from two projections (Longuet-Higgins) | Nature | 1981 | [DOI](https://doi.org/10.1038/293133a0) | 基本行列と線形 8 点アルゴリズム |
-| Non-parametric local transforms for computing visual correspondence (Zabih, Woodfill) | ECCV | 1994 | [DOI](https://doi.org/10.1007/BFb0028345) | ロバストなマッチングコストとしての census 変換 |
+| Non-parametric local transforms for computing visual correspondence (Zabih, Woodfill) | ECCV | 1994 | — | ロバストなマッチングコストとしての census 変換 |
 | In defense of the eight-point algorithm (Hartley) | TPAMI | 1997 | [DOI](https://doi.org/10.1109/34.601246) | 座標の正規化で線形アルゴリズムが高精度に |
 | Triangulation (Hartley, Sturm) | CVIU | 1997 | [DOI](https://doi.org/10.1006/cviu.1997.0547) | 6 次多項式による最適な 2 視点三角測量 |
 | The problem of degeneracy in structure and motion recovery from uncalibrated image sequences (Torr, Fitzgibbon, Zisserman) | IJCV | 1999 | — | 純回転と平面シーン、その検出 |
-| Theory and practice of projective rectification (Hartley) | IJCV | 1999 | [DOI](https://doi.org/10.1023/A:1008115206617) | $F$ だけからの平行化 |
-| Computing rectifying homographies for stereo vision (Loop, Zhang) | CVPR | 1999 | [DOI](https://doi.org/10.1109/CVPR.1999.786928) | 歪みを最小にする平行化 |
+| Theory and practice of projective rectification (Hartley) | IJCV | 1999 | — | $F$ だけからの平行化 |
+| Computing rectifying homographies for stereo vision (Loop, Zhang) | CVPR | 1999 | — | 歪みを最小にする平行化 |
 | A taxonomy and evaluation of dense two-frame stereo correspondence algorithms (Scharstein, Szeliski) | IJCV | 2002 | [DOI](https://doi.org/10.1023/A:1014573219977) | コスト、集約、最適化、精密化；Middlebury ベンチマーク |
 | An efficient solution to the five-point relative pose problem (Nistér) | TPAMI | 2004 | [DOI](https://doi.org/10.1109/TPAMI.2004.17) | RANSAC で使う校正済みの最小解法 |
-| Two-view geometry estimation unaffected by a dominant plane (Chum, Werner, Matas) | CVPR | 2005 | [DOI](https://doi.org/10.1109/CVPR.2005.354) | DEGENSAC |
-| Recent developments on direct relative orientation (Stewénius, Engels, Nistér) | ISPRS J. Photogrammetry and Remote Sensing | 2006 | [DOI](https://doi.org/10.1016/j.isprsjprs.2006.03.005) | グレブナー基底による 5 点ソルバ |
+| Two-view geometry estimation unaffected by a dominant plane (Chum, Werner, Matas) | CVPR | 2005 | — | DEGENSAC |
+| Recent developments on direct relative orientation (Stewénius, Engels, Nistér) | ISPRS J. Photogrammetry and Remote Sensing | 2006 | — | グレブナー基底による 5 点ソルバ |
 | Stereo processing by semiglobal matching and mutual information (Hirschmüller) | TPAMI | 2008 | [DOI](https://doi.org/10.1109/TPAMI.2007.1166) | SGM |
-| Triangulation made easy (Lindstrom) | CVPR | 2010 | [DOI](https://doi.org/10.1109/CVPR.2010.5539785) | 高速な反復型の最適三角測量 |
+| Triangulation made easy (Lindstrom) | CVPR | 2010 | — | 高速な反復型の最適三角測量 |
 | ORB-SLAM: a versatile and accurate monocular SLAM system (Mur-Artal, Montiel, Tardós) | IEEE T-RO | 2015 | [arXiv](https://arxiv.org/abs/1502.00956) | 地図の初期化でホモグラフィか基礎行列かを選ぶ |
 | End-to-end learning of geometry and context for deep stereo regression (Kendall et al.) | ICCV | 2017 | [arXiv](https://arxiv.org/abs/1703.04309) | 学習したコストボリューム、3D 畳み込みと soft argmin |
 | RAFT-Stereo: multilevel recurrent field transforms for stereo matching (Lipson, Teed, Deng) | 3DV | 2021 | [arXiv](https://arxiv.org/abs/2109.07547) | ステレオのための再帰的な精密化 |

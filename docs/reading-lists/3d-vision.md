@@ -126,8 +126,8 @@
 | In defense of the eight-point algorithm (Hartley) | TPAMI | 1997 | https://doi.org/10.1109/34.601246 | 坐标归一化使八点算法达到迭代方法的精度 |
 | The problem of degeneracy in structure and motion recovery from uncalibrated image sequences (Torr, Fitzgibbon, Zisserman) | IJCV 32(1) | 1999 | — | 纯旋转与平面场景两类退化及其检测 |
 | An efficient solution to the five-point relative pose problem (Nistér) | TPAMI | 2004 | https://doi.org/10.1109/TPAMI.2004.17 | 标定相机的五点最小解（10 次多项式），RANSAC 中的标准求解器 |
-| Two-view geometry estimation unaffected by a dominant plane (Chum, Werner, Matas) | CVPR | 2005 | https://doi.org/10.1109/CVPR.2005.354 | DEGENSAC：检测七点样本中的单应退化 |
-| Recent developments on direct relative orientation (Stewénius, Engels, Nistér) | ISPRS J. Photogrammetry and Remote Sensing | 2006 | https://doi.org/10.1016/j.isprsjprs.2006.03.005 | 用 Gröbner 基与特征值问题求解五点问题 |
+| Two-view geometry estimation unaffected by a dominant plane (Chum, Werner, Matas) | CVPR | 2005 | — | DEGENSAC：检测七点样本中的单应退化 |
+| Recent developments on direct relative orientation (Stewénius, Engels, Nistér) | ISPRS J. Photogrammetry and Remote Sensing | 2006 | — | 用 Gröbner 基与特征值问题求解五点问题 |
 | ORB-SLAM: a versatile and accurate monocular SLAM system (Mur-Artal, Montiel, Tardós) | IEEE T-RO | 2015 | https://arxiv.org/abs/1502.00956 | 初始化时并行拟合 H 与 F，按 R_H > 0.45 选择模型 |
 
 ### 三角化
@@ -135,15 +135,15 @@
 | 论文 | 会议/期刊 | 年份 | 链接 | 说明 |
 | --- | --- | --- | --- | --- |
 | Triangulation (Hartley, Sturm) | CVIU | 1997 | https://doi.org/10.1006/cviu.1997.0547 | 最优两视图三角化：沿极线束参数化，化为 6 次多项式；射影不变 |
-| Triangulation made easy (Lindstrom) | CVPR | 2010 | https://doi.org/10.1109/CVPR.2010.5539785 | 两次迭代即达到最优解的快速三角化 |
+| Triangulation made easy (Lindstrom) | CVPR | 2010 | — | 不必求解 6 次多项式、更快的迭代式最优三角化 |
 
 ### 立体校正与稠密立体匹配
 
 | 论文 | 会议/期刊 | 年份 | 链接 | 说明 |
 | --- | --- | --- | --- | --- |
-| Non-parametric local transforms for computing visual correspondence (Zabih, Woodfill) | ECCV | 1994 | https://doi.org/10.1007/BFb0028345 | Census 变换与汉明距离代价，对单调亮度变化不变 |
-| Theory and practice of projective rectification (Hartley) | IJCV | 1999 | https://doi.org/10.1023/A:1008115206617 | 仅由 F 求校正单应（OpenCV stereoRectifyUncalibrated） |
-| Computing rectifying homographies for stereo vision (Loop, Zhang) | CVPR | 1999 | https://doi.org/10.1109/CVPR.1999.786928 | 最小化射影畸变的校正单应 |
+| Non-parametric local transforms for computing visual correspondence (Zabih, Woodfill) | ECCV | 1994 | — | Census 变换与汉明距离代价，对单调亮度变化不变 |
+| Theory and practice of projective rectification (Hartley) | IJCV | 1999 | — | 仅由 F 求校正单应（OpenCV stereoRectifyUncalibrated） |
+| Computing rectifying homographies for stereo vision (Loop, Zhang) | CVPR | 1999 | — | 最小化射影畸变的校正单应 |
 | A taxonomy and evaluation of dense two-frame stereo correspondence algorithms (Scharstein, Szeliski) | IJCV | 2002 | https://doi.org/10.1023/A:1014573219977 | 代价—聚合—优化—细化的分类框架与 Middlebury 基准 |
 | Stereo processing by semiglobal matching and mutual information (Hirschmüller) | TPAMI | 2008 | https://doi.org/10.1109/TPAMI.2007.1166 | SGM：多方向一维动态规划求和 |
 | End-to-end learning of geometry and context for deep stereo regression (Kendall et al.) | ICCV | 2017 | https://arxiv.org/abs/1703.04309 | GC-Net：学习特征构建代价体，3D 卷积 + soft argmin |
