@@ -634,9 +634,9 @@ corner error of H vs ground truth: 0.40 px (max)
 corner error of plain least squares: 381 px
 ```
 
-The run is worth tracing. The first hypotheses have 5, 6, 9, 14 inliers; sample 13 finds 37 ($N$ drops to 4130), sample 49 finds 82 ($N = 168$) and sample 107 finds 89, which sets $N = 120$ for $p = 0.999$; the loop stops at 120. Re-fitting to those 89 inliers then recovers all 91 correct matches, and the final homography maps the image corners to within 0.40 px of the ground truth. The figure below shows the same process on a line, where every hypothesis can be drawn.
+The run is worth tracing. The first hypotheses have 5, 6, 9, 14 inliers; sample 13 finds 37 ($N$ drops to 4130), sample 40 finds 52 ($N = 1056$), sample 49 finds 82 ($N = 168$) and sample 107 finds 89, which sets $N = 120$ for $p = 0.999$; the loop stops at 120. Re-fitting to those 89 inliers then recovers all 91 correct matches, and the final homography maps the image corners to within 0.40 px of the ground truth. The figure below shows the same process on a line, where every hypothesis can be drawn.
 
-{% include blog_figure.liquid path="assets/img/blog/3d-vision/03-ransac-steps.svg" caption="RANSAC for a line on 60 points, 36 of them inliers (noise $\sigma = 1$) and 24 uniform outliers, threshold $t = 2.5$ (purple band). Red circles: the minimal sample; green: points within $t$ of the hypothesis. Sample 1 (5 inliers) and sample 2 (4 inliers) contain an outlier; sample 9 is outlier-free and collects 35 inliers, which no later sample beats. Bottom right: the total-least-squares refit on those inliers (purple, error 0.52 $\sigma$ against the true line, dotted) and least squares on all points (dashed red, error 9.5 $\sigma$)." %}
+{% include blog_figure.liquid path="assets/img/blog/3d-vision/03-ransac-steps.svg" caption="RANSAC for a line on 60 points, 36 of them inliers (noise $\sigma = 1$) and 24 uniform outliers, threshold $t = 2.5$ (purple band). Red circles: the minimal sample; green: points within $t$ of the hypothesis. Sample 1 (5 inliers) and sample 2 (4 inliers) contain an outlier; sample 9 lies on the line (one of its two points was drawn as an outlier but happens to fall 0.4 from the true line) and collects 35 inliers, which no later sample beats. Bottom right: the total-least-squares refit on those inliers (purple, error 0.52 $\sigma$ against the true line, dotted) and least squares on all points (dashed red, error 9.5 $\sigma$)." %}
 
 The widget lets you run RANSAC yourself. Raise the outlier ratio and watch the needed $N$ explode, especially for the circle ($s = 3$); lower the threshold below the noise and watch good hypotheses lose their inliers.
 
@@ -737,11 +737,11 @@ With the iteration budget from the formula ($N = 27$ for $\varepsilon = 0.6$), a
 - **PROSAC** (Chum and Matas, CVPR 2005) samples first from the matches with the best descriptor scores (for example the lowest ratio $d_1/d_2$) and gradually widens the pool. When the score is informative, good samples come much earlier.
 - **Degeneracy.** A sample can be outlier-free and still define the wrong model, for example when 7 of the 8 points of a fundamental-matrix sample lie on one plane. DEGENSAC detects and handles this case.
 - **USAC** (Raguram et al., TPAMI 2013) is a framework that assembles these pieces: guided sampling, early rejection of bad hypotheses with a sequential test (SPRT), degeneracy checks and local optimization.
-- **MAGSAC and MAGSAC++** (Barath et al., CVPR 2019 and CVPR 2020) remove the hardest parameter, the threshold $t$. Instead of choosing one noise scale, MAGSAC++ marginalizes the model quality over a range of noise scales up to a maximum $\sigma_{\max}$, which yields a smooth weight for every point instead of a hard inlier/outlier decision, and it polishes models with iteratively re-weighted least squares using those weights. It is the default choice in many current pipelines and is available in OpenCV as `cv2.USAC_MAGSAC`.
+- **MAGSAC and MAGSAC++** (Barath et al., CVPR 2019 and CVPR 2020) remove the hardest parameter, the threshold $t$. Instead of choosing one noise scale, MAGSAC++ marginalizes the model quality over a range of noise scales up to a maximum $\sigma_{\max}$, which yields a smooth weight for every point instead of a hard inlier/outlier decision, and it polishes models with iteratively re-weighted least squares using those weights. It is widely used in current pipelines and is available in OpenCV as `cv2.USAC_MAGSAC`.
 
 ## 7. Learned features and matchers
 
-Hand-designed pipelines fail in predictable situations: strong illumination change (day and night), large viewpoint change, weak or repetitive texture, and motion blur. Since 2018, each stage of the pipeline has been learned from data, and by 2026 learned matchers are the default in most research systems for SfM and visual localization.
+Hand-designed pipelines fail in predictable situations: strong illumination change (day and night), large viewpoint change, weak or repetitive texture, and motion blur. Since 2018, each stage of the pipeline has been learned from data, and by 2026 learned matchers are widely used in research systems for SfM and visual localization (classical SIFT remains the default feature of COLMAP).
 
 ### 7.1 Learned detectors and descriptors: SuperPoint and its successors
 
@@ -892,7 +892,7 @@ motion [5.3, -3.6]  single-level LK 20/20, pyramidal LK 20/20 within 0.1 px
 motion [12.0, 7.0]  single-level LK 14/20, pyramidal LK 20/20 within 0.1 px
 ```
 
-Our synthetic image consists of large uniform shapes, so the basin of convergence of a single level is unusually wide (motions of 6 px still converge); on natural, finely textured images it is typically a pixel or two. The figure measures it directly.
+Our synthetic image consists of large uniform shapes, so the basin of convergence of a single level is unusually wide (in the table above a 6 px motion still converges, and in the figure below every corner converges up to 9 px); on natural, finely textured images it is typically a pixel or two. The figure measures it directly.
 
 {% include blog_figure.liquid path="assets/img/blog/3d-vision/03-lucas-kanade.svg" localized="true" caption="Top: the flow constraint $I_x u + I_y v + I_t = 0$ of the 40 strongest-gradient pixels of a $15 \times 15$ window, for a true motion $\mathbf d = (0.6, -0.4)$ (red star), as lines in the $(u, v)$ plane. At a corner ($\lambda_2/\lambda_1 = 0.54$) the lines cross near the truth and the least-squares solution (green circle) is $(0.58, -0.43)$ after one step. On a vertical edge ($\lambda_2/\lambda_1 = 0.004$) all lines are parallel: only the normal flow $(0.6, 0)$ is determined, and any point on the green dashed line fits equally well. Bottom: fraction of 20 corners on which LK converges to within 0.1 px, against the motion magnitude. Single-level LK is perfect up to 9 px and drops to 35% at 24 px; the 3-level pyramid stays perfect up to 19.5 px." %}
 
@@ -907,7 +907,7 @@ Lucas-Kanade is **local**: it fails in flat regions and on edges. Horn and Schun
 Papers report several metrics, and they measure different things:
 
 - **Repeatability**: the fraction of keypoints detected in both images at corresponding positions (within $\epsilon$ px after mapping with the ground-truth geometry). It evaluates the detector alone.
-- **Matching score / mean matching accuracy (MMA@$\epsilon$)**: the fraction of (mutual nearest-neighbour) matches whose reprojection error is below $\epsilon$, plotted for $\epsilon$ = 1 to 10 px. HPatches (Balntas et al., CVPR 2017), a set of planar scenes with ground-truth homographies, is the standard benchmark; our toy pair is a miniature version of it.
+- **Mean matching accuracy (MMA@$\epsilon$)**: the fraction of (mutual nearest-neighbour) matches whose reprojection error is below $\epsilon$, plotted for $\epsilon$ = 1 to 10 px. It measures precision only; the related **matching score** divides the number of correct matches by the number of keypoints, so it also rewards a method that produces many correct matches. HPatches (Balntas et al., CVPR 2017), a set of planar scenes with ground-truth homographies, is the standard benchmark; our toy pair is a miniature version of it.
 - **Homography estimation accuracy**: the fraction of image pairs whose estimated $H$ maps the image corners within $\epsilon$ px of the truth (our 0.40 px), or the area under that curve.
 - **Relative pose AUC**: for 3D scenes, estimate $E$ with RANSAC, decompose it into a rotation and translation (post 4), take the larger of the angular errors, and report the area under the cumulative error curve up to 5°, 10° and 20°, on datasets such as MegaDepth (outdoor) and ScanNet (indoor).
 - **Downstream reconstruction**: the Image Matching Challenge and its benchmark (Jin et al., IJCV 2021) evaluate whole pipelines by the accuracy of the camera poses they produce.
@@ -994,7 +994,7 @@ ORB   759 /  864 keypoints, 336 ratio-test matches, 316 MAGSAC++ inliers, corner
 - R. Szeliski, *Computer Vision: Algorithms and Applications*, 2nd ed., 2022: chapter 7 (feature detection and matching), chapter 8 (image alignment, including RANSAC) and chapter 9 (motion estimation and optical flow). Free for personal use at [szeliski.org/Book](https://szeliski.org/Book/).
 - R. Hartley and A. Zisserman, *Multiple View Geometry in Computer Vision*, 2nd ed., 2004, section 4.7 (robust estimation, the RANSAC iteration count and the $\chi^2$ thresholds).
 - D. Lowe's IJCV paper is very readable; the [author's copy](https://www.cs.ubc.ca/~lowe/papers/ijcv04.pdf) is a good companion to section 3.
-- OpenCV: the feature tutorials (`cv2.SIFT_create`, `cv2.ORB_create`, `cv2.BFMatcher`, `cv2.calcOpticalFlowPyrLK`) and the [USAC tutorial](https://docs.opencv.org/5.0/tutorials/calib3d/usac.html) for the modern RANSAC flags.
+- OpenCV: the feature tutorials (`cv2.SIFT_create`, `cv2.ORB_create`, `cv2.BFMatcher`, `cv2.calcOpticalFlowPyrLK`) and the USAC tutorial of the calib3d module for the modern RANSAC flags.
 - Code: [cvg/LightGlue](https://github.com/cvg/LightGlue) (SuperPoint, DISK, ALIKED and SIFT + LightGlue), [magicleap/SuperGluePretrainedNetwork](https://github.com/magicleap/SuperGluePretrainedNetwork), [Parskatt/RoMa](https://github.com/Parskatt/RoMa), [danini/magsac](https://github.com/danini/magsac), [princeton-vl/RAFT](https://github.com/princeton-vl/RAFT).
 - Benchmarks: [HPatches](https://github.com/hpatches) and the [Image Matching Challenge](https://vision.uvic.ca/image-matching-challenge/) of Jin et al.
 

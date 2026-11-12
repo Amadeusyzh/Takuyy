@@ -112,6 +112,6 @@
 
 - Szeliski《Computer Vision: Algorithms and Applications》第 2 版第 7–9 章（特征、对齐与 RANSAC、运动估计）：https://szeliski.org/Book/
 - Hartley & Zisserman《Multiple View Geometry》第 4.7 节：RANSAC 迭代次数与 $\chi^2$ 阈值。
-- OpenCV USAC 教程：https://docs.opencv.org/5.0/tutorials/calib3d/usac.html
+- OpenCV USAC 教程（calib3d 模块，介绍 `USAC_MAGSAC` 等标志）
 - 代码：https://github.com/cvg/LightGlue 、https://github.com/magicleap/SuperGluePretrainedNetwork 、https://github.com/Parskatt/RoMa 、https://github.com/danini/magsac 、https://github.com/princeton-vl/RAFT
 - 基准：https://github.com/hpatches 、https://vision.uvic.ca/image-matching-challenge/
