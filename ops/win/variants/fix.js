@@ -56,7 +56,7 @@
       lo: "0", hi: "{m} steps", over: "white: out of steps",
       compiling: "compiling shaders\u2026",
       lost: "the WebGL context was lost; waiting for the browser to restore it\u2026",
-      paused: "the graphics driver was reset twice within a minute, so rendering is paused \u00b7 tap the picture to resume",
+      paused: "the WebGL context was lost twice within a minute, so rendering is paused \u00b7 tap the picture to resume",
       caption: "Every pixel sends a ray into a signed distance field f. The value of f at a point is the radius of a ball that contains no surface, so the ray can always advance by f, until f drops below the size of a pixel at that distance (sphere tracing, Hart 1996). The shapes are combined with the polynomial smooth minimum smin_k, where k is the width of the blend; Carve uses the matching smooth maximum max_k(f, \u2212g), and carving shapes are drawn as faint ghosts. Normals are the gradient of f from four samples, soft shadows measure how closely the shadow ray grazes other shapes (min k\u00b7f/t), and ambient occlusion compares f with the distance along the normal at five points. Steps colours each pixel by its number of iterations: rays that skim silhouettes or run along the floor cost the most, and over-relaxation (Keinert et al. 2014) cuts the count. Slice cuts the scene with a plane and draws f as contour lines, orange outside and blue inside. Probe ray draws the empty-space spheres of a single ray; orbit to see them from the side.",
       more: "Background:",
       l08: "SDFs and sphere tracing (Geometry processing, section 8)",
@@ -84,7 +84,7 @@
       lo: "0", hi: "{m} \u6b65", over: "\u767d\u8272\uff1a\u6b65\u6570\u7528\u5c3d",
       compiling: "\u6b63\u5728\u7f16\u8bd1\u7740\u8272\u5668\u2026",
       lost: "WebGL \u4e0a\u4e0b\u6587\u5df2\u4e22\u5931\uff0c\u6b63\u5728\u7b49\u5f85\u6d4f\u89c8\u5668\u6062\u590d\u2026",
-      paused: "\u663e\u5361\u9a71\u52a8\u5728\u4e00\u5206\u949f\u5185\u91cd\u7f6e\u4e86\u4e24\u6b21\uff0c\u6e32\u67d3\u5df2\u6682\u505c \u00b7 \u70b9\u51fb\u753b\u9762\u7ee7\u7eed",
+      paused: "WebGL \u4e0a\u4e0b\u6587\u5728\u4e00\u5206\u949f\u5185\u4e22\u5931\u4e86\u4e24\u6b21\uff0c\u6e32\u67d3\u5df2\u6682\u505c \u00b7 \u70b9\u51fb\u753b\u9762\u7ee7\u7eed",
       caption: "\u6bcf\u4e2a\u50cf\u7d20\u5411\u6709\u7b26\u53f7\u8ddd\u79bb\u573a\uff08signed distance field\uff09f \u53d1\u51fa\u4e00\u6761\u5149\u7ebf\u3002f \u5728\u67d0\u70b9\u7684\u503c\u662f\u4e00\u4e2a\u4e0d\u542b\u4efb\u4f55\u8868\u9762\u7684\u7403\u7684\u534a\u5f84\uff0c\u6240\u4ee5\u5149\u7ebf\u603b\u53ef\u4ee5\u5b89\u5168\u5730\u524d\u8fdb f\uff0c\u76f4\u5230 f \u5c0f\u4e8e\u8be5\u8ddd\u79bb\u5904\u4e00\u4e2a\u50cf\u7d20\u7684\u5927\u5c0f\u4e3a\u6b62\uff08\u7403\u9762\u8ffd\u8e2a\uff0csphere tracing\uff0cHart 1996\uff09\u3002\u5f62\u72b6\u4e4b\u95f4\u7528\u591a\u9879\u5f0f\u5e73\u6ed1\u6700\u5c0f\u503c smin_k \u7ec4\u5408\uff0ck \u662f\u878d\u5408\u533a\u7684\u5bbd\u5ea6\uff1b\u201c\u96d5\u523b\u201d\u4f7f\u7528\u5bf9\u5e94\u7684\u5e73\u6ed1\u6700\u5927\u503c max_k(f, \u2212g)\uff0c\u96d5\u523b\u7528\u7684\u5f62\u72b6\u4ee5\u6de1\u6de1\u7684\u865a\u5f71\u663e\u793a\u3002\u6cd5\u7ebf\u662f f \u7684\u68af\u5ea6\uff0c\u7531\u56db\u6b21\u91c7\u6837\u5f97\u5230\uff1b\u8f6f\u9634\u5f71\u8861\u91cf\u9634\u5f71\u5149\u7ebf\u4e0e\u5176\u4ed6\u5f62\u72b6\u64e6\u80a9\u800c\u8fc7\u7684\u8ddd\u79bb\uff08min k\u00b7f/t\uff09\uff1b\u73af\u5883\u5149\u906e\u853d\uff08AO\uff09\u5728\u6cd5\u7ebf\u65b9\u5411\u7684\u4e94\u4e2a\u70b9\u4e0a\u6bd4\u8f83 f \u4e0e\u6cbf\u6cd5\u7ebf\u7684\u8ddd\u79bb\u3002\u201c\u6b65\u6570\u201d\u6309\u8fed\u4ee3\u6b21\u6570\u7ed9\u6bcf\u4e2a\u50cf\u7d20\u7740\u8272\uff1a\u63a0\u8fc7\u8f6e\u5ed3\u6216\u6cbf\u5730\u9762\u884c\u8fdb\u7684\u5149\u7ebf\u6700\u6602\u8d35\uff0c\u8d85\u677e\u5f1b\uff08Keinert \u7b49\uff0c2014\uff09\u53ef\u4ee5\u51cf\u5c11\u6b65\u6570\u3002\u201c\u5207\u7247\u201d\u7528\u4e00\u4e2a\u5e73\u9762\u5207\u5f00\u573a\u666f\uff0c\u628a f \u753b\u6210\u7b49\u503c\u7ebf\uff0c\u5916\u90e8\u4e3a\u6a59\u8272\u3001\u5185\u90e8\u4e3a\u84dd\u8272\u3002\u201c\u63a2\u6d4b\u5149\u7ebf\u201d\u753b\u51fa\u4e00\u6761\u5149\u7ebf\u7684\u6240\u6709\u7a7a\u7403\uff1b\u73af\u7ed5\u89c6\u89d2\u5373\u53ef\u4ece\u4fa7\u9762\u89c2\u5bdf\u5b83\u4eec\u3002",
       more: "\u80cc\u666f\u77e5\u8bc6\uff1a",
       l08: "SDF \u4e0e\u7403\u9762\u8ffd\u8e2a\uff08\u51e0\u4f55\u5904\u7406\uff0c\u7b2c 8 \u8282\uff09",
@@ -112,7 +112,7 @@
       lo: "0", hi: "{m} \u30b9\u30c6\u30c3\u30d7", over: "\u767d\uff1a\u4e0a\u9650\u306b\u5230\u9054",
       compiling: "\u30b7\u30a7\u30fc\u30c0\u30fc\u3092\u30b3\u30f3\u30d1\u30a4\u30eb\u4e2d\u2026",
       lost: "WebGL \u30b3\u30f3\u30c6\u30ad\u30b9\u30c8\u304c\u5931\u308f\u308c\u307e\u3057\u305f\u3002\u30d6\u30e9\u30a6\u30b6\u30fc\u306b\u3088\u308b\u5fa9\u5143\u3092\u5f85\u3063\u3066\u3044\u307e\u3059\u2026",
-      paused: "\u30b0\u30e9\u30d5\u30a3\u30c3\u30af\u30b9\u30c9\u30e9\u30a4\u30d0\u30fc\u304c 1 \u5206\u4ee5\u5185\u306b 2 \u56de\u30ea\u30bb\u30c3\u30c8\u3055\u308c\u305f\u305f\u3081\u3001\u63cf\u753b\u3092\u4e00\u6642\u505c\u6b62\u3057\u307e\u3057\u305f \u00b7 \u753b\u50cf\u3092\u30bf\u30c3\u30d7\u3059\u308b\u3068\u518d\u958b\u3057\u307e\u3059",
+      paused: "WebGL \u30b3\u30f3\u30c6\u30ad\u30b9\u30c8\u304c 1 \u5206\u4ee5\u5185\u306b 2 \u56de\u5931\u308f\u308c\u305f\u305f\u3081\u3001\u63cf\u753b\u3092\u4e00\u6642\u505c\u6b62\u3057\u307e\u3057\u305f \u00b7 \u753b\u50cf\u3092\u30bf\u30c3\u30d7\u3059\u308b\u3068\u518d\u958b\u3057\u307e\u3059",
       caption: "\u5404\u30d4\u30af\u30bb\u30eb\u306f\u7b26\u53f7\u4ed8\u304d\u8ddd\u96e2\u5834\uff08signed distance field\uff09f \u306e\u4e2d\u306b\u30ec\u30a4\u3092\u98db\u3070\u3057\u307e\u3059\u3002\u3042\u308b\u70b9\u3067\u306e f \u306e\u5024\u306f\u3001\u8868\u9762\u3092\u542b\u307e\u306a\u3044\u7403\u306e\u534a\u5f84\u3067\u3059\u3002\u305d\u306e\u305f\u3081\u30ec\u30a4\u306f\u5e38\u306b f \u3060\u3051\u5b89\u5168\u306b\u9032\u3081\u308b\u3053\u3068\u304c\u3067\u304d\u3001f \u304c\u305d\u306e\u8ddd\u96e2\u3067\u306e 1 \u30d4\u30af\u30bb\u30eb\u306e\u5927\u304d\u3055\u3092\u4e0b\u56de\u308b\u307e\u3067\u7e70\u308a\u8fd4\u3057\u307e\u3059\uff08\u30b9\u30d5\u30a3\u30a2\u30c8\u30ec\u30fc\u30b7\u30f3\u30b0\u3001sphere tracing\u3001Hart 1996\uff09\u3002\u5f62\u72b6\u3069\u3046\u3057\u306f\u591a\u9805\u5f0f\u306e\u30b9\u30e0\u30fc\u30ba\u6700\u5c0f\u5024 smin_k \u3067\u7d44\u307f\u5408\u308f\u3055\u308c\u3001k \u306f\u30d6\u30ec\u30f3\u30c9\u9818\u57df\u306e\u5e45\u3067\u3059\u3002\u300c\u524a\u308b\u300d\u306f\u5bfe\u5fdc\u3059\u308b\u30b9\u30e0\u30fc\u30ba\u6700\u5927\u5024 max_k(f, \u2212g) \u3092\u4f7f\u3044\u3001\u524a\u308b\u5f62\u72b6\u306f\u8584\u3044\u30b4\u30fc\u30b9\u30c8\u3068\u3057\u3066\u63cf\u304b\u308c\u307e\u3059\u3002\u6cd5\u7dda\u306f 4 \u70b9\u306e\u30b5\u30f3\u30d7\u30eb\u304b\u3089\u6c42\u3081\u305f f \u306e\u52fe\u914d\u3067\u3059\u3002\u30bd\u30d5\u30c8\u30b7\u30e3\u30c9\u30a6\u306f\u30b7\u30e3\u30c9\u30a6\u30ec\u30a4\u304c\u4ed6\u306e\u5f62\u72b6\u306b\u3069\u308c\u3060\u3051\u8fd1\u3065\u3044\u305f\u304b\uff08min k\u00b7f/t\uff09\u3067\u3001\u30a2\u30f3\u30d3\u30a8\u30f3\u30c8\u30aa\u30af\u30eb\u30fc\u30b8\u30e7\u30f3\uff08AO\uff09\u306f\u6cd5\u7dda\u65b9\u5411\u306e 5 \u70b9\u3067 f \u3068\u6cd5\u7dda\u65b9\u5411\u306e\u8ddd\u96e2\u3092\u6bd4\u3079\u3066\u6c42\u3081\u307e\u3059\u3002\u300c\u30b9\u30c6\u30c3\u30d7\u6570\u300d\u306f\u5404\u30d4\u30af\u30bb\u30eb\u3092\u53cd\u5fa9\u56de\u6570\u3067\u8272\u5206\u3051\u3057\u307e\u3059\u3002\u8f2a\u90ed\u3092\u304b\u3059\u3081\u308b\u30ec\u30a4\u3084\u5e8a\u306b\u6cbf\u3063\u3066\u9032\u3080\u30ec\u30a4\u304c\u6700\u3082\u9ad8\u30b3\u30b9\u30c8\u3067\u3001\u904e\u7de9\u548c\uff08Keinert \u3089\u30012014\uff09\u3067\u56de\u6570\u3092\u6e1b\u3089\u305b\u307e\u3059\u3002\u300c\u30b9\u30e9\u30a4\u30b9\u300d\u306f\u5e73\u9762\u3067\u30b7\u30fc\u30f3\u3092\u5207\u308a\u3001f \u3092\u7b49\u9ad8\u7dda\u3068\u3057\u3066\u63cf\u304d\u307e\u3059\uff08\u5916\u5074\u304c\u30aa\u30ec\u30f3\u30b8\u3001\u5185\u5074\u304c\u9752\uff09\u3002\u300c\u30ec\u30a4\u3092\u8abf\u3079\u308b\u300d\u306f 1 \u672c\u306e\u30ec\u30a4\u306e\u7a7a\u306e\u7403\u3092\u3059\u3079\u3066\u63cf\u304d\u307e\u3059\u3002\u8996\u70b9\u3092\u56de\u3059\u3068\u6a2a\u304b\u3089\u89b3\u5bdf\u3067\u304d\u307e\u3059\u3002",
       more: "\u95a2\u9023\u8a18\u4e8b\uff1a",
       l08: "SDF \u3068\u30b9\u30d5\u30a3\u30a2\u30c8\u30ec\u30fc\u30b7\u30f3\u30b0\uff08\u30b8\u30aa\u30e1\u30c8\u30ea\u51e6\u7406\u3001\u7b2c 8 \u7bc0\uff09",
@@ -156,7 +156,7 @@
   var HEAT_MAX = 48; // the heat map saturates at this many steps
   var LDIR = norm([-0.45, 0.78, 0.5]);
   var BATCH_MS = 12; // GPU time per animation frame (one band of rows, one draw call)
-  var MAX_BANDS = 16; // but a frame is never split into more bands than this
+  var MAX_BANDS = 8; // but a frame is never split into more bands than this
   var FRAME_MS = 24; // the resolution is chosen so that a whole frame costs about this much GPU time
   var INIT_PX = 1e5; // pixels of the first frame, drawn before anything has been measured
 
@@ -1102,7 +1102,7 @@
   // software renderer, the first frame is at the lowest resolution)
   function resetCost() {
     scale = 0;
-    batchPx = software || safeMode ? 1500 : 6000;
+    batchPx = software || safeMode ? 1500 : 12000;
     latMs = 4;
     ups = 0;
     calibrating = !software && !safeMode;
@@ -1250,13 +1250,12 @@
   function poll() {
     pollTimer = 0;
     if (!fence || lost) return;
-    var now = performance.now();
-    if (fenceDone(now)) kick();
-    else if (now - fenceT0 < 400) pollTimer = setTimeout(poll, 2);
+    if (fenceDone()) kick();
+    else if (performance.now() - fenceT0 < 400) pollTimer = setTimeout(poll, 2);
   }
-  function fenceDone(now) {
+  function fenceDone() {
     if (!fence) return true;
-    var s = gl.clientWaitSync(fence, 0, 0);
+    var s = gl.clientWaitSync(fence, 0, 0), now = performance.now();
     if (s === gl.TIMEOUT_EXPIRED) {
       fenceSeen = now;
       return false;
@@ -1283,19 +1282,20 @@
   // frame the scale is checked. Returns true when the scale changed.
   function measured(ms, now) {
     if (fenceKind === 1) return false; // building the pipeline: measures nothing
+    // The round trip of a one-pixel draw (1-3 ms on a GPU) is not part of a band's cost. Only up to 4 ms
+    // of it is subtracted: a software renderer's compositing adds a varying cost to every fence, and
+    // subtracting all of it can make a band look free. For the same reason bands grow at most twofold.
     if (fenceKind === 2) {
-      // the round trip of a one-pixel draw: about 1-3 ms where the fence status is updated at once,
-      // a display frame where the browser updates it once per frame
-      latMs = Math.min(ms, 20);
+      latMs = Math.min(ms, 4);
       return false;
     }
     latMs = Math.min(latMs, ms);
     var gpu = Math.max(ms - latMs, 0.25), c = gpu / fencePx;
-    batchPx = clamp(BATCH_MS / c, W, Math.max(batchPx, fencePx) * 4);
+    batchPx = clamp(BATCH_MS / c, W, Math.max(batchPx, fencePx) * 2);
     sampleMs += gpu;
     samplePx += fencePx;
-    if (fenceEnd) return rescale(sampleMs / samplePx, now);
-    if (c * W * H > 3 * FRAME_MS) return rescale(c, now); // far too expensive: do not finish this frame
+    c = sampleMs / samplePx; // the frame so far: rows differ a lot in cost (sky, shapes, floor)
+    if (fenceEnd || c * W * H > 3 * FRAME_MS) return rescale(c, now); // far too expensive: drop the frame
     return false;
   }
 
@@ -1367,7 +1367,7 @@
   function tick(now) {
     raf = 0;
     if (!ready || lost || paused || gl.isContextLost()) return;
-    if (fence && !fenceDone(now)) {
+    if (fence && !fenceDone()) {
       kick();
       return;
     }
