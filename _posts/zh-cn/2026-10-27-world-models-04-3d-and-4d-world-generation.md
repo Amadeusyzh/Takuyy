@@ -300,7 +300,7 @@ Marble 之所以适合作为参照点，是因为它端到端地体现了显式�
 第 3 节以 DUSt3R 结尾：在相机未知的情况下由图像对预测点图。2025 年，这一思路扩展成了通用的**前馈几何模型**。它们的输出正是场景生成器把生成的像素变成持久 3D 状态所需要的东西。
 
 - **VGGT**（Wang et al.，CVPR 2025，[arXiv:2503.11651](https://arxiv.org/abs/2503.11651)）是一个大型 Transformer，给定一个到数百个视角，在一次前向传播中预测相机、深度图、点图和点轨迹，不需要测试时优化。
-- **π³**（Wang et al.，预印本，[arXiv:2507.13347](https://arxiv.org/abs/2507.13347)）让网络具有置换等变性（permutation-equivariant），因此没有任何输入视角被特殊地当作参考系。**MapAnything**（Keetha et al.，3DV 2026，[arXiv:2509.13414](https://arxiv.org/abs/2509.13414)）预测*度量尺度*的几何，并可利用内参、位姿或深度等可选的额外输入。**Depth Anything 3**（Lin et al.，预印本，[arXiv:2511.10647](https://arxiv.org/abs/2511.10647)）表明，一个从任意数量视角预测深度图和光线图的朴素 Transformer 就足以得到一致的几何。
+- **π³**（Wang et al.，ICLR 2026，[arXiv:2507.13347](https://arxiv.org/abs/2507.13347)）让网络具有置换等变性（permutation-equivariant），因此没有任何输入视角被特殊地当作参考系。**MapAnything**（Keetha et al.，3DV 2026，[arXiv:2509.13414](https://arxiv.org/abs/2509.13414)）预测*度量尺度*的几何，并可利用内参、位姿或深度等可选的额外输入。**Depth Anything 3**（Lin et al.，ICLR 2026，[arXiv:2511.10647](https://arxiv.org/abs/2511.10647)）表明，一个从任意数量视角预测深度图和光线图的朴素 Transformer 就足以得到一致的几何。
 
 这对世界生成为什么重要：4.2 节中的深度对齐步骤（把单目深度拟合到已有场景）现在可以替换为一次网络调用，一次性为所有生成的视角返回一致的相机和几何。**Gen3R**（Huang et al.，预印本，[arXiv:2601.04090](https://arxiv.org/abs/2601.04090)，2026 年 1 月）更进一步。它改造 VGGT，使其产生与预训练视频扩散模型的外观潜变量对齐的*几何潜变量*，于是生成器同时输出 RGB 视频以及相机、深度和点云。生成与重建合为一个模型。
 
@@ -383,7 +383,7 @@ Marble 之所以适合作为参照点，是因为它端到端地体现了显式�
 | Stable Virtual Camera: Generative View Synthesis with Diffusion Models (Zhou et al.) | 预印本 | 2025 | [arXiv:2503.14489](https://arxiv.org/abs/2503.14489) | 开放的通用新视角扩散模型 |
 | Aether: Geometric-Aware Unified World Modeling (Aether Team) | 预印本 | 2025 | [arXiv:2503.18945](https://arxiv.org/abs/2503.18945) | 一个模型完成 4D 重建、预测和规划 |
 | Voyager: Long-Range and World-Consistent Video Diffusion for Explorable 3D Scene Generation (Huang et al.) | 预印本 | 2025 | [arXiv:2506.04225](https://arxiv.org/abs/2506.04225) | 带世界缓存的 RGB-D 视频 |
-| π³: Permutation-Equivariant Visual Geometry Learning (Wang et al.) | 预印本 | 2025 | [arXiv:2507.13347](https://arxiv.org/abs/2507.13347) | 无需参考视角的前馈几何 |
+| π³: Permutation-Equivariant Visual Geometry Learning (Wang et al.) | ICLR | 2026 | [arXiv:2507.13347](https://arxiv.org/abs/2507.13347) | 无需参考视角的前馈几何 |
 | HunyuanWorld 1.0 (HunyuanWorld Team) | 预印本 | 2025 | [arXiv:2507.21809](https://arxiv.org/abs/2507.21809) | 全景优先、分层、可导出网格的世界 |
 | Matrix-3D: Omnidirectional Explorable 3D World Generation (Yang et al.) | 技术报告 | 2025 | [arXiv:2508.08086](https://arxiv.org/abs/2508.08086) | 先全景视频，再 3D 重建 |
 | 4DNeX: Feed-Forward 4D Generative Modeling Made Easy (Chen et al.) | 预印本 | 2025 | [arXiv:2508.13154](https://arxiv.org/abs/2508.13154) | 由图像生成 RGB + XYZ 视频（4D） |
@@ -391,7 +391,7 @@ Marble 之所以适合作为参照点，是因为它端到端地体现了显式�
 | Lyra: Generative 3D Scene Reconstruction via Video Diffusion Model Self-Distillation (Bahmani et al.) | 预印本 | 2025 | [arXiv:2509.19296](https://arxiv.org/abs/2509.19296) | 把视频模型蒸馏为 3DGS 解码器 |
 | FlashWorld: High-quality 3D Scene Generation within Seconds (Li et al.) | 预印本 | 2025 | [arXiv:2510.13678](https://arxiv.org/abs/2510.13678) | 直接的、面向 3D 的高斯生成 |
 | Marble: A Multimodal World Model (World Labs) | blog | 2025 | [worldlabs.ai](https://worldlabs.ai/blog/marble-world-model) | 产品化的显式世界生成器 |
-| Depth Anything 3: Recovering the Visual Space from Any Views (Lin et al.) | 预印本 | 2025 | [arXiv:2511.10647](https://arxiv.org/abs/2511.10647) | 朴素 Transformer，深度 + 光线，任意视角 |
+| Depth Anything 3: Recovering the Visual Space from Any Views (Lin et al.) | ICLR | 2026 | [arXiv:2511.10647](https://arxiv.org/abs/2511.10647) | 朴素 Transformer，深度 + 光线，任意视角 |
 | SAM 3D: 3Dfy Anything in Images (SAM 3D Team) | 预印本 | 2025 | [arXiv:2511.16624](https://arxiv.org/abs/2511.16624) | 单图物体重建 |
 | Gen3R: 3D Scene Generation Meets Feed-Forward Reconstruction (Huang et al.) | 预印本 | 2026 | [arXiv:2601.04090](https://arxiv.org/abs/2601.04090) | 与视频潜变量对齐的几何潜变量 |
 | HY-World 2.0 (Team HY-World) | 预印本 | 2026 | [arXiv:2604.14268](https://arxiv.org/abs/2604.14268) | 重建、生成并模拟 3DGS 世界 |

@@ -300,7 +300,7 @@ Marble が参照点として有用なのは、明示的なルートをエンド�
 第 3 節は DUSt3R で終わりました。カメラが未知のまま画像ペアから点マップを予測する手法です。2025 年、この考え方は汎用の**フィードフォワード幾何モデル**へと拡大しました。その出力は、シーン生成器が生成したピクセルを永続的な 3D 状態に変えるために必要なものそのものです。
 
 - **VGGT**（Wang et al.、CVPR 2025、[arXiv:2503.11651](https://arxiv.org/abs/2503.11651)）は、1 枚から数百枚の視点を受け取り、カメラ、深度マップ、点マップ、点の軌跡を 1 回の順伝播で予測する 1 つの大きな Transformer です。テスト時の最適化は不要です。
-- **π³**（Wang et al.、プレプリント、[arXiv:2507.13347](https://arxiv.org/abs/2507.13347)）はネットワークを置換同変（permutation-equivariant）にし、どの入力視点も基準フレームとして特別扱いしません。**MapAnything**（Keetha et al.、3DV 2026、[arXiv:2509.13414](https://arxiv.org/abs/2509.13414)）は*メトリック*な幾何を予測し、内部パラメータ、姿勢、深度といった追加入力を任意で使えます。**Depth Anything 3**（Lin et al.、プレプリント、[arXiv:2511.10647](https://arxiv.org/abs/2511.10647)）は、任意枚数の視点から深度マップとレイマップを予測する素朴な Transformer で一貫した幾何が得られることを示しました。
+- **π³**（Wang et al.、ICLR 2026、[arXiv:2507.13347](https://arxiv.org/abs/2507.13347)）はネットワークを置換同変（permutation-equivariant）にし、どの入力視点も基準フレームとして特別扱いしません。**MapAnything**（Keetha et al.、3DV 2026、[arXiv:2509.13414](https://arxiv.org/abs/2509.13414)）は*メトリック*な幾何を予測し、内部パラメータ、姿勢、深度といった追加入力を任意で使えます。**Depth Anything 3**（Lin et al.、ICLR 2026、[arXiv:2511.10647](https://arxiv.org/abs/2511.10647)）は、任意枚数の視点から深度マップとレイマップを予測する素朴な Transformer で一貫した幾何が得られることを示しました。
 
 これが世界生成にとって重要なのは、4.2 節の深度の位置合わせ（単眼深度を既存のシーンに合わせる処理）を、生成したすべての視点について一貫したカメラと幾何を一度に返す 1 回のネットワーク呼び出しで置き換えられるからです。**Gen3R**（Huang et al.、プレプリント、[arXiv:2601.04090](https://arxiv.org/abs/2601.04090)、2026 年 1 月）はさらに一歩進みます。VGGT を改変して、事前学習済み動画拡散モデルの外観の潜在表現と整合した*幾何の潜在表現*を出力させます。こうして生成器は RGB 動画と同時に、カメラ、深度、点群を出力します。生成と再構成が 1 つのモデルになったのです。
 
@@ -383,7 +383,7 @@ Marble が参照点として有用なのは、明示的なルートをエンド�
 | Stable Virtual Camera: Generative View Synthesis with Diffusion Models (Zhou et al.) | プレプリント | 2025 | [arXiv:2503.14489](https://arxiv.org/abs/2503.14489) | オープンな汎用新規視点拡散 |
 | Aether: Geometric-Aware Unified World Modeling (Aether Team) | プレプリント | 2025 | [arXiv:2503.18945](https://arxiv.org/abs/2503.18945) | 4D 再構成・予測・計画を 1 つのモデルで |
 | Voyager: Long-Range and World-Consistent Video Diffusion for Explorable 3D Scene Generation (Huang et al.) | プレプリント | 2025 | [arXiv:2506.04225](https://arxiv.org/abs/2506.04225) | ワールドキャッシュ付きの RGB-D 動画 |
-| π³: Permutation-Equivariant Visual Geometry Learning (Wang et al.) | プレプリント | 2025 | [arXiv:2507.13347](https://arxiv.org/abs/2507.13347) | 基準視点のいらないフィードフォワード幾何 |
+| π³: Permutation-Equivariant Visual Geometry Learning (Wang et al.) | ICLR | 2026 | [arXiv:2507.13347](https://arxiv.org/abs/2507.13347) | 基準視点のいらないフィードフォワード幾何 |
 | HunyuanWorld 1.0 (HunyuanWorld Team) | プレプリント | 2025 | [arXiv:2507.21809](https://arxiv.org/abs/2507.21809) | パノラマ先行・レイヤー化・メッシュ出力可能な世界 |
 | Matrix-3D: Omnidirectional Explorable 3D World Generation (Yang et al.) | 技術レポート | 2025 | [arXiv:2508.08086](https://arxiv.org/abs/2508.08086) | パノラマ動画から 3D 再構成へ |
 | 4DNeX: Feed-Forward 4D Generative Modeling Made Easy (Chen et al.) | プレプリント | 2025 | [arXiv:2508.13154](https://arxiv.org/abs/2508.13154) | 画像から RGB + XYZ 動画（4D）へ |
@@ -391,7 +391,7 @@ Marble が参照点として有用なのは、明示的なルートをエンド�
 | Lyra: Generative 3D Scene Reconstruction via Video Diffusion Model Self-Distillation (Bahmani et al.) | プレプリント | 2025 | [arXiv:2509.19296](https://arxiv.org/abs/2509.19296) | 動画モデルを 3DGS デコーダへ蒸留 |
 | FlashWorld: High-quality 3D Scene Generation within Seconds (Li et al.) | プレプリント | 2025 | [arXiv:2510.13678](https://arxiv.org/abs/2510.13678) | 3D 指向の直接的なガウシアン生成 |
 | Marble: A Multimodal World Model (World Labs) | blog | 2025 | [worldlabs.ai](https://worldlabs.ai/blog/marble-world-model) | 製品化された明示的世界生成器 |
-| Depth Anything 3: Recovering the Visual Space from Any Views (Lin et al.) | プレプリント | 2025 | [arXiv:2511.10647](https://arxiv.org/abs/2511.10647) | 素朴な Transformer、深度 + レイ、任意の視点 |
+| Depth Anything 3: Recovering the Visual Space from Any Views (Lin et al.) | ICLR | 2026 | [arXiv:2511.10647](https://arxiv.org/abs/2511.10647) | 素朴な Transformer、深度 + レイ、任意の視点 |
 | SAM 3D: 3Dfy Anything in Images (SAM 3D Team) | プレプリント | 2025 | [arXiv:2511.16624](https://arxiv.org/abs/2511.16624) | 1 枚画像からの物体再構成 |
 | Gen3R: 3D Scene Generation Meets Feed-Forward Reconstruction (Huang et al.) | プレプリント | 2026 | [arXiv:2601.04090](https://arxiv.org/abs/2601.04090) | 動画の潜在表現と整合した幾何の潜在表現 |
 | HY-World 2.0 (Team HY-World) | プレプリント | 2026 | [arXiv:2604.14268](https://arxiv.org/abs/2604.14268) | 3DGS 世界の再構成・生成・シミュレーション |

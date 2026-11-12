@@ -209,14 +209,14 @@
 | Stable Virtual Camera | 预印本 | 2025 | [arXiv:2503.14489](https://arxiv.org/abs/2503.14489) | 通用新视角扩散 |
 | Aether | 预印本 | 2025 | [arXiv:2503.18945](https://arxiv.org/abs/2503.18945) | 4D 重建 + 预测 + 规划 |
 | Voyager | 预印本 | 2025 | [arXiv:2506.04225](https://arxiv.org/abs/2506.04225) | RGB-D 视频 + 世界缓存 |
-| π³ | 预印本 | 2025 | [arXiv:2507.13347](https://arxiv.org/abs/2507.13347) | 置换等变的前馈几何 |
+| π³ | ICLR | 2026 | [arXiv:2507.13347](https://arxiv.org/abs/2507.13347) | 置换等变的前馈几何 |
 | HunyuanWorld 1.0 | 预印本 | 2025 | [arXiv:2507.21809](https://arxiv.org/abs/2507.21809) | 全景优先、分层、可导出网格 |
 | Matrix-3D | 技术报告 | 2025 | [arXiv:2508.08086](https://arxiv.org/abs/2508.08086) | 全景视频 → 3D 重建 |
 | 4DNeX | 预印本 | 2025 | [arXiv:2508.13154](https://arxiv.org/abs/2508.13154) | 前馈图像到 4D |
 | MapAnything | 3DV | 2026 | [arXiv:2509.13414](https://arxiv.org/abs/2509.13414) | 度量尺度的通用前馈重建 |
 | ★ Lyra | 预印本 | 2025 | [arXiv:2509.19296](https://arxiv.org/abs/2509.19296) | 视频模型自蒸馏为 3DGS 解码器 |
 | FlashWorld | 预印本 | 2025 | [arXiv:2510.13678](https://arxiv.org/abs/2510.13678) | 几秒钟内生成 3D 高斯场景 |
-| Depth Anything 3 | 预印本 | 2025 | [arXiv:2511.10647](https://arxiv.org/abs/2511.10647) | 任意视角的深度 + 光线 |
+| Depth Anything 3 | ICLR | 2026 | [arXiv:2511.10647](https://arxiv.org/abs/2511.10647) | 任意视角的深度 + 光线 |
 | SAM 3D | 预印本 | 2025 | [arXiv:2511.16624](https://arxiv.org/abs/2511.16624) | 单图物体 3D 重建 |
 | Gen3R | 预印本 | 2026 | [arXiv:2601.04090](https://arxiv.org/abs/2601.04090) | 几何潜变量与视频潜变量对齐 |
 | HY-World 2.0 | 预印本 | 2026 | [arXiv:2604.14268](https://arxiv.org/abs/2604.14268) | 重建 / 生成 / 模拟 3DGS 世界 |

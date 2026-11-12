@@ -967,7 +967,7 @@ Two findings of the paper are worth remembering. Predicting depth and cameras an
 
 ### 7.6 2025-2026 successors (as of November 2026)
 
-The field moves fast; this list is a snapshot with each work's status as of November 2026. Where a venue could not be confirmed from the paper or the authors' repository, the table says so.
+The field moves fast; this list is a snapshot with each work's status as of November 2026. Venues were checked against the conference proceedings.
 
 | Work | Status | Idea |
 | --- | --- | --- |
@@ -975,11 +975,11 @@ The field moves fast; this list is a snapshot with each work's status as of Nove
 | CUT3R (Wang et al.) | CVPR 2025 | A recurrent model with a persistent state, updated by each new image; online metric pointmaps |
 | MASt3R-SLAM (Murai et al.) | CVPR 2025 | Real-time dense SLAM on MASt3R's two-view priors |
 | MonST3R (Zhang et al.) | ICLR 2025 | Pointmaps per time step for dynamic scenes |
-| StreamVGGT (Zhuo et al.) | ICLR 2026 (per the authors' repository; arXiv July 2025) | A causal VGGT with cached keys and values, distilled from VGGT, for streaming input |
-| $\pi^3$ (Wang et al.) | ICLR 2026 (per the authors' repository) | Permutation-equivariant: no reference view; predicts affine-invariant poses and scale-invariant local pointmaps |
+| StreamVGGT (Zhuo et al.) | ICLR 2026 (arXiv July 2025) | A causal VGGT with cached keys and values, distilled from VGGT, for streaming input |
+| $\pi^3$ (Wang et al.) | ICLR 2026 | Permutation-equivariant: no reference view; predicts affine-invariant poses and scale-invariant local pointmaps |
 | MapAnything (Keetha et al.) | 3DV 2026 | Metric reconstruction from images plus any optional inputs (intrinsics, poses, depth) through a factored output: depth maps, ray maps, poses and a metric scale |
-| Depth Anything 3 (Lin et al.) | arXiv preprint, November 2025 (no venue verified) | A plain transformer with a single depth-ray target for any number of views, posed or not |
-| LongStream (Cheng et al.) | 2026; status not verified | Streaming reconstruction of kilometre-scale sequences with keyframe-relative poses and decoupled scale |
+| Depth Anything 3 (Lin et al.) | ICLR 2026 (arXiv November 2025) | A plain transformer with a single depth-ray target for any number of views, posed or not |
+| LongStream (Cheng et al.) | CVPR 2026 | Streaming reconstruction of kilometre-scale sequences with keyframe-relative poses and decoupled scale |
 
 Three trends run through the list. **Output parameterization** has moved from raw pointmaps toward factored outputs (depth, rays or cameras, scale), echoing VGGT's finding. **Reference frames** are being removed ($\pi^3$) or made relative (LongStream), because anchoring everything to the first image hurts long and unordered inputs. And **streaming** variants with bounded memory (CUT3R, StreamVGGT, LongStream and a wave of 2026 preprints) bring the models to SLAM-like settings.
 
@@ -1106,10 +1106,10 @@ DTU is clean and object-centric, which made it the default for neural surfaces; 
 | Fast3R: towards 3D reconstruction of 1000+ images in one forward pass (Yang et al.) | CVPR | 2025 | [arXiv](https://arxiv.org/abs/2501.13928) | Many-view DUSt3R without global alignment |
 | Continuous 3D perception model with persistent state (Wang et al.) | CVPR | 2025 | [arXiv](https://arxiv.org/abs/2501.12387) | CUT3R: recurrent, online reconstruction |
 | MASt3R-SLAM: real-time dense SLAM with 3D reconstruction priors (Murai et al.) | CVPR | 2025 | [arXiv](https://arxiv.org/abs/2412.12392) | Feed-forward priors in a SLAM system |
-| $\pi^3$: permutation-equivariant visual geometry learning (Wang et al.) | ICLR (per the authors' repository) | 2026 | [arXiv](https://arxiv.org/abs/2507.13347) | No reference view |
+| $\pi^3$: permutation-equivariant visual geometry learning (Wang et al.) | ICLR | 2026 | [arXiv](https://arxiv.org/abs/2507.13347) | No reference view |
 | MapAnything: universal feed-forward metric 3D reconstruction (Keetha et al.) | 3DV | 2026 | [arXiv](https://arxiv.org/abs/2509.13414) | Metric output, optional geometric inputs |
-| Depth Anything 3: recovering the visual space from any views (Lin et al.) | arXiv preprint (no venue verified) | 2025 | [arXiv](https://arxiv.org/abs/2511.10647) | One transformer, depth-ray targets |
-| LongStream: long-sequence streaming autoregressive visual geometry (Cheng et al.) | status not verified | 2026 | (link not verified) | Kilometre-scale streaming |
+| Depth Anything 3: recovering the visual space from any views (Lin et al.) | ICLR | 2026 | [arXiv](https://arxiv.org/abs/2511.10647) | One transformer, depth-ray targets |
+| LongStream: long-sequence streaming autoregressive visual geometry (Cheng et al.) | CVPR | 2026 | [arXiv](https://arxiv.org/abs/2602.13172) | Kilometre-scale streaming |
 
 ## Learning resources
 

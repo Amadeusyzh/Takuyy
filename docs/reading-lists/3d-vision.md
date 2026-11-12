@@ -468,11 +468,11 @@
 | Continuous 3D perception model with persistent state (Wang et al.) | CVPR | 2025 | https://arxiv.org/abs/2501.12387 | CUT3R：带持久状态的循环式在线重建 |
 | MASt3R-SLAM: real-time dense SLAM with 3D reconstruction priors (Murai, Dexheimer, Davison) | CVPR | 2025 | https://arxiv.org/abs/2412.12392 | 约 15 FPS 的稠密单目 SLAM |
 | MonST3R: a simple approach for estimating geometry in the presence of motion (Zhang et al.) | ICLR | 2025 | https://arxiv.org/abs/2410.03825 | 动态场景的逐时刻点图 |
-| Streaming 4D visual geometry transformer (Zhuo et al.) | ICLR（据作者代码仓库；arXiv 2025 年 7 月） | 2026 | https://arxiv.org/abs/2507.11539 | StreamVGGT：因果注意力 + 键值缓存，由 VGGT 蒸馏 |
-| π³: permutation-equivariant visual geometry learning (Wang et al.) | ICLR（据作者代码仓库） | 2026 | https://arxiv.org/abs/2507.13347 | 无参考视图，置换等变 |
+| Streaming 4D visual geometry transformer (Zhuo et al.) | ICLR（arXiv 2025 年 7 月） | 2026 | https://arxiv.org/abs/2507.11539 | StreamVGGT：因果注意力 + 键值缓存，由 VGGT 蒸馏 |
+| π³: permutation-equivariant visual geometry learning (Wang et al.) | ICLR | 2026 | https://arxiv.org/abs/2507.13347 | 无参考视图，置换等变 |
 | MapAnything: universal feed-forward metric 3D reconstruction (Keetha et al.) | 3DV | 2026 | https://arxiv.org/abs/2509.13414 | 可选输入（内参、位姿、深度），分解式度量输出 |
-| Depth Anything 3: recovering the visual space from any views (Lin et al.) | arXiv 预印本（2025 年 11 月；截至 2026 年 11 月未核实到会议） | 2025 | https://arxiv.org/abs/2511.10647 | 朴素 Transformer + 深度-射线目标 |
-| LongStream: long-sequence streaming autoregressive visual geometry (Cheng et al.) | 状态未核实 | 2026 | （链接未核实） | 关键帧相对位姿、解耦尺度，公里级流式重建 |
+| Depth Anything 3: recovering the visual space from any views (Lin et al.) | ICLR（arXiv 2025 年 11 月） | 2026 | https://arxiv.org/abs/2511.10647 | 朴素 Transformer + 深度-射线目标 |
+| LongStream: long-sequence streaming autoregressive visual geometry (Cheng et al.) | CVPR | 2026 | https://arxiv.org/abs/2602.13172 | 关键帧相对位姿、解耦尺度，公里级流式重建 |
 
 ### 评测基准
 

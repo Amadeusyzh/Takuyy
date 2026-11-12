@@ -967,7 +967,7 @@ RMS error after chaining: 0.222 m, after global alignment: 0.078 m
 
 ### 7.6 2025-2026 年的后继（截至 2026 年 11 月）
 
-这个领域发展很快；下表是一个快照，给出每项工作截至 2026 年 11 月的状态。凡是无法从论文或作者代码仓库确认会议的，表中都会注明。
+这个领域发展很快；下表是一个快照，给出每项工作截至 2026 年 11 月的状态。会议信息已对照会议论文集核实。
 
 | 工作 | 状态 | 思想 |
 | --- | --- | --- |
@@ -975,11 +975,11 @@ RMS error after chaining: 0.222 m, after global alignment: 0.078 m
 | CUT3R（Wang 等） | CVPR 2025 | 带持久状态的循环模型，每来一张新图像就更新状态；在线输出度量尺度点图 |
 | MASt3R-SLAM（Murai 等） | CVPR 2025 | 基于 MASt3R 两视图先验的实时稠密 SLAM |
 | MonST3R（Zhang 等） | ICLR 2025 | 为动态场景逐时刻预测点图 |
-| StreamVGGT（Zhuo 等） | ICLR 2026（据作者代码仓库；arXiv 2025 年 7 月） | 带键值缓存的因果 VGGT，由 VGGT 蒸馏而来，用于流式输入 |
-| $\pi^3$（Wang 等） | ICLR 2026（据作者代码仓库） | 置换等变：没有参考视图；预测仿射不变的位姿和尺度不变的局部点图 |
+| StreamVGGT（Zhuo 等） | ICLR 2026（arXiv 2025 年 7 月） | 带键值缓存的因果 VGGT，由 VGGT 蒸馏而来，用于流式输入 |
+| $\pi^3$（Wang 等） | ICLR 2026 | 置换等变：没有参考视图；预测仿射不变的位姿和尺度不变的局部点图 |
 | MapAnything（Keetha 等） | 3DV 2026 | 由图像加任意可选输入（内参、位姿、深度）做度量重建，输出分解为深度图、射线图、位姿和度量尺度 |
-| Depth Anything 3（Lin 等） | arXiv 预印本，2025 年 11 月（未核实到会议） | 一个朴素的 Transformer 和单一的深度-射线目标，适用于任意数量、有无位姿的视图 |
-| LongStream（Cheng 等） | 2026；状态未核实 | 用相对关键帧的位姿和解耦的尺度，流式重建公里级序列 |
+| Depth Anything 3（Lin 等） | ICLR 2026（arXiv 2025 年 11 月） | 一个朴素的 Transformer 和单一的深度-射线目标，适用于任意数量、有无位姿的视图 |
+| LongStream（Cheng 等） | CVPR 2026 | 用相对关键帧的位姿和解耦的尺度，流式重建公里级序列 |
 
 表中贯穿着三个趋势。**输出参数化**从原始点图转向分解式输出（深度、射线或相机、尺度），呼应了 VGGT 的发现。**参考坐标系**被去掉（$\pi^3$）或改为相对的（LongStream），因为把一切锚定在第一张图像上不利于长的、无序的输入。**流式**变体（CUT3R、StreamVGGT、LongStream 以及 2026 年的一大批预印本）把内存限制在有界范围内，把这些模型带进类似 SLAM 的场景。
 
@@ -1106,10 +1106,10 @@ DTU 干净、以物体为中心，因此成为神经曲面的默认基准；Tank
 | Fast3R: towards 3D reconstruction of 1000+ images in one forward pass (Yang et al.) | CVPR | 2025 | [arXiv](https://arxiv.org/abs/2501.13928) | 无需全局对齐的多视图 DUSt3R |
 | Continuous 3D perception model with persistent state (Wang et al.) | CVPR | 2025 | [arXiv](https://arxiv.org/abs/2501.12387) | CUT3R：循环式在线重建 |
 | MASt3R-SLAM: real-time dense SLAM with 3D reconstruction priors (Murai et al.) | CVPR | 2025 | [arXiv](https://arxiv.org/abs/2412.12392) | SLAM 系统中的前馈先验 |
-| $\pi^3$: permutation-equivariant visual geometry learning (Wang et al.) | ICLR（据作者代码仓库） | 2026 | [arXiv](https://arxiv.org/abs/2507.13347) | 没有参考视图 |
+| $\pi^3$: permutation-equivariant visual geometry learning (Wang et al.) | ICLR | 2026 | [arXiv](https://arxiv.org/abs/2507.13347) | 没有参考视图 |
 | MapAnything: universal feed-forward metric 3D reconstruction (Keetha et al.) | 3DV | 2026 | [arXiv](https://arxiv.org/abs/2509.13414) | 度量输出，可选几何输入 |
-| Depth Anything 3: recovering the visual space from any views (Lin et al.) | arXiv 预印本（未核实到会议） | 2025 | [arXiv](https://arxiv.org/abs/2511.10647) | 一个 Transformer，深度-射线目标 |
-| LongStream: long-sequence streaming autoregressive visual geometry (Cheng et al.) | 状态未核实 | 2026 | （链接未核实） | 公里级流式重建 |
+| Depth Anything 3: recovering the visual space from any views (Lin et al.) | ICLR | 2026 | [arXiv](https://arxiv.org/abs/2511.10647) | 一个 Transformer，深度-射线目标 |
+| LongStream: long-sequence streaming autoregressive visual geometry (Cheng et al.) | CVPR | 2026 | [arXiv](https://arxiv.org/abs/2602.13172) | 公里级流式重建 |
 
 ## 学习资源
 

@@ -806,7 +806,7 @@ row-wise argmax of S: [0 2 2 1]   argmax of P (3 = dustbin): [0 1 2 3]
 
 ### 7.3 LightGlue
 
-**LightGlue**（Lindenberger、Sarlin 与 Pollefeys，ICCV 2023）重新审视了 SuperGlue 的设计，使其更快、更准、更容易训练。有两个突出的想法。它是**自适应的**：每层之后由一个小头预测匹配是否已经足够可信；容易的图像对（重叠大、变化小）几层后就退出，而被确信无法匹配的关键点会在后续层中被剪掉。它还用一种更轻量的分配代替了 Sinkhorn 迭代，把两两相似度与每个点的**可匹配性**（matchability）得分结合起来。作者报告，在典型户外条件下，其精度接近稠密匹配器 LoFTR，速度约为其 8 倍。预训练权重覆盖 SuperPoint、DISK、ALIKED，甚至经典的 SIFT 特征，因此 LightGlue 是对现有 SIFT 流水线的一个简单升级。
+**LightGlue**（Lindenberger、Sarlin 与 Pollefeys，ICCV 2023）重新审视了 SuperGlue 的设计，使其更快、更准、更容易训练。有两个突出的想法。它是**自适应的**：每层之后由一个小头预测匹配是否已经足够可信；容易的图像对（重叠大、变化小）几层后就退出，而被确信无法匹配的关键点会在后续层中被剪掉。它还用一种更轻量的分配代替了 Sinkhorn 迭代，把两两相似度与每个点的**可匹配性**（matchability）得分结合起来。作者报告，在户外图像对上，其精度接近稠密匹配器 LoFTR，而运行时间只有后者的一小部分。预训练权重覆盖 SuperPoint、DISK、ALIKED，甚至经典的 SIFT 特征，因此 LightGlue 是对现有 SIFT 流水线的一个简单升级。
 
 ### 7.4 无检测器与稠密匹配：LoFTR、RoMa 及其后
 

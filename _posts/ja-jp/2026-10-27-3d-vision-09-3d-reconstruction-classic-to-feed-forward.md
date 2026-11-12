@@ -967,7 +967,7 @@ RMS error after chaining: 0.222 m, after global alignment: 0.078 m
 
 ### 7.6 2025〜2026 年の後継（2026 年 11 月時点）
 
-この分野は動きが速いので、次の表は各研究の状態（2026 年 11 月時点）のスナップショットです。論文や著者のリポジトリから採択先を確認できなかったものは、表にそう記しています。
+この分野は動きが速いので、次の表は各研究の状態（2026 年 11 月時点）のスナップショットです。採択先は会議の論文集で確認しました。
 
 | 研究 | 状態 | 考え方 |
 | --- | --- | --- |
@@ -975,11 +975,11 @@ RMS error after chaining: 0.222 m, after global alignment: 0.078 m
 | CUT3R（Wang ら） | CVPR 2025 | 新しい画像ごとに更新される永続的な状態を持つ再帰モデル。計量的なポイントマップをオンラインで出力 |
 | MASt3R-SLAM（Murai ら） | CVPR 2025 | MASt3R の 2 視点の事前知識による実時間の密な SLAM |
 | MonST3R（Zhang ら） | ICLR 2025 | 動的シーンのための時刻ごとのポイントマップ |
-| StreamVGGT（Zhuo ら） | ICLR 2026（著者のリポジトリによる。arXiv 2025 年 7 月） | キーと値をキャッシュする因果的な VGGT。VGGT から蒸留し、ストリーミング入力に対応 |
-| $\pi^3$（Wang ら） | ICLR 2026（著者のリポジトリによる） | 置換同変：参照視点なし。アフィン不変な姿勢とスケール不変な局所ポイントマップを予測 |
+| StreamVGGT（Zhuo ら） | ICLR 2026（arXiv 2025 年 7 月） | キーと値をキャッシュする因果的な VGGT。VGGT から蒸留し、ストリーミング入力に対応 |
+| $\pi^3$（Wang ら） | ICLR 2026 | 置換同変：参照視点なし。アフィン不変な姿勢とスケール不変な局所ポイントマップを予測 |
 | MapAnything（Keetha ら） | 3DV 2026 | 画像と任意の追加入力（内部パラメータ、姿勢、奥行き）から計量的な再構成。出力は奥行きマップ、レイマップ、姿勢、計量スケールに分解 |
-| Depth Anything 3（Lin ら） | arXiv プレプリント、2025 年 11 月（採択先は未確認） | 素の Transformer と単一の奥行き・レイの目標で、任意の枚数の視点（姿勢の有無を問わず）に対応 |
-| LongStream（Cheng ら） | 2026 年。状態は未確認 | キーフレーム相対の姿勢と分離したスケールで、キロメートル規模の系列をストリーミング再構成 |
+| Depth Anything 3（Lin ら） | ICLR 2026（arXiv 2025 年 11 月） | 素の Transformer と単一の奥行き・レイの目標で、任意の枚数の視点（姿勢の有無を問わず）に対応 |
+| LongStream（Cheng ら） | CVPR 2026 | キーフレーム相対の姿勢と分離したスケールで、キロメートル規模の系列をストリーミング再構成 |
 
 表には 3 つの流れが見て取れます。**出力のパラメータ化**は生のポイントマップから分解された出力（奥行き、レイまたはカメラ、スケール）へと移っており、VGGT の発見と呼応しています。**参照座標系**は取り除かれる（$\pi^3$）か相対的になっています（LongStream）。すべてを最初の画像に固定すると、長い入力や順序のない入力で不利になるからです。そして、メモリを有界に保つ**ストリーミング**版（CUT3R、StreamVGGT、LongStream、2026 年の多数のプレプリント）が、これらのモデルを SLAM のような状況に持ち込んでいます。
 
@@ -1106,10 +1106,10 @@ DTU はきれいで物体中心なので、ニューラル表面の標準にな�
 | Fast3R: towards 3D reconstruction of 1000+ images in one forward pass (Yang et al.) | CVPR | 2025 | [arXiv](https://arxiv.org/abs/2501.13928) | 大域整列のいらない多視点 DUSt3R |
 | Continuous 3D perception model with persistent state (Wang et al.) | CVPR | 2025 | [arXiv](https://arxiv.org/abs/2501.12387) | CUT3R：再帰的なオンライン再構成 |
 | MASt3R-SLAM: real-time dense SLAM with 3D reconstruction priors (Murai et al.) | CVPR | 2025 | [arXiv](https://arxiv.org/abs/2412.12392) | SLAM システムの中のフィードフォワード事前知識 |
-| $\pi^3$: permutation-equivariant visual geometry learning (Wang et al.) | ICLR（著者のリポジトリによる） | 2026 | [arXiv](https://arxiv.org/abs/2507.13347) | 参照視点なし |
+| $\pi^3$: permutation-equivariant visual geometry learning (Wang et al.) | ICLR | 2026 | [arXiv](https://arxiv.org/abs/2507.13347) | 参照視点なし |
 | MapAnything: universal feed-forward metric 3D reconstruction (Keetha et al.) | 3DV | 2026 | [arXiv](https://arxiv.org/abs/2509.13414) | 計量的な出力、任意の幾何入力 |
-| Depth Anything 3: recovering the visual space from any views (Lin et al.) | arXiv プレプリント（採択先は未確認） | 2025 | [arXiv](https://arxiv.org/abs/2511.10647) | 1 つの Transformer、奥行き・レイの目標 |
-| LongStream: long-sequence streaming autoregressive visual geometry (Cheng et al.) | 状態は未確認 | 2026 | （リンク未確認） | キロメートル規模のストリーミング |
+| Depth Anything 3: recovering the visual space from any views (Lin et al.) | ICLR | 2026 | [arXiv](https://arxiv.org/abs/2511.10647) | 1 つの Transformer、奥行き・レイの目標 |
+| LongStream: long-sequence streaming autoregressive visual geometry (Cheng et al.) | CVPR | 2026 | [arXiv](https://arxiv.org/abs/2602.13172) | キロメートル規模のストリーミング |
 
 ## 学習リソース
 
