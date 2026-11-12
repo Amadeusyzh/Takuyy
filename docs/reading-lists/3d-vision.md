@@ -115,3 +115,64 @@
 - OpenCV USAC 教程：https://docs.opencv.org/5.0/tutorials/calib3d/usac.html
 - 代码：https://github.com/cvg/LightGlue 、https://github.com/magicleap/SuperGluePretrainedNetwork 、https://github.com/Parskatt/RoMa 、https://github.com/danini/magsac 、https://github.com/princeton-vl/RAFT
 - 基准：https://github.com/hpatches 、https://vision.uvic.ca/image-matching-challenge/
+
+## 05 多视图几何与光束法平差
+
+建议顺序：Haralick 等（P3P 综述）→ Lepetit 等（EPnP）→ Triggs 等（BA 综述，重点读规范自由度与稀疏性两节）→ Snavely 等（Photo Tourism）→ Schönberger & Frahm（COLMAP）→ Agarwal 等（BA in the Large）→ Hartley 等（旋转平均）→ Pan 等（GLOMAP）。前馈方法（VGGSfM、VGGT）状态截至 2026 年 11 月。
+
+### PnP 与相机重定位
+
+| 论文 | 会议/期刊 | 年份 | 链接 | 说明 |
+| --- | --- | --- | --- | --- |
+| Random sample consensus (Fischler, Bolles) | Communications of the ACM | 1981 | https://doi.org/10.1145/358669.358692 | RANSAC 最初就是为由地标求相机位姿而提出的 |
+| Review and analysis of solutions of the three point perspective pose estimation problem (Haralick, Lee, Ottenberg, Nölle) | IJCV | 1994 | https://doi.org/10.1007/BF02028352 | Grunert 1841 年的 P3P 及后续解法的综述与数值稳定性分析；第 05 篇的消元即按此推导 |
+| Complete solution classification for the perspective-three-point problem (Gao, Hou, Tang, Cheng) | TPAMI | 2003 | https://doi.org/10.1109/TPAMI.2003.1217599 | P3P 有 1、2、3、4 个解的完整判据 |
+| EPnP: an accurate O(n) solution to the PnP problem (Lepetit, Moreno-Noguer, Fua) | IJCV | 2009 | https://doi.org/10.1007/s11263-008-0152-6 | 四个控制点 + 重心坐标，把 PnP 化为 12 维零空间问题 |
+| A novel parametrization of the perspective-three-point problem (Kneip, Scaramuzza, Siegwart) | CVPR | 2011 | https://doi.org/10.1109/CVPR.2011.5995464 | 直接求位姿、不先求三维点的 P3P |
+| Lambda Twist: an accurate fast robust perspective three point (P3P) solver (Persson, Nordberg) | ECCV | 2018 | https://www.ecva.net/papers/eccv_2018/papers_ECCV/html/Mikael_Persson_Lambda_Twist_An_ECCV_2018_paper.php | 避开四次方程，只需三次方程的一个实根，快且稳定 |
+
+### 光束法平差
+
+| 论文 | 会议/期刊 | 年份 | 链接 | 说明 |
+| --- | --- | --- | --- | --- |
+| Bundle adjustment — a modern synthesis (Triggs, McLauchlan, Hartley, Fitzgibbon) | Vision Algorithms: Theory and Practice (LNCS 1883) | 2000 | https://doi.org/10.1007/3-540-44480-7_21 | BA 的权威综述：代价函数、鲁棒性、稀疏牛顿法、规范自由度；免费版 https://hal.archives-ouvertes.fr/inria-00548290v1 |
+| SBA: a software package for generic sparse bundle adjustment (Lourakis, Argyros) | ACM TOMS | 2009 | https://doi.org/10.1145/1486525.1486527 | 基于 Schur 补的稀疏 LM 库 |
+| Bundle adjustment in the large (Agarwal, Snavely, Seitz, Szeliski) | ECCV | 2010 | https://doi.org/10.1007/978-3-642-15552-9_3 | 非精确牛顿、迭代 Schur + 预条件共轭梯度；BAL 数据集 |
+| Multicore bundle adjustment (Wu, Agarwal, Curless, Seitz) | CVPR | 2011 | https://doi.org/10.1109/CVPR.2011.5995552 | 多核 CPU / GPU 上的 BA |
+| Pixel-perfect structure-from-motion with featuremetric refinement (Lindenberger, Sarlin, Larsson, Pollefeys) | ICCV | 2021 | https://arxiv.org/abs/2108.08291 | 用稠密学习特征的"特征度量"误差精化关键点和 BA |
+
+### 增量式 SfM
+
+| 论文 | 会议/期刊 | 年份 | 链接 | 说明 |
+| --- | --- | --- | --- | --- |
+| Photo tourism: exploring photo collections in 3D (Snavely, Seitz, Szeliski) | SIGGRAPH (ACM TOG) | 2006 | https://doi.org/10.1145/1141911.1141964 | 网络照片上的增量式 SfM（Bundler） |
+| Building Rome in a day (Agarwal, Snavely, Simon, Seitz, Szeliski) | ICCV | 2009 | https://doi.org/10.1109/ICCV.2009.5459148 | 城市规模匹配与重建 |
+| Towards linear-time incremental structure from motion (Wu) | 3DV | 2013 | https://doi.org/10.1109/3DV.2013.25 | VisualSFM；主要步骤接近线性时间 |
+| Structure-from-Motion revisited (Schönberger, Frahm) | CVPR | 2016 | https://openaccess.thecvf.com/content_cvpr_2016/html/Schonberger_Structure-From-Motion_Revisited_CVPR_2016_paper.html | COLMAP：几何验证、下一最佳视图、鲁棒三角化、BA 与过滤 |
+
+### 全局 SfM：旋转平均、平移平均与全局定位
+
+| 论文 | 会议/期刊 | 年份 | 链接 | 说明 |
+| --- | --- | --- | --- | --- |
+| Rotation averaging (Hartley, Trumpf, Dai, Li) | IJCV | 2013 | https://doi.org/10.1007/s11263-012-0601-0 | 旋转平均的理论教程：弦距离/测地距离、L1/L2、收敛性 |
+| Efficient and robust large-scale rotation averaging (Chatterjee, Govindu) | ICCV | 2013 | https://openaccess.thecvf.com/content_iccv_2013/html/Chatterjee_Efficient_and_Robust_2013_ICCV_paper.html | L1 初始化 + IRLS，对错误图像对鲁棒；期刊版 TPAMI 2018 "Robust relative rotation averaging" |
+| Global fusion of relative motions for robust, accurate and scalable structure from motion (Moulon, Monasse, Marlet) | ICCV | 2013 | https://openaccess.thecvf.com/content_iccv_2013/html/Moulon_Global_Fusion_of_2013_ICCV_paper.html | 稀疏特征值求全局旋转、L∞ 求平移（OpenMVG） |
+| Robust global translations with 1DSfM (Wilson, Snavely) | ECCV | 2014 | https://research.cs.cornell.edu/1dsfm | 投影到一维去除错误的平移方向；1DSfM 数据集 |
+| Robust camera location estimation by convex programming (Özyeşil, Singer) | CVPR | 2015 | https://openaccess.thecvf.com/content_cvpr_2015/html/Ozyesil_Robust_Camera_Location_2015_CVPR_paper.html | LUD：凸规划平移平均；平行刚性理论 |
+| Baseline desensitizing in translation averaging (Zhuang, Cheong, Lee) | CVPR | 2018 | https://arxiv.org/abs/1901.00643 | BATA：双线性、基于角度、对基线长度不敏感 |
+| Global structure-from-motion revisited (Pan, Baráth, Pollefeys, Schönberger) | ECCV | 2024 | https://arxiv.org/abs/2407.20219 | 已发表；GLOMAP：跳过平移平均，相机与点联合全局定位，可从随机初值收敛；COLMAP 4.0 起作为 `global_mapper` 并入 COLMAP |
+
+### 前馈方法（截至 2026 年 11 月）
+
+| 论文 | 会议/期刊 | 年份 | 链接 | 说明 |
+| --- | --- | --- | --- | --- |
+| VGGSfM: visual geometry grounded deep structure from motion (Wang, Karaev, Rupprecht, Novotny) | CVPR | 2024 | https://openaccess.thecvf.com/content/CVPR2024/html/Wang_VGGSfM_Visual_Geometry_Grounded_Deep_Structure_From_Motion_CVPR_2024_paper.html | 已发表；学习的轨迹 + 可微 BA 的端到端 SfM |
+| VGGT: visual geometry grounded transformer (Wang et al.) | CVPR | 2025 | https://arxiv.org/abs/2503.11651 | 已发表；一次前向预测相机、深度、点图与轨迹；官方代码可选 BA 精化（第 09 篇详讲） |
+
+**书籍、文档与代码**
+
+- Hartley & Zisserman《Multiple View Geometry》第 2 版：第 7 章（相机矩阵估计）、第 18 章（N 视图计算方法）、附录 A6（迭代估计与稀疏 LM）。
+- Szeliski《Computer Vision: Algorithms and Applications》第 2 版第 11 章（Structure from motion and SLAM）：https://szeliski.org/Book/
+- Ceres Solver（BA 教程）：http://ceres-solver.org/ ；BAL 数据集：https://grail.cs.washington.edu/projects/bal/
+- COLMAP：https://colmap.github.io/ ；GLOMAP：https://github.com/colmap/glomap
+- OpenCV PnP：https://docs.opencv.org/4.x/d5/d1f/calib3d_solvePnP.html
