@@ -115,3 +115,35 @@
 - OpenCV USAC 教程：https://docs.opencv.org/5.0/tutorials/calib3d/usac.html
 - 代码：https://github.com/cvg/LightGlue 、https://github.com/magicleap/SuperGluePretrainedNetwork 、https://github.com/Parskatt/RoMa 、https://github.com/danini/magsac 、https://github.com/princeton-vl/RAFT
 - 基准：https://github.com/hpatches 、https://vision.uvic.ca/image-matching-challenge/
+
+## 10 面向 AR/VR 的三维视觉
+
+| 论文 | 会议/期刊 | 年份 | 链接 | 说明 |
+| --- | --- | --- | --- | --- |
+| A survey of augmented reality (Azuma) | Presence | 1997 | https://doi.org/10.1162/pres.1997.6.4.355 | AR 的经典定义；把配准（registration）列为核心问题 |
+| Registration error analysis for augmented reality (Holloway) | Presence | 1997 | https://doi.org/10.1162/pres.1997.6.4.413 | 光学透视系统的端到端误差预算；中等头速下延迟误差已超过其他所有来源 |
+| Single point active alignment method (SPAAM) for optical see-through HMD calibration for AR (Tuceryan, Navab) | ISAR | 2000 | — | 用户参与的光学透视显示标定（第 149–158 页） |
+| General theory of remote gaze estimation using the pupil center and corneal reflections (Guestrin, Eizenman) | IEEE TBME | 2006 | https://doi.org/10.1109/TBME.2005.863952 | 瞳孔-角膜反射（PCCR）眼动追踪的三维理论 |
+| A multi-state constraint Kalman filter for vision-aided inertial navigation (Mourikis, Roumeliotis) | ICRA | 2007 | https://doi.org/10.1109/ROBOT.2007.364024 | MSCKF：移动设备上常用的 VIO 滤波框架 |
+| 1€ filter: a simple speed-based low-pass filter for noisy input in interactive systems (Casiez, Roussel, Vogel) | CHI | 2012 | https://doi.org/10.1145/2207676.2208639 | 截止频率随速度增大的自适应低通；兼顾静止抖动与运动延迟 |
+| Head tracking for the Oculus Rift (LaValle, Yershova, Katsev, Antonov) | ICRA | 2014 | https://doi.org/10.1109/ICRA.2014.6906608 | 消费级头显的姿态跟踪、漂移校正与预测 |
+| The asynchronous time warp for virtual reality on consumer hardware (van Waveren) | VRST | 2016 | https://doi.org/10.1145/2993369.2993375 | 与应用帧率解耦的后期重投影（异步时间扭曲） |
+| Towards foveated rendering for gaze-tracked virtual reality (Patney et al.) | SIGGRAPH Asia (ACM TOG) | 2016 | https://doi.org/10.1145/2980179.2980246 | 眼动追踪下周边视野可降低多少渲染质量 |
+| On-manifold preintegration for real-time visual-inertial odometry (Forster et al.) | IEEE T-RO | 2017 | https://arxiv.org/abs/1512.02363 | 基于优化的 VIO 中的 IMU 预积分 |
+| A survey of calibration methods for optical see-through head-mounted displays (Grubert, Itoh, Moser, Swan) | IEEE TVCG | 2018 | https://arxiv.org/abs/1709.04299 | 光学透视显示与眼睛位置标定方法综述 |
+| From coarse to fine: robust hierarchical localization at large scale (Sarlin et al.) | CVPR | 2019 | https://arxiv.org/abs/1812.03506 | 检索 + 局部匹配 + PnP 的分层重定位流程 |
+| MEgATrack: monochrome egocentric articulated hand-tracking for virtual reality (Han et al.) | SIGGRAPH (ACM TOG) | 2020 | https://doi.org/10.1145/3386569.3392452 | 用头显单色鱼眼跟踪相机做手部追踪 |
+| Passthrough+: real-time stereoscopic view synthesis for mobile mixed reality (Chaurasia et al.) | I3D (PACMCGIT) | 2020 | https://doi.org/10.1145/3384540 | 移动头显上基于深度代理的透视重投影 |
+| Towards indistinguishable augmented reality: a survey on optical see-through head-mounted displays (Itoh et al.) | ACM Computing Surveys | 2021 | https://doi.org/10.1145/3453157 | 光学透视显示的空间、时间与视觉真实感 |
+| NeuralPassthrough: learned real-time view synthesis for VR (Xiao et al.) | SIGGRAPH | 2022 | https://arxiv.org/abs/2207.02186 | 学习式透视视图合成 |
+| UmeTrack: unified multi-view end-to-end hand tracking for VR (Han et al.) | SIGGRAPH Asia | 2022 | https://arxiv.org/abs/2211.00099 | 多视角、多帧端到端输出世界坐标系下的手部姿态 |
+| Project Aria: a new tool for egocentric multi-modal AI research (Engel et al.) | arXiv 预印本（2023 年 8 月） | 2023 | https://arxiv.org/abs/2308.13561 | 带 SLAM、眼动与公开数据集的研究用眼镜平台 |
+| SceneScript: reconstructing scenes with an autoregressive structured language model (Avetisyan et al.) | ECCV | 2024 | https://arxiv.org/abs/2403.13064 | 已发表；把房间布局与物体表示为结构化命令序列 |
+
+**书籍、规范与代码**
+
+- S. M. LaValle，*Virtual Reality*（Cambridge University Press，2023），作者网站免费在线版：https://lavalle.pl/vr/ （跟踪、渲染、延迟与感知各章）。
+- OpenXR 1.1 规范（帧时序 `predictedDisplayTime`、空间与锚点）：https://registry.khronos.org/OpenXR/specs/1.1-khr/html/xrspec.html
+- Project Aria 数据集与工具：https://www.projectaria.com/
+- 1€ 滤波器主页与多语言实现：https://cristal.univ-lille.fr/~casiez/1euro
+- 开源 VIO（见第 06 篇）：OpenVINS、VINS-Fusion、ORB-SLAM3（惯性模式），可在录制数据上试验 inside-out 跟踪。
