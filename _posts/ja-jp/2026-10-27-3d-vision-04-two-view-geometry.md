@@ -175,7 +175,7 @@ $$
 \det E = 0, \qquad 2\,EE^\top E - \operatorname{tr}(EE^\top)\,E = 0 .
 $$
 
-2 つ目を確かめるには $E = U\operatorname{diag}(\sigma\_1, \sigma\_2, \sigma\_3)V^\top$ と書きます。すると $EE^\top E = U\operatorname{diag}(\sigma\_i^3)V^\top$、$\operatorname{tr}(EE^\top) = \sum\_j\sigma\_j^2$ なので、この行列方程式は各 $i$ について $\sigma\_i\,(2\sigma\_i^2 - \sum\_j\sigma\_j^2) = 0$ を意味します。$(\sigma, \sigma, 0)$ なら $\sigma(2\sigma^2 - 2\sigma^2) = 0$ と $0 = 0$ です。4.4 節の 5 点アルゴリズムが解くのは、この 9 個の 3 次方程式です。
+2 つ目を確かめるには $E = U\operatorname{diag}(\sigma\_1, \sigma\_2, \sigma\_3)V^\top$ と書きます。すると $EE^\top E = U\operatorname{diag}(\sigma\_i^3)V^\top$、$\operatorname{tr}(EE^\top) = \sum\_j\sigma\_j^2$ なので、この行列方程式は各 $i$ について $\sigma\_i\,(2\sigma\_i^2 - \sum\_j\sigma\_j^2) = 0$ を意味します。$(\sigma, \sigma, 0)$ なら $\sigma(2\sigma^2 - 2\sigma^2) = 0$ と $0 = 0$ です。4.4 節の 5 点アルゴリズムが解くのは、この 9 個の 3 次方程式に $\det E = 0$ を加えた計 10 個です。
 
 次のコードで、本稿の例について 3 つの主張をすべて確かめます。
 

@@ -175,7 +175,7 @@ $$
 \det E = 0, \qquad 2\,EE^\top E - \operatorname{tr}(EE^\top)\,E = 0 .
 $$
 
-To check the second, write $E = U\operatorname{diag}(\sigma\_1, \sigma\_2, \sigma\_3)V^\top$. Then $EE^\top E = U\operatorname{diag}(\sigma\_i^3)V^\top$ and $\operatorname{tr}(EE^\top) = \sum\_j\sigma\_j^2$, so the matrix equation says $\sigma\_i\,(2\sigma\_i^2 - \sum\_j\sigma\_j^2) = 0$ for each $i$. With $(\sigma, \sigma, 0)$: $\sigma(2\sigma^2 - 2\sigma^2) = 0$ and $0 = 0$. These nine cubic equations are what the five-point algorithm of section 4.4 solves.
+To check the second, write $E = U\operatorname{diag}(\sigma\_1, \sigma\_2, \sigma\_3)V^\top$. Then $EE^\top E = U\operatorname{diag}(\sigma\_i^3)V^\top$ and $\operatorname{tr}(EE^\top) = \sum\_j\sigma\_j^2$, so the matrix equation says $\sigma\_i\,(2\sigma\_i^2 - \sum\_j\sigma\_j^2) = 0$ for each $i$. With $(\sigma, \sigma, 0)$: $\sigma(2\sigma^2 - 2\sigma^2) = 0$ and $0 = 0$. These nine cubic equations, together with $\det E = 0$ (ten in all), are what the five-point algorithm of section 4.4 solves.
 
 The next snippet verifies all three claims on the running example.
 

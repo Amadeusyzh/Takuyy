@@ -386,7 +386,7 @@ RANSAC: 116 samples, 62 inliers (true 67), wrongly accepted 0, rotation 0.223 de
 EPnP on all points: rotation 40.4 deg, centre 3.38
 ```
 
-With 40% of the matches replaced by random pixels, EPnP on all points is useless: 40° and 3.4 m off. P3P-RANSAC needs 116 samples and finds 62 inliers. With $\sigma = 1$ px, a 2 px threshold keeps a fraction $1 - e^{-2} = 86\%$ of the true inliers, about 58 of the 67, so nothing is missing. It accepts no outlier, and the refined pose is off by $0.22°$.
+With 40% of the matches replaced by random pixels, EPnP on all points is useless: 40° and 3.4 m off. P3P-RANSAC needs 116 samples and finds 62 inliers. With $\sigma = 1$ px, a 2 px threshold keeps a fraction $1 - e^{-2} = 86\%$ of the true inliers, about 58 of the 67; the 62 found is at least that many, so RANSAC has missed no inliers. It accepts no outlier, and the refined pose is off by $0.22°$.
 
 {% include blog_figure.liquid path="assets/img/blog/3d-vision/05-pnp.svg" caption="Left: median rotation error over 200 trials against the pixel noise $\sigma$, for camera 6 of the scene, with all $n=120$ points (solid) and with 12 random points (dashed). EPnP is slightly better than the DLT; a Gauss-Newton refinement of the reprojection error (EPnP+GN) is 2.2 to 3.5 times more accurate than EPnP in every setting (with 120 points at $\sigma=1$ px: 0.28°, 0.22° and 0.09°). Right: RANSAC samples needed for 99% confidence, $N=\log 0.01/\log(1-(1-\varepsilon)^s)$, for $s=3$ (P3P), 4 and 6 (DLT). The circles are the mean number of samples our `ransac_pnp` actually drew (20 runs each): 28, 54, 230 and 629 at $\varepsilon=0.2$, 0.4, 0.6 and 0.7. They lie above the $s=3$ curve because the adaptive stopping rule uses the inlier ratio of the best model so far, which is lower than the true one (noise pushes some inliers past the threshold)." %}
 
@@ -1246,7 +1246,7 @@ Status as of November 2026: every entry is published at the venue listed, includ
    With camera 1 fixed, uncertainty grows with distance from camera 1, because the gauge puts all the uncertainty of the frame into the other cameras. The pseudo-inverse spreads it evenly (minimum-norm gauge). Distances between cameras have the same variance in both.
    </details>
 
-4. **Breaking robust BA.** Raise the outlier fraction of snippet 9 from 5% to 20% and 40%. When does Huber fail? When does Cauchy fail, and does a better start (less perturbation) help?
+4. **Breaking robust BA.** Raise the outlier fraction in the code of section 3.8 from 5% to 20% and 40%. When does Huber fail? When does Cauchy fail, and does a better start (less perturbation) help?
 
    <details markdown="1"><summary>Hint</summary>
 

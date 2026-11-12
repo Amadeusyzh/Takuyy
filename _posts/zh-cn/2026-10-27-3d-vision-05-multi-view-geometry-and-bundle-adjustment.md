@@ -39,7 +39,7 @@ related_posts: false
 先数一数我们要求什么、手里有什么。每台相机有 6 个位姿参数（旋转 3 个、平移 3 个），每个点有 3 个坐标。每次观测提供 2 个数。因此
 
 $$
-\underbrace{6m + 3n}_{\text{unknowns}} \quad\text{versus}\quad \underbrace{2L}_{\text{measurements}} .
+\underbrace{6m + 3n}_{\text{未知量}} \quad\text{对}\quad \underbrace{2L}_{\text{测量}} .
 $$
 
 这里有一个陷阱。仅凭图像无法知道世界原点在哪里、坐标轴朝哪个方向、场景有多大。把整个重建一起平移、旋转和缩放，每张图像都保持不变（第 3.7 节会证明）。这是一个由 7 个参数构成的、同样好的解族：平移 3 个、旋转 3 个、尺度 1 个。这种自由度称为**规范自由度（gauge freedom）**。所以图像真正能确定的量只有 $6m + 3n - 7$ 个。两视图、$n$ 个点给出 $2 \cdot 2n$ 个测量，对应 $12 + 3n - 7$ 个未知量，需要 $n \ge 5$：这正是第 04 篇的五点问题。
@@ -386,7 +386,7 @@ RANSAC: 116 samples, 62 inliers (true 67), wrongly accepted 0, rotation 0.223 de
 EPnP on all points: rotation 40.4 deg, centre 3.38
 ```
 
-当 40% 的匹配被替换为随机像素时，对所有点直接运行 EPnP 毫无用处：偏差 40° 和 3.4 m。P3P-RANSAC 用了 116 次采样，找到 62 个内点。在 $\sigma = 1$ 像素时，2 像素的阈值能保留比例为 $1 - e^{-2} = 86\%$ 的真内点，即 67 个中的约 58 个，所以没有遗漏。它没有接受任何外点，精化后的位姿误差为 $0.22°$。
+当 40% 的匹配被替换为随机像素时，对所有点直接运行 EPnP 毫无用处：偏差 40° 和 3.4 m。P3P-RANSAC 用了 116 次采样，找到 62 个内点。在 $\sigma = 1$ 像素时，2 像素的阈值能保留比例为 $1 - e^{-2} = 86\%$ 的真内点，即 67 个中的约 58 个；实际找到的 62 个不少于这个数，所以 RANSAC 没有漏掉内点。它没有接受任何外点，精化后的位姿误差为 $0.22°$。
 
 {% include blog_figure.liquid path="assets/img/blog/3d-vision/05-pnp.svg" caption="左：场景中相机 6 在 200 次试验中的旋转误差中位数随像素噪声 $\sigma$ 的变化，实线使用全部 $n=120$ 个点，虚线使用随机 12 个点。EPnP 略优于 DLT；对重投影误差做 Gauss-Newton 精化（EPnP+GN）在所有设置下都比 EPnP 精确 2.2 到 3.5 倍（120 个点、$\sigma=1$ 像素时分别为 0.28°、0.22° 和 0.09°）。右：99% 置信度所需的 RANSAC 采样次数 $N=\log 0.01/\log(1-(1-\varepsilon)^s)$，$s=3$（P3P）、4 和 6（DLT）。圆圈是我们的 `ransac_pnp` 实际采样次数的均值（各 20 次运行）：$\varepsilon=0.2$、0.4、0.6、0.7 时分别为 28、54、230、629。它们位于 $s=3$ 曲线上方，因为自适应停止准则使用的是当前最佳模型的内点率，它低于真实内点率（噪声把一部分内点推到了阈值之外）。" %}
 
@@ -667,7 +667,7 @@ after BA: centre RMSE 0.0047, point RMSE 0.0043
 
 误差下降了 55 到 60 倍，约为 4 到 5 mm。这也回答了一个常见问题：BA 不需要完美的初值，但需要初值落在收敛域之内。第 4 节展示各流程如何得到这样的初值。
 
-在下面的小组件中自己试试。它在浏览器里对一个更小的场景（6 台相机、42 个点）运行同样的算法。
+在下面的交互组件中自己试试。它在浏览器里对一个更小的场景（6 台相机、42 个点）运行同样的算法。
 
 {% include widget.liquid name="3d-vision-bundle-adjustment" height="760" caption="一次一步的 Levenberg-Marquardt 光束法平差：正文的算法（第 3.3 节的雅可比、固定相机 1 的 Schur 补、回代、Marquardt 阻尼），作用于 6 台相机和 42 个点。3D 视图中灰色为真值，蓝色（相机）和紫色（点）为去掉自由尺度后的估计；红线是点的误差。拖动可旋转视角。图像中显示所选相机的观测（圆点）、当前预测（紫色叉）以及两者之间的残差。试着加大初始误差，然后打开外点，比较 L2、Huber 和 Cauchy 核。有 15% 外点时，L2 收敛到一个错误答案，内点残差达数个像素；Huber 能接近真实场景。Cauchy 不是凸的：从默认初值出发，它可能卡住，让部分点留着很大的残差；但把初始误差降到 ×0.3 后，它在三者中恢复场景最好。图表中的虚线是最优点处的期望 RMS $\sigma\sqrt{(2L-p)/L}$。" %}
 
@@ -1042,7 +1042,7 @@ spectral + IRLS  median 0.90 deg, max 1.78 deg
 所有 $R\_i$ 已知后，每个图像对给出从一个相机中心指向另一个的方向。由 $\mathbf X^{(j)} = R\_{ij}\mathbf X^{(i)} + \mathbf t\_{ij}$ 和 $\mathbf t\_k = -R\_k\mathbf C\_k$ 得到 $\mathbf t\_{ij} = -R\_j(\mathbf C\_j - \mathbf C\_i)$，所以测得的单位向量 $\hat{\mathbf t}\_{ij}$ 确定了世界坐标系中的方向
 
 $$
-\mathbf d_{ij} = -R_j^\top\hat{\mathbf t}_{ij}, \qquad \mathbf C_j - \mathbf C_i = \lambda_{ij}\,\mathbf d_{ij}, \quad \lambda_{ij} > 0 \text{ unknown}.
+\mathbf d_{ij} = -R_j^\top\hat{\mathbf t}_{ij}, \qquad \mathbf C_j - \mathbf C_i = \lambda_{ij}\,\mathbf d_{ij}, \quad \lambda_{ij} > 0 \text{ 未知}.
 $$
 
 最简单的求解器写出 $\mathbf d\_{ij}\times(\mathbf C\_j - \mathbf C\_i) = \mathbf 0$，它对相机中心是线性的，然后（固定 $\mathbf C\_1 = \mathbf 0$ 后）用 SVD 求解这个齐次系统。有两个问题让平移平均成为全局 SfM 中最难的部分。**长度**：叉积形式按每条边未知的长度加权，所以长基线占主导。LUD（Özyeşil 与 Singer 2015）等方法求解带 $\lambda\_{ij} \ge 1$ 约束的 $\min\sum\lVert\mathbf C\_j - \mathbf C\_i - \lambda\_{ij}\mathbf d\_{ij}\rVert$；BATA（Zhuang 等人 2018）使用一种对基线长度不敏感的双线性、基于角度的代价。**退化**：当相机排成一条直线时（汽车沿街行驶），仅凭方向无法确定位置，因为所有方向都平行，任何间距都符合。平行刚性（parallel rigidity）理论刻画了问题何时是适定的。错误的方向也很常见；1DSfM（Wilson 与 Snavely 2014）先把问题投影到许多一维直线上来去除它们。
@@ -1179,7 +1179,7 @@ BA True : local scale at steps 1, 15, 29: [0.999 1.    0.994]
 
 ## 动手试试
 
-- 第 3.6 节的光束法平差小组件：观察 LM 收敛，然后用外点把它弄坏，再用鲁棒核函数修好。
+- 第 3.6 节的光束法平差组件：观察 LM 收敛，然后用外点把它弄坏，再用鲁棒核函数修好。
 - 主页上的 [Gaussian World 演示]({{ '/' | relative_url }}#lab)用的正是本文所估计的那种相机位姿来渲染三维高斯。
 - 绕着一个物体拍 30 到 50 张照片，在上面运行 COLMAP。比较 `colmap mapper` 和 `colmap global_mapper`（需要包含 `global_mapper` 的较新版 COLMAP），并在日志中查看注册顺序和重投影误差。
 
@@ -1246,11 +1246,11 @@ BA True : local scale at steps 1, 15, 29: [0.999 1.    0.994]
    固定相机 1 时，不确定性随着到相机 1 的距离增大，因为这种规范把坐标系的全部不确定性都放进了其他相机。伪逆把它均匀分摊（最小范数规范）。相机之间的距离在两种规范下方差相同。
    </details>
 
-4. **让鲁棒 BA 失效。** 把代码片段 9 的外点比例从 5% 提高到 20% 和 40%。Huber 何时失效？Cauchy 何时失效？更好的初值（更小的扰动）有帮助吗？
+4. **让鲁棒 BA 失效。** 把第 3.8 节代码中的外点比例从 5% 提高到 20% 和 40%。Huber 何时失效？Cauchy 何时失效？更好的初值（更小的扰动）有帮助吗？
 
    <details markdown="1"><summary>提示</summary>
 
-   Huber 的影响有界但不为零，所以其偏差大致随外点比例增大。Cauchy 的影响趋于零，但代价是非凸的；外点多、初值差时，它可能陷入错误的极小值。小组件可以让你交互地尝试同样的事情。
+   Huber 的影响有界但不为零，所以其偏差大致随外点比例增大。Cauchy 的影响趋于零，但代价是非凸的；外点多、初值差时，它可能陷入错误的极小值。交互组件可以让你尝试同样的事情。
    </details>
 
 5. **平移平均。** 对 40 台相机的圆，在旋转精确、方向带 1° 噪声的情况下，实现第 5.3 节的线性方法（$\mathbf d\_{ij}\times(\mathbf C\_j - \mathbf C\_i) = \mathbf 0$）。然后把所有相机放在一条直线上。会发生什么？为什么第 5.4 节的全局定位没有这个问题？

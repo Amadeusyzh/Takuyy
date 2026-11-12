@@ -942,7 +942,7 @@ SIFT  322 /  313 keypoints, 204 ratio-test matches, 187 MAGSAC++ inliers, corner
 ORB   759 /  864 keypoints, 336 ratio-test matches, 316 MAGSAC++ inliers, corner error 0.71 px
 ```
 
-(The numbers come from OpenCV 5.0 in our environment; other versions may differ slightly.) OpenCV's SIFT finds more keypoints than our version mainly because it first doubles the image, which adds an octave of small features. Some practical advice:
+(The numbers come from OpenCV 4.10, the version used in post 02; other versions may differ slightly.) OpenCV's SIFT finds more keypoints than our version mainly because it first doubles the image, which adds an octave of small features. Some practical advice:
 
 - **Undistort first**, or at least undistort the keypoint coordinates with the calibration of post 2 before geometric verification: the models in RANSAC assume a pinhole camera.
 - **Spread the features.** Many matches on one textured corner constrain the geometry poorly. Use a grid or adaptive non-maximal suppression.
@@ -1028,7 +1028,7 @@ ORB   759 /  864 keypoints, 336 ratio-test matches, 316 MAGSAC++ inliers, corner
    Write a copy of `sift` that appends `sift_descriptor(..., 0.0)` instead of looping over `orientations`, and count correct matches with `match_descriptors` and the known rotation. We got 183/183, 99/99, 96/97 and 115/115 correct matches with orientation assignment, and 139/139, 0/1, 0/4 and 1/1 with $\theta = 0$. Without a measured orientation the descriptor grid stays aligned with the image axes, so even a 90° rotation (which shifts every 8-bin histogram by 2 bins and permutes the cells) destroys the match.
    </details>
 
-5. Add a forward-backward check to the single-level `lk_window`: track each corner from $I$ to $J$, start a second track from $J$ back to $I$ at the rounded end point, and reject the corner if it does not come back to within 0.5 px. For the 12 px motion of section 8.2, how many of the 6 failed tracks does the check catch, and how many correct tracks does it reject? Why?
+5. Add a forward-backward check to the single-level `lk_window`: track each corner from $I$ to $J$, start a second track from $J$ back to $I$ at the rounded end point, and reject the corner if it does not come back to within 0.5 px. For the $(12, 7)$ px motion (about 14 px) of section 8.2, how many of the 6 failed tracks does the check catch, and how many correct tracks does it reject? Why?
 
    <details markdown="1"><summary>Hint</summary>
 

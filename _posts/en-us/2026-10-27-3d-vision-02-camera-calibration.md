@@ -58,7 +58,7 @@ Then comes the part that makes the result usable: **checking** it (section 5).
 
 ### 1.2 A synthetic dataset
 
-To be able to check every step against the truth, we simulate the experiment. The camera has a $640\times 480$ sensor, $f_x = 600$, $f_y = 596$ (slightly non-square pixels), a principal point $(322, 236)$ that is off-centre by a few pixels, and the barrel distortion of post 01 ($k_1 = -0.28$, $k_2 = 0.07$) plus a small tangential term. The board has $9\times 6$ inner corners with 30 mm squares. We place it in twelve poses: three frontal (one close, one far), four tilted by 35° about one axis, four pushed into the image corners and one rolled by 40°. Real corner detectors are accurate to a few tenths of a pixel, so we add Gaussian noise with $\sigma = 0.3$ px.
+To be able to check every step against the truth, we simulate the experiment. The camera has a $640\times 480$ sensor, $f_x = 600$, $f_y = 596$ (slightly non-square pixels), a principal point $(322, 236)$ that is off-centre by a few pixels, and the barrel distortion of post 01 ($k_1 = -0.28$, $k_2 = 0.07$) plus a small tangential term. The board has $9\times 6$ inner corners with 30 mm squares. We place it in twelve poses: three frontal (at 0.40, 0.55 and 0.80 m), four tilted by 35° about one axis, four pushed into the image corners and one rolled by 40°. Real corner detectors are accurate to a few tenths of a pixel, so we add Gaussian noise with $\sigma = 0.3$ px.
 
 ```python
 import numpy as np
@@ -349,7 +349,7 @@ $$
 
 where $\mathbf p$ stacks all unknowns and $\mathbf r(\mathbf p) \in \mathbb R^{2nN}$ stacks all residuals. This is the "gold standard" cost: it measures error in pixels, where the noise actually lives, unlike the algebraic error of the DLT.
 
-**Parameterizing rotations.** A rotation matrix has 9 entries but 3 degrees of freedom. We store each rotation as an **axis-angle vector** $\boldsymbol\omega \in \mathbb R^3$ (direction = axis, length = angle) and convert with Rodrigues' formula $R = I + \sin\theta\,[\mathbf k]\_\times + (1-\cos\theta)[\mathbf k]\_\times^2$. OpenCV does the same (`rvec`). So $\mathbf p$ has $9 + 6N$ entries.
+**Parameterizing rotations.** A rotation matrix has 9 entries but 3 degrees of freedom. We store each rotation as an **axis-angle vector** $\boldsymbol\omega \in \mathbb R^3$ (direction = axis, length = angle) and convert with Rodrigues' formula $R = I + \sin\theta\,[\mathbf k]\_\times + (1-\cos\theta)[\mathbf k]\_\times^2$, where $\theta = \lVert\boldsymbol\omega\rVert$ is the angle, $\mathbf k = \boldsymbol\omega/\theta$ the unit axis and $[\mathbf k]\_\times$ the cross-product matrix ($[\mathbf k]\_\times\mathbf a = \mathbf k\times\mathbf a$). OpenCV does the same (`rvec`). So $\mathbf p$ has $9 + 6N$ entries.
 
 ### 4.2 Gauss-Newton and Levenberg-Marquardt
 
