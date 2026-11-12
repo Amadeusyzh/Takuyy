@@ -1,0 +1,54 @@
+home-en-390	lab-tab-pt	{"canvas":"448x251","w":360,"hidden":false,"stats":""}
+home-en-390	lab-tab-rs	{"canvas":"358x201","w":360,"hidden":false,"stats":"512 lights · M = 16 candidates/pixel · 1 spp · ReSTIR: temporal + spatial · 12 fps · 358×2"}
+home-en-390	lab-tab-gs	{"canvas":"358x201","w":360,"hidden":false,"stats":"244,308 Gaussians · 169 objects · sort 6.0 ms · 48 fps"}
+home-en-390	lab-tab-cloth	{"canvas":"716x402","w":360,"hidden":false,"stats":""}
+home-en-390	lab-tab-fov	{"canvas":"716x402","w":360,"hidden":false,"stats":"shaded pixels: 19% of native (5.3× fewer) · 60 fps"}
+home-en-390	lab-tab-rc	{"canvas":"716x402","w":360,"hidden":false,"stats":"175×98 · 4 cascades · 232k rays · 25 fps"}
+home-en-390	lab-tab-mpm	{"canvas":"358x201","w":360,"hidden":false,"stats":"6235 particles · grid 101×57 · 17 substeps/frame · 16 fps"}
+home-en-390	lab-tab-sdf	{"canvas":"215x121","w":360,"hidden":false,"stats":"7 shapes · k = 0.45 · Shaded · 215×121 · 3.3 fps"}
+home-en-390	lab-tab-sky	{"canvas":"537x302","w":360,"hidden":false,"stats":"sun 7.0° · clouds 179×101 · 56 + 5 steps · 47 fps"}
+home-en-1100	lab-tab-pt	{"canvas":"678x382","w":970,"hidden":false,"stats":""}
+home-en-1100	lab-tab-rs	{"canvas":"968x545","w":970,"hidden":false,"stats":"512 lights · M = 16 candidates/pixel · 1 spp · ReSTIR: temporal + spatial · 0 fps · 968×54"}
+home-en-1100	lab-tab-gs	{"canvas":"968x545","w":970,"hidden":false,"stats":""}
+home-en-1100	lab-tab-cloth	{"canvas":"300x150","w":970,"hidden":false,"stats":""}
+home-en-1100	lab-tab-fov	{"canvas":"968x545","w":970,"hidden":false,"stats":""}
+home-en-1100	lab-tab-rc	{"canvas":"968x545","w":970,"hidden":false,"stats":"774×436 · 5 cascades · reach 1364 px (100% of diagonal) · 5.8M rays/frame · 53 fps"}
+home-en-1100	lab-tab-mpm	{"canvas":"968x545","w":970,"hidden":false,"stats":"19827 particles · grid 181×102 · 32 substeps/frame · 37 fps"}
+home-en-1100	lab-tab-sdf	{"canvas":"968x545","w":970,"hidden":false,"stats":""}
+home-en-1100	lab-tab-sky	{"canvas":"968x545","w":970,"hidden":false,"stats":""}
+home-zh-390	lab-tab-pt	{"canvas":"448x251","w":360,"hidden":false,"stats":""}
+home-zh-390	lab-tab-rs	{"canvas":"251x141","w":360,"hidden":false,"stats":"512 个光源 · M = 16 个候选/像素 · 1 spp · ReSTIR：时域 + 空域 · 23 fps · 358×201"}
+home-zh-390	lab-tab-gs	{"canvas":"358x201","w":360,"hidden":false,"stats":"237,297 个高斯 · 170 个物体 · 排序 3.9 ms · 52 fps"}
+home-zh-390	lab-tab-cloth	{"canvas":"716x402","w":360,"hidden":false,"stats":""}
+home-zh-390	lab-tab-fov	{"canvas":"716x402","w":360,"hidden":false,"stats":"着色像素：原生的 19%（减少 5.3 倍）· 60 fps"}
+home-zh-390	lab-tab-rc	{"canvas":"716x402","w":360,"hidden":false,"stats":"286×161 · 4 级级联 · 618k 条光线 · 24 fps"}
+home-zh-390	lab-tab-mpm	{"canvas":"358x201","w":360,"hidden":false,"stats":"6235 个粒子 · 网格 101×57 · 每帧 17 子步 · 18 fps"}
+home-zh-390	lab-tab-sdf	{"canvas":"358x201","w":360,"hidden":false,"stats":"7 个形状 · k = 0.45 · 着色 · 358×201 · 0.6 fps"}
+home-zh-390	lab-tab-sky	{"canvas":"537x302","w":360,"hidden":false,"stats":"太阳 7.0° · 云 179×101 · 56 + 5 步 · 44 fps"}
+home-zh-1100	lab-tab-pt	{"canvas":"678x382","w":970,"hidden":false,"stats":""}
+home-zh-1100	lab-tab-rs	{"canvas":"968x545","w":970,"hidden":false,"stats":"512 个光源 · M = 16 个候选/像素 · 1 spp · ReSTIR：时域 + 空域 · 0 fps · 968×545"}
+home-zh-1100	lab-tab-gs	{"canvas":"968x545","w":970,"hidden":false,"stats":""}
+home-zh-1100	lab-tab-cloth	{"canvas":"968x545","w":970,"hidden":false,"stats":""}
+home-zh-1100	lab-tab-fov	{"canvas":"968x545","w":970,"hidden":false,"stats":"着色像素：原生的 19%（减少 5.3 倍）· 53 fps"}
+home-zh-1100	lab-tab-rc	{"canvas":"968x545","w":970,"hidden":false,"stats":"774×436 · 5 级级联 · 覆盖 1364 px（对角线的 100%）· 每帧 5.8M 条光线 · 50 fps"}
+home-zh-1100	lab-tab-mpm	{"canvas":"968x545","w":970,"hidden":false,"stats":"19827 个粒子 · 网格 181×102 · 每帧 32 子步 · 31 fps"}
+home-zh-1100	lab-tab-sdf	{"canvas":"968x545","w":970,"hidden":false,"stats":""}
+home-zh-1100	lab-tab-sky	{"canvas":"968x545","w":970,"hidden":false,"stats":"太阳 7.0° · 云 484×273 · 72 + 6 步 · 54 fps"}
+home-ja-390	lab-tab-pt	{"canvas":"448x251","w":360,"hidden":false,"stats":""}
+home-ja-390	lab-tab-rs	{"canvas":"251x141","w":360,"hidden":false,"stats":"光源 512 個 · M = 16 候補/ピクセル · 1 spp · ReSTIR：時間 + 空間 · 14 fps · 358×201"}
+home-ja-390	lab-tab-gs	{"canvas":"358x201","w":360,"hidden":false,"stats":"ガウシアン 236,979 個 · オブジェクト 161 · ソート 8.4 ms · 51 fps"}
+home-ja-390	lab-tab-cloth	{"canvas":"716x402","w":360,"hidden":false,"stats":""}
+home-ja-390	lab-tab-fov	{"canvas":"716x402","w":360,"hidden":false,"stats":"シェーディング画素：ネイティブの 19%（5.3 分の 1）· 60 fps"}
+home-ja-390	lab-tab-rc	{"canvas":"716x402","w":360,"hidden":false,"stats":"123×69 · カスケード 4 段 · 118k 本のレイ · 23 fps"}
+home-ja-390	lab-tab-mpm	{"canvas":"537x302","w":360,"hidden":false,"stats":"粒子 11630 個 · 格子 139×78 · 25 サブステップ/フレーム · 22 fps"}
+home-ja-390	lab-tab-sdf	{"canvas":"215x121","w":360,"hidden":false,"stats":"形状 7 個 · k = 0.45 · シェーディング · 215×121 · 3.2 fps"}
+home-ja-390	lab-tab-sky	{"canvas":"537x302","w":360,"hidden":false,"stats":"太陽 7.0° · 雲 179×101 · 56 + 5 ステップ · 44 fps"}
+home-ja-1100	lab-tab-pt	{"canvas":"678x382","w":970,"hidden":false,"stats":""}
+home-ja-1100	lab-tab-rs	{"canvas":"968x545","w":970,"hidden":false,"stats":"光源 512 個 · M = 16 候補/ピクセル · 1 spp · ReSTIR：時間 + 空間 · 0 fps · 968×545"}
+home-ja-1100	lab-tab-gs	{"canvas":"968x545","w":970,"hidden":false,"stats":""}
+home-ja-1100	lab-tab-cloth	{"canvas":"968x545","w":970,"hidden":false,"stats":""}
+home-ja-1100	lab-tab-fov	{"canvas":"968x545","w":970,"hidden":false,"stats":"シェーディング画素：ネイティブの 19%（5.3 分の 1）· 53 fps"}
+home-ja-1100	lab-tab-rc	{"canvas":"968x545","w":970,"hidden":false,"stats":"542×305 · カスケード 5 段 · 到達距離 1364 px（対角線の 100%）· 毎フレーム 2.9M 本のレイ · 38 fps"}
+home-ja-1100	lab-tab-mpm	{"canvas":"968x545","w":970,"hidden":false,"stats":"粒子 19827 個 · 格子 181×102 · 16 サブステップ/フレーム · 35 fps"}
+home-ja-1100	lab-tab-sdf	{"canvas":"968x545","w":970,"hidden":false,"stats":""}
+home-ja-1100	lab-tab-sky	{"canvas":"968x545","w":970,"hidden":false,"stats":""}
