@@ -580,6 +580,7 @@
         return { i: i, z: z };
       }).sort(function (a, b) { return b.z - a.z; });
       lay.quads3 = [];
+      var labels = [];
       order.forEach(function (o) {
         var i = o.i, on = state.sel.indexOf(i) >= 0, q = boardQuad3(i).map(view3);
         ctx.beginPath(); ctx.moveTo(q[0][0], q[0][1]);
@@ -589,10 +590,35 @@
         ctx.globalAlpha = 1; ctx.strokeStyle = on ? "#222" : VCOL[i]; ctx.lineWidth = on ? 1.2 : 1;
         ctx.setLineDash(on ? [] : [4, 3]); ctx.stroke(); ctx.setLineDash([]);
         var cx = 0, cy = 0; q.forEach(function (p) { cx += p[0] / 4; cy += p[1] / 4; });
-        ctx.fillStyle = on ? "#111" : "#888"; ctx.font = "bold 12px sans-serif"; ctx.textAlign = "center";
-        ctx.fillText(String(i + 1), cx, cy + 4);
+        labels.push({ t: String(i + 1), x: cx, y: cy + 4, on: on });
         lay.quads3.push({ i: i, q: q, z: o.z });
       });
+      // board numbers after all boards. Boards whose centres nearly coincide (the centre views 1, 4-7) share
+      // one row of numbers; rows that still collide (small screens) move down. Selected numbers are dark.
+      ctx.font = "bold 12px sans-serif"; ctx.textAlign = "left";
+      var groups = [];
+      labels.forEach(function (l) {
+        var g = groups.filter(function (g) { return Math.abs(g.x - l.x) < 12 && Math.abs(g.y - l.y) < 10; })[0];
+        if (g) g.items.push(l); else groups.push({ x: l.x, y: l.y, items: [l] });
+      });
+      var placed = [];
+      groups.forEach(function (g) {
+        g.items.sort(function (a, b) { return +a.t - +b.t; });
+        var gap = 4, w = -gap;
+        g.items.forEach(function (l) { l.w = ctx.measureText(l.t).width; w += l.w + gap; });
+        var hit = function (p) { return Math.abs(p.x - g.x) < (p.w + w) / 2 + 7 && Math.abs(p.y - g.y) < 13; };
+        for (var tries = 0; tries < 6 && placed.some(hit); tries++) g.y += 13;
+        placed.push({ x: g.x, y: g.y, w: w });
+        var x = g.x - w / 2;
+        g.items.forEach(function (l) {
+          ctx.lineWidth = 3; ctx.strokeStyle = "rgba(255,255,255,0.85)"; ctx.lineJoin = "round";
+          ctx.strokeText(l.t, x, g.y);
+          ctx.fillStyle = l.on ? "#111" : "#666";
+          ctx.fillText(l.t, x, g.y);
+          x += l.w + gap;
+        });
+      });
+      ctx.textAlign = "center";
       // image panel
       var im = lay.im, res = state.res;
       ctx.fillStyle = "#fff"; ctx.fillRect(im.x, im.y, im.w, im.h);
