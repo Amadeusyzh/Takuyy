@@ -30,24 +30,18 @@ jobs:
         shell: bash
         env:
           REPORT_DIR: ${{ runner.temp }}/winrep
-          CONFIGS: d3d11
+          CONFIGS: none
         run: |
           cd ops/win && node measure.js 2>&1 | tee "$RUNNER_TEMP/measure.txt" || true
-      - name: Compile ANGLE's HLSL with FXC
+      - name: Trace the SDF demo (main thread and GPU thread)
         shell: bash
         run: |
           REP="$RUNNER_TEMP/winrep"; mkdir -p "$REP"
-          FXC="$(ls -d "/c/Program Files (x86)/Windows Kits/10/bin/"*/x64/fxc.exe | sort -V | tail -1)"
-          echo "$FXC" > "$REP/fxc-path.txt"
-          node ops/win/fxcprep.js "$REP/results.json" "$REP" || true
-          cd "$REP"
-          for O in O1 O3 Od; do
-            S=$(date +%s.%N)
-            MSYS_NO_PATHCONV=1 "$FXC" /nologo /T ps_5_0 /E main /$O /Fc "sdf-ps-$O.asm" sdf-ps.hlsl > "fxc-$O.log" 2>&1 || true
-            E=$(date +%s.%N)
-            echo "$O seconds: $(echo "$E - $S" | bc 2>/dev/null || echo "$S $E")" | tee -a fxc-times.txt
+          cd ops/win
+          for A in d3d11 d3d11-warp; do
+            WIN=1 ANGLE=$A MIN_MS=80 node trace.js orig 1 12 > "$REP/trace-$A.txt" 2>&1 || true
+            tail -40 "$REP/trace-$A.txt"
           done
-          ls -la
       - name: Publish report
         shell: bash
         env:

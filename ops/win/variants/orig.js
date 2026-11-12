@@ -999,7 +999,7 @@
 
   // ------------------------------------------------------------------ frame loop
   var maxScale = Math.min(window.devicePixelRatio || 1, 1.5);
-  var scale = 0.25;
+  var scale = Math.min(maxScale, 1);
   var frameTimes = [], lastT = 0, fps = 0, upgrades = 0, lastDown = 0;
   var halton = [];
   (function () {
@@ -1182,22 +1182,4 @@
     tried = true;
     start();
   }
-  // ---- dump the translated fragment shader (WEBGL_debug_shaders) into the stats line once the demo has drawn
-  (function () {
-    function go() {
-      if (!started || !gl || accN < 2) { setTimeout(go, 100); return; }
-      var el = statsEl;
-      statsEl = document.createElement("span");
-      var src = "no WEBGL_debug_shaders";
-      try {
-        var ext = gl.getExtension("WEBGL_debug_shaders");
-        if (ext) {
-          var sh = gl.getAttachedShaders(P.p);
-          for (var i = 0; i < sh.length; i++) if (gl.getShaderParameter(sh[i], gl.SHADER_TYPE) === gl.FRAGMENT_SHADER) src = ext.getTranslatedShaderSource(sh[i]);
-        }
-      } catch (e) { src = "error " + e; }
-      el.textContent = "fps HLSL-BEGIN\n" + src + "\nHLSL-END";
-    }
-    setTimeout(go, 100);
-  })();
 })();
