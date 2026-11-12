@@ -10,11 +10,12 @@ const OUT = process.env.REPORT_DIR || path.join(DIR, 'report');
 fs.mkdirSync(OUT, { recursive: true });
 const variants = process.argv.slice(2).length ? process.argv.slice(2)
   : fs.readdirSync(path.join(DIR, 'variants')).filter((f) => f.endsWith('.js')).map((f) => f.slice(0, -3)).sort();
-const CONFIGS = [
+const ALL_CONFIGS = [
   { name: 'default', args: ['--ignore-gpu-blocklist'] },
   { name: 'd3d11', args: ['--use-angle=d3d11', '--ignore-gpu-blocklist'] },
   { name: 'warp', args: ['--use-angle=d3d11-warp', '--ignore-gpu-blocklist'] },
 ];
+const CONFIGS = process.env.CONFIGS ? ALL_CONFIGS.filter((c) => process.env.CONFIGS.split(',').includes(c.name)) : ALL_CONFIGS;
 const types = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css' };
 const server = http.createServer((req, res) => {
   const f = path.join(DIR, decodeURIComponent(req.url.split('?')[0]));

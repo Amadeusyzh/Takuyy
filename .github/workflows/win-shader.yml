@@ -1,11 +1,12 @@
 # Measures Lab demo variants in Chrome on Windows, where WebGL runs on ANGLE -> Direct3D 11 and shaders are
 # compiled by FXC (a different compiler from the Linux runners). No AI and no API key involved.
-# Triggered by pushes to ops/win; the variants are the files in ops/win/variants. Results go to report/win.
+# Triggered by pushes to ops/win or ops/winrun-<name>; the variants are the files in ops/win/variants (env
+# VARIANTS limits them). Results go to report/win or report/winrun-<name>.
 name: Windows shader check
 
 on:
   push:
-    branches: ["ops/win"]
+    branches: ["ops/win", "ops/winrun-*"]
 
 permissions:
   contents: write
@@ -40,5 +41,5 @@ jobs:
           cd "$REP" && git init -q && git add -A \
             && git -c user.name=yangzehua -c user.email=yangzehua@akane.waseda.jp commit -q -m "windows shader report" \
             && git -c http.extraheader="AUTHORIZATION: basic $(printf 'x-access-token:%s' "$GH_TOKEN" | base64 -w0)" \
-                 push -q -f "https://github.com/$GITHUB_REPOSITORY" HEAD:refs/heads/report/win
+                 push -q -f "https://github.com/$GITHUB_REPOSITORY" "HEAD:refs/heads/report/${GITHUB_REF_NAME#ops/}"
           echo "report pushed"
