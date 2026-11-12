@@ -22,12 +22,12 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: "22"
-      - name: FXC on the exact D3DCompile input
+      - name: FXC configurations for the path tracer shader
         shell: bash
         env:
           REPORT_DIR: ${{ runner.temp }}/winrep
         run: |
-          cd ops/win && node fxc2.js 2>&1 | tee "$RUNNER_TEMP/fxc.txt" || true
+          cd ops/win && node fxc3.js 2>&1 | tee "$RUNNER_TEMP/fxc.txt" || true
       - name: Publish report
         shell: bash
         env:
