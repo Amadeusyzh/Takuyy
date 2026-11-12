@@ -136,11 +136,11 @@ $$
 | 欧氏 $SE(2)$ | $\begin{pmatrix} R & \mathbf t \\\\ \mathbf 0^\top & 1 \end{pmatrix}$ | 3 | 长度、角度、面积 |
 | 相似 $\mathrm{Sim}(2)$ | $\begin{pmatrix} sR & \mathbf t \\\\ \mathbf 0^\top & 1 \end{pmatrix}$ | 4 | 角度、长度之比 |
 | 仿射 $\mathrm{Aff}(2)$ | $\begin{pmatrix} A & \mathbf t \\\\ \mathbf 0^\top & 1 \end{pmatrix}$ | 6 | 平行性、面积之比、无穷远直线 |
-| 射影 $PGL(3)$ | $\begin{pmatrix} A & \mathbf t \\\\ \mathbf v^\top & 1 \end{pmatrix}$ | 8 | 共线性、关联关系、交比 |
+| 射影 $PGL(3)$ | $\begin{pmatrix} A & \mathbf t \\\\ \mathbf v^\top & v \end{pmatrix}$ | 8 | 共线性、关联关系、交比 |
 
-区分射影与仿射的正是最后一行 $\mathbf v^\top$。仿射变换把无穷远点 $(d_1, d_2, 0)$ 映射到另一个无穷远点，所以平行线仍然平行。$\mathbf v \neq \mathbf 0$ 的射影变换会让第三个坐标变成非零：方向变成了一个有限点，平行线就在那里相交。
+区分射影与仿射的正是最后一行 $\mathbf v^\top$。仿射变换把无穷远点 $(d_1, d_2, 0)$ 映射到另一个无穷远点，所以平行线仍然平行。$\mathbf v \neq \mathbf 0$ 的射影变换把第三个坐标变成 $v\_1 d\_1 + v\_2 d\_2$，除了一个方向之外它都不为零：方向变成了一个有限点，平行线就在那里相交。（例外是仍留在无穷远处的那一个方向，它位于 $\mathbf l_\infty$ 的像上。右下角的元素 $v$ 通常被缩放为 1，但它也可能为 0，所以一般形式保留它。）
 
-{% include blog_figure.liquid path="assets/img/blog/3d-vision/01-transform-hierarchy.svg" caption="同一个 $3\times 3$ 网格（虚线正方形、淡灰色线）和圆在每个群的一个变换下的样子；群名后面的数字是自由度。$\mathrm{SE}(2)$ 旋转 25° 并平移；$\mathrm{Sim}(2)$ 再缩放 0.65 倍；仿射变换带有剪切，圆变成椭圆，但红线之间仍然平行。只有射影变换（最后一行为 $(0.2, 0.25, 1)$）让每一族平行线汇聚（虚线延长）到一个有限点：红色族汇聚到 $H(1,0,0)^\top$，蓝色族汇聚到 $H(0,1,0)^\top$。" %}
+{% include blog_figure.liquid path="assets/img/blog/3d-vision/01-transform-hierarchy.svg" caption="同一个 $3\times 3$ 网格（虚线正方形、淡灰色线）和圆在每个群的一个变换下的样子；群名后面的数字是自由度。$\mathrm{SE}(2)$ 旋转 25° 并平移；$\mathrm{Sim}(2)$ 改为旋转 −25°，缩放 0.65 倍并平移；仿射变换带有剪切，圆变成椭圆，但红线之间仍然平行。只有射影变换（最后一行为 $(0.2, 0.25, 1)$）让每一族平行线汇聚（虚线延长）到一个有限点：红色族汇聚到 $H(1,0,0)^\top$，蓝色族汇聚到 $H(0,1,0)^\top$。" %}
 
 单应并不只是抽象概念：针孔相机拍到的平面图像与平面本身之间就相差一个单应；同一平面的两张图像（或绕光心旋转的相机拍的两张图像）之间也相差一个单应。第 2 篇会用它从棋盘格图像中标定相机。
 
@@ -268,7 +268,7 @@ $$
 
 {% include blog_figure.liquid path="assets/img/blog/3d-vision/01-intrinsics.svg" caption="每个内参对同一块棋盘格（8×6 个 10 cm 方格，距离 1.2 m，转过 25°）在 640×480 图像（紫框）中的像的影响；红色十字是主点。更大的 $f$ 以主点为中心放大；$f_y=0.8f_x$ 在竖直方向压扁；移动 $(c_x,c_y)$ 平移图像而不改变形状；倾斜 $s=150$ 让每一行按 $y$ 成比例地横向错开。最后一幅保持 $K$ 不变而旋转相机（$R$ 是外参）：棋盘格的透视关系改变了，这是改变 $K$ 无论如何也做不到的。" %}
 
-图中最后一幅蕴含一个重要结论。改变 $K$ 只是对图像做一个二维仿射变形（最后一行为 $(0, 0, 1)$ 的单应），它永远不会改变哪些三维点可见、它们如何相互遮挡。改变位姿才会改变透视本身。
+图中最后一幅蕴含一个重要结论。改变 $K$ 只是对图像做一个二维仿射变形（最后一行为 $(0, 0, 1)$ 的单应），除了哪些点落在图像边框之内以外，它永远不会改变哪些三维点位于同一条射线上、哪个表面遮挡哪个表面。改变位姿才会改变透视本身。
 
 ### 2.3 外参：相机在哪里
 
@@ -278,7 +278,7 @@ $$
 \mathbf X_c = R\, \mathbf X_w + \mathbf t ,
 $$
 
-其中旋转 $R \in SO(3)$（3 个自由度），平移 $\mathbf t$（3 个自由度）。$R$ 的三行可以读作相机的 $x$、$y$、$z$ 轴在世界坐标中的表示。**相机中心**是映射到相机原点的世界点：$R\mathbf C + \mathbf t = \mathbf 0$，因此 $\mathbf C = -R^\top \mathbf t$。注意 $\mathbf t$ *不是*相机的位置，而是世界原点在相机坐标系中的坐标。把 $\mathbf t$ 和 $\mathbf C$ 搞混是第二常见的位姿 bug（第一常见的在第 4 节）。
+其中旋转 $R \in SO(3)$（3 个自由度），平移 $\mathbf t$（3 个自由度）。$R$ 的三行可以读作相机的 $x$、$y$、$z$ 轴在世界坐标中的表示。**相机中心**是映射到相机原点的世界点：$R\mathbf C + \mathbf t = \mathbf 0$，因此 $\mathbf C = -R^\top \mathbf t$。注意 $\mathbf t$ *不是*相机的位置，而是世界原点在相机坐标系中的坐标。把 $\mathbf t$ 和 $\mathbf C$ 搞混是最常见的位姿 bug 之一；另一大类是坐标约定混用，那是第 4 节的主题。
 
 ### 2.4 相机矩阵 $P = K[R \mid \mathbf t]$ 及其含义
 
@@ -337,7 +337,7 @@ print("principal axis m3 =", R[2].round(4))
 
 ### 2.6 透视减弱时：仿射相机
 
-如果场景的深度范围远小于它的距离（长焦拍摄、卫星图像），所有点的深度都近似为 $Z \approx Z_0$，投影就近似变成线性的：$u \approx (f/Z_0) X + c_x$。这种**弱透视**（weak perspective）相机，或更一般的**仿射相机**（affine camera），其 $P$ 的最后一行为 $(0, 0, 0, 1)$：平行线保持平行，没有有限的消失点。它是经典的运动恢复结构因子分解方法背后的相机模型，也是一个有用的检查：如果你的消失点都远在图像之外，问题就接近仿射，深度会约束得很差。
+如果场景的深度范围远小于它的距离（长焦拍摄、卫星图像），所有点的深度都近似为 $Z \approx Z_0$，投影就近似变成线性的：$u \approx (f/Z_0) X + c_x$。这种**弱透视**（weak perspective）相机，或更一般的**仿射相机**（affine camera），其 $P$ 的最后一行为 $(0, 0, 0, 1)$：平行线保持平行，没有有限的消失点。它是经典的运动恢复结构因子分解方法背后的相机模型，也是一个有用的警示信号：如果场景中平行线的像几乎不汇聚（所有消失点都远在图像之外），这些视图就接近仿射，能约束深度的透视线索很弱。
 
 ## 3. 镜头畸变
 
@@ -424,7 +424,7 @@ r(\theta) = f\,\theta_d, \qquad \theta_d = \theta\,(1 + k_1\theta^2 + k_2\theta^
 \qquad \theta = \operatorname{atan2}\!\big(\sqrt{X^2 + Y^2},\, Z\big),
 $$
 
-像素为 $u = f_x\,\theta_d \cos\varphi + c_x$，$v = f_y\,\theta_d \sin\varphi + c_y$，方位角 $\varphi = \operatorname{atan2}(Y, X)$ 保持不变。这正是 OpenCV `cv::fisheye` 模块和 COLMAP `OPENCV_FISHEYE` 相机所用的模型。它之所以有效有两点原因。第一，它是 $\theta$ 的多项式，而不是 $\tan\theta$ 的多项式，所以在 90° 及以外仍然有限。第二，因为 $\theta = \operatorname{atan2}(\rho, Z)$ 是由三维射线而不是由 $X/Z$ 计算的，它能处理 $Z \le 0$、位于像平面后方的射线，而针孔模型连表达都做不到。
+像素为 $u = f_x\,\theta_d \cos\varphi + c_x$，$v = f_y\,\theta_d \sin\varphi + c_y$，方位角 $\varphi = \operatorname{atan2}(Y, X)$ 保持不变。这正是 OpenCV `cv::fisheye` 模块和 COLMAP `OPENCV_FISHEYE` 相机所用的模型。它之所以有效有两点原因。第一，它是 $\theta$ 的多项式，而不是 $\tan\theta$ 的多项式，所以在 90° 及以外仍然有限。第二，因为 $\theta = \operatorname{atan2}(\rho, Z)$ 是由三维射线而不是由 $X/Z$ 计算的，它能处理 $Z \le 0$、位于像平面后方的射线，而针孔模型连表达都做不到。这是公式本身的性质，并非每个实现都具备：OpenCV 的 `cv::fisheye` 函数以归一化坐标 $(X/Z, Y/Z)$ 为输入，再计算 $\theta = \arctan r$；COLMAP 的鱼眼模型同样先除以 $Z$，并拒绝 $Z \le 0$ 的点。因此在这些库中，该模型只覆盖相机前方的射线（视场小于 180°）。对于更广角的镜头，应像下面的代码那样用 `atan2` 从射线直接投影。
 
 ```python
 import numpy as np
@@ -463,11 +463,11 @@ print("pixel of a ray at 95 deg:", project_kb(X, K, k).round(1))
 
 有了这些投影模型，下面的组件把目前为止的内容全部组合起来：内参、两种畸变模型、棋盘格图像以及三维中的真实视场。
 
-{% include widget.liquid name="3d-vision-camera-model" height="900" caption="交互式相机模型。调节内参和畸变系数，观察 12×9 棋盘格在 640×480 图像中的像；橙色虚线轮廓是同一块棋盘格经过相同 $K$ 的纯针孔投影的结果。左侧紫色视锥是当前模型真正看到的视场，通过对图像边界反投影求得（Brown-Conrady 用不动点迭代，Kannala-Brandt 用牛顿法）。试试“桶形”预设，并把 $k_1$ 继续调负，直到棋盘格的一部分在多项式折返处消失；再切换到“鱼眼”预设，看视场超过 160°。" %}
+{% include widget.liquid name="3d-vision-camera-model" height="900" caption="交互式相机模型。调节内参和畸变系数，观察 12×9 棋盘格在 640×480 图像中的像；橙色虚线轮廓是同一块棋盘格经过相同 $K$ 的纯针孔投影的结果。3D 视图（宽屏时在左侧，手机上在上方）中的紫色视锥是当前模型真正看到的视场，通过对图像边界反投影求得（Brown-Conrady 用不动点迭代，Kannala-Brandt 用牛顿法）。试试“桶形”预设，并把 $k_1$ 继续调负，直到棋盘格的一部分在多项式折返处消失；再切换到“鱼眼”预设，看水平视场超过 180°：相机能看到自己略微后方的东西。" %}
 
 ### 3.4 其他广角模型与通用模型
 
-Kannala-Brandt 不是唯一的选择。Mei 和 Rives（2007）的**统一相机模型**（unified camera model）先把点投影到单位球上，再从沿光轴平移后的一点做透视投影，它也能描述折反射（带反射镜的）相机；**双球模型**（double sphere，Usenko、Demmel、Cremers，3DV 2018）使用两个球，对大视场镜头的拟合效果相当，并且有闭式逆，这在投影和反投影要执行数百万次的视觉里程计中很重要。Devernay 和 Faugeras（2001）利用了我们一开始提到的性质——针孔相机把直线映射为直线——不用标定板就能估计畸变。另一个极端是**通用**（generic）相机模型，它放弃参数化形式，直接存储一个稠密的射线方向网格；Schöps 等人（CVPR 2020）认为，这种拥有数千个参数的模型对真实镜头的标定明显比常用的十二个参数更准确。第 2 篇会回到这些模型如何估计的问题。
+Kannala-Brandt 不是唯一的选择。**统一相机模型**（unified camera model；Geyer 和 Daniilidis 在 ECCV 2000 中为折反射相机提出，Mei 和 Rives 在 ICRA 2007 中加入畸变项并给出基于平面标定板的标定方法）先把点投影到单位球上，再从沿光轴平移后的一点做透视投影，它也能描述折反射（带反射镜的）相机；**双球模型**（double sphere，Usenko、Demmel、Cremers，3DV 2018）使用两个球，对大视场镜头的拟合效果相当，并且有闭式逆，这在投影和反投影要执行数百万次的视觉里程计中很重要。Devernay 和 Faugeras（2001）利用了我们一开始提到的性质——针孔相机把直线映射为直线——不用标定板就能估计畸变。另一个极端是**通用**（generic）相机模型，它放弃参数化形式，直接存储一个稠密的射线方向网格；Schöps 等人（CVPR 2020）认为，这种拥有数千个参数的模型对真实镜头的标定明显比常用的十二个参数更准确。第 2 篇会回到这些模型如何估计的问题。
 
 ### 3.5 卷帘快门
 
@@ -516,7 +516,7 @@ print(f"rotation during readout: {np.rad2deg(omega * readout):.2f} deg = {f * np
 
 {% include blog_figure.liquid path="assets/img/blog/3d-vision/01-rolling-shutter.svg" caption="左：1920×1080 图像中前方 8 m 处的七根竖杆（$f=1000$，读出 30 ms），分别为全局快门（灰）、以 60°/s（紫）和 240°/s（橙）向右摇镜头时的卷帘快门。越晚曝光的行看到的场景越靠左。右：代码中那根竖杆相对全局快门图像的水平位移，纵轴为行号（右侧纵轴为该行的曝光时刻），分别对应 60、120、240°/s。在第 40 行和第 1040 行之间，竖杆分别倾斜 29.1、58.3 和 117.3 像素；位移随该行曝光时刻几乎线性增长。" %}
 
-两个像素的误差就足以让位姿估计产生偏差，所以只要相机运动得快，卷帘快门就很重要：手机、无人机、头戴相机。考虑卷帘快门的光束法平差（Hedborg 等，CVPR 2012）把每帧的速度加入未知量；视觉惯性系统则用 IMU 预测一帧之内的运动。这也是跟踪相机常常采用全局快门传感器的原因之一。
+哪怕只有几个像素的系统误差，也会让位姿估计产生偏差，所以只要相机运动得快，卷帘快门就很重要：手机、无人机、头戴相机。考虑卷帘快门的光束法平差（Hedborg 等，CVPR 2012）利用视频中运动的连续性：每一行的位姿在相邻两帧的位姿之间插值，相比经典光束法平差只多出六个参数；视觉惯性系统则用 IMU 预测一帧之内的运动。这也是跟踪相机常常采用全局快门传感器的原因之一。
 
 ## 4. 坐标约定
 
@@ -638,11 +638,12 @@ print("LLFF reordered equals the OpenGL c2w:", np.allclose(nerf, c2w_gl[:3]))
 | Decentering distortion of lenses (Brown) | Photogrammetric Engineering | 1966 | — | OpenCV 所用的径向加切向畸变模型 |
 | Using vanishing points for camera calibration (Caprile, Torre) | IJCV | 1990 | [DOI](https://doi.org/10.1007/BF00127813) | 由消失点求内参；垂心性质 |
 | A flexible new technique for camera calibration (Zhang) | TPAMI | 2000 | [DOI](https://doi.org/10.1109/34.888718) | 棋盘格标定，第 2 篇的基础 |
+| A unifying theory for central panoramic systems and practical implications (Geyer, Daniilidis) | ECCV | 2000 | [DOI](https://doi.org/10.1007/3-540-45053-X_29) | 中心折反射相机的统一球面模型 |
 | Straight lines have to be straight (Devernay, Faugeras) | Machine Vision and Applications | 2001 | [DOI](https://doi.org/10.1007/PL00013269) | 利用直线的"直"估计畸变，无需标定板 |
 | Geometric models of rolling-shutter cameras (Meingast, Geyer, Sastry) | arXiv 预印本 | 2005 | [arXiv](https://arxiv.org/abs/cs/0503076) | 运动中卷帘快门相机的投影方程 |
 | A generic camera model and calibration method for conventional, wide-angle, and fish-eye lenses (Kannala, Brandt) | TPAMI | 2006 | [DOI](https://doi.org/10.1109/TPAMI.2006.153) | OpenCV 和 COLMAP 采用的以角度为变量的多项式鱼眼模型 |
-| Single view point omnidirectional camera calibration from planar grids (Mei, Rives) | ICRA | 2007 | [DOI](https://doi.org/10.1109/ROBOT.2007.364084) | 适用于鱼眼和折反射相机的统一（球面）模型 |
-| Rolling shutter bundle adjustment (Hedborg, Forssén, Felsberg, Ringaby) | CVPR | 2012 | [DOI](https://doi.org/10.1109/CVPR.2012.6247831) | 逐行位姿的运动恢复结构 |
+| Single view point omnidirectional camera calibration from planar grids (Mei, Rives) | ICRA | 2007 | [DOI](https://doi.org/10.1109/ROBOT.2007.364084) | 在统一球面模型上加入畸变并用平面标定板标定，适用于鱼眼和折反射相机 |
+| Rolling shutter bundle adjustment (Hedborg, Forssén, Felsberg, Ringaby) | CVPR | 2012 | [DOI](https://doi.org/10.1109/CVPR.2012.6247831) | 卷帘快门视频的光束法平差，逐行位姿在帧间插值 |
 | Structure-from-Motion revisited (Schönberger, Frahm) | CVPR | 2016 | [CVF](https://openaccess.thecvf.com/content_cvpr_2016/html/Schonberger_Structure-From-Motion_Revisited_CVPR_2016_paper.html) | COLMAP；大多数数据集沿用其相机模型和约定 |
 | The double sphere camera model (Usenko, Demmel, Cremers) | 3DV | 2018 | [arXiv](https://arxiv.org/abs/1807.08957) | 有闭式逆的广角模型，并对各模型做了比较 |
 | Local light field fusion (Mildenhall et al.) | SIGGRAPH (ACM TOG) | 2019 | [arXiv](https://arxiv.org/abs/1905.00889) | 前向 NeRF 场景使用的 `poses_bounds.npy` 格式 |

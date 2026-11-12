@@ -136,11 +136,11 @@ $H$ を制限すると、入れ子になった群の族が得られます。小�
 | ユークリッド $SE(2)$ | $\begin{pmatrix} R & \mathbf t \\\\ \mathbf 0^\top & 1 \end{pmatrix}$ | 3 | 長さ、角度、面積 |
 | 相似 $\mathrm{Sim}(2)$ | $\begin{pmatrix} sR & \mathbf t \\\\ \mathbf 0^\top & 1 \end{pmatrix}$ | 4 | 角度、長さの比 |
 | アフィン $\mathrm{Aff}(2)$ | $\begin{pmatrix} A & \mathbf t \\\\ \mathbf 0^\top & 1 \end{pmatrix}$ | 6 | 平行性、面積比、無限遠直線 |
-| 射影 $PGL(3)$ | $\begin{pmatrix} A & \mathbf t \\\\ \mathbf v^\top & 1 \end{pmatrix}$ | 8 | 共線性、接続関係、複比 |
+| 射影 $PGL(3)$ | $\begin{pmatrix} A & \mathbf t \\\\ \mathbf v^\top & v \end{pmatrix}$ | 8 | 共線性、接続関係、複比 |
 
-射影とアフィンを分けるのは最下行の $\mathbf v^\top$ です。アフィン変換は無限遠点 $(d_1, d_2, 0)$ を別の無限遠点へ写すので、平行線は平行のままです。$\mathbf v \neq \mathbf 0$ の射影変換は第 3 座標を 0 でない値にします。方向が有限の点になり、平行線はそこで交わるようになります。
+射影とアフィンを分けるのは最下行の $\mathbf v^\top$ です。アフィン変換は無限遠点 $(d_1, d_2, 0)$ を別の無限遠点へ写すので、平行線は平行のままです。$\mathbf v \neq \mathbf 0$ の射影変換では第 3 座標が $v\_1 d\_1 + v\_2 d\_2$ になり、ただ一つの方向を除いて 0 ではありません。方向が有限の点になり、平行線はそこで交わるようになります。（例外は無限遠に残るただ一つの方向で、$\mathbf l_\infty$ の像の上にあります。右下の要素 $v$ はふつう 1 に正規化しますが、0 になることもあるので、一般形では残しておきます。）
 
-{% include blog_figure.liquid path="assets/img/blog/3d-vision/01-transform-hierarchy.svg" caption="同じ $3\times 3$ の格子（点線の正方形、薄い灰色の線）と円を、各群の一つの変換で写したもの。群名の後の数字は自由度です。$\mathrm{SE}(2)$ は 25° 回転して平行移動し、$\mathrm{Sim}(2)$ はさらに 0.65 倍に拡大縮小します。アフィン変換はせん断を含むので円は楕円になりますが、赤い線同士は平行のままです。射影変換（最下行 $(0.2, 0.25, 1)$）だけが、平行線の各族を有限の点に収束させます（破線の延長）。赤い族は $H(1,0,0)^\top$ に、青い族は $H(0,1,0)^\top$ に収束します。" %}
+{% include blog_figure.liquid path="assets/img/blog/3d-vision/01-transform-hierarchy.svg" caption="同じ $3\times 3$ の格子（点線の正方形、薄い灰色の線）と円を、各群の一つの変換で写したもの。群名の後の数字は自由度です。$\mathrm{SE}(2)$ は 25° 回転して平行移動し、$\mathrm{Sim}(2)$ は代わりに −25° 回転し、0.65 倍に縮小して平行移動します。アフィン変換はせん断を含むので円は楕円になりますが、赤い線同士は平行のままです。射影変換（最下行 $(0.2, 0.25, 1)$）だけが、平行線の各族を有限の点に収束させます（破線の延長）。赤い族は $H(1,0,0)^\top$ に、青い族は $H(0,1,0)^\top$ に収束します。" %}
 
 ホモグラフィは抽象的な概念にとどまりません。ピンホールカメラで撮った平面の画像は、平面そのものとホモグラフィで結ばれます。同じ平面を写した 2 枚の画像（あるいは光学中心まわりに回転するカメラで撮った 2 枚の画像）もホモグラフィで結ばれます。第 2 回では、これを使ってチェッカーボードの画像からカメラをキャリブレーションします。
 
@@ -268,7 +268,7 @@ $$
 
 {% include blog_figure.liquid path="assets/img/blog/3d-vision/01-intrinsics.svg" caption="各内部パラメータが、同じチェッカーボード（10 cm の正方形 8×6 個、距離 1.2 m、25° 回転）の 640×480 画像（紫の枠）中の像に与える影響。赤い十字は主点です。大きな $f$ は主点を中心に拡大し、$f_y=0.8f_x$ は縦方向に押しつぶし、$(c_x,c_y)$ を動かすと形を変えずに画像が平行移動します。スキュー $s=150$ は各行を $y$ に比例して横にずらします。最後のパネルは $K$ を変えずにカメラを回転させたもの（$R$ は外部パラメータ）で、ボードの透視の様子が変わります。これは $K$ をどう変えても作り出せません。" %}
 
-図の最後のパネルは大切な教訓を含んでいます。$K$ を変えることは画像の 2D アフィン変形（最下行が $(0, 0, 1)$ のホモグラフィ）にすぎず、どの 3D 点が見えるか、どう重なるかは決して変わりません。透視そのものを変えるのは姿勢の変化です。
+図の最後のパネルは大切な教訓を含んでいます。$K$ を変えることは画像の 2D アフィン変形（最下行が $(0, 0, 1)$ のホモグラフィ）にすぎず、画像の枠内に入る範囲を除けば、どの 3D 点が同じ光線上に並ぶか、どの面がどの面を隠すかは決して変わりません。透視そのものを変えるのは姿勢の変化です。
 
 ### 2.3 外部パラメータ：カメラはどこにあるか
 
@@ -278,7 +278,7 @@ $$
 \mathbf X_c = R\, \mathbf X_w + \mathbf t
 $$
 
-で、回転 $R \in SO(3)$（自由度 3）と並進 $\mathbf t$（自由度 3）からなります。$R$ の各行は、カメラの $x$、$y$、$z$ 軸を世界座標で表したものと読めます。**カメラ中心**はカメラの原点に写る世界の点で、$R\mathbf C + \mathbf t = \mathbf 0$ より $\mathbf C = -R^\top \mathbf t$ です。$\mathbf t$ はカメラの位置*ではなく*、カメラ座標系で表した世界の原点であることに注意してください。$\mathbf t$ と $\mathbf C$ の混同は、姿勢に関するバグで 2 番目に多いものです（1 番目は 4 節で扱います）。
+で、回転 $R \in SO(3)$（自由度 3）と並進 $\mathbf t$（自由度 3）からなります。$R$ の各行は、カメラの $x$、$y$、$z$ 軸を世界座標で表したものと読めます。**カメラ中心**はカメラの原点に写る世界の点で、$R\mathbf C + \mathbf t = \mathbf 0$ より $\mathbf C = -R^\top \mathbf t$ です。$\mathbf t$ はカメラの位置*ではなく*、カメラ座標系で表した世界の原点であることに注意してください。$\mathbf t$ と $\mathbf C$ の混同は、姿勢に関する最もよくあるバグの一つです。もう一つの大きな種類である座標規約の取り違えは 4 節で扱います。
 
 ### 2.4 カメラ行列 $P = K[R \mid \mathbf t]$ とその中身
 
@@ -337,7 +337,7 @@ print("principal axis m3 =", R[2].round(4))
 
 ### 2.6 透視が弱まるとき：アフィンカメラ
 
-シーンの奥行きの幅が距離に比べて小さい場合（望遠撮影、衛星画像）、すべての点の奥行きはほぼ $Z \approx Z_0$ となり、投影はほぼ線形になります：$u \approx (f/Z_0) X + c_x$。この**弱透視**（weak perspective）カメラ、より一般には**アフィンカメラ**（affine camera）では、$P$ の最下行が $(0, 0, 0, 1)$ です。平行線は平行のままで、有限の消失点は存在しません。古典的な Structure-from-Motion の因子分解法の背後にあるカメラモデルであり、便利な目安にもなります。消失点が画像のはるか外にあるなら、問題はアフィンに近く、奥行きはあまり拘束されません。
+シーンの奥行きの幅が距離に比べて小さい場合（望遠撮影、衛星画像）、すべての点の奥行きはほぼ $Z \approx Z_0$ となり、投影はほぼ線形になります：$u \approx (f/Z_0) X + c_x$。この**弱透視**（weak perspective）カメラ、より一般には**アフィンカメラ**（affine camera）では、$P$ の最下行が $(0, 0, 0, 1)$ です。平行線は平行のままで、有限の消失点は存在しません。古典的な Structure-from-Motion の因子分解法の背後にあるカメラモデルであり、便利な警告サインにもなります。シーンの平行線の像がほとんど収束しない（すべての消失点が画像のはるか外にある）なら、ビューはアフィンに近く、奥行きを拘束する透視の手がかりは弱くなります。
 
 ## 3. レンズ歪み
 
@@ -424,7 +424,7 @@ r(\theta) = f\,\theta_d, \qquad \theta_d = \theta\,(1 + k_1\theta^2 + k_2\theta^
 \qquad \theta = \operatorname{atan2}\!\big(\sqrt{X^2 + Y^2},\, Z\big),
 $$
 
-画素は $u = f_x\,\theta_d \cos\varphi + c_x$、$v = f_y\,\theta_d \sin\varphi + c_y$ で、方位角 $\varphi = \operatorname{atan2}(Y, X)$ は変わりません。これは OpenCV の `cv::fisheye` モジュールと COLMAP の `OPENCV_FISHEYE` カメラのモデルです。うまく機能する理由は 2 つあります。第一に、$\tan\theta$ ではなく $\theta$ の多項式なので、90° やそれ以上でも有限のままです。第二に、$\theta = \operatorname{atan2}(\rho, Z)$ を $X/Z$ からではなく 3D の光線から計算するので、像平面の後ろにある $Z \le 0$ の光線も扱えます。ピンホールモデルではそもそも表現できない光線です。
+画素は $u = f_x\,\theta_d \cos\varphi + c_x$、$v = f_y\,\theta_d \sin\varphi + c_y$ で、方位角 $\varphi = \operatorname{atan2}(Y, X)$ は変わりません。これは OpenCV の `cv::fisheye` モジュールと COLMAP の `OPENCV_FISHEYE` カメラのモデルです。うまく機能する理由は 2 つあります。第一に、$\tan\theta$ ではなく $\theta$ の多項式なので、90° やそれ以上でも有限のままです。第二に、$\theta = \operatorname{atan2}(\rho, Z)$ を $X/Z$ からではなく 3D の光線から計算するので、像平面の後ろにある $Z \le 0$ の光線も扱えます。ピンホールモデルではそもそも表現できない光線です。ただしこれは式の性質であって、すべての実装の性質ではありません。OpenCV の `cv::fisheye` の関数は正規化座標 $(X/Z, Y/Z)$ を入力として $\theta = \arctan r$ を計算し、COLMAP の魚眼モデルも同様に $Z$ で割って $Z \le 0$ の点を棄却します。したがってこれらのライブラリでは、このモデルはカメラ前方の光線（180° 未満の視野）しか扱えません。より広角のレンズでは、下のコードのように光線から `atan2` で投影してください。
 
 ```python
 import numpy as np
@@ -463,11 +463,11 @@ $r = f(\theta + k_1\theta^3 + \dots)$ は $k_i$ について線形なので、�
 
 射影モデルがそろったところで、下のウィジェットでここまでの内容をすべて組み合わせます。内部パラメータ、2 つの歪みモデル、チェッカーボードの画像、そして 3D での実際の視野です。
 
-{% include widget.liquid name="3d-vision-camera-model" height="900" caption="インタラクティブなカメラモデル。内部パラメータと歪み係数を動かし、12×9 のチェッカーボードの 640×480 画像を観察してください。橙の破線の輪郭は、同じ $K$ の純粋なピンホールで写した同じボードです。左の紫の視錐台は、現在のモデルが実際に見ている視野で、画像の境界を逆投影して求めています（Brown-Conrady は不動点反復、Kannala-Brandt はニュートン法）。「樽型」のプリセットで $k_1$ をさらに負にして、多項式が折り返す所でボードの一部が消えるのを確かめ、次に「魚眼」のプリセットに切り替えて視野が 160° を超えるのを見てください。" %}
+{% include widget.liquid name="3d-vision-camera-model" height="900" caption="インタラクティブなカメラモデル。内部パラメータと歪み係数を動かし、12×9 のチェッカーボードの 640×480 画像を観察してください。橙の破線の輪郭は、同じ $K$ の純粋なピンホールで写した同じボードです。3D ビュー（広い画面では左、スマートフォンでは上）の紫の視錐台は、現在のモデルが実際に見ている視野で、画像の境界を逆投影して求めています（Brown-Conrady は不動点反復、Kannala-Brandt はニュートン法）。「樽型」のプリセットで $k_1$ をさらに負にして、多項式が折り返す所でボードの一部が消えるのを確かめ、次に「魚眼」のプリセットに切り替えて水平画角が 180° を超え、カメラがわずかに後ろまで見えることを確かめてください。" %}
 
 ### 3.4 その他の広角モデルと汎用モデル
 
-選択肢は Kannala-Brandt だけではありません。Mei と Rives（2007）の**統一カメラモデル**（unified camera model）は、まず点を単位球に投影し、次に光軸に沿ってずらした点から透視投影します。反射鏡を使うカタディオプトリックカメラも扱えます。**ダブルスフィア**モデル（double sphere、Usenko、Demmel、Cremers、3DV 2018）は 2 つの球を使い、広画角レンズに同程度によく当てはまり、しかも閉じた形の逆変換をもちます。投影と逆投影が何百万回も実行されるビジュアルオドメトリでは、これが重要です。Devernay と Faugeras（2001）は、最初に述べた性質、すなわちピンホールカメラは直線を直線に写すという性質を使い、キャリブレーションターゲットなしで歪みを推定しました。反対の極には**汎用**（generic）カメラモデルがあり、パラメトリックな形を捨てて光線方向の密な格子を保持します。Schöps ら（CVPR 2020）は、数千のパラメータをもつこのようなモデルが、通常の 12 個のパラメータより明らかに正確に実際のレンズをキャリブレーションできると論じています。これらのモデルの推定方法は第 2 回で扱います。
+選択肢は Kannala-Brandt だけではありません。**統一カメラモデル**（unified camera model。Geyer と Daniilidis が ECCV 2000 でカタディオプトリックカメラのために提案し、Mei と Rives が ICRA 2007 で歪み項と平面ターゲットによるキャリブレーションを加えたもの）は、まず点を単位球に投影し、次に光軸に沿ってずらした点から透視投影します。反射鏡を使うカタディオプトリックカメラも扱えます。**ダブルスフィア**モデル（double sphere、Usenko、Demmel、Cremers、3DV 2018）は 2 つの球を使い、広画角レンズに同程度によく当てはまり、しかも閉じた形の逆変換をもちます。投影と逆投影が何百万回も実行されるビジュアルオドメトリでは、これが重要です。Devernay と Faugeras（2001）は、最初に述べた性質、すなわちピンホールカメラは直線を直線に写すという性質を使い、キャリブレーションターゲットなしで歪みを推定しました。反対の極には**汎用**（generic）カメラモデルがあり、パラメトリックな形を捨てて光線方向の密な格子を保持します。Schöps ら（CVPR 2020）は、数千のパラメータをもつこのようなモデルが、通常の 12 個のパラメータより明らかに正確に実際のレンズをキャリブレーションできると論じています。これらのモデルの推定方法は第 2 回で扱います。
 
 ### 3.5 ローリングシャッター
 
@@ -516,7 +516,7 @@ print(f"rotation during readout: {np.rad2deg(omega * readout):.2f} deg = {f * np
 
 {% include blog_figure.liquid path="assets/img/blog/3d-vision/01-rolling-shutter.svg" caption="左：1920×1080 画像（$f=1000$、読み出し 30 ms）に写る、前方 8 m の 7 本の鉛直なポール。グローバルシャッター（灰）と、毎秒 60°（紫）および 240°（橙）で右にパンしたときのローリングシャッターです。後で露光される行ほど、シーンがより左に見えます。右：コードのポールのグローバルシャッター画像に対する水平変位。縦軸は行（右の縦軸はその行の露光時刻）で、毎秒 60、120、240° の場合です。行 40 と行 1040 の間で、ポールはそれぞれ 29.1、58.3、117.3 画素傾きます。変位は行の露光時刻にほぼ比例して増えます。" %}
 
-2 画素の誤差でも姿勢推定には偏りが生じるので、カメラが速く動く場面ではローリングシャッターが重要になります。スマートフォン、ドローン、頭部装着カメラなどです。ローリングシャッターを考慮したバンドル調整（Hedborg ら、CVPR 2012）は、フレームごとの速度を未知数に加えます。視覚慣性システムは IMU を使ってフレーム内の動きを予測します。トラッキング用カメラにグローバルシャッターのセンサーがよく使われる理由の一つがこれです。
+数画素の系統誤差でも姿勢推定には偏りが生じるので、カメラが速く動く場面ではローリングシャッターが重要になります。スマートフォン、ドローン、頭部装着カメラなどです。ローリングシャッターを考慮したバンドル調整（Hedborg ら、CVPR 2012）は、動画における運動の連続性を利用します。各行の姿勢を隣り合うフレームの姿勢の間で補間するので、古典的なバンドル調整に比べて増えるパラメータは 6 個だけです。視覚慣性システムは IMU を使ってフレーム内の動きを予測します。トラッキング用カメラにグローバルシャッターのセンサーがよく使われる理由の一つがこれです。
 
 ## 4. 座標系の約束事
 
@@ -638,11 +638,12 @@ print("LLFF reordered equals the OpenGL c2w:", np.allclose(nerf, c2w_gl[:3]))
 | Decentering distortion of lenses (Brown) | Photogrammetric Engineering | 1966 | — | OpenCV が使う放射方向と接線方向の歪みモデル |
 | Using vanishing points for camera calibration (Caprile, Torre) | IJCV | 1990 | [DOI](https://doi.org/10.1007/BF00127813) | 消失点からの内部パラメータ推定、垂心の性質 |
 | A flexible new technique for camera calibration (Zhang) | TPAMI | 2000 | [DOI](https://doi.org/10.1109/34.888718) | チェッカーボードによるキャリブレーション、第 2 回の土台 |
+| A unifying theory for central panoramic systems and practical implications (Geyer, Daniilidis) | ECCV | 2000 | [DOI](https://doi.org/10.1007/3-540-45053-X_29) | 中心射影カタディオプトリックカメラの統一球面モデル |
 | Straight lines have to be straight (Devernay, Faugeras) | Machine Vision and Applications | 2001 | [DOI](https://doi.org/10.1007/PL00013269) | 直線のまっすぐさから歪みを推定、ターゲット不要 |
 | Geometric models of rolling-shutter cameras (Meingast, Geyer, Sastry) | arXiv プレプリント | 2005 | [arXiv](https://arxiv.org/abs/cs/0503076) | 動くローリングシャッターカメラの投影方程式 |
 | A generic camera model and calibration method for conventional, wide-angle, and fish-eye lenses (Kannala, Brandt) | TPAMI | 2006 | [DOI](https://doi.org/10.1109/TPAMI.2006.153) | OpenCV と COLMAP が採用する角度の多項式による魚眼モデル |
-| Single view point omnidirectional camera calibration from planar grids (Mei, Rives) | ICRA | 2007 | [DOI](https://doi.org/10.1109/ROBOT.2007.364084) | 魚眼とカタディオプトリックカメラのための統一（球面）モデル |
-| Rolling shutter bundle adjustment (Hedborg, Forssén, Felsberg, Ringaby) | CVPR | 2012 | [DOI](https://doi.org/10.1109/CVPR.2012.6247831) | 行ごとの姿勢による Structure-from-Motion |
+| Single view point omnidirectional camera calibration from planar grids (Mei, Rives) | ICRA | 2007 | [DOI](https://doi.org/10.1109/ROBOT.2007.364084) | 統一球面モデルに歪みを加え、平面ターゲットでキャリブレーションする。魚眼とカタディオプトリックカメラに使われる |
+| Rolling shutter bundle adjustment (Hedborg, Forssén, Felsberg, Ringaby) | CVPR | 2012 | [DOI](https://doi.org/10.1109/CVPR.2012.6247831) | ローリングシャッター動画のバンドル調整。行ごとの姿勢をフレーム間で補間 |
 | Structure-from-Motion revisited (Schönberger, Frahm) | CVPR | 2016 | [CVF](https://openaccess.thecvf.com/content_cvpr_2016/html/Schonberger_Structure-From-Motion_Revisited_CVPR_2016_paper.html) | COLMAP。多くのデータセットがそのカメラモデルと約束事を受け継いでいる |
 | The double sphere camera model (Usenko, Demmel, Cremers) | 3DV | 2018 | [arXiv](https://arxiv.org/abs/1807.08957) | 閉じた形の逆変換をもつ広角モデルと、モデル間の比較 |
 | Local light field fusion (Mildenhall et al.) | SIGGRAPH (ACM TOG) | 2019 | [arXiv](https://arxiv.org/abs/1905.00889) | 前向き NeRF シーンが使う `poses_bounds.npy` 形式 |
