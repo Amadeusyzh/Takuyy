@@ -281,7 +281,7 @@ $$
 \varphi = \operatorname{atan2}(Q_1 - Q_3,\; Q_0 - Q_2), \qquad A = \tfrac12\sqrt{(Q_1 - Q_3)^2 + (Q_0 - Q_2)^2}, \qquad d = \frac{c\,\varphi}{4\pi f}.
 $$
 
-位相シフトと同じく、オフセット $B$（環境光）は消えます。振幅 $A$ は無料の信頼度です。暗い表面や遠い表面は戻る光が少なく、位相がノイジーになります。
+位相シフトと同じく、オフセット $B$（環境光）は消えます。（文字に注意してください。ここでは iToF の慣例どおり $A$ が振幅、$B$ がオフセットで、上の位相シフトの式とは逆です。また、ここでの $B$ はステレオの基線長でもありません。）振幅 $A$ は無料の信頼度です。暗い表面や遠い表面は戻る光が少なく、位相がノイジーになります。
 
 ```python
 c_light = 299_792_458.0
@@ -498,7 +498,7 @@ for name, z in (("view 1 only", z_one), ("mean of 4", z_mean), ("best 2 of 4", z
 
 視点ごとのコスト $C\_j(x, y, i)$ をどう組み合わせるか。私たちのシーンでは、出力が答えを示しています。
 
-```
+```text
 view 1 only  AbsRel 0.079, |e| < 1%: 52.3%, |e| < 5%: 78.3%
 mean of 4    AbsRel 0.047, |e| < 1%: 65.5%, |e| < 5%: 82.8%
 best 2 of 4  AbsRel 0.034, |e| < 1%: 67.9%, |e| < 5%: 90.5%
@@ -669,7 +669,7 @@ for name, z in (("sweep, best 2", z_best2), ("PatchMatch slanted", z_pm), ("Patc
 
 出力が反復の経過を語っています。
 
-```
+```text
 PatchMatch iteration 0: AbsRel 0.365, |e| < 1%:  1.8%, |e| < 5%:  8.9%
 PatchMatch iteration 1: AbsRel 0.080, |e| < 1%: 20.1%, |e| < 5%: 64.9%
 PatchMatch iteration 2: AbsRel 0.043, |e| < 1%: 49.5%, |e| < 5%: 88.6%

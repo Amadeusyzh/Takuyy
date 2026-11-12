@@ -281,7 +281,7 @@ $$
 \varphi = \operatorname{atan2}(Q_1 - Q_3,\; Q_0 - Q_2), \qquad A = \tfrac12\sqrt{(Q_1 - Q_3)^2 + (Q_0 - Q_2)^2}, \qquad d = \frac{c\,\varphi}{4\pi f}.
 $$
 
-和相移一样，偏置 $B$（环境光）被消掉了。幅度 $A$ 是一个免费的置信度：暗的或远的表面返回的光少，相位噪声就大。
+和相移一样，偏置 $B$（环境光）被消掉了。（注意字母：这里沿用 iToF 的惯例，$A$ 是幅度、$B$ 是偏置，与上面相移公式中的含义正好相反；这里的 $B$ 也不是立体的基线。）幅度 $A$ 是一个免费的置信度：暗的或远的表面返回的光少，相位噪声就大。
 
 ```python
 c_light = 299_792_458.0
@@ -498,7 +498,7 @@ for name, z in (("view 1 only", z_one), ("mean of 4", z_mean), ("best 2 of 4", z
 
 如何组合各视图的代价 $C\_j(x, y, i)$？在我们的场景上，打印结果给出了答案：
 
-```
+```text
 view 1 only  AbsRel 0.079, |e| < 1%: 52.3%, |e| < 5%: 78.3%
 mean of 4    AbsRel 0.047, |e| < 1%: 65.5%, |e| < 5%: 82.8%
 best 2 of 4  AbsRel 0.034, |e| < 1%: 67.9%, |e| < 5%: 90.5%
@@ -669,7 +669,7 @@ for name, z in (("sweep, best 2", z_best2), ("PatchMatch slanted", z_pm), ("Patc
 
 输出讲述了迭代的过程：
 
-```
+```text
 PatchMatch iteration 0: AbsRel 0.365, |e| < 1%:  1.8%, |e| < 5%:  8.9%
 PatchMatch iteration 1: AbsRel 0.080, |e| < 1%: 20.1%, |e| < 5%: 64.9%
 PatchMatch iteration 2: AbsRel 0.043, |e| < 1%: 49.5%, |e| < 5%: 88.6%
@@ -767,7 +767,7 @@ MVSNet 之后的主要工作方向（都已在下方论文表中核实）：
 
 ### 6.2 尺度不变损失
 
-最早的单目深度深度网络之一 Eigen、Puhrsch 和 Fergus（2014）提出了一种忽略全局尺度的损失。对 $n$ 个像素取 $g\_i = \log\hat z\_i - \log z\_i^\ast$，
+Eigen、Puhrsch 和 Fergus（2014）是最早用深度网络做单目深度估计的工作之一，他们提出了一种忽略全局尺度的损失。对 $n$ 个像素取 $g\_i = \log\hat z\_i - \log z\_i^\ast$，
 
 $$
 D(\hat{\mathbf z}, \mathbf z^\ast) = \frac1n\sum_i g_i^2 - \frac{\lambda}{n^2}\Big(\sum_i g_i\Big)^2 .
@@ -1042,7 +1042,7 @@ TSDF 融合鲁棒而简单，因此至今仍在每个深度相机的 SDK 里。�
 | KinectFusion: real-time dense surface mapping and tracking (Newcombe et al.) | ISMAR | 2011 | [DOI](https://doi.org/10.1109/ISMAR.2011.6092378) | 带 ICP 跟踪的实时 TSDF 融合 |
 | Real-time 3D reconstruction at scale using voxel hashing (Nießner et al.) | ACM TOG (SIGGRAPH Asia) | 2013 | [DOI](https://doi.org/10.1145/2508363.2508374) | 用哈希表存储稀疏 TSDF 块 |
 | Large scale multi-view stereopsis evaluation (Jensen et al.) | CVPR | 2014 | [DOI](https://doi.org/10.1109/CVPR.2014.59) | DTU MVS 基准 |
-| Depth map prediction from a single image using a multi-scale deep network (Eigen, Puhrsch, Fergus) | NeurIPS | 2014 | [arXiv](https://arxiv.org/abs/1406.2283) | 早期的单目深度深度网络；尺度不变损失 |
+| Depth map prediction from a single image using a multi-scale deep network (Eigen, Puhrsch, Fergus) | NeurIPS | 2014 | [arXiv](https://arxiv.org/abs/1406.2283) | 早期用深度网络做单目深度估计的工作；尺度不变损失 |
 | Massively parallel multiview stereopsis by surface normal diffusion (Galliani, Lasinger, Schindler) | ICCV | 2015 | [DOI](https://doi.org/10.1109/ICCV.2015.106) | Gipuma：GPU 上的红黑 PatchMatch |
 | Pixelwise view selection for unstructured multi-view stereo (Schönberger et al.) | ECCV | 2016 | [DOI](https://doi.org/10.1007/978-3-319-46487-9_31) | COLMAP MVS：深度、法向与视图选择联合估计 |
 | End-to-end learning of geometry and context for deep stereo regression (Kendall et al.) | ICCV | 2017 | [arXiv](https://arxiv.org/abs/1703.04309) | GC-Net：3D CNN 代价体与 soft-argmin |
