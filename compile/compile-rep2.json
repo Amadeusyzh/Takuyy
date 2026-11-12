@@ -1,0 +1,794 @@
+[
+ {
+  "name": "lab-sdf-1",
+  "rep": 0,
+  "webgl1": false,
+  "fsChars": 174,
+  "trace": [
+   {
+    "name": "Program::MainLinkLoadEvent::wait",
+    "ms": 4.4,
+    "tid": 5716
+   },
+   {
+    "name": "GetPixelExecutableTask::run",
+    "ms": 3,
+    "tid": 2012
+   },
+   {
+    "name": "D3DCompile",
+    "ms": 2.9,
+    "tid": 2012
+   },
+   {
+    "name": "GetVertexExecutableTask::run",
+    "ms": 4.1,
+    "tid": 2812
+   },
+   {
+    "name": "D3DCompile",
+    "ms": 4,
+    "tid": 2812
+   },
+   {
+    "name": "ImplementationBase::WaitForCmd",
+    "ms": 1.6,
+    "tid": 7828
+   },
+   {
+    "name": "GetVertexExecutableTask::run",
+    "ms": 2.9,
+    "tid": 2812
+   },
+   {
+    "name": "GetPixelExecutableTask::run",
+    "ms": 3.6,
+    "tid": 2012
+   },
+   {
+    "name": "D3DCompile",
+    "ms": 3.5,
+    "tid": 2012
+   },
+   {
+    "name": "D3DCompile",
+    "ms": 2.7,
+    "tid": 2812
+   },
+   {
+    "name": "ImplementationBase::WaitForCmd",
+    "ms": 2,
+    "tid": 7828
+   },
+   {
+    "name": "ImplementationBase::WaitForCmd",
+    "ms": 2.4,
+    "tid": 7828
+   }
+  ],
+  "traceTotalEvents": 3466,
+  "d3dSources": 4,
+  "parallelExt": true,
+  "debugShadersExt": true,
+  "compileCallMs": 0.1,
+  "statusMs": 0.7,
+  "linkCallMs": 0.2,
+  "polls": 2,
+  "pollMaxMs": 0,
+  "readyMs": 5.6,
+  "linkStatusMs": 0,
+  "uniformsMs": 0.1,
+  "uniforms": 1,
+  "drawMs": 2.2,
+  "draw2Ms": 2.4,
+  "renderer": "ANGLE (Microsoft, Microsoft Basic Render Driver (0x0000008C) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+ },
+ {
+  "name": "sdf-merged",
+  "rep": 0,
+  "webgl1": false,
+  "fsChars": 11497,
+  "trace": [
+   {
+    "name": "Program::MainLinkLoadEvent::wait",
+    "ms": 4.5,
+    "tid": 8268
+   },
+   {
+    "name": "GetPixelExecutableTask::run",
+    "ms": 3.2,
+    "tid": 7724
+   },
+   {
+    "name": "GetVertexExecutableTask::run",
+    "ms": 4.2,
+    "tid": 2504
+   },
+   {
+    "name": "D3DCompile",
+    "ms": 3.1,
+    "tid": 7724
+   },
+   {
+    "name": "D3DCompile",
+    "ms": 4.1,
+    "tid": 2504
+   },
+   {
+    "name": "ImplementationBase::WaitForCmd",
+    "ms": 6.8,
+    "tid": 1948
+   },
+   {
+    "name": "ImplementationBase::WaitForCmd",
+    "ms": 1,
+    "tid": 1948
+   },
+   {
+    "name": "GLES2Implementation::GetShaderiv",
+    "ms": 6,
+    "tid": 1948
+   },
+   {
+    "name": "ImplementationBase::WaitForCmd",
+    "ms": 6,
+    "tid": 1948
+   },
+   {
+    "name": "ShaderTranslateTaskD3D::run",
+    "ms": 5.4,
+    "tid": 2504
+   },
+   {
+    "name": "CompileEvent::wait",
+    "ms": 5.5,
+    "tid": 8268
+   },
+   {
+    "name": "GetVertexExecutableTask::run",
+    "ms": 3.2,
+    "tid": 2504
+   },
+   {
+    "name": "GetPixelExecutableTask::run",
+    "ms": 757.6,
+    "tid": 4052
+   },
+   {
+    "name": "D3DCompile",
+    "ms": 3,
+    "tid": 2504
+   },
+   {
+    "name": "D3DCompile",
+    "ms": 754.3,
+    "tid": 4052
+   },
+   {
+    "name": "ImplementationBase::WaitForCmd",
+    "ms": 29,
+    "tid": 1948
+   }
+  ],
+  "traceTotalEvents": 4069,
+  "d3dSources": 4,
+  "parallelExt": true,
+  "debugShadersExt": true,
+  "compileCallMs": 0.2,
+  "statusMs": 6,
+  "linkCallMs": 0.2,
+  "polls": 158,
+  "pollMaxMs": 0.2,
+  "readyMs": 766,
+  "linkStatusMs": 0,
+  "uniformsMs": 0.1,
+  "uniforms": 25,
+  "drawMs": 29.3,
+  "draw2Ms": 0.7,
+  "renderer": "ANGLE (Microsoft, Microsoft Basic Render Driver (0x0000008C) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+ },
+ {
+  "name": "sdf-normonly",
+  "rep": 0,
+  "webgl1": false,
+  "fsChars": 11541,
+  "trace": [
+   {
+    "name": "Program::MainLinkLoadEvent::wait",
+    "ms": 4.3,
+    "tid": 8884
+   },
+   {
+    "name": "GetPixelExecutableTask::run",
+    "ms": 2.9,
+    "tid": 4684
+   },
+   {
+    "name": "GetVertexExecutableTask::run",
+    "ms": 4.1,
+    "tid": 1740
+   },
+   {
+    "name": "D3DCompile",
+    "ms": 2.8,
+    "tid": 4684
+   },
+   {
+    "name": "D3DCompile",
+    "ms": 4,
+    "tid": 1740
+   },
+   {
+    "name": "ImplementationBase::WaitForCmd",
+    "ms": 7.6,
+    "tid": 4996
+   },
+   {
+    "name": "GLES2Implementation::GetShaderiv",
+    "ms": 7.2,
+    "tid": 4996
+   },
+   {
+    "name": "ImplementationBase::WaitForCmd",
+    "ms": 7.2,
+    "tid": 4996
+   },
+   {
+    "name": "ShaderTranslateTaskD3D::run",
+    "ms": 6.6,
+    "tid": 1740
+   },
+   {
+    "name": "CompileEvent::wait",
+    "ms": 6.7,
+    "tid": 8884
+   },
+   {
+    "name": "GetVertexExecutableTask::run",
+    "ms": 3.2,
+    "tid": 1740
+   },
+   {
+    "name": "GetPixelExecutableTask::run",
+    "ms": 1411.4,
+    "tid": 6960
+   },
+   {
+    "name": "D3DCompile",
+    "ms": 3.1,
+    "tid": 1740
+   },
+   {
+    "name": "D3DCompile",
+    "ms": 1407.2,
+    "tid": 6960
+   },
+   {
+    "name": "ImplementationBase::WaitForCmd",
+    "ms": 35.9,
+    "tid": 4996
+   }
+  ],
+  "traceTotalEvents": 4566,
+  "d3dSources": 4,
+  "parallelExt": true,
+  "debugShadersExt": true,
+  "compileCallMs": 0.2,
+  "statusMs": 7.2,
+  "linkCallMs": 0.2,
+  "polls": 290,
+  "pollMaxMs": 0.2,
+  "readyMs": 1418.3,
+  "linkStatusMs": 0,
+  "uniformsMs": 0.2,
+  "uniforms": 25,
+  "drawMs": 36.1,
+  "draw2Ms": 0.7,
+  "renderer": "ANGLE (Microsoft, Microsoft Basic Render Driver (0x0000008C) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+ },
+ {
+  "name": "sdf-onenormal",
+  "rep": 0,
+  "webgl1": false,
+  "fsChars": 11444,
+  "trace": [
+   {
+    "name": "ImplementationBase::WaitForCmd",
+    "ms": 10.8,
+    "tid": 1796
+   },
+   {
+    "name": "Program::MainLinkLoadEvent::wait",
+    "ms": 4.6,
+    "tid": 7340
+   },
+   {
+    "name": "GetPixelExecutableTask::run",
+    "ms": 3.4,
+    "tid": 5316
+   },
+   {
+    "name": "D3DCompile",
+    "ms": 3.2,
+    "tid": 5316
+   },
+   {
+    "name": "GetVertexExecutableTask::run",
+    "ms": 4.4,
+    "tid": 2700
+   },
+   {
+    "name": "D3DCompile",
+    "ms": 4.2,
+    "tid": 2700
+   },
+   {
+    "name": "ImplementationBase::WaitForCmd",
+    "ms": 1.6,
+    "tid": 1796
+   },
+   {
+    "name": "GLES2Implementation::GetShaderiv",
+    "ms": 6.9,
+    "tid": 1796
+   },
+   {
+    "name": "ImplementationBase::WaitForCmd",
+    "ms": 6.9,
+    "tid": 1796
+   },
+   {
+    "name": "CompileEvent::wait",
+    "ms": 6.4,
+    "tid": 7340
+   },
+   {
+    "name": "ShaderTranslateTaskD3D::run",
+    "ms": 6.2,
+    "tid": 2700
+   },
+   {
+    "name": "GetVertexExecutableTask::run",
+    "ms": 3.2,
+    "tid": 2700
+   },
+   {
+    "name": "D3DCompile",
+    "ms": 3.1,
+    "tid": 2700
+   },
+   {
+    "name": "GetPixelExecutableTask::run",
+    "ms": 823.4,
+    "tid": 5316
+   },
+   {
+    "name": "D3DCompile",
+    "ms": 819.7,
+    "tid": 5316
+   },
+   {
+    "name": "ImplementationBase::WaitForCmd",
+    "ms": 27.4,
+    "tid": 1796
+   }
+  ],
+  "traceTotalEvents": 4399,
+  "d3dSources": 4,
+  "parallelExt": true,
+  "debugShadersExt": true,
+  "compileCallMs": 0.2,
+  "statusMs": 6.8,
+  "linkCallMs": 0.2,
+  "polls": 173,
+  "pollMaxMs": 0.2,
+  "readyMs": 830.7,
+  "linkStatusMs": 0,
+  "uniformsMs": 0.2,
+  "uniforms": 25,
+  "drawMs": 27.6,
+  "draw2Ms": 0.7,
+  "renderer": "ANGLE (Microsoft, Microsoft Basic Render Driver (0x0000008C) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+ },
+ {
+  "name": "sdf-orig",
+  "rep": 0,
+  "webgl1": false,
+  "fsChars": 11559,
+  "trace": [
+   {
+    "name": "Program::MainLinkLoadEvent::wait",
+    "ms": 4.3,
+    "tid": 6532
+   },
+   {
+    "name": "GetVertexExecutableTask::run",
+    "ms": 4.1,
+    "tid": 2020
+   },
+   {
+    "name": "D3DCompile",
+    "ms": 3.9,
+    "tid": 2020
+   },
+   {
+    "name": "GetPixelExecutableTask::run",
+    "ms": 2.8,
+    "tid": 5404
+   },
+   {
+    "name": "D3DCompile",
+    "ms": 2.7,
+    "tid": 5404
+   },
+   {
+    "name": "ImplementationBase::WaitForCmd",
+    "ms": 7.1,
+    "tid": 3588
+   },
+   {
+    "name": "GLES2Implementation::GetShaderiv",
+    "ms": 7.6,
+    "tid": 3588
+   },
+   {
+    "name": "ImplementationBase::WaitForCmd",
+    "ms": 7.6,
+    "tid": 3588
+   },
+   {
+    "name": "ShaderTranslateTaskD3D::run",
+    "ms": 7.1,
+    "tid": 2020
+   },
+   {
+    "name": "CompileEvent::wait",
+    "ms": 7.2,
+    "tid": 6532
+   },
+   {
+    "name": "GetVertexExecutableTask::run",
+    "ms": 3.1,
+    "tid": 2028
+   },
+   {
+    "name": "GetPixelExecutableTask::run",
+    "ms": 1883.1,
+    "tid": 2020
+   },
+   {
+    "name": "D3DCompile",
+    "ms": 3,
+    "tid": 2028
+   },
+   {
+    "name": "D3DCompile",
+    "ms": 1877.5,
+    "tid": 2020
+   },
+   {
+    "name": "ImplementationBase::WaitForCmd",
+    "ms": 58.1,
+    "tid": 3588
+   }
+  ],
+  "traceTotalEvents": 5080,
+  "d3dSources": 4,
+  "parallelExt": true,
+  "debugShadersExt": true,
+  "compileCallMs": 0.2,
+  "statusMs": 7.7,
+  "linkCallMs": 0.1,
+  "polls": 396,
+  "pollMaxMs": 0.2,
+  "readyMs": 1888.3,
+  "linkStatusMs": 0,
+  "uniformsMs": 0.2,
+  "uniforms": 25,
+  "drawMs": 58.4,
+  "draw2Ms": 0.6,
+  "renderer": "ANGLE (Microsoft, Microsoft Basic Render Driver (0x0000008C) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+ },
+ {
+  "name": "sdf-ubound",
+  "rep": 0,
+  "webgl1": false,
+  "fsChars": 11455,
+  "trace": [
+   {
+    "name": "Program::MainLinkLoadEvent::wait",
+    "ms": 4.5,
+    "tid": 1684
+   },
+   {
+    "name": "GetPixelExecutableTask::run",
+    "ms": 3,
+    "tid": 7516
+   },
+   {
+    "name": "D3DCompile",
+    "ms": 2.9,
+    "tid": 7516
+   },
+   {
+    "name": "GetVertexExecutableTask::run",
+    "ms": 4.3,
+    "tid": 8620
+   },
+   {
+    "name": "D3DCompile",
+    "ms": 3.8,
+    "tid": 8620
+   },
+   {
+    "name": "ImplementationBase::WaitForCmd",
+    "ms": 4.9,
+    "tid": 10100
+   },
+   {
+    "name": "ImplementationBase::WaitForCmd",
+    "ms": 3.4,
+    "tid": 10100
+   },
+   {
+    "name": "GLES2Implementation::GetShaderiv",
+    "ms": 7.2,
+    "tid": 10100
+   },
+   {
+    "name": "ImplementationBase::WaitForCmd",
+    "ms": 7.2,
+    "tid": 10100
+   },
+   {
+    "name": "CompileEvent::wait",
+    "ms": 6.7,
+    "tid": 1684
+   },
+   {
+    "name": "ShaderTranslateTaskD3D::run",
+    "ms": 6.6,
+    "tid": 2736
+   },
+   {
+    "name": "GetVertexExecutableTask::run",
+    "ms": 3,
+    "tid": 2736
+   },
+   {
+    "name": "GetPixelExecutableTask::run",
+    "ms": 1399.3,
+    "tid": 7516
+   },
+   {
+    "name": "D3DCompile",
+    "ms": 2.9,
+    "tid": 2736
+   },
+   {
+    "name": "D3DCompile",
+    "ms": 1394.4,
+    "tid": 7516
+   },
+   {
+    "name": "ImplementationBase::WaitForCmd",
+    "ms": 43,
+    "tid": 10100
+   }
+  ],
+  "traceTotalEvents": 4672,
+  "d3dSources": 4,
+  "parallelExt": true,
+  "debugShadersExt": true,
+  "compileCallMs": 0.1,
+  "statusMs": 7.1,
+  "linkCallMs": 0.1,
+  "polls": 291,
+  "pollMaxMs": 0.1,
+  "readyMs": 1403.3,
+  "linkStatusMs": 0,
+  "uniformsMs": 0.2,
+  "uniforms": 25,
+  "drawMs": 43.2,
+  "draw2Ms": 0.7,
+  "renderer": "ANGLE (Microsoft, Microsoft Basic Render Driver (0x0000008C) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+ },
+ {
+  "name": "sdf-uprim",
+  "rep": 0,
+  "webgl1": false,
+  "fsChars": 11478,
+  "trace": [
+   {
+    "name": "ImplementationBase::WaitForCmd",
+    "ms": 11.1,
+    "tid": 3252
+   },
+   {
+    "name": "Program::MainLinkLoadEvent::wait",
+    "ms": 4.3,
+    "tid": 6336
+   },
+   {
+    "name": "GetPixelExecutableTask::run",
+    "ms": 3.2,
+    "tid": 2844
+   },
+   {
+    "name": "D3DCompile",
+    "ms": 3.1,
+    "tid": 2844
+   },
+   {
+    "name": "GetVertexExecutableTask::run",
+    "ms": 4.1,
+    "tid": 5548
+   },
+   {
+    "name": "D3DCompile",
+    "ms": 4,
+    "tid": 5548
+   },
+   {
+    "name": "GLES2Implementation::GetShaderiv",
+    "ms": 7.7,
+    "tid": 3252
+   },
+   {
+    "name": "ImplementationBase::WaitForCmd",
+    "ms": 7.7,
+    "tid": 3252
+   },
+   {
+    "name": "ShaderTranslateTaskD3D::run",
+    "ms": 7.2,
+    "tid": 5548
+   },
+   {
+    "name": "CompileEvent::wait",
+    "ms": 7.3,
+    "tid": 6336
+   },
+   {
+    "name": "GetVertexExecutableTask::run",
+    "ms": 3.1,
+    "tid": 5548
+   },
+   {
+    "name": "GetPixelExecutableTask::run",
+    "ms": 1430,
+    "tid": 2844
+   },
+   {
+    "name": "D3DCompile",
+    "ms": 3,
+    "tid": 5548
+   },
+   {
+    "name": "D3DCompile",
+    "ms": 1425.1,
+    "tid": 2844
+   },
+   {
+    "name": "ImplementationBase::WaitForCmd",
+    "ms": 41.4,
+    "tid": 3252
+   }
+  ],
+  "traceTotalEvents": 4985,
+  "d3dSources": 4,
+  "parallelExt": true,
+  "debugShadersExt": true,
+  "compileCallMs": 0.2,
+  "statusMs": 7.7,
+  "linkCallMs": 0.1,
+  "polls": 303,
+  "pollMaxMs": 0.2,
+  "readyMs": 1436.5,
+  "linkStatusMs": 0,
+  "uniformsMs": 0.2,
+  "uniforms": 25,
+  "drawMs": 41.6,
+  "draw2Ms": 0.6,
+  "renderer": "ANGLE (Microsoft, Microsoft Basic Render Driver (0x0000008C) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+ },
+ {
+  "name": "sdf-usteps",
+  "rep": 0,
+  "webgl1": false,
+  "fsChars": 11536,
+  "trace": [
+   {
+    "name": "Program::MainLinkLoadEvent::wait",
+    "ms": 4.2,
+    "tid": 9924
+   },
+   {
+    "name": "GetPixelExecutableTask::run",
+    "ms": 2.9,
+    "tid": 2008
+   },
+   {
+    "name": "GetVertexExecutableTask::run",
+    "ms": 4,
+    "tid": 1936
+   },
+   {
+    "name": "D3DCompile",
+    "ms": 2.8,
+    "tid": 2008
+   },
+   {
+    "name": "D3DCompile",
+    "ms": 3.9,
+    "tid": 1936
+   },
+   {
+    "name": "ImplementationBase::WaitForCmd",
+    "ms": 7,
+    "tid": 5100
+   },
+   {
+    "name": "GLES2Implementation::GetShaderiv",
+    "ms": 8.2,
+    "tid": 5100
+   },
+   {
+    "name": "ImplementationBase::WaitForCmd",
+    "ms": 8.2,
+    "tid": 5100
+   },
+   {
+    "name": "CompileEvent::wait",
+    "ms": 7.8,
+    "tid": 9924
+   },
+   {
+    "name": "ShaderTranslateTaskD3D::run",
+    "ms": 7.6,
+    "tid": 1936
+   },
+   {
+    "name": "GetVertexExecutableTask::run",
+    "ms": 3.2,
+    "tid": 6640
+   },
+   {
+    "name": "D3DCompile",
+    "ms": 3,
+    "tid": 6640
+   },
+   {
+    "name": "GetPixelExecutableTask::run",
+    "ms": 1862.1,
+    "tid": 2008
+   },
+   {
+    "name": "D3DCompile",
+    "ms": 1856.8,
+    "tid": 2008
+   },
+   {
+    "name": "ImplementationBase::WaitForCmd",
+    "ms": 43.9,
+    "tid": 5100
+   }
+  ],
+  "traceTotalEvents": 4967,
+  "d3dSources": 4,
+  "parallelExt": true,
+  "debugShadersExt": true,
+  "compileCallMs": 0.2,
+  "statusMs": 8.1,
+  "linkCallMs": 0.2,
+  "polls": 384,
+  "pollMaxMs": 0.2,
+  "readyMs": 1867.7,
+  "linkStatusMs": 0,
+  "uniformsMs": 0.2,
+  "uniforms": 25,
+  "drawMs": 44,
+  "draw2Ms": 0.7,
+  "renderer": "ANGLE (Microsoft, Microsoft Basic Render Driver (0x0000008C) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+ }
+]

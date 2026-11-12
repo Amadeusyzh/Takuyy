@@ -1,0 +1,100 @@
+struct VS_OUTPUT
+{
+    float4 dx_Position : SV_Position;
+    float4 gl_Position : TEXCOORD2;
+    noperspective float4 v0 : TEXCOORD0;
+    noperspective float2 v1 : TEXCOORD1;
+};
+#pragma warning( disable: 3081 3556 3557 3571 )
+float float_ctor_int(int x0)
+{
+    return float(x0);
+}
+float float_ctor_uint(uint x0)
+{
+    return float(x0);
+}
+float2 vec2_ctor(float x0, float x1)
+{
+    return float2(x0, x1);
+}
+float4 vec4_ctor(float2 x0, float x1, float x2)
+{
+    return float4(x0, x1, x2);
+}
+// Uniforms
+
+uniform float4 _sk_RTAdjust : register(c0);
+uniform float2 _uAtlasSizeInv_S0 : register(c1);
+#ifdef ANGLE_ENABLE_LOOP_FLATTEN
+#define LOOP [loop]
+#define FLATTEN [flatten]
+#else
+#define LOOP
+#define FLATTEN
+#endif
+// Attributes
+static float2 _inPosition = {0, 0};
+static float4 _inColor = {0, 0, 0, 0};
+static uint2 _inTextureCoords = {0, 0};
+
+static float4 gl_Position = float4(0, 0, 0, 0);
+
+// Varyings
+static noperspective float2 _vTextureCoords_S0 = {0, 0};
+static noperspective float _vTexIndex_S0 = {0};
+static noperspective float4 _vinColor_S0 = {0, 0, 0, 0};
+
+cbuffer DriverConstants : register(b1)
+{
+    float2 dx_ViewScale  : packoffset(c1);
+    float clipControlOrigin : packoffset(c1.z);
+    float clipControlZeroToOne : packoffset(c1.w);
+};
+
+struct VS_INPUT
+{
+    float2 _inPosition : TEXCOORD0;
+    float4 _inColor : TEXCOORD1;
+    int2 _inTextureCoords : TEXCOORD2;
+};
+
+void initAttributes(VS_INPUT input)
+{
+    _inPosition = input._inPosition;
+    _inColor = input._inColor;
+    _inTextureCoords = input._inTextureCoords;
+}
+
+
+VS_OUTPUT generateOutput(VS_INPUT input)
+{
+    VS_OUTPUT output;
+    output.gl_Position = gl_Position;
+    output.dx_Position.x = gl_Position.x;
+    output.dx_Position.y = clipControlOrigin * gl_Position.y;
+    if (clipControlZeroToOne)
+    {
+        output.dx_Position.z = gl_Position.z;
+    } else {
+        output.dx_Position.z = (gl_Position.z + gl_Position.w) * 0.5;
+    }
+    output.dx_Position.w = gl_Position.w;
+    output.v0 = _vinColor_S0;
+    output.v1 = _vTextureCoords_S0;
+
+    return output;
+}
+
+VS_OUTPUT main(VS_INPUT input){
+    initAttributes(input);
+
+int _texIdx_3010 = {0};
+float2 _unormTexCoords_3011 = vec2_ctor(float_ctor_uint(_inTextureCoords.x), float_ctor_uint(_inTextureCoords.y));
+(_vTextureCoords_S0 = (_unormTexCoords_3011 * _uAtlasSizeInv_S0));
+(_vTexIndex_S0 = float_ctor_int(_texIdx_3010));
+(_vinColor_S0 = _inColor);
+(gl_Position = vec4_ctor(_inPosition, 0.0, 1.0));
+(gl_Position = vec4_ctor(((gl_Position.xy * _sk_RTAdjust.xz) + (gl_Position.ww * _sk_RTAdjust.yw)), 0.0, gl_Position.w));
+return generateOutput(input);
+}

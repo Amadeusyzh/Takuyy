@@ -1,0 +1,366 @@
+[
+ {
+  "variant": "orig",
+  "config": "d3d11",
+  "renderer": "ANGLE (Microsoft, Microsoft Basic Render Driver (0x0000008C) Direct3D11 vs_5_0 ps_5_0, D3D11) | KHR_parallel_shader_compile",
+  "firstFrame": {
+   "ms": 3839,
+   "stats": "7 shapes · k = 0.45 · Shaded · 960×540 · 36 fps"
+  },
+  "longestEvaluateWait": 1543,
+  "after15s": "7 shapes · k = 0.45 · Shaded · 288×162 · AA 16/16",
+  "blockingCalls": [
+   {
+    "name": "getProgramParameter",
+    "ms": 1732,
+    "at": 637
+   }
+  ],
+  "longtasks": [
+   {
+    "at": 592,
+    "ms": 1784
+   },
+   {
+    "at": 6525,
+    "ms": 1293
+   },
+   {
+    "at": 7844,
+    "ms": 318
+   },
+   {
+    "at": 9004,
+    "ms": 108
+   },
+   {
+    "at": 9135,
+    "ms": 112
+   },
+   {
+    "at": 9278,
+    "ms": 114
+   },
+   {
+    "at": 9562,
+    "ms": 105
+   },
+   {
+    "at": 9846,
+    "ms": 111
+   },
+   {
+    "at": 10168,
+    "ms": 114
+   },
+   {
+    "at": 10439,
+    "ms": 103
+   },
+   {
+    "at": 10561,
+    "ms": 108
+   },
+   {
+    "at": 10691,
+    "ms": 107
+   },
+   {
+    "at": 10820,
+    "ms": 107
+   }
+  ],
+  "maxLag": 1746,
+  "errors": [
+   "Failed to load resource: the server responded with a status of 404 (Not Found)"
+  ]
+ },
+ {
+  "variant": "merged",
+  "config": "d3d11",
+  "renderer": "ANGLE (Microsoft, Microsoft Basic Render Driver (0x0000008C) Direct3D11 vs_5_0 ps_5_0, D3D11) | KHR_parallel_shader_compile",
+  "firstFrame": {
+   "ms": 3745,
+   "stats": "7 shapes · k = 0.45 · Shaded · 960×540 · 0.7 fps"
+  },
+  "longestEvaluateWait": 1361,
+  "after15s": "7 shapes · k = 0.45 · Shaded · 288×162 · AA 16/16",
+  "blockingCalls": [
+   {
+    "name": "getProgramParameter",
+    "ms": 747,
+    "at": 236
+   }
+  ],
+  "longtasks": [
+   {
+    "at": 176,
+    "ms": 815
+   },
+   {
+    "at": 5102,
+    "ms": 1284
+   },
+   {
+    "at": 6449,
+    "ms": 310
+   },
+   {
+    "at": 6783,
+    "ms": 313
+   },
+   {
+    "at": 7119,
+    "ms": 310
+   },
+   {
+    "at": 7458,
+    "ms": 113
+   },
+   {
+    "at": 7586,
+    "ms": 105
+   },
+   {
+    "at": 7715,
+    "ms": 111
+   },
+   {
+    "at": 7849,
+    "ms": 106
+   },
+   {
+    "at": 7979,
+    "ms": 107
+   },
+   {
+    "at": 8267,
+    "ms": 105
+   },
+   {
+    "at": 8387,
+    "ms": 101
+   },
+   {
+    "at": 8513,
+    "ms": 102
+   },
+   {
+    "at": 8642,
+    "ms": 107
+   },
+   {
+    "at": 8771,
+    "ms": 105
+   },
+   {
+    "at": 8900,
+    "ms": 103
+   },
+   {
+    "at": 9030,
+    "ms": 103
+   },
+   {
+    "at": 9158,
+    "ms": 107
+   },
+   {
+    "at": 9288,
+    "ms": 104
+   },
+   {
+    "at": 9416,
+    "ms": 104
+   }
+  ],
+  "maxLag": 2164,
+  "errors": [
+   "Failed to load resource: the server responded with a status of 404 (Not Found)"
+  ]
+ },
+ {
+  "variant": "parallel",
+  "config": "d3d11",
+  "renderer": "ANGLE (Microsoft, Microsoft Basic Render Driver (0x0000008C) Direct3D11 vs_5_0 ps_5_0, D3D11) | KHR_parallel_shader_compile",
+  "firstFrame": {
+   "ms": 4987,
+   "stats": "7 shapes · k = 0.45 · Shaded · 960×540 · 0.7 fps"
+  },
+  "longestEvaluateWait": 5,
+  "after15s": "7 shapes · k = 0.45 · Shaded · 288×162 · AA 16/16",
+  "blockingCalls": [],
+  "longtasks": [
+   {
+    "at": 6355,
+    "ms": 1294
+   },
+   {
+    "at": 8069,
+    "ms": 319
+   },
+   {
+    "at": 8408,
+    "ms": 320
+   },
+   {
+    "at": 8731,
+    "ms": 114
+   },
+   {
+    "at": 8869,
+    "ms": 109
+   },
+   {
+    "at": 8998,
+    "ms": 109
+   },
+   {
+    "at": 9131,
+    "ms": 116
+   },
+   {
+    "at": 9261,
+    "ms": 115
+   },
+   {
+    "at": 9402,
+    "ms": 107
+   },
+   {
+    "at": 9531,
+    "ms": 109
+   },
+   {
+    "at": 9661,
+    "ms": 105
+   },
+   {
+    "at": 9789,
+    "ms": 113
+   },
+   {
+    "at": 9919,
+    "ms": 105
+   },
+   {
+    "at": 10050,
+    "ms": 106
+   },
+   {
+    "at": 10179,
+    "ms": 106
+   },
+   {
+    "at": 10311,
+    "ms": 107
+   },
+   {
+    "at": 10440,
+    "ms": 107
+   },
+   {
+    "at": 10575,
+    "ms": 110
+   },
+   {
+    "at": 10704,
+    "ms": 111
+   }
+  ],
+  "maxLag": 1278,
+  "errors": [
+   "Failed to load resource: the server responded with a status of 404 (Not Found)"
+  ]
+ },
+ {
+  "variant": "fix",
+  "config": "d3d11",
+  "renderer": "ANGLE (Microsoft, Microsoft Basic Render Driver (0x0000008C) Direct3D11 vs_5_0 ps_5_0, D3D11) | KHR_parallel_shader_compile",
+  "firstFrame": {
+   "ms": 5155,
+   "stats": "7 shapes · k = 0.45 · Shaded · 960×540 · 0.8 fps"
+  },
+  "longestEvaluateWait": 1348,
+  "after15s": "7 shapes · k = 0.45 · Shaded · 288×162 · AA 16/16",
+  "blockingCalls": [],
+  "longtasks": [
+   {
+    "at": 3788,
+    "ms": 1325
+   },
+   {
+    "at": 6849,
+    "ms": 320
+   },
+   {
+    "at": 7203,
+    "ms": 328
+   },
+   {
+    "at": 7558,
+    "ms": 117
+   },
+   {
+    "at": 7703,
+    "ms": 107
+   },
+   {
+    "at": 7837,
+    "ms": 116
+   },
+   {
+    "at": 7979,
+    "ms": 126
+   },
+   {
+    "at": 8134,
+    "ms": 111
+   },
+   {
+    "at": 8263,
+    "ms": 108
+   },
+   {
+    "at": 8510,
+    "ms": 104
+   },
+   {
+    "at": 8636,
+    "ms": 105
+   },
+   {
+    "at": 8764,
+    "ms": 107
+   },
+   {
+    "at": 8892,
+    "ms": 102
+   },
+   {
+    "at": 9021,
+    "ms": 102
+   },
+   {
+    "at": 9150,
+    "ms": 105
+   },
+   {
+    "at": 9278,
+    "ms": 103
+   },
+   {
+    "at": 9408,
+    "ms": 105
+   },
+   {
+    "at": 9537,
+    "ms": 105
+   }
+  ],
+  "maxLag": 1303,
+  "errors": [
+   "Failed to load resource: the server responded with a status of 404 (Not Found)"
+  ]
+ }
+]

@@ -1,0 +1,768 @@
+{
+ "fxc": "C:\\Program Files (x86)\\Windows Kits\\10\\bin\\10.0.26100.0\\x64\\fxc.exe",
+ "runs": 2,
+ "shaders": [
+  {
+   "name": "sdf-merged",
+   "hlslKB": 42,
+   "hlslLoops": 20,
+   "hlslFunctions": 39,
+   "runs": [
+    {
+     "tag": "O2",
+     "flags": "/O2",
+     "ok": false,
+     "ms": 343,
+     "err": "D:\\a\\_temp\\winrep\\compile\\hlsl\\sdf-merged.final.ps.hlsl(374,12-23): error X3003: redefinition of 'PS_OUTPUT::out_outColor'"
+    },
+    {
+     "tag": "Od",
+     "flags": "/Od",
+     "ok": false,
+     "ms": 13,
+     "err": "D:\\a\\_temp\\winrep\\compile\\hlsl\\sdf-merged.final.ps.hlsl(374,12-23): error X3003: redefinition of 'PS_OUTPUT::out_outColor'"
+    }
+   ]
+  },
+  {
+   "name": "sdf-normonly",
+   "hlslKB": 43,
+   "hlslLoops": 16,
+   "hlslFunctions": 37,
+   "runs": [
+    {
+     "tag": "O2",
+     "flags": "/O2",
+     "ok": false,
+     "ms": 13,
+     "err": "D:\\a\\_temp\\winrep\\compile\\hlsl\\sdf-normonly.final.ps.hlsl(374,12-23): error X3003: redefinition of 'PS_OUTPUT::out_outColor'"
+    },
+    {
+     "tag": "Od",
+     "flags": "/Od",
+     "ok": false,
+     "ms": 12,
+     "err": "D:\\a\\_temp\\winrep\\compile\\hlsl\\sdf-normonly.final.ps.hlsl(374,12-23): error X3003: redefinition of 'PS_OUTPUT::out_outColor'"
+    }
+   ]
+  },
+  {
+   "name": "sdf-onenormal",
+   "hlslKB": 42,
+   "hlslLoops": 20,
+   "hlslFunctions": 39,
+   "runs": [
+    {
+     "tag": "O2",
+     "flags": "/O2",
+     "ok": false,
+     "ms": 12,
+     "err": "D:\\a\\_temp\\winrep\\compile\\hlsl\\sdf-onenormal.final.ps.hlsl(373,12-23): error X3003: redefinition of 'PS_OUTPUT::out_outColor'"
+    },
+    {
+     "tag": "Od",
+     "flags": "/Od",
+     "ok": false,
+     "ms": 11,
+     "err": "D:\\a\\_temp\\winrep\\compile\\hlsl\\sdf-onenormal.final.ps.hlsl(373,12-23): error X3003: redefinition of 'PS_OUTPUT::out_outColor'"
+    }
+   ]
+  },
+  {
+   "name": "sdf-orig",
+   "hlslKB": 43,
+   "hlslLoops": 16,
+   "hlslFunctions": 37,
+   "runs": [
+    {
+     "tag": "O2",
+     "flags": "/O2",
+     "ok": false,
+     "ms": 14,
+     "err": "D:\\a\\_temp\\winrep\\compile\\hlsl\\sdf-orig.final.ps.hlsl(374,12-23): error X3003: redefinition of 'PS_OUTPUT::out_outColor'"
+    },
+    {
+     "tag": "Od",
+     "flags": "/Od",
+     "ok": false,
+     "ms": 13,
+     "err": "D:\\a\\_temp\\winrep\\compile\\hlsl\\sdf-orig.final.ps.hlsl(374,12-23): error X3003: redefinition of 'PS_OUTPUT::out_outColor'"
+    },
+    {
+     "tag": "O2-forceloop",
+     "flags": "/O2",
+     "ok": false,
+     "ms": 12,
+     "err": "D:\\a\\_temp\\winrep\\compile\\hlsl\\sdf-orig-forceloop.final.ps.hlsl(374,12-23): error X3003: redefinition of 'PS_OUTPUT::out_outColor'",
+     "file": "sdf-orig-forceloop"
+    }
+   ]
+  },
+  {
+   "name": "sdf-ubound",
+   "hlslKB": 42,
+   "hlslLoops": 16,
+   "hlslFunctions": 37,
+   "runs": [
+    {
+     "tag": "O2",
+     "flags": "/O2",
+     "ok": false,
+     "ms": 11,
+     "err": "D:\\a\\_temp\\winrep\\compile\\hlsl\\sdf-ubound.final.ps.hlsl(362,12-23): error X3003: redefinition of 'PS_OUTPUT::out_outColor'"
+    },
+    {
+     "tag": "Od",
+     "flags": "/Od",
+     "ok": false,
+     "ms": 11,
+     "err": "D:\\a\\_temp\\winrep\\compile\\hlsl\\sdf-ubound.final.ps.hlsl(362,12-23): error X3003: redefinition of 'PS_OUTPUT::out_outColor'"
+    }
+   ]
+  },
+  {
+   "name": "sdf-uprim",
+   "hlslKB": 42,
+   "hlslLoops": 16,
+   "hlslFunctions": 37,
+   "runs": [
+    {
+     "tag": "O2",
+     "flags": "/O2",
+     "ok": false,
+     "ms": 11,
+     "err": "D:\\a\\_temp\\winrep\\compile\\hlsl\\sdf-uprim.final.ps.hlsl(366,12-23): error X3003: redefinition of 'PS_OUTPUT::out_outColor'"
+    },
+    {
+     "tag": "Od",
+     "flags": "/Od",
+     "ok": false,
+     "ms": 10,
+     "err": "D:\\a\\_temp\\winrep\\compile\\hlsl\\sdf-uprim.final.ps.hlsl(366,12-23): error X3003: redefinition of 'PS_OUTPUT::out_outColor'"
+    }
+   ]
+  },
+  {
+   "name": "sdf-usteps",
+   "hlslKB": 43,
+   "hlslLoops": 16,
+   "hlslFunctions": 37,
+   "runs": [
+    {
+     "tag": "O2",
+     "flags": "/O2",
+     "ok": false,
+     "ms": 11,
+     "err": "D:\\a\\_temp\\winrep\\compile\\hlsl\\sdf-usteps.final.ps.hlsl(370,12-23): error X3003: redefinition of 'PS_OUTPUT::out_outColor'"
+    },
+    {
+     "tag": "Od",
+     "flags": "/Od",
+     "ok": false,
+     "ms": 11,
+     "err": "D:\\a\\_temp\\winrep\\compile\\hlsl\\sdf-usteps.final.ps.hlsl(370,12-23): error X3003: redefinition of 'PS_OUTPUT::out_outColor'"
+    }
+   ]
+  },
+  {
+   "name": "lab-cloth-0",
+   "hlslKB": 6,
+   "hlslLoops": 0,
+   "hlslFunctions": 5,
+   "runs": [
+    {
+     "tag": "O2",
+     "flags": "/O2",
+     "ok": false,
+     "ms": 10,
+     "err": "D:\\a\\_temp\\winrep\\compile\\hlsl\\lab-cloth-0.final.ps.hlsl(117,15): error X3003: redefinition of 'PS_INPUT'"
+    }
+   ]
+  },
+  {
+   "name": "lab-cloth-1",
+   "hlslKB": 4,
+   "hlslLoops": 0,
+   "hlslFunctions": 5,
+   "runs": [
+    {
+     "tag": "O2",
+     "flags": "/O2",
+     "ok": false,
+     "ms": 9,
+     "err": "D:\\a\\_temp\\winrep\\compile\\hlsl\\lab-cloth-1.final.ps.hlsl(88,15): error X3003: redefinition of 'PS_INPUT'"
+    }
+   ]
+  },
+  {
+   "name": "lab-cloth-2",
+   "hlslKB": 3,
+   "hlslLoops": 0,
+   "hlslFunctions": 3,
+   "runs": [
+    {
+     "tag": "O2",
+     "flags": "/O2",
+     "ok": false,
+     "ms": 9,
+     "err": "D:\\a\\_temp\\winrep\\compile\\hlsl\\lab-cloth-2.final.ps.hlsl(70,15): error X3003: redefinition of 'PS_INPUT'"
+    }
+   ]
+  },
+  {
+   "name": "lab-fov-0",
+   "hlslKB": 15,
+   "hlslLoops": 2,
+   "hlslFunctions": 23,
+   "runs": [
+    {
+     "tag": "O2",
+     "flags": "/O2",
+     "ok": false,
+     "ms": 10,
+     "err": "D:\\a\\_temp\\winrep\\compile\\hlsl\\lab-fov-0.final.ps.hlsl(219,15): error X3003: redefinition of 'PS_INPUT'"
+    }
+   ]
+  },
+  {
+   "name": "lab-fov-1",
+   "hlslKB": 7,
+   "hlslLoops": 0,
+   "hlslFunctions": 5,
+   "runs": [
+    {
+     "tag": "O2",
+     "flags": "/O2",
+     "ok": false,
+     "ms": 10,
+     "err": "D:\\a\\_temp\\winrep\\compile\\hlsl\\lab-fov-1.final.ps.hlsl(135,15): error X3003: redefinition of 'PS_INPUT'"
+    }
+   ]
+  },
+  {
+   "name": "lab-gs-0",
+   "hlslKB": 3,
+   "hlslLoops": 0,
+   "hlslFunctions": 3,
+   "runs": [
+    {
+     "tag": "O2",
+     "flags": "/O2",
+     "ok": false,
+     "ms": 9,
+     "err": "D:\\a\\_temp\\winrep\\compile\\hlsl\\lab-gs-0.final.ps.hlsl(41,12-16): error X3003: redefinition of 'PS_OUTPUT::out_o'"
+    }
+   ]
+  },
+  {
+   "name": "lab-gs-1",
+   "hlslKB": 1,
+   "hlslLoops": 0,
+   "hlslFunctions": 1,
+   "runs": [
+    {
+     "tag": "O2",
+     "flags": "/O2",
+     "ok": false,
+     "ms": 9,
+     "err": "D:\\a\\_temp\\winrep\\compile\\hlsl\\lab-gs-1.final.ps.hlsl(48,15): error X3003: redefinition of 'PS_INPUT'"
+    }
+   ]
+  },
+  {
+   "name": "lab-gs-2",
+   "hlslKB": 5,
+   "hlslLoops": 0,
+   "hlslFunctions": 7,
+   "runs": [
+    {
+     "tag": "O2",
+     "flags": "/O2",
+     "ok": false,
+     "ms": 9,
+     "err": "D:\\a\\_temp\\winrep\\compile\\hlsl\\lab-gs-2.final.ps.hlsl(55,12-16): error X3003: redefinition of 'PS_OUTPUT::out_o'"
+    }
+   ]
+  },
+  {
+   "name": "lab-gs-3",
+   "hlslKB": 2,
+   "hlslLoops": 0,
+   "hlslFunctions": 1,
+   "runs": [
+    {
+     "tag": "O2",
+     "flags": "/O2",
+     "ok": false,
+     "ms": 9,
+     "err": "D:\\a\\_temp\\winrep\\compile\\hlsl\\lab-gs-3.final.ps.hlsl(32,12-16): error X3003: redefinition of 'PS_OUTPUT::out_o'"
+    }
+   ]
+  },
+  {
+   "name": "lab-mpm-0",
+   "hlslKB": 4,
+   "hlslLoops": 0,
+   "hlslFunctions": 7,
+   "runs": [
+    {
+     "tag": "O2",
+     "flags": "/O2",
+     "ok": false,
+     "ms": 10,
+     "err": "D:\\a\\_temp\\winrep\\compile\\hlsl\\lab-mpm-0.final.ps.hlsl(67,12-16): error X3003: redefinition of 'PS_OUTPUT::out_o'"
+    }
+   ]
+  },
+  {
+   "name": "lab-mpm-1",
+   "hlslKB": 11,
+   "hlslLoops": 2,
+   "hlslFunctions": 17,
+   "runs": [
+    {
+     "tag": "O2",
+     "flags": "/O2",
+     "ok": false,
+     "ms": 9,
+     "err": "D:\\a\\_temp\\winrep\\compile\\hlsl\\lab-mpm-1.final.ps.hlsl(124,12-16): error X3003: redefinition of 'PS_OUTPUT::out_o'"
+    }
+   ]
+  },
+  {
+   "name": "lab-mpm-2",
+   "hlslKB": 17,
+   "hlslLoops": 4,
+   "hlslFunctions": 31,
+   "runs": [
+    {
+     "tag": "O2",
+     "flags": "/O2",
+     "ok": false,
+     "ms": 10,
+     "err": "D:\\a\\_temp\\winrep\\compile\\hlsl\\lab-mpm-2.final.ps.hlsl(175,12-17): error X3003: redefinition of 'PS_OUTPUT::out_o0'"
+    }
+   ]
+  },
+  {
+   "name": "lab-mpm-3",
+   "hlslKB": 3,
+   "hlslLoops": 0,
+   "hlslFunctions": 1,
+   "runs": [
+    {
+     "tag": "O2",
+     "flags": "/O2",
+     "ok": false,
+     "ms": 9,
+     "err": "D:\\a\\_temp\\winrep\\compile\\hlsl\\lab-mpm-3.final.ps.hlsl(42,12-17): error X3003: redefinition of 'PS_OUTPUT::out_o0'"
+    }
+   ]
+  },
+  {
+   "name": "lab-mpm-4",
+   "hlslKB": 3,
+   "hlslLoops": 0,
+   "hlslFunctions": 3,
+   "runs": [
+    {
+     "tag": "O2",
+     "flags": "/O2",
+     "ok": false,
+     "ms": 9,
+     "err": "D:\\a\\_temp\\winrep\\compile\\hlsl\\lab-mpm-4.final.ps.hlsl(40,12-16): error X3003: redefinition of 'PS_OUTPUT::out_o'"
+    }
+   ]
+  },
+  {
+   "name": "lab-mpm-5",
+   "hlslKB": 21,
+   "hlslLoops": 2,
+   "hlslFunctions": 35,
+   "runs": [
+    {
+     "tag": "O2",
+     "flags": "/O2",
+     "ok": false,
+     "ms": 10,
+     "err": "D:\\a\\_temp\\winrep\\compile\\hlsl\\lab-mpm-5.final.ps.hlsl(182,12-16): error X3003: redefinition of 'PS_OUTPUT::out_o'"
+    }
+   ]
+  },
+  {
+   "name": "lab-pt-0",
+   "hlslKB": 49,
+   "hlslLoops": 8,
+   "hlslFunctions": 75,
+   "runs": [
+    {
+     "tag": "O2",
+     "flags": "/O2",
+     "ok": false,
+     "ms": 12,
+     "err": "D:\\a\\_temp\\winrep\\compile\\hlsl\\lab-pt-0.final.ps.hlsl(720,12-21): error X3003: redefinition of 'PS_OUTPUT::out_oAccum'"
+    }
+   ]
+  },
+  {
+   "name": "lab-pt-1",
+   "hlslKB": 8,
+   "hlslLoops": 4,
+   "hlslFunctions": 17,
+   "runs": [
+    {
+     "tag": "O2",
+     "flags": "/O2",
+     "ok": false,
+     "ms": 9,
+     "err": "D:\\a\\_temp\\winrep\\compile\\hlsl\\lab-pt-1.final.ps.hlsl(100,12-16): error X3003: redefinition of 'PS_OUTPUT::out_o'"
+    }
+   ]
+  },
+  {
+   "name": "lab-pt-2",
+   "hlslKB": 9,
+   "hlslLoops": 2,
+   "hlslFunctions": 17,
+   "runs": [
+    {
+     "tag": "O2",
+     "flags": "/O2",
+     "ok": false,
+     "ms": 9,
+     "err": "D:\\a\\_temp\\winrep\\compile\\hlsl\\lab-pt-2.final.ps.hlsl(95,12-16): error X3003: redefinition of 'PS_OUTPUT::out_o'"
+    }
+   ]
+  },
+  {
+   "name": "lab-rc-0",
+   "hlslKB": 6,
+   "hlslLoops": 0,
+   "hlslFunctions": 15,
+   "runs": [
+    {
+     "tag": "O2",
+     "flags": "/O2",
+     "ok": false,
+     "ms": 9,
+     "err": "D:\\a\\_temp\\winrep\\compile\\hlsl\\lab-rc-0.final.ps.hlsl(91,10-14): error X3003: redefinition of 'PS_OUTPUT::out_o'"
+    }
+   ]
+  },
+  {
+   "name": "lab-rc-1",
+   "hlslKB": 6,
+   "hlslLoops": 4,
+   "hlslFunctions": 11,
+   "runs": [
+    {
+     "tag": "O2",
+     "flags": "/O2",
+     "ok": false,
+     "ms": 10,
+     "err": "D:\\a\\_temp\\winrep\\compile\\hlsl\\lab-rc-1.final.ps.hlsl(77,10-14): error X3003: redefinition of 'PS_OUTPUT::out_o'"
+    }
+   ]
+  },
+  {
+   "name": "lab-rc-2",
+   "hlslKB": 5,
+   "hlslLoops": 0,
+   "hlslFunctions": 9,
+   "runs": [
+    {
+     "tag": "O2",
+     "flags": "/O2",
+     "ok": false,
+     "ms": 9,
+     "err": "D:\\a\\_temp\\winrep\\compile\\hlsl\\lab-rc-2.final.ps.hlsl(71,12-16): error X3003: redefinition of 'PS_OUTPUT::out_o'"
+    }
+   ]
+  },
+  {
+   "name": "lab-rc-3",
+   "hlslKB": 8,
+   "hlslLoops": 2,
+   "hlslFunctions": 17,
+   "runs": [
+    {
+     "tag": "O2",
+     "flags": "/O2",
+     "ok": false,
+     "ms": 9,
+     "err": "D:\\a\\_temp\\winrep\\compile\\hlsl\\lab-rc-3.final.ps.hlsl(100,12-16): error X3003: redefinition of 'PS_OUTPUT::out_o'"
+    }
+   ]
+  },
+  {
+   "name": "lab-rc-4",
+   "hlslKB": 11,
+   "hlslLoops": 6,
+   "hlslFunctions": 19,
+   "runs": [
+    {
+     "tag": "O2",
+     "flags": "/O2",
+     "ok": false,
+     "ms": 9,
+     "err": "D:\\a\\_temp\\winrep\\compile\\hlsl\\lab-rc-4.final.ps.hlsl(155,12-16): error X3003: redefinition of 'PS_OUTPUT::out_o'"
+    }
+   ]
+  },
+  {
+   "name": "lab-rc-5",
+   "hlslKB": 7,
+   "hlslLoops": 2,
+   "hlslFunctions": 11,
+   "runs": [
+    {
+     "tag": "O2",
+     "flags": "/O2",
+     "ok": false,
+     "ms": 10,
+     "err": "D:\\a\\_temp\\winrep\\compile\\hlsl\\lab-rc-5.final.ps.hlsl(73,12-16): error X3003: redefinition of 'PS_OUTPUT::out_o'"
+    }
+   ]
+  },
+  {
+   "name": "lab-rc-6",
+   "hlslKB": 14,
+   "hlslLoops": 2,
+   "hlslFunctions": 31,
+   "runs": [
+    {
+     "tag": "O2",
+     "flags": "/O2",
+     "ok": false,
+     "ms": 12,
+     "err": "D:\\a\\_temp\\winrep\\compile\\hlsl\\lab-rc-6.final.ps.hlsl(187,12-16): error X3003: redefinition of 'PS_OUTPUT::out_o'"
+    }
+   ]
+  },
+  {
+   "name": "lab-rc-7",
+   "hlslKB": 4,
+   "hlslLoops": 0,
+   "hlslFunctions": 1,
+   "runs": [
+    {
+     "tag": "O2",
+     "flags": "/O2",
+     "ok": false,
+     "ms": 9,
+     "err": "D:\\a\\_temp\\winrep\\compile\\hlsl\\lab-rc-7.final.ps.hlsl(43,12-16): error X3003: redefinition of 'PS_OUTPUT::out_o'"
+    }
+   ]
+  },
+  {
+   "name": "lab-rc-8",
+   "hlslKB": 2,
+   "hlslLoops": 0,
+   "hlslFunctions": 1,
+   "runs": [
+    {
+     "tag": "O2",
+     "flags": "/O2",
+     "ok": false,
+     "ms": 9,
+     "err": "D:\\a\\_temp\\winrep\\compile\\hlsl\\lab-rc-8.final.ps.hlsl(31,12-16): error X3003: redefinition of 'PS_OUTPUT::out_o'"
+    }
+   ]
+  },
+  {
+   "name": "lab-rs-0",
+   "hlslKB": 10,
+   "hlslLoops": 2,
+   "hlslFunctions": 13,
+   "runs": [
+    {
+     "tag": "O2",
+     "flags": "/O2",
+     "ok": false,
+     "ms": 10,
+     "err": "D:\\a\\_temp\\winrep\\compile\\hlsl\\lab-rs-0.final.ps.hlsl(187,12-19): error X3003: redefinition of 'PS_OUTPUT::out_oPos'"
+    }
+   ]
+  },
+  {
+   "name": "lab-rs-1",
+   "hlslKB": 29,
+   "hlslLoops": 6,
+   "hlslFunctions": 53,
+   "runs": [
+    {
+     "tag": "O2",
+     "flags": "/O2",
+     "ok": false,
+     "ms": 10,
+     "err": "D:\\a\\_temp\\winrep\\compile\\hlsl\\lab-rs-1.final.ps.hlsl(408,12-19): error X3003: redefinition of 'PS_OUTPUT::out_oRes'"
+    }
+   ]
+  },
+  {
+   "name": "lab-rs-2",
+   "hlslKB": 27,
+   "hlslLoops": 8,
+   "hlslFunctions": 53,
+   "runs": [
+    {
+     "tag": "O2",
+     "flags": "/O2",
+     "ok": false,
+     "ms": 10,
+     "err": "D:\\a\\_temp\\winrep\\compile\\hlsl\\lab-rs-2.final.ps.hlsl(398,12-19): error X3003: redefinition of 'PS_OUTPUT::out_oRes'"
+    }
+   ]
+  },
+  {
+   "name": "lab-rs-3",
+   "hlslKB": 18,
+   "hlslLoops": 4,
+   "hlslFunctions": 31,
+   "runs": [
+    {
+     "tag": "O2",
+     "flags": "/O2",
+     "ok": false,
+     "ms": 10,
+     "err": "D:\\a\\_temp\\winrep\\compile\\hlsl\\lab-rs-3.final.ps.hlsl(279,12-16): error X3003: redefinition of 'PS_OUTPUT::out_o'"
+    }
+   ]
+  },
+  {
+   "name": "lab-rs-4",
+   "hlslKB": 5,
+   "hlslLoops": 0,
+   "hlslFunctions": 7,
+   "runs": [
+    {
+     "tag": "O2",
+     "flags": "/O2",
+     "ok": false,
+     "ms": 9,
+     "err": "D:\\a\\_temp\\winrep\\compile\\hlsl\\lab-rs-4.final.ps.hlsl(69,12-16): error X3003: redefinition of 'PS_OUTPUT::out_o'"
+    }
+   ]
+  },
+  {
+   "name": "lab-sdf-1",
+   "hlslKB": 4,
+   "hlslLoops": 0,
+   "hlslFunctions": 7,
+   "runs": [
+    {
+     "tag": "O2",
+     "flags": "/O2",
+     "ok": false,
+     "ms": 9,
+     "err": "D:\\a\\_temp\\winrep\\compile\\hlsl\\lab-sdf-1.final.ps.hlsl(62,12-23): error X3003: redefinition of 'PS_OUTPUT::out_outColor'"
+    }
+   ]
+  },
+  {
+   "name": "lab-sky-0",
+   "hlslKB": 13,
+   "hlslLoops": 10,
+   "hlslFunctions": 35,
+   "runs": [
+    {
+     "tag": "O2",
+     "flags": "/O2",
+     "ok": false,
+     "ms": 10,
+     "err": "D:\\a\\_temp\\winrep\\compile\\hlsl\\lab-sky-0.final.ps.hlsl(158,12-23): error X3003: redefinition of 'PS_OUTPUT::out_outColor'"
+    }
+   ]
+  },
+  {
+   "name": "lab-sky-1",
+   "hlslKB": 7,
+   "hlslLoops": 2,
+   "hlslFunctions": 13,
+   "runs": [
+    {
+     "tag": "O2",
+     "flags": "/O2",
+     "ok": false,
+     "ms": 9,
+     "err": "D:\\a\\_temp\\winrep\\compile\\hlsl\\lab-sky-1.final.ps.hlsl(75,12-23): error X3003: redefinition of 'PS_OUTPUT::out_outColor'"
+    }
+   ]
+  },
+  {
+   "name": "lab-sky-2",
+   "hlslKB": 12,
+   "hlslLoops": 6,
+   "hlslFunctions": 19,
+   "runs": [
+    {
+     "tag": "O2",
+     "flags": "/O2",
+     "ok": false,
+     "ms": 10,
+     "err": "D:\\a\\_temp\\winrep\\compile\\hlsl\\lab-sky-2.final.ps.hlsl(111,12-23): error X3003: redefinition of 'PS_OUTPUT::out_outColor'"
+    }
+   ]
+  },
+  {
+   "name": "lab-sky-3",
+   "hlslKB": 13,
+   "hlslLoops": 2,
+   "hlslFunctions": 25,
+   "runs": [
+    {
+     "tag": "O2",
+     "flags": "/O2",
+     "ok": false,
+     "ms": 10,
+     "err": "D:\\a\\_temp\\winrep\\compile\\hlsl\\lab-sky-3.final.ps.hlsl(129,12-23): error X3003: redefinition of 'PS_OUTPUT::out_outColor'"
+    }
+   ]
+  },
+  {
+   "name": "lab-sky-4",
+   "hlslKB": 33,
+   "hlslLoops": 8,
+   "hlslFunctions": 53,
+   "runs": [
+    {
+     "tag": "O2",
+     "flags": "/O2",
+     "ok": false,
+     "ms": 11,
+     "err": "D:\\a\\_temp\\winrep\\compile\\hlsl\\lab-sky-4.final.ps.hlsl(347,12-23): error X3003: redefinition of 'PS_OUTPUT::out_outColor'"
+    }
+   ]
+  },
+  {
+   "name": "lab-sky-5",
+   "hlslKB": 9,
+   "hlslLoops": 4,
+   "hlslFunctions": 17,
+   "runs": [
+    {
+     "tag": "O2",
+     "flags": "/O2",
+     "ok": false,
+     "ms": 10,
+     "err": "D:\\a\\_temp\\winrep\\compile\\hlsl\\lab-sky-5.final.ps.hlsl(99,12-23): error X3003: redefinition of 'PS_OUTPUT::out_outColor'"
+    }
+   ]
+  },
+  {
+   "name": "lab-sky-6",
+   "hlslKB": 30,
+   "hlslLoops": 2,
+   "hlslFunctions": 49,
+   "runs": [
+    {
+     "tag": "O2",
+     "flags": "/O2",
+     "ok": false,
+     "ms": 10,
+     "err": "D:\\a\\_temp\\winrep\\compile\\hlsl\\lab-sky-6.final.ps.hlsl(366,12-23): error X3003: redefinition of 'PS_OUTPUT::out_outColor'"
+    }
+   ]
+  }
+ ]
+}
