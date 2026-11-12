@@ -357,7 +357,7 @@ def fig_vanishing():
     # horizon line a u + b v + c = 0
     us = np.array([-1100, 1500])
     ax.plot(us, -(horizon[0] * us + horizon[2]) / horizon[1], color=C["a"], lw=2.4)
-    ax.text(-1050, -(horizon[0] * -1050 + horizon[2]) / horizon[1] - 25, r"$\mathbf{l}_\infty=K^{-\top}R\,\mathbf{n}$",
+    ax.text(-1050, -(horizon[0] * -1050 + horizon[2]) / horizon[1] - 25, r"$\mathbf{l}=K^{-\top}R\,\mathbf{n}$",
             color=C["a"], fontsize=16)
     ax.add_patch(plt.Rectangle((0, 0), W, H, fill=False, ec=C["dark"], lw=2.6))
     for v, name, col in ((vx, r"$\mathbf{v}_X$", C["x"]), (vy, r"$\mathbf{v}_Y$", C["y"])):
