@@ -26,18 +26,33 @@ jobs:
         shell: bash
         run: |
           cd ops/win && npm init -y >/dev/null && npm install --silent playwright@1.49.1
-      - name: Measure
+      - name: Compile cost per program (Chrome, ANGLE D3D11)
         shell: bash
         env:
           REPORT_DIR: ${{ runner.temp }}/winrep
         run: |
-          cd ops/win && node measure.js 2>&1 | tee "$RUNNER_TEMP/measure.txt" || true
+          cd ops/win
+          SYNC=1 node compile.js 2>&1 | tee "$RUNNER_TEMP/compile.txt" || true
+          OUTNAME=compile-rep2.json node compile.js sdf- 2>&1 | tee -a "$RUNNER_TEMP/compile.txt" || true
+      - name: FXC on the translated HLSL
+        shell: bash
+        env:
+          REPORT_DIR: ${{ runner.temp }}/winrep
+        run: |
+          cd ops/win && node fxc.js 2>&1 | tee "$RUNNER_TEMP/fxc.txt" || true
+      - name: Measure
+        shell: bash
+        env:
+          REPORT_DIR: ${{ runner.temp }}/winrep
+          CONFIGS: d3d11
+        run: |
+          cd ops/win && node measure.js orig merged parallel fix 2>&1 | tee "$RUNNER_TEMP/measure.txt" || true
       - name: Publish report
         shell: bash
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          REP="$RUNNER_TEMP/winrep"; mkdir -p "$REP"; cp "$RUNNER_TEMP/measure.txt" "$REP/" || true
+          REP="$RUNNER_TEMP/winrep"; mkdir -p "$REP"; cp "$RUNNER_TEMP/measure.txt" "$RUNNER_TEMP/compile.txt" "$RUNNER_TEMP/fxc.txt" "$REP/" || true
           cd "$REP" && git init -q && git add -A \
             && git -c user.name=yangzehua -c user.email=yangzehua@akane.waseda.jp commit -q -m "windows shader report" \
             && git -c http.extraheader="AUTHORIZATION: basic $(printf 'x-access-token:%s' "$GH_TOKEN" | base64 -w0)" \
