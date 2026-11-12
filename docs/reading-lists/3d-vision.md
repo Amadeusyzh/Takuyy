@@ -115,3 +115,79 @@
 - OpenCV USAC 教程：https://docs.opencv.org/5.0/tutorials/calib3d/usac.html
 - 代码：https://github.com/cvg/LightGlue 、https://github.com/magicleap/SuperGluePretrainedNetwork 、https://github.com/Parskatt/RoMa 、https://github.com/danini/magsac 、https://github.com/princeton-vl/RAFT
 - 基准：https://github.com/hpatches 、https://vision.uvic.ca/image-matching-challenge/
+
+## 07 深度估计与多视图立体
+
+建议顺序：Scharstein & Szeliski（立体分类体系）→ Collins（平面扫描）→ Okutomi & Kanade（多基线）→ Bleyer 等（倾斜窗口 PatchMatch）→ Schönberger 等（COLMAP MVS）→ Curless & Levoy、KinectFusion（TSDF 融合）→ MVSNet → CasMVSNet / PatchmatchNet → Eigen 等 → MiDaS → Depth Anything 系列与度量深度模型。最后一组为 2024–2026 年的工作，状态截至 2026 年 11 月。
+
+### 立体、平面扫描与 PatchMatch MVS
+
+| 论文 | 会议/期刊 | 年份 | 链接 | 说明 |
+| --- | --- | --- | --- | --- |
+| A multiple-baseline stereo (Okutomi, Kanade) | TPAMI | 1993 | https://doi.org/10.1109/34.206955 | 在逆距离上对多条基线的 SSD 求和，消除重复纹理的歧义 |
+| A space-sweep approach to true multi-image matching (Collins) | CVPR | 1996 | https://doi.org/10.1109/CVPR.1996.517097 | 平面扫描：让平面扫过空间，同时匹配多幅图像 |
+| Handling occlusions in dense multi-view stereo (Kang, Szeliski, Chai) | CVPR | 2001 | https://doi.org/10.1109/CVPR.2001.990462 | 可移动窗口与逐像素视图子集，处理遮挡 |
+| A taxonomy and evaluation of dense two-frame stereo correspondence algorithms (Scharstein, Szeliski) | IJCV | 2002 | https://doi.org/10.1023/A:1014573219977 | 代价、聚合、优化、细化四步分类；Middlebury 基准 |
+| Stereo processing by semiglobal matching and mutual information (Hirschmüller) | TPAMI | 2008 | https://doi.org/10.1109/TPAMI.2007.1166 | SGM：多方向一维动态规划 |
+| PatchMatch: a randomized correspondence algorithm for structural image editing (Barnes et al.) | ACM TOG (SIGGRAPH) | 2009 | https://doi.org/10.1145/1531326.1531330 | 随机初始化 + 传播 + 随机搜索 |
+| Accurate, dense, and robust multiview stereopsis (Furukawa, Ponce) | TPAMI | 2010 | https://doi.org/10.1109/TPAMI.2009.161 | PMVS：匹配、扩展、过滤的面片式 MVS |
+| PatchMatch stereo: stereo matching with slanted support windows (Bleyer, Rhemann, Rother) | BMVC | 2011 | https://doi.org/10.5244/C.25.14 | 逐像素倾斜平面，消除正对平面偏置 |
+| Massively parallel multiview stereopsis by surface normal diffusion (Galliani, Lasinger, Schindler) | ICCV | 2015 | https://doi.org/10.1109/ICCV.2015.106 | Gipuma：红黑棋盘传播，GPU 并行 |
+| Pixelwise view selection for unstructured multi-view stereo (Schönberger et al.) | ECCV | 2016 | https://doi.org/10.1007/978-3-319-46487-9_31 | COLMAP MVS：深度、法向与视图选择联合估计，几何一致性 |
+| Multi-scale geometric consistency guided multi-view stereo (Xu, Tao) | CVPR | 2019 | https://arxiv.org/abs/1904.08103 | ACMM：自适应棋盘采样 + 多尺度几何一致性 |
+
+### 深度传感器与深度融合
+
+| 论文 | 会议/期刊 | 年份 | 链接 | 说明 |
+| --- | --- | --- | --- | --- |
+| A volumetric method for building complex models from range images (Curless, Levoy) | SIGGRAPH | 1996 | https://doi.org/10.1145/237170.237269 | TSDF：截断符号距离的加权平均融合 |
+| Structured-light 3D surface imaging: a tutorial (Geng) | Advances in Optics and Photonics | 2011 | https://doi.org/10.1364/AOP.3.000128 | 结构光编码（格雷码、相移、伪随机）综述 |
+| KinectFusion: real-time dense surface mapping and tracking (Newcombe et al.) | ISMAR | 2011 | https://doi.org/10.1109/ISMAR.2011.6092378 | 实时 TSDF 融合 + 对模型的 ICP 跟踪 |
+| Real-time 3D reconstruction at scale using voxel hashing (Nießner et al.) | ACM TOG (SIGGRAPH Asia) | 2013 | https://doi.org/10.1145/2508363.2508374 | 体素哈希：只在表面附近分配 TSDF 块 |
+| Time-of-Flight Cameras: Principles, Methods and Applications (Hansard, Lee, Choi, Horaud) | Springer（书） | 2012 | — | ToF 相机的原理、误差来源与标定 |
+
+### 学习式立体与 MVS
+
+| 论文 | 会议/期刊 | 年份 | 链接 | 说明 |
+| --- | --- | --- | --- | --- |
+| End-to-end learning of geometry and context for deep stereo regression (Kendall et al.) | ICCV | 2017 | https://arxiv.org/abs/1703.04309 | GC-Net：3D CNN 代价体 + soft-argmin |
+| MVSNet: depth inference for unstructured multi-view stereo (Yao et al.) | ECCV | 2018 | https://arxiv.org/abs/1804.02505 | 可微单应变换 + 方差代价体 + 3D U-Net |
+| Recurrent MVSNet for high-resolution multi-view stereo depth inference (Yao et al.) | CVPR | 2019 | https://arxiv.org/abs/1902.10556 | 用 GRU 逐深度切片正则化，显存与深度数无关 |
+| Cascade cost volume for high-resolution multi-view stereo and stereo matching (Gu et al.) | CVPR | 2020 | https://arxiv.org/abs/1912.06378 | CasMVSNet：由粗到细缩小深度范围 |
+| PatchmatchNet: learned multi-view patchmatch stereo (Wang et al.) | CVPR | 2021 | https://arxiv.org/abs/2012.01411 | 可学习的迭代 PatchMatch，无完整代价体 |
+| RAFT-Stereo: multilevel recurrent field transforms for stereo matching (Lipson, Teed, Deng) | 3DV | 2021 | https://arxiv.org/abs/2109.07547 | 相关金字塔 + 多级 GRU 迭代更新视差 |
+| FoundationStereo: zero-shot stereo matching (Wen et al.) | CVPR | 2025 | https://arxiv.org/abs/2501.09898 | 引入冻结的 Depth Anything V2 特征，零样本立体 |
+
+### 单目深度
+
+| 论文 | 会议/期刊 | 年份 | 链接 | 说明 |
+| --- | --- | --- | --- | --- |
+| Depth map prediction from a single image using a multi-scale deep network (Eigen, Puhrsch, Fergus) | NeurIPS | 2014 | https://arxiv.org/abs/1406.2283 | 第一个深度单目深度网络；尺度不变对数损失 |
+| Digging into self-supervised monocular depth estimation (Godard et al.) | ICCV | 2019 | https://arxiv.org/abs/1806.01260 | Monodepth2：最小重投影误差 + 自动掩膜 |
+| Vision transformers for dense prediction (Ranftl, Bochkovskiy, Koltun) | ICCV | 2021 | https://arxiv.org/abs/2103.13413 | DPT：ViT 主干的稠密预测 |
+| Towards robust monocular depth estimation: mixing datasets for zero-shot cross-dataset transfer (Ranftl et al.) | TPAMI | 2022 | https://arxiv.org/abs/1907.01341 | MiDaS：仿射不变逆深度损失，混合多数据集训练 |
+| Depth Anything: unleashing the power of large-scale unlabeled data (Yang et al.) | CVPR | 2024 | https://arxiv.org/abs/2401.10891 | 大规模无标注图像伪标注，相对深度 |
+| Repurposing diffusion-based image generators for monocular depth estimation (Ke et al.) | CVPR | 2024 | https://arxiv.org/abs/2312.02145 | Marigold：微调 Stable Diffusion 生成深度 |
+| UniDepth: universal monocular metric depth estimation (Piccinelli et al.) | CVPR | 2024 | https://arxiv.org/abs/2403.18913 | 自提示相机模块，无需内参的度量深度 |
+| Metric3D v2: a versatile monocular geometric foundation model (Hu et al.) | TPAMI | 2024 | https://arxiv.org/abs/2404.15506 | 规范相机空间，度量深度与法向 |
+| Depth Anything V2 (Yang et al.) | NeurIPS | 2024 | https://arxiv.org/abs/2406.09414 | 合成数据训练教师，细节更好 |
+| Depth Pro: sharp monocular metric depth in less than a second (Bochkovskii et al.) | ICLR | 2025 | https://arxiv.org/abs/2410.02073 | 零样本度量深度 + 焦距估计，边界锐利 |
+| MoGe: unlocking accurate monocular geometry estimation for open-domain images (Wang et al.) | CVPR | 2025 | https://arxiv.org/abs/2410.19115 | 仿射不变点图，联合恢复焦距与偏移 |
+| Video Depth Anything: consistent depth estimation for super-long videos (Chen et al.) | CVPR | 2025 | https://arxiv.org/abs/2501.12375 | 时空头，长视频深度一致 |
+| Depth Anything 3: recovering the visual space from any views (Lin et al.) | ICLR 2026（arXiv 2025 年 11 月） | 2026 | https://arxiv.org/abs/2511.10647 | 单个 Transformer 从任意视图预测深度与位姿（衔接第 9 篇） |
+
+### 评测基准
+
+| 论文 | 会议/期刊 | 年份 | 链接 | 说明 |
+| --- | --- | --- | --- | --- |
+| Large scale multi-view stereopsis evaluation (Jensen et al.) | CVPR | 2014 | https://doi.org/10.1109/CVPR.2014.59 | DTU：转台物体 + 结构光参考扫描 |
+| A multi-view stereo benchmark with high-resolution images and multi-camera videos (Schöps et al.) | CVPR | 2017 | https://doi.org/10.1109/CVPR.2017.272 | ETH3D：高分辨率室内外场景，激光扫描真值 |
+| Tanks and Temples: benchmarking large-scale scene reconstruction (Knapitsch et al.) | ACM TOG (SIGGRAPH) | 2017 | https://doi.org/10.1145/3072959.3073599 | 精确率 / 召回率 / F 分数 |
+
+### 课程、书与代码
+
+- Szeliski《Computer Vision: Algorithms and Applications》第 2 版第 12–13 章（深度估计、三维重建）：https://szeliski.org/Book/
+- Furukawa & Hernández《Multi-View Stereo: A Tutorial》（Foundations and Trends in Computer Graphics and Vision，2015）。
+- Hartley & Zisserman《Multiple View Geometry》第 13.1 节：平面诱导的单应。
+- 代码：https://github.com/colmap/colmap 、https://github.com/cdcseacave/openMVS 、https://github.com/isl-org/Open3D 、https://github.com/YoYo000/MVSNet 、https://github.com/alibaba/cascade-stereo 、https://github.com/FangjinhuaWang/PatchmatchNet 、https://github.com/DepthAnything/Depth-Anything-V2 、https://github.com/apple/ml-depth-pro 、https://github.com/lpiccinelli-eth/UniDepth
+- 基准：https://vision.middlebury.edu/stereo/ 、https://www.eth3d.net/ 、https://www.tanksandtemples.org/
