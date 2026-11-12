@@ -107,7 +107,7 @@ Output: `area 15.7914  volume 3.1583` and `max |sdf| at the samples: 3.3e-16`. T
 A **depth map** stores one number per pixel. The convention matters, because three different numbers are all called "depth":
 
 - **$z$-depth** $Z$: the coordinate along the optical axis in the camera frame, the $\lambda = Z\_c$ of $\lambda\tilde{\mathbf u} = K[R \mid \mathbf t]\tilde{\mathbf X}$ in [post 1]({{ '/blog/2026/3d-vision-01-image-formation-and-camera-models/' | relative_url }}). Depth cameras, stereo ([post 7]({{ '/blog/2026/3d-vision-07-depth-estimation-and-multi-view-stereo/' | relative_url }})) and most datasets store this.
-- **range** $\rho$: the Euclidean distance from the camera centre to the point, measured along the ray. Ray tracers, NeRF's ray parameter and LiDAR return this. Since $K^{-1}\tilde{\mathbf u}$ has third component 1, the point is $Z\,K^{-1}\tilde{\mathbf u}$, so $\rho = Z\,\lVert K^{-1}\tilde{\mathbf u}\rVert$. The two agree at the principal point and differ by 22.6% at the corner of the camera below.
+- **range** $\rho$: the Euclidean distance from the camera centre to the point, measured along the ray. Ray tracers and LiDAR return this, and so does a ray parameter $t$ whenever the ray direction has unit length. (The original NeRF code does not normalize its ray directions, which have unit $z$ component, so its $t$ is $z$-depth; check the convention of any codebase you use.) Since $K^{-1}\tilde{\mathbf u}$ has third component 1, the point is $Z\,K^{-1}\tilde{\mathbf u}$, so $\rho = Z\,\lVert K^{-1}\tilde{\mathbf u}\rVert$. The two agree at the principal point and differ by 22.6% at the corner of the camera below.
 - **inverse depth** (or **disparity**) $1/Z$: stereo measures disparity $d = f b / Z$ for baseline $b$, and many networks predict inverse depth because it is bounded (zero at infinity) and because its error is closer to uniform than the error of $Z$.
 
 Mixing $Z$ and $\rho$ bends planes into curved surfaces, an error that is easy to miss near the image centre and large at the edges.
@@ -393,7 +393,7 @@ The price is **topology**. A mesh fixes how the surface is connected. Merging tw
 A mesh with vertices exactly on a smooth surface is a piecewise-linear interpolant, and its error is the **sagitta**: a chord of length $s$ across a circle of radius $\rho$ bulges away from the arc by
 
 $$
-\delta = \rho\big(1 - \cos(\Delta/2)\big) \approx \frac{s^2}{8\rho}, \qquad \Delta = s/\rho \text{ the angle the chord spans}.
+\delta = \rho\big(1 - \cos(\Delta/2)\big) \approx \frac{s^2}{8\rho}, \qquad \Delta \text{ the angle the chord spans}, \ s = 2\rho\sin(\Delta/2) \approx \rho\Delta .
 $$
 
 So the error falls with the **square** of the edge length. For a surface of area $A$ meshed with edges of length $s$, the number of triangles is $F \approx 2A/(\tfrac{\sqrt 3}{2}s^2) \propto s^{-2}$, hence $\delta \propto F^{-1}$: doubling the triangle count halves the error. For our torus meshed as an $n \times m$ grid of the angles $(\varphi, \theta)$, the largest bulge comes from the outer equator, a circle of radius $R + r$ divided into $n$ chords, plus the tube circle of radius $r$ divided into $m$ chords: $\delta\_{\max} \lesssim (R + r)(1 - \cos\frac{\pi}{n}) + r(1 - \cos\frac{\pi}{m})$.
@@ -489,7 +489,7 @@ N= 64  occupied   30544 (11.65%)  surface   5928  volume err -0.39%  bits    32.
 N=128  occupied  245408 (11.70%)  surface  24144  volume err +0.04%  bits   262.1 kB  floats   8388.6 kB
 ```
 
-Two observations. First, the **volume** is estimated well even at $N = 16$ (1.5% error), because errors on the two sides of the surface cancel. The **surface** position is a different matter: the voxel boundary is a staircase whose distance to the true surface is somewhat below $h/4$ on average and up to about $h/2$, so halving the error requires 8 times the memory (section 6 measures this). Second, the number of surface voxels grows as $N^2$ (it quadruples from one row to the next) while the grid grows as $N^3$. At $N = 128$ only 1% of the voxels touch the surface. A dense grid spends almost all of its memory on empty space and on the interior, and storing float32 values instead of bits costs 32 times more.
+Two observations. First, the **volume** is estimated well even at $N = 16$ (1.5% error), because errors on the two sides of the surface cancel. The **surface** position is a different matter: the voxel boundary is a staircase whose distance to the true surface is somewhat below $h/4$ on average and up to about $0.8h$ at the corners of the steps (at most $\sqrt 3\, h/2$), so halving the error requires 8 times the memory (section 6 measures this). Second, the number of surface voxels grows as $N^2$ (it quadruples from one row to the next) while the grid grows as $N^3$. At $N = 128$ only 1% of the voxels touch the surface. A dense grid spends almost all of its memory on empty space and on the interior, and storing float32 values instead of bits costs 32 times more.
 
 ### 5.2 Probabilistic occupancy and log-odds
 
@@ -549,7 +549,7 @@ for z in ("hit", "hit", "hit", "miss"):
     print("%-4s l = %+.3f  p = %.3f" % (z, l, 1 / (1 + np.exp(-l))))
 ```
 
-Output: nodes per level `[1, 8, 64, 256, 1664, 6784, 25728, 95936, 402176]`, in total `532617 nodes vs 16777216 dense voxels at 256^3 (3.17%)`. From level 4 on, each level has about 4 times as many nodes as the previous one, not 8: the octree grows with the surface area, as $4^L$, while the dense grid grows with the volume, as $8^L$. The deeper the tree, the larger the saving in cells.
+Output: nodes per level `[1, 8, 64, 256, 1664, 6784, 25728, 95936, 402176]`, in total `532617 nodes vs 16777216 dense voxels at 256^3 (3.17%)`. From level 5 on, each level has about 4 times as many nodes as the previous one, not 8: the octree grows with the surface area, as $4^L$, while the dense grid grows with the volume, as $8^L$. The deeper the tree, the larger the saving in cells.
 
 Whether that saves *bytes* depends on what a dense cell costs. A pointer-based node takes several bytes; at 8 bytes per node, the octree down to level 7 (130,441 nodes, the resolution of a $128^3$ grid) takes 1.04 MB, four times more than the bit-packed $128^3$ occupancy grid (262 kB), but eight times less than a $128^3$ grid of float32 values (8.4 MB). Robot maps store a float log-odds per cell and TSDFs store a distance and a weight, so against the grids they would otherwise need, the octree wins at once, and its advantage grows by a factor of 2 with every further level.
 
@@ -628,7 +628,7 @@ TSDF band: voxels with |sdf| < 3h at N=128: 8.03% of the grid
 
 The zero crossings (the vertices that marching cubes would create) are off the true surface by 0.00248 on average at $N = 16$, which is 1.3% of a voxel, and each halving of $h$ divides the error by about 4. Conversely, the interpolated field $\hat f$ evaluated on the true surface (where the exact $f$ is zero) is off by 0.00746 at $N = 16$, again falling as $h^2$. The single query point shows the same effect: at a point just inside the tube, interpolation between vertices $0.19$ apart is off by $0.006$.
 
-{% include blog_figure.liquid path="assets/img/blog/3d-vision/08-sdf-vs-occupancy.svg" localized="true" caption="The cross-section $y = 0$ of the torus (two discs of radius 0.4) at $16^3$ resolution. Left: occupancy, the voxels whose centres are inside; the boundary is a staircase. Middle: the SDF sampled at the $17^2$ grid vertices of the plane (dots), interpolated bilinearly, with its zero level (orange) on top of the true circles (dashed, almost hidden). Right: the mean two-sided surface error against the voxel size $h$ in 3D. Occupancy stays just below $h/4$ (from 0.032 at $N = 16$ to 0.0046 at $N = 128$); the interpolated SDF follows $h^2$ (from 0.020 at $N = 8$ to 0.00008 at $N = 128$)." %}
+{% include blog_figure.liquid path="assets/img/blog/3d-vision/08-sdf-vs-occupancy.svg" localized="true" caption="The cross-section $y = 0$ of the torus (two discs of radius 0.4) at $16^3$ resolution. Left: occupancy, the voxels whose centres are inside; the boundary is a staircase. Middle: the SDF sampled at the $17^2$ grid vertices of the plane (dots), interpolated bilinearly, with its zero level (orange) on top of the true circles (dashed, almost hidden). Right: the mean two-sided surface error against the voxel size $h$ in 3D. Occupancy stays near $h/5$, between $0.17h$ and $0.22h$ (from 0.032 at $N = 16$ to 0.0046 at $N = 128$); the interpolated SDF follows $h^2$ (from 0.020 at $N = 8$ to 0.00008 at $N = 128$)." %}
 
 The price is memory, 32 bits per vertex instead of 1 bit per voxel, and two limitations. **Thin structures** thinner than about two voxels can vanish, because no vertex lands inside them and the sign never changes. **Sharp edges and corners** are rounded off, because trilinear interpolation cannot represent a crease inside a cell (marching cubes variants such as dual contouring store gradients to fix this).
 
@@ -654,7 +654,7 @@ A full, untruncated distance field (a Euclidean SDF, **ESDF**) is what motion pl
 
 Instead of sampling $f$ on a grid, a **neural field** represents it with a network $f\_\theta : \mathbb R^3 \to \mathbb R$ (or to occupancy, density and colour): a coordinate goes in, a value comes out. The main families:
 
-- **Occupancy networks** (Mescheder et al. 2019) output the probability that $\mathbf x$ is inside; the surface is the level set $0.5$.
+- **Occupancy networks** (Mescheder et al. 2019) output the probability that $\mathbf x$ is inside; the surface is the level set of that probability at a threshold $\tau$, such as $0.5$.
 - **DeepSDF** (Park et al. 2019) outputs a signed distance. It conditions the network on a per-shape latent code $\mathbf z$, $f\_\theta(\mathbf x, \mathbf z)$, so one network represents a whole category of shapes, and fitting a new shape means optimizing only $\mathbf z$.
 - **NeRF** (Mildenhall et al. 2020) outputs density and view-dependent colour and is trained through volume rendering from images ([neural rendering post 2]({{ '/blog/2026/neural-rendering-02-nerf/' | relative_url }})). Its geometry is a density field rather than a surface; NeuS-style methods in [post 9]({{ '/blog/2026/3d-vision-09-3d-reconstruction-classic-to-feed-forward/' | relative_url }}) turn it back into an SDF.
 
@@ -768,7 +768,7 @@ grid 70x70      4900 floats  mean |error| 0.0007  near the boundary 0.0008  IoU 
 Three lessons, all of which carry over to 3D.
 
 1. **Spectral bias is real.** Without the encoding, the network cannot produce the teeth in 4000 steps.
-2. **More frequencies is not better.** With $L = 6$, the network can represent frequencies far above what the shape needs, and fits noise between the training samples. This is why later methods use fewer bands, anneal them in during training (coarse to fine), or use other activations, such as SIREN's sines (Sitzmann et al. 2020).
+2. **More frequencies is not better.** With $L = 6$, the network can represent frequencies far above what the shape needs. Every step draws fresh random points, so this is not overfitting to a fixed training set: within the fixed budget of 4000 steps, the high-frequency components are not damped out and remain as ripples over the whole field, and the optimization itself becomes harder (exercise 5). This is why later methods use fewer bands, anneal them in during training (coarse to fine), or use other activations, such as SIREN's sines (Sitzmann et al. 2020).
 3. **A single small network is not a compact way to store one shape.** The plain grid of the same size wins by an order of magnitude. Neural fields earn their place elsewhere: when the field is high-dimensional (NeRF's 5D radiance), when one network with latent codes represents many shapes (DeepSDF), when the representation must be fitted through a differentiable renderer, and when a network is combined with a grid. Hybrids such as Instant-NGP's multiresolution hash grid ([neural rendering post 3]({{ '/blog/2026/neural-rendering-03-fast-radiance-fields/' | relative_url }})) store features in grids and use a tiny MLP only to decode them, which gets the accuracy of grids and the flexibility of networks.
 
 For neural SDFs, nothing in a plain regression loss forces $f\_\theta$ to be a distance away from the training points. The **eikonal loss** $\mathbb E\_{\mathbf x}\big(\lVert\nabla\_{\mathbf x} f\_\theta(\mathbf x)\rVert - 1\big)^2$ (IGR, Gropp et al. 2020) adds that constraint, which also makes it possible to fit an SDF to a raw point cloud, with $f\_\theta = 0$ at the points as the only data term.
@@ -849,7 +849,7 @@ Two rules of thumb. Conversions **toward implicit** representations (points → 
 
 We can now put the representations on one chart. For each one, at a range of resolutions, we compute its memory and its **mean two-sided surface error**: half the mean distance from its surface to the true surface plus half the mean distance from the true surface to its surface (the Chamfer distance of section 3.3, but evaluated against the representation's continuous surface wherever it has one). For points, the "surface" is the points themselves; for occupancy, the voxel staircase; for SDF grids, the zero level of the interpolated field; for meshes, the triangles. Memory uses float32 coordinates and values, int32 indices and one bit per voxel. The "sparse SDF" stores only the $8^3$ blocks that contain a cell crossed by the surface, as voxel hashing would.
 
-{% include blog_figure.liquid path="assets/img/blog/3d-vision/08-tradeoff.svg" localized="true" caption="Memory against mean two-sided surface error for the torus. Points: 500 to 50,000 exact samples (error 0.044 to 0.0044). Meshes: $8 \times 4$ to $128 \times 64$ (0.093 to 0.0004). Occupancy: $16^3$ to $128^3$ bits (0.032 to 0.0046). Dense SDF: $8^3$ to $128^3$ cells of float32 (0.020 to 0.00008). Sparse SDF: the same values stored only in $8^3$ blocks that touch the surface, 1.5 MB instead of 8.6 MB at $128^3$. Slopes on this log-log plot: points $-1/2$, occupancy $-1/3$, dense SDF $-2/3$, mesh and sparse SDF $-1$." %}
+{% include blog_figure.liquid path="assets/img/blog/3d-vision/08-tradeoff.svg" localized="true" caption="Memory against mean two-sided surface error for the torus. Points: 500 to 50,000 exact samples (error 0.044 to 0.0044). Meshes: $8 \times 4$ to $128 \times 64$ (0.093 to 0.0004). Occupancy: $16^3$ to $128^3$ bits (0.032 to 0.0046). Dense SDF: $8^3$ to $128^3$ cells of float32 (0.020 to 0.00008). Sparse SDF: the same values stored only in $8^3$ blocks that touch the surface, 1.5 MB instead of 8.6 MB at $128^3$. Slopes on this log-log plot: points $-1/2$, occupancy $-1/3$, dense SDF $-2/3$, mesh $-1$, and sparse SDF approaching $-1$ at fine resolution (its $8^3$ blocks are coarse at small $N$)." %}
 
 ### 10.2 Scaling laws
 
@@ -897,10 +897,10 @@ The questions to ask, in order: What queries will be made most often (render, in
 A network that consumes a point cloud must give the same output for any ordering of its points. **PointNet** (Qi et al. 2017) achieves this with the simplest possible architecture: apply the **same** small MLP $h$ to every point independently, then combine the results with a **symmetric** function, an element-wise maximum over points:
 
 $$
-g(\{\mathbf p_1, \dots, \mathbf p_n\}) = \gamma\Big(\max_{i} h(\mathbf p_i)\Big).
+g(\{\mathbf p_1, \dots, \mathbf p_n\}) = \psi\Big(\max_{i} h(\mathbf p_i)\Big).
 $$
 
-Because max does not care about order, $g$ is permutation invariant by construction. Each of the $K$ channels of the max is "won" by one point, so at most $K$ points determine the global feature; the paper calls them the **critical points**, and every other point can be deleted or moved a little without changing the output.
+Here $\psi$ is a second MLP applied to the pooled vector (the paper calls it $\gamma$; we rename it to avoid a clash with the positional encoding of section 7.2). Because max does not care about order, $g$ is permutation invariant by construction. Each of the $K$ channels of the max is "won" by one point, so at most $K$ points determine the global feature; the paper calls them the **critical points**, and every other point can be deleted or moved a little without changing the output.
 
 ```python
 def pointnet_feature(P, Ws):
@@ -971,7 +971,7 @@ Point-based and sparse-voxel networks have since converged. Current point cloud 
 | Fan, Su, Guibas: A point set generation network | CVPR | 2017 | [arXiv](https://arxiv.org/abs/1612.00603) | Predicting point clouds; popularized Chamfer and EMD losses |
 | Knapitsch, Park, Zhou, Koltun: Tanks and Temples | ACM TOG | 2017 | [DOI](https://doi.org/10.1145/3072959.3073599) | Precision, recall and F-score for reconstructions |
 | Oleynikova et al.: Voxblox | IROS | 2017 | [arXiv](https://arxiv.org/abs/1611.03631) | Incremental ESDFs built from TSDFs for planning |
-| Graham, Engelcke, van der Maaten: Submanifold sparse convolutional networks | CVPR | 2018 | [arXiv](https://arxiv.org/abs/1711.10275) | Sparse convolution that keeps the sparsity pattern |
+| Graham, Engelcke, van der Maaten: 3D semantic segmentation with submanifold sparse convolutional networks | CVPR | 2018 | [arXiv](https://arxiv.org/abs/1711.10275) | Sparse convolution that keeps the sparsity pattern |
 | Zhou et al.: Stereo magnification (multiplane images) | SIGGRAPH (ACM TOG) | 2018 | [arXiv](https://arxiv.org/abs/1805.09817) | MPIs predicted by a CNN for view synthesis |
 | Mescheder et al.: Occupancy networks | CVPR | 2019 | [arXiv](https://arxiv.org/abs/1812.03828) | Shape as the decision boundary of a classifier |
 | Park et al.: DeepSDF | CVPR | 2019 | [arXiv](https://arxiv.org/abs/1901.05103) | Neural SDFs with latent codes for whole shape categories |
@@ -1021,7 +1021,7 @@ Point-based and sparse-voxel networks have since converged. Current point cloud 
 
    <details markdown="1"><summary>Hint</summary>
 
-   The solid angle of a triangle $\mathbf a, \mathbf b, \mathbf c$ (relative to $\mathbf p$) is $2\,\mathrm{atan2}\big(\mathbf a \cdot (\mathbf b \times \mathbf c),\ abc + (\mathbf a\cdot\mathbf b)c + (\mathbf b\cdot\mathbf c)a + (\mathbf c\cdot\mathbf a)b\big)$ with $a = \lVert\mathbf a\rVert$ and so on (Van Oosterom and Strackee). $w \approx 1$ inside and $0$ outside for a closed, consistently oriented mesh; it degrades gracefully for meshes with small holes, unlike ray parity. The difference from `sdf_torus` should be at most the sagitta, 0.0016.
+   The solid angle of a triangle $\mathbf a, \mathbf b, \mathbf c$ (relative to $\mathbf p$) is $2\,\mathrm{atan2}\big(\mathbf a \cdot (\mathbf b \times \mathbf c),\ abc + (\mathbf a\cdot\mathbf b)c + (\mathbf b\cdot\mathbf c)a + (\mathbf c\cdot\mathbf a)b\big)$ with $a = \lVert\mathbf a\rVert$ and so on (Van Oosterom and Strackee). $w \approx 1$ inside and $0$ outside for a closed, consistently oriented mesh; it degrades gracefully for meshes with small holes, unlike ray parity. The difference from `sdf_torus` should stay within about the sagitta, 0.0016.
    </details>
 
 5. Repeat the neural field experiment of section 7 with a smaller learning rate or more steps for $L = 6$, and with $L = 4$. Does the noise of $L = 6$ go away with more training? Then add an eikonal penalty $\lambda(\lVert\nabla\_{\mathbf x} f\_\theta\rVert - 1)^2$; how would you compute $\nabla\_{\mathbf x} f\_\theta$ in the NumPy network?

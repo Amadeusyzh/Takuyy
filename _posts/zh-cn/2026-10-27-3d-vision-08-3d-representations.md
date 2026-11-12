@@ -107,7 +107,7 @@ print("max |sdf| at the samples: %.1e" % np.abs(sdf_torus(P_true)).max())
 **深度图**（depth map）每个像素存一个数。约定很重要，因为有三种不同的数都叫"深度"：
 
 - **$z$ 深度** $Z$：相机坐标系中沿光轴的坐标，即[第 1 篇]({{ '/blog/2026/3d-vision-01-image-formation-and-camera-models/' | relative_url }}) $\lambda\tilde{\mathbf u} = K[R \mid \mathbf t]\tilde{\mathbf X}$ 中的 $\lambda = Z\_c$。深度相机、双目（[第 7 篇]({{ '/blog/2026/3d-vision-07-depth-estimation-and-multi-view-stereo/' | relative_url }})）和大多数数据集存的是它。
-- **距离**（range）$\rho$：沿光线从相机中心到该点的欧氏距离。光线追踪器、NeRF 的光线参数和 LiDAR 返回的是它。由于 $K^{-1}\tilde{\mathbf u}$ 的第三个分量为 1，该点为 $Z\,K^{-1}\tilde{\mathbf u}$，所以 $\rho = Z\,\lVert K^{-1}\tilde{\mathbf u}\rVert$。二者在主点处相等，在下面这台相机的图像角上相差 22.6%。
+- **距离**（range）$\rho$：沿光线从相机中心到该点的欧氏距离。光线追踪器和 LiDAR 返回的是它；当光线方向为单位长度时，光线参数 $t$ 也是它。（原始 NeRF 代码不归一化光线方向，其 $z$ 分量为单位长度，所以它的 $t$ 是 $z$ 深度；使用任何代码库时都要核对其约定。）由于 $K^{-1}\tilde{\mathbf u}$ 的第三个分量为 1，该点为 $Z\,K^{-1}\tilde{\mathbf u}$，所以 $\rho = Z\,\lVert K^{-1}\tilde{\mathbf u}\rVert$。二者在主点处相等，在下面这台相机的图像角上相差 22.6%。
 - **逆深度**（inverse depth，或**视差** disparity）$1/Z$：双目在基线 $b$ 下测得视差 $d = f b / Z$；许多网络预测逆深度，因为它有界（无穷远处为零），而且其误差比 $Z$ 的误差更接近均匀。
 
 把 $Z$ 和 $\rho$ 混用会把平面弯成曲面。这种错误在图像中心附近很容易被忽略，在边缘处却很大。
@@ -393,7 +393,7 @@ FPS    256 samples: mean gap 0.096, largest gap 0.193
 顶点恰好位于光滑曲面上的网格是一个分段线性插值，它的误差就是**弓高**（sagitta）：长为 $s$ 的弦横跨半径为 $\rho$ 的圆时，与圆弧的最大偏离为
 
 $$
-\delta = \rho\big(1 - \cos(\Delta/2)\big) \approx \frac{s^2}{8\rho}, \qquad \Delta = s/\rho \text{ 为弦所张的角}.
+\delta = \rho\big(1 - \cos(\Delta/2)\big) \approx \frac{s^2}{8\rho}, \qquad \Delta \text{ 为弦所张的角}, \ s = 2\rho\sin(\Delta/2) \approx \rho\Delta .
 $$
 
 所以误差随边长的**平方**下降。面积为 $A$、边长为 $s$ 的曲面需要的三角形数为 $F \approx 2A/(\tfrac{\sqrt 3}{2}s^2) \propto s^{-2}$，因此 $\delta \propto F^{-1}$：三角形数翻倍，误差减半。我们把圆环按角度 $(\varphi, \theta)$ 划成 $n \times m$ 的网格，最大的鼓出来自外赤道（半径 $R + r$ 的圆被分成 $n$ 段弦），再加上半径 $r$ 的管截面圆被分成 $m$ 段弦：$\delta\_{\max} \lesssim (R + r)(1 - \cos\frac{\pi}{n}) + r(1 - \cos\frac{\pi}{m})$。
@@ -489,7 +489,7 @@ N= 64  occupied   30544 (11.65%)  surface   5928  volume err -0.39%  bits    32.
 N=128  occupied  245408 (11.70%)  surface  24144  volume err +0.04%  bits   262.1 kB  floats   8388.6 kB
 ```
 
-两点观察。第一，即使在 $N = 16$，**体积**也估计得很好（误差 1.5%），因为表面两侧的误差相互抵消。**表面**位置则是另一回事：体素边界是阶梯，它到真实表面的平均距离略低于 $h/4$，最大约 $h/2$，所以误差减半需要 8 倍的内存（第 6 节会测量）。第二，表面体素的数量按 $N^2$ 增长（每往下一行翻四倍），而栅格按 $N^3$ 增长。在 $N = 128$ 时，只有 1% 的体素接触表面。稠密栅格几乎把全部内存都花在空白空间和内部上，而存 float32 值而不是比特还要再贵 32 倍。
+两点观察。第一，即使在 $N = 16$，**体积**也估计得很好（误差 1.5%），因为表面两侧的误差相互抵消。**表面**位置则是另一回事：体素边界是阶梯，它到真实表面的平均距离略低于 $h/4$，在台阶的角上最大约 $0.8h$（至多 $\sqrt 3\, h/2$），所以误差减半需要 8 倍的内存（第 6 节会测量）。第二，表面体素的数量按 $N^2$ 增长（每往下一行翻四倍），而栅格按 $N^3$ 增长。在 $N = 128$ 时，只有 1% 的体素接触表面。稠密栅格几乎把全部内存都花在空白空间和内部上，而存 float32 值而不是比特还要再贵 32 倍。
 
 ### 5.2 概率占据与对数几率
 
@@ -549,7 +549,7 @@ for z in ("hit", "hit", "hit", "miss"):
     print("%-4s l = %+.3f  p = %.3f" % (z, l, 1 / (1 + np.exp(-l))))
 ```
 
-输出：各层节点数 `[1, 8, 64, 256, 1664, 6784, 25728, 95936, 402176]`，总计 `532617 nodes vs 16777216 dense voxels at 256^3 (3.17%)`。从第 4 层起，每层节点数约为上一层的 4 倍而不是 8 倍：八叉树随表面积增长，即 $4^L$，而稠密栅格随体积增长，即 $8^L$。树越深，格子数上的节省越多。
+输出：各层节点数 `[1, 8, 64, 256, 1664, 6784, 25728, 95936, 402176]`，总计 `532617 nodes vs 16777216 dense voxels at 256^3 (3.17%)`。从第 5 层起，每层节点数约为上一层的 4 倍而不是 8 倍：八叉树随表面积增长，即 $4^L$，而稠密栅格随体积增长，即 $8^L$。树越深，格子数上的节省越多。
 
 至于能否节省*字节*，取决于一个稠密格子的代价。基于指针的节点要占好几个字节；按每节点 8 字节计，深到第 7 层（130,441 个节点，相当于 $128^3$ 栅格的分辨率）的八叉树占 1.04 MB，是按比特打包的 $128^3$ 占据栅格（262 kB）的四倍，却只有 $128^3$ float32 栅格（8.4 MB）的八分之一。机器人地图每个格子存一个浮点对数几率，TSDF 存距离和权重，所以与它们原本需要的栅格相比，八叉树立刻胜出，而且每多一层，优势再扩大一倍。
 
@@ -628,7 +628,7 @@ TSDF band: voxels with |sdf| < 3h at N=128: 8.03% of the grid
 
 零点（即 Marching Cubes 会生成的顶点）在 $N = 16$ 时平均偏离真实表面 0.00248，是一个体素的 1.3%；$h$ 每减半，误差约除以 4。反过来，在真实表面（精确 $f$ 为零处）上求插值场 $\hat f$，$N = 16$ 时偏差为 0.00746，同样按 $h^2$ 下降。单个查询点显示了同样的效应：在管内侧略靠里的一点，在相距 $0.19$ 的顶点之间插值，偏差为 $0.006$。
 
-{% include blog_figure.liquid path="assets/img/blog/3d-vision/08-sdf-vs-occupancy.svg" localized="true" caption="圆环截面 $y = 0$（两个半径 0.4 的圆盘），分辨率 $16^3$。左：占据，即中心在内部的体素；边界是阶梯。中：在该平面 $17^2$ 个栅格顶点（点）上采样的 SDF，经双线性插值，其零水平集（橙色）叠在真实圆（虚线，几乎被遮住）上。右：三维中平均双向表面误差与体素边长 $h$ 的关系。占据略低于 $h/4$（$N = 16$ 时 0.032，$N = 128$ 时 0.0046）；插值后的 SDF 遵循 $h^2$（$N = 8$ 时 0.020，$N = 128$ 时 0.00008）。" %}
+{% include blog_figure.liquid path="assets/img/blog/3d-vision/08-sdf-vs-occupancy.svg" localized="true" caption="圆环截面 $y = 0$（两个半径 0.4 的圆盘），分辨率 $16^3$。左：占据，即中心在内部的体素；边界是阶梯。中：在该平面 $17^2$ 个栅格顶点（点）上采样的 SDF，经双线性插值，其零水平集（橙色）叠在真实圆（虚线，几乎被遮住）上。右：三维中平均双向表面误差与体素边长 $h$ 的关系。占据保持在 $h/5$ 附近，介于 $0.17h$ 与 $0.22h$ 之间（$N = 16$ 时 0.032，$N = 128$ 时 0.0046）；插值后的 SDF 遵循 $h^2$（$N = 8$ 时 0.020，$N = 128$ 时 0.00008）。" %}
 
 代价是内存（每个顶点 32 比特，而不是每个体素 1 比特），以及两个局限。比大约两个体素更**细的结构**可能消失，因为没有顶点落在其内部，符号从不改变。**尖锐的棱边和角**会被磨圆，因为三线性插值无法在格内表示折痕（Dual Contouring 等 Marching Cubes 的变体会存储梯度来解决这个问题）。
 
@@ -654,7 +654,7 @@ $$
 
 **神经场**（neural field）不在栅格上采样 $f$，而是用网络 $f\_\theta : \mathbb R^3 \to \mathbb R$（或输出占据、密度和颜色）来表示它：输入坐标，输出值。主要的几类：
 
-- **占据网络**（Occupancy Networks；Mescheder 等，2019）输出 $\mathbf x$ 在内部的概率；表面是水平集 $0.5$。
+- **占据网络**（Occupancy Networks；Mescheder 等，2019）输出 $\mathbf x$ 在内部的概率；表面是该概率在阈值 $\tau$（例如 $0.5$）处的水平集。
 - **DeepSDF**（Park 等，2019）输出有符号距离。它用每个形状的隐编码 $\mathbf z$ 对网络加条件，$f\_\theta(\mathbf x, \mathbf z)$，于是一个网络表示整个类别的形状，拟合新形状只需优化 $\mathbf z$。
 - **NeRF**（Mildenhall 等，2020）输出密度和依赖视角的颜色，通过从图像做体渲染来训练（[神经渲染第 2 篇]({{ '/blog/2026/neural-rendering-02-nerf/' | relative_url }})）。它的几何是密度场而不是曲面；[第 9 篇]({{ '/blog/2026/3d-vision-09-3d-reconstruction-classic-to-feed-forward/' | relative_url }})中 NeuS 一类方法把它变回 SDF。
 
@@ -768,7 +768,7 @@ grid 70x70      4900 floats  mean |error| 0.0007  near the boundary 0.0008  IoU 
 三条教训，全都适用于三维。
 
 1. **频谱偏置是真实存在的。** 没有编码，网络在 4000 步内画不出齿。
-2. **频率越多并不越好。** $L = 6$ 时网络能表示的频率远超形状所需，于是在训练样本之间拟合出噪声。所以后来的方法使用更少的频带、在训练中逐步加入频带（由粗到细），或使用其他激活函数，例如 SIREN 的正弦（Sitzmann 等，2020）。
+2. **频率越多并不越好。** $L = 6$ 时网络能表示的频率远超形状所需。每一步都重新抽取随机点，所以这不是对固定训练集的过拟合：在 4000 步的固定预算内，高频分量没有被压下去，作为波纹留在整个场上，而且优化本身也变难了（练习 5）。所以后来的方法使用更少的频带、在训练中逐步加入频带（由粗到细），或使用其他激活函数，例如 SIREN 的正弦（Sitzmann 等，2020）。
 3. **单个小网络并不是存储单个形状的紧凑方式。** 同样大小的普通栅格要好一个数量级。神经场的价值在别处：场是高维的时候（NeRF 的五维辐射场）；一个网络加隐编码表示许多形状的时候（DeepSDF）；表示必须通过可微渲染器拟合的时候；以及网络与栅格结合的时候。Instant-NGP 的多分辨率哈希栅格（[神经渲染第 3 篇]({{ '/blog/2026/neural-rendering-03-fast-radiance-fields/' | relative_url }})）这类混合方法把特征存在栅格里，只用一个很小的 MLP 来解码，从而兼得栅格的精度和网络的灵活性。
 
 对神经 SDF 而言，普通回归损失中没有任何东西迫使 $f\_\theta$ 在训练点之外成为距离。**程函损失** $\mathbb E\_{\mathbf x}\big(\lVert\nabla\_{\mathbf x} f\_\theta(\mathbf x)\rVert - 1\big)^2$（IGR，Gropp 等，2020）加上了这个约束，这也使得仅用原始点云就能拟合 SDF，唯一的数据项是点上的 $f\_\theta = 0$。
@@ -849,7 +849,7 @@ print("centres inside the tube by: median %.4f" % np.median(-sdf_torus(mu_g)))
 
 现在可以把各种表示放到同一张图上。对每种表示，在一系列分辨率下计算其内存和**平均双向表面误差**：它的表面到真实表面的平均距离的一半，加上真实表面到它的表面的平均距离的一半（即第 3.3 节的 Chamfer 距离，但只要表示有连续表面，就用连续表面来评估）。点的"表面"就是点本身；占据是体素阶梯；SDF 栅格是插值场的零水平集；网格是三角形。内存按 float32 坐标与值、int32 索引、每体素 1 比特计算。"稀疏 SDF"只存储包含被表面穿过的格子的 $8^3$ 块，与体素哈希的做法相同。
 
-{% include blog_figure.liquid path="assets/img/blog/3d-vision/08-tradeoff.svg" localized="true" caption="圆环的内存与平均双向表面误差。点：500 到 50,000 个精确采样（误差 0.044 到 0.0044）。网格：$8 \times 4$ 到 $128 \times 64$（0.093 到 0.0004）。占据：$16^3$ 到 $128^3$ 比特（0.032 到 0.0046）。稠密 SDF：$8^3$ 到 $128^3$ 个 float32 格子（0.020 到 0.00008）。稀疏 SDF：同样的值只存在接触表面的 $8^3$ 块中，$128^3$ 时为 1.5 MB 而不是 8.6 MB。对数坐标下的斜率：点 $-1/2$，占据 $-1/3$，稠密 SDF $-2/3$，网格与稀疏 SDF $-1$。" %}
+{% include blog_figure.liquid path="assets/img/blog/3d-vision/08-tradeoff.svg" localized="true" caption="圆环的内存与平均双向表面误差。点：500 到 50,000 个精确采样（误差 0.044 到 0.0044）。网格：$8 \times 4$ 到 $128 \times 64$（0.093 到 0.0004）。占据：$16^3$ 到 $128^3$ 比特（0.032 到 0.0046）。稠密 SDF：$8^3$ 到 $128^3$ 个 float32 格子（0.020 到 0.00008）。稀疏 SDF：同样的值只存在接触表面的 $8^3$ 块中，$128^3$ 时为 1.5 MB 而不是 8.6 MB。对数坐标下的斜率：点 $-1/2$，占据 $-1/3$，稠密 SDF $-2/3$，网格 $-1$，稀疏 SDF 在高分辨率下趋近 $-1$（$N$ 较小时它的 $8^3$ 块很粗）。" %}
 
 ### 10.2 标度律
 
@@ -897,10 +897,10 @@ print("centres inside the tube by: median %.4f" % np.median(-sdf_torus(mu_g)))
 处理点云的网络必须对点的任何排列给出相同的输出。**PointNet**（Qi 等，2017）用最简单的结构做到这一点：对每个点独立地施加**同一个**小 MLP $h$，再用一个**对称**函数（对所有点逐元素取最大值）把结果合并：
 
 $$
-g(\{\mathbf p_1, \dots, \mathbf p_n\}) = \gamma\Big(\max_{i} h(\mathbf p_i)\Big).
+g(\{\mathbf p_1, \dots, \mathbf p_n\}) = \psi\Big(\max_{i} h(\mathbf p_i)\Big).
 $$
 
-因为最大值不关心顺序，$g$ 按构造就是排列不变的。最大值的 $K$ 个通道中每个都由一个点"赢得"，所以至多 $K$ 个点决定全局特征；论文称它们为**关键点**（critical points），其余每个点都可以删掉或稍微移动而不改变输出。
+其中 $\psi$ 是作用在池化向量上的第二个 MLP（论文中记为 $\gamma$；这里改名，以免与第 7.2 节的位置编码冲突）。因为最大值不关心顺序，$g$ 按构造就是排列不变的。最大值的 $K$ 个通道中每个都由一个点"赢得"，所以至多 $K$ 个点决定全局特征；论文称它们为**关键点**（critical points），其余每个点都可以删掉或稍微移动而不改变输出。
 
 ```python
 def pointnet_feature(P, Ws):
@@ -971,7 +971,7 @@ print("submanifold sparse conv keeps %d; dense grid has %d" % (active.sum(), 64 
 | Fan, Su, Guibas: A point set generation network | CVPR | 2017 | [arXiv](https://arxiv.org/abs/1612.00603) | 预测点云；推广了 Chamfer 和 EMD 损失 |
 | Knapitsch, Park, Zhou, Koltun: Tanks and Temples | ACM TOG | 2017 | [DOI](https://doi.org/10.1145/3072959.3073599) | 重建的精确率、召回率与 F-score |
 | Oleynikova et al.: Voxblox | IROS | 2017 | [arXiv](https://arxiv.org/abs/1611.03631) | 由 TSDF 增量构建 ESDF，用于规划 |
-| Graham, Engelcke, van der Maaten: Submanifold sparse convolutional networks | CVPR | 2018 | [arXiv](https://arxiv.org/abs/1711.10275) | 保持稀疏模式的稀疏卷积 |
+| Graham, Engelcke, van der Maaten: 3D semantic segmentation with submanifold sparse convolutional networks | CVPR | 2018 | [arXiv](https://arxiv.org/abs/1711.10275) | 保持稀疏模式的稀疏卷积 |
 | Zhou et al.: Stereo magnification（多平面图像） | SIGGRAPH (ACM TOG) | 2018 | [arXiv](https://arxiv.org/abs/1805.09817) | 用 CNN 预测 MPI 做视角合成 |
 | Mescheder et al.: Occupancy networks | CVPR | 2019 | [arXiv](https://arxiv.org/abs/1812.03828) | 把形状看作分类器的决策边界 |
 | Park et al.: DeepSDF | CVPR | 2019 | [arXiv](https://arxiv.org/abs/1901.05103) | 带隐编码、可表示整类形状的神经 SDF |
@@ -1021,7 +1021,7 @@ print("submanifold sparse conv keeps %d; dense grid has %d" % (active.sum(), 64 
 
    <details markdown="1"><summary>提示</summary>
 
-   三角形 $\mathbf a, \mathbf b, \mathbf c$（相对于 $\mathbf p$）的立体角为 $2\,\mathrm{atan2}\big(\mathbf a \cdot (\mathbf b \times \mathbf c),\ abc + (\mathbf a\cdot\mathbf b)c + (\mathbf b\cdot\mathbf c)a + (\mathbf c\cdot\mathbf a)b\big)$，其中 $a = \lVert\mathbf a\rVert$ 等（Van Oosterom 与 Strackee）。对于闭合且方向一致的网格，内部 $w \approx 1$，外部为 $0$；与射线奇偶性不同，对有小洞的网格它会平滑地退化。与 `sdf_torus` 的差应不超过弓高 0.0016。
+   三角形 $\mathbf a, \mathbf b, \mathbf c$（相对于 $\mathbf p$）的立体角为 $2\,\mathrm{atan2}\big(\mathbf a \cdot (\mathbf b \times \mathbf c),\ abc + (\mathbf a\cdot\mathbf b)c + (\mathbf b\cdot\mathbf c)a + (\mathbf c\cdot\mathbf a)b\big)$，其中 $a = \lVert\mathbf a\rVert$ 等（Van Oosterom 与 Strackee）。对于闭合且方向一致的网格，内部 $w \approx 1$，外部为 $0$；与射线奇偶性不同，对有小洞的网格它会平滑地退化。与 `sdf_torus` 的差应大致不超过弓高 0.0016。
    </details>
 
 5. 对 $L = 6$ 用更小的学习率或更多步数重复第 7 节的神经场实验，再试 $L = 4$。$L = 6$ 的噪声会随着更多训练消失吗？然后加上程函惩罚 $\lambda(\lVert\nabla\_{\mathbf x} f\_\theta\rVert - 1)^2$；在 NumPy 网络中如何计算 $\nabla\_{\mathbf x} f\_\theta$？

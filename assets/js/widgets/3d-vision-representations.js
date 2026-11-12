@@ -624,7 +624,8 @@
       // scale bar 10 mm
       g.fillStyle = "#222"; g.fillRect(8, SZ - 12, X(10), 3); g.font = "11px system-ui, sans-serif"; g.fillText("10 mm", 8, SZ - 16);
 
-      var lvVal = LEVELS[state.rep][state.lvl];
+      // the polygon keeps at least 3 vertices per loop, so show the count it really has
+      var lvVal = R.kind === 4 ? R.nv : LEVELS[state.rep][state.lvl];
       slName.textContent = tx.res;
       slVal.textContent = tx.param[state.rep].replace(/\b[NVKL]\b/g, String(lvVal));
       repBtns.forEach(function (b, k_) { b.style.fontWeight = k_ === state.rep ? "700" : "400"; b.style.borderColor = k_ === state.rep ? REPCOL[k_] : "#bbb"; b.style.boxShadow = k_ === state.rep ? "inset 0 -3px 0 " + REPCOL[k_] : "none"; });
