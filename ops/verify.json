@@ -1,9 +1,18 @@
 {
- "ref": "staging/wave-a",
+ "ref": "staging/wave-b",
  "slugs": [
+  "writing-demo",
+  "hello-world",
   "3d-vision-01-image-formation-and-camera-models",
   "3d-vision-02-camera-calibration",
   "3d-vision-03-features-and-matching",
+  "3d-vision-04-two-view-geometry",
+  "3d-vision-05-multi-view-geometry-and-bundle-adjustment",
+  "3d-vision-06-visual-slam",
+  "3d-vision-07-depth-estimation-and-multi-view-stereo",
+  "3d-vision-08-3d-representations",
+  "3d-vision-09-3d-reconstruction-classic-to-feed-forward",
+  "3d-vision-10-3d-vision-for-ar-vr",
   "embodied-ai-01-robotics-foundations",
   "embodied-ai-02-reinforcement-learning-for-robots",
   "embodied-ai-03-simulation-platforms",
@@ -29,21 +38,19 @@
   "graphics-engine-04-inside-production-engines",
   "graphics-engine-05-physics-and-simulation-engines",
   "graphics-engine-06-ai-meets-graphics-engines",
-  "hello-world",
   "neural-rendering-01-cameras-and-multiview-geometry",
   "neural-rendering-02-nerf",
   "neural-rendering-03-fast-radiance-fields",
   "neural-rendering-04-3d-gaussian-splatting",
   "neural-rendering-05-3dgs-frontiers",
   "neural-rendering-06-capture-to-vr-tutorial",
-  "paper-digest-01-2026-oct-nov",
   "roadmap-01-learning-roadmap",
   "world-models-01-what-is-a-world-model",
   "world-models-02-generative-modeling-foundations",
   "world-models-03-video-world-simulators",
   "world-models-04-3d-and-4d-world-generation",
   "world-models-05-jepa-evaluation-and-open-problems",
+  "paper-digest-01-2026-oct-nov",
   "home"
- ],
- "note": "wave A before deploy: all posts and the home Lab"
+ ]
 }

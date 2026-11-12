@@ -1,0 +1,45 @@
+# Checks the papers cited in blog posts against Crossref, arXiv, Semantic Scholar, DBLP, OpenReview and
+# the CVF/ECVA/NeurIPS listings, from a runner with full network access. No AI and no API key involved.
+# Triggered by pushes to ops/cite; the branch to check and the file globs are in ops/cite.json.
+# Results go to the branch report/cite.
+name: Check citations
+
+on:
+  push:
+    branches: ["ops/cite"]
+
+permissions:
+  contents: write
+
+jobs:
+  cite:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - name: Checkout ops
+        uses: actions/checkout@v4
+        with:
+          path: ops-src
+          persist-credentials: false
+      - id: cfg
+        run: echo "ref=$(jq -r '.ref' ops-src/ops/cite.json)" >> "$GITHUB_OUTPUT"
+      - name: Checkout site
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ steps.cfg.outputs.ref }}
+          path: site
+          persist-credentials: false
+      - name: Check
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          mapfile -t META < <(jq -r '.meta[]' ops-src/ops/cite.json)
+          mapfile -t LINKS < <(jq -r '.links[]' ops-src/ops/cite.json)
+          OUT="$RUNNER_TEMP/cite"
+          python3 ops-src/ops/tools/cite-check.py site "$OUT" "${META[@]}" -- "${LINKS[@]}" 2>&1 | tee "$OUT.stdout" || true
+          mkdir -p "$OUT" && cp "$OUT.stdout" "$OUT/stdout.txt"
+          cd "$OUT" && git init -q && git add -A \
+            && git -c user.name=yangzehua -c user.email=yangzehua@akane.waseda.jp commit -q -m "citation report" \
+            && git -c http.extraheader="AUTHORIZATION: basic $(printf 'x-access-token:%s' "$GH_TOKEN" | base64 -w0)" \
+                 push -q -f "https://github.com/$GITHUB_REPOSITORY" HEAD:refs/heads/report/cite
+          echo "report pushed"
