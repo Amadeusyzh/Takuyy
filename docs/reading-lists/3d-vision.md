@@ -165,7 +165,7 @@
 
 建议顺序：Haralick 等（P3P 综述）→ Lepetit 等（EPnP）→ Triggs 等（BA 综述，重点读规范自由度与稀疏性两节）→ Snavely 等（Photo Tourism）→ Schönberger & Frahm（COLMAP）→ Agarwal 等（BA in the Large）→ Hartley 等（旋转平均）→ Pan 等（GLOMAP）。前馈方法（VGGSfM、VGGT）状态截至 2026 年 11 月。
 
-### PnP 与相机重定位
+### PnP 与相机后方交会
 
 | 论文 | 会议/期刊 | 年份 | 链接 | 说明 |
 | --- | --- | --- | --- | --- |

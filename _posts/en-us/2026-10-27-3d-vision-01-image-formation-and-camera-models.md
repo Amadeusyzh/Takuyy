@@ -36,7 +36,7 @@ The series sits between the [graphics series]({{ '/blog/2026/graphics-01-roadmap
 | 06 | [Visual SLAM]({{ '/blog/2026/3d-vision-06-visual-slam/' | relative_url }}) | Track a camera in real time and close loops |
 | 07 | [Depth estimation and multi-view stereo]({{ '/blog/2026/3d-vision-07-depth-estimation-and-multi-view-stereo/' | relative_url }}) | Turn posed images into dense depth |
 | 08 | [3D representations]({{ '/blog/2026/3d-vision-08-3d-representations/' | relative_url }}) | Choose between points, meshes, voxels, SDFs, fields and Gaussians |
-| 09 | [3D reconstruction, classic to feed-forward]({{ '/blog/2026/3d-vision-09-3d-reconstruction-classic-to-feed-forward/' | relative_url }}) | Go from photos to surfaces, by optimization or by one network pass |
+| 09 | [3D reconstruction]({{ '/blog/2026/3d-vision-09-3d-reconstruction-classic-to-feed-forward/' | relative_url }}) | Go from photos to surfaces, by optimization or by one network pass |
 | 10 | [3D vision for AR/VR]({{ '/blog/2026/3d-vision-10-3d-vision-for-ar-vr/' | relative_url }}) | Understand headset tracking, latency and registration error |
 
 ## Prerequisites

@@ -1031,4 +1031,4 @@ print("submanifold sparse conv keeps %d; dense grid has %d" % (active.sum(), 64 
    写这篇文章时，我们在一个星形多边形上对 $L = 6$ 试过更小的学习率，在 4000 步内拟合反而更差：高频输入不只让拟合更嘈杂，也让优化更难。请检查齿轮是否也一样。对输入梯度，从输出向编码反向传播一个全 1 的梯度（与求权重梯度相同的链式法则），再乘以 $\gamma$ 的雅可比：$\partial \sin(2^k\pi x)/\partial x = 2^k\pi\cos(2^k\pi x)$。程函项自身的梯度还需要二阶导数，这时自动微分框架就值得用了。
    </details>
 
-**下一篇：**[第 9 篇]({{ '/blog/2026/3d-vision-09-3d-reconstruction-classic-to-feed-forward/' | relative_url }})用这些表示从照片走到曲面：经典的 SfM、MVS、融合与网格化流程，神经曲面，以及前馈式三维基础模型。
+**下一篇：**[三维重建]({{ '/blog/2026/3d-vision-09-3d-reconstruction-classic-to-feed-forward/' | relative_url }})：用这些表示从照片走到曲面，包括经典的 SfM、MVS、融合与网格化流程，神经曲面，以及前馈式三维基础模型。

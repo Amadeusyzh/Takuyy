@@ -1163,4 +1163,4 @@ DTU is clean and object-centric, which made it the default for neural surfaces; 
    Use `evaluate(sample_segments(marching_squares(g_fit, xs_n)), gt, 0.02)` and `tsdf_fuse` on `[(R, t, render_depth(R, t)) for R, t in orbit(24)]`. Note that NeuS was given noise-free depth here, so compare with noise-free TSDF too. Both see the same surfaces; the differences come from the grid resolutions (3.4 cm against 2.5 cm), the spurious inner contours of the NeuS fit, and the smoothing effect of the eikonal term at the box corners.
    </details>
 
-**Next:** [post 10]({{ '/blog/2026/3d-vision-10-3d-vision-for-ar-vr/' | relative_url }}) closes the series with 3D vision on AR and VR headsets: inside-out tracking, scene understanding, spatial anchors and the latency budget that decides whether a virtual object stays put.
+**Next:** [3D vision for AR/VR]({{ '/blog/2026/3d-vision-10-3d-vision-for-ar-vr/' | relative_url }}): the last post of the series, on 3D vision in AR and VR headsets: inside-out tracking, scene understanding, spatial anchors and the latency budget that decides whether a virtual object stays put.

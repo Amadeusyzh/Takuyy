@@ -14,7 +14,7 @@ related_posts: false
 
 ## なぜ重要か
 
-[第 03 回]({{ '/blog/2026/3d-vision-03-features-and-matching/' | relative_url }})は対応点のリストで終わりました。ある画像の画素 $\mathbf x\_1$ と別の画像の画素 $\mathbf x\_2$ が同じシーン点だ、という組です。本稿ではこの組を幾何に変えます。静止したシーンの 2 枚の画像は 1 つの $3\times 3$ 行列で結ばれており、その行列からカメラがどう動いたかを復元し、さらに対応点の 3 次元位置を求めることができます。これは「画像から幾何へ戻る」問題の最小の完全な例であり、より大きなシステムはすべてこの上に作られています。Structure-from-Motion（SfM）は良い画像ペア 1 組から初期化し、Visual SLAM は 2 フレームから地図を立ち上げ、ステレオカメラは同時刻に撮った 2 枚の画像から深度マップを計算します。
+[第 03 回]({{ '/blog/2026/3d-vision-03-features-and-matching/' | relative_url }})は対応点のリストで終わりました。ある画像の画素 $\mathbf x\_1$ と別の画像の画素 $\mathbf x\_2$ が同じシーン点だ、という組です。本稿ではこの組を幾何に変えます。静止したシーンの 2 枚の画像は 1 つの $3\times 3$ 行列で結ばれており、その行列からカメラがどう動いたかを復元し、さらに対応点の 3 次元位置を求めることができます。これは「画像から幾何へ戻る」問題の最小の完全な例であり、より大きなシステムはすべてこの上に作られています。Structure-from-Motion（SfM）は良い画像ペア 1 組から初期化し、Visual SLAM は 2 フレームから地図を立ち上げ、ステレオカメラは同時刻に撮った 2 枚の画像から奥行きマップを計算します。
 
 本稿ではこの流れを一通りたどります。まず幾何です。一方の画像の点が、もう一方の画像での対応を**直線**上に制限する理由（**エピポーラ拘束**、epipolar constraint）と、それを表す 2 つの行列、校正済みカメラの**基本行列**（essential matrix）$E$ と画素座標の**基礎行列**（fundamental matrix）$F$ です。次に推定です。正規化 8 点アルゴリズム、7 点・5 点の最小解法、RANSAC によるロバストな当てはめを扱います。続いてその成果として、4 重の曖昧さを持つ $E$ からの相対姿勢と、点を**三角測量**（triangulation）する 3 つの方法を見ます。これらすべてが破綻する配置（純回転、平面シーン）も調べます。最後に**平行化されたステレオ**（rectified stereo）に特化します。ここではマッチングが画像の行に沿った 1 次元探索になり、真値が分かっている合成ステレオペアの上でブロックマッチングとセミグローバルマッチングを一から実装します。
 
@@ -440,7 +440,7 @@ root: max Sampson distance over all 200 points 32 px, |F - F_true| = 0.11
 
 ### 4.4 5 点：校正済みの最小問題
 
-$K$ が分かっている場合（SfM や SLAM ではこれが普通です）、正規化座標から $E$ を推定し、未知数は 5 つだけになります。このとき 5 個の対応で十分で、第 03 回の RANSAC の表がその利点を示しています。外れ値 70% では、8 点アルゴリズムの 70188 サンプルに対して 1893 サンプルで済みます。このアルゴリズムは難しいことで有名ですが、考え方は 7 点の場合と同じです。
+$K$ が分かっている場合（SfM や SLAM ではこれが普通です）、正規化座標から $E$ を推定し、未知数は 5 つだけになります。このとき 5 個の対応で十分で、第 03 回の RANSAC の表がその利点を示しています。アウトライア 70% では、8 点アルゴリズムの 70188 サンプルに対して 1893 サンプルで済みます。このアルゴリズムは難しいことで有名ですが、考え方は 7 点の場合と同じです。
 
 1. 9 個の未知数に対する 5 本の方程式 $\hat{\mathbf x}\_2^\top E\hat{\mathbf x}\_1 = 0$ は、**4 次元の零空間**を残します。$E = xX + yY + zZ + W$ で、$X, Y, Z, W$ は基底行列、$x, y, z$ は未知のスカラーです（$W$ の係数を 1 に固定するとスケールが決まる）。
 2. これを 2.2 節の 10 本の 3 次方程式（$\det E = 0$ と $2EE^\top E - \operatorname{tr}(EE^\top)E = 0$ の 9 成分）に代入すると、$x, y, z$ についての 3 次の多項式方程式が 10 本得られます。
@@ -488,7 +488,7 @@ $$
 
 ### 4.6 ロバスト推定
 
-実際の対応には外れ値が含まれ、誤った対応が 1 つあるだけで最小二乗解は台無しになります。標準的な手順は、7 点ソルバ（$E$ なら 5 点ソルバ）を使う RANSAC で、残差に Sampson 距離、第 03 回の適応的な反復回数を使い、最後にコンセンサス集合で当てはめ直すものです。200 個の対応のうち 80 個（40%）の $\mathbf x\_2$ をランダムな画素に置き換えます。
+実際の対応にはアウトライアが含まれ、誤った対応が 1 つあるだけで最小二乗解は台無しになります。標準的な手順は、7 点ソルバ（$E$ なら 5 点ソルバ）を使う RANSAC で、残差に Sampson 距離、第 03 回の適応的な反復回数を使い、最後にコンセンサス集合で当てはめ直すものです。200 個の対応のうち 80 個（40%）の $\mathbf x\_2$ をランダムな画素に置き換えます。
 
 ```python
 def ransac_fundamental(x1, x2, thresh, p=0.99, max_iters=10000, seed=0):
@@ -532,7 +532,7 @@ print("RANSAC: %d iterations, %d inliers (%d true inliers missed, %d outliers ke
 RANSAC: 783 iterations, 110 inliers (10 true inliers missed, 0 outliers kept), error 0.184 px
 ```
 
-全対応に 8 点アルゴリズムを使うとエピポーラ誤差は 21 px で、役に立ちません。RANSAC は 120 個の真のインライアのうち 110 個を見つけ、外れ値は 1 つも含まず、エピポーラ誤差は 0.18 px です。必要なサンプル数は 783 で、式 $\log(1-p)/\log(1-w^7)$ が真のインライア率 $w = 0.6$ について予測する 163 より多くなっています。適応的な回数はその時点で最良のモデルのインライア率を使いますが、ノイズのある 7 点から当てはめた仮説はインライアの一部しか集められないからです。これは第 03 回で論じた式の楽観性であり、最後の当てはめ直しループがある理由でもあります。取りこぼした 10 個のインライア（8%）は、95% 閾値で予想される損失より少し多い程度です。
+全対応に 8 点アルゴリズムを使うとエピポーラ誤差は 21 px で、役に立ちません。RANSAC は 120 個の真のインライアのうち 110 個を見つけ、アウトライアは 1 つも含まず、エピポーラ誤差は 0.18 px です。必要なサンプル数は 783 で、式 $\log(1-p)/\log(1-w^7)$ が真のインライア率 $w = 0.6$ について予測する 163 より多くなっています。適応的な回数はその時点で最良のモデルのインライア率を使いますが、ノイズのある 7 点から当てはめた仮説はインライアの一部しか集められないからです。これは第 03 回で論じた式の楽観性であり、最後の当てはめ直しループがある理由でもあります。取りこぼした 10 個のインライア（8%）は、95% 閾値で予想される損失より少し多い程度です。
 
 ## 5. $E$ からの相対姿勢
 
@@ -569,7 +569,7 @@ $$
 
 ### 5.2 チラリティ：点はカメラの前にあるべき
 
-4 つの配置のうち、シーンを両方のカメラの前（奥行きが正、**チラリティ**（cheirality）条件）に置くのは 1 つだけです。そこで各候補で対応点を三角測量し（第 6 節）、両方のカメラで奥行きが正になる点の数を数えます。ノイズのないデータでは数は全か無かで、ノイズや外れ値があれば最大の候補を選びます。
+4 つの配置のうち、シーンを両方のカメラの前（奥行きが正、**チラリティ**（cheirality）条件）に置くのは 1 つだけです。そこで各候補で対応点を三角測量し（第 6 節）、両方のカメラで奥行きが正になる点の数を数えます。ノイズのないデータでは数は全か無かで、ノイズやアウトライアがあれば最大の候補を選びます。
 
 ```python
 def decompose_essential(E):
@@ -676,7 +676,7 @@ refined: rotation error 0.102 deg, translation direction error 0.385 deg
 
 ### 5.4 誰にも見えないスケール
 
-$\lVert\mathbf t\rVert$ は真値から借りなければなりませんでした。2 枚の画像は相対姿勢と構造を**相似変換を除いて**しか決めません。世界全体の回転と並進（カメラ 1 を原点に置くことで固定した）と、全体のスケールが 1 つ残ります。単眼 SLAM でスケールのドリフトが起こるのも、COLMAP のモデルが任意の単位になるのもこのためです。スケールは外から持ってくる必要があります。基線が校正されたステレオカメラ（第 8 節）、IMU（[第 06 回]({{ '/blog/2026/3d-vision-06-visual-slam/' | relative_url }})）、大きさの分かっている物体、あるいは学習によるメトリック深度の事前知識（[第 07 回]({{ '/blog/2026/3d-vision-07-depth-estimation-and-multi-view-stereo/' | relative_url }})）です。
+$\lVert\mathbf t\rVert$ は真値から借りなければなりませんでした。2 枚の画像は相対姿勢と構造を**相似変換を除いて**しか決めません。世界全体の回転と並進（カメラ 1 を原点に置くことで固定した）と、全体のスケールが 1 つ残ります。単眼 SLAM でスケールのドリフトが起こるのも、COLMAP のモデルが任意の単位になるのもこのためです。スケールは外から持ってくる必要があります。基線が校正されたステレオカメラ（第 8 節）、IMU（[第 06 回]({{ '/blog/2026/3d-vision-06-visual-slam/' | relative_url }})）、大きさの分かっている物体、あるいは学習によるメトリック奥行きの事前知識（[第 07 回]({{ '/blog/2026/3d-vision-07-depth-estimation-and-multi-view-stereo/' | relative_url }})）です。
 
 ## 6. 三角測量
 
@@ -1274,7 +1274,7 @@ left-right check rejects 8.7% of pixels, 84% of the occluded ones; bad pixels am
 
 ### 8.7 手作りのステレオを超えて
 
-ブロックマッチングと SGM は、挙動が予測可能で専用ハードウェア上で高速なため、今も多くのカメラやロボットで動いています。2010 年代半ばからは、学習ベースの手法がステレオのベンチマークで首位に立っています。GC-Net（Kendall ら、ICCV 2017）は学習した特徴からコストボリュームを作り、SGM の代わりに 3D 畳み込みで正則化し、微分可能な soft argmin でサブピクセルの視差を読み出しました。RAFT-Stereo（Lipson、Teed、Deng、3DV 2021）は第 03 回の再帰的なオプティカルフローネットワーク RAFT を平行化ペアに適用しました。FoundationStereo（Wen ら。2026 年 11 月時点で CVPR 2025 に発表済み）は約 100 万組の合成ペアで学習し、凍結した単眼深度モデルを事前知識として使い、実ベンチマークにゼロショットで汎化します。本節の構造、すなわち視差上のコストボリューム、集約、読み出しは、これらすべてに残っています。[第 07 回]({{ '/blog/2026/3d-vision-07-depth-estimation-and-multi-view-stereo/' | relative_url }})では、コストボリュームを 3 視点以上に一般化し（平面掃引とマルチビューステレオ）、単眼深度推定も扱います。
+ブロックマッチングと SGM は、挙動が予測可能で専用ハードウェア上で高速なため、今も多くのカメラやロボットで動いています。2010 年代半ばからは、学習型の手法がステレオのベンチマークで首位に立っています。GC-Net（Kendall ら、ICCV 2017）は学習した特徴からコストボリュームを作り、SGM の代わりに 3D 畳み込みで正則化し、微分可能な soft argmin でサブピクセルの視差を読み出しました。RAFT-Stereo（Lipson、Teed、Deng、3DV 2021）は第 03 回の再帰的なオプティカルフローネットワーク RAFT を平行化ペアに適用しました。FoundationStereo（Wen ら。2026 年 11 月時点で CVPR 2025 に発表済み）は約 100 万組の合成ペアで学習し、凍結した単眼奥行きモデルを事前知識として使い、実ベンチマークにゼロショットで汎化します。本節の構造、すなわち視差上のコストボリューム、集約、読み出しは、これらすべてに残っています。[第 07 回]({{ '/blog/2026/3d-vision-07-depth-estimation-and-multi-view-stereo/' | relative_url }})では、コストボリュームを 3 視点以上に一般化し（平面掃引とマルチビューステレオ）、単眼奥行き推定も扱います。
 
 ## 試してみよう
 
@@ -1303,13 +1303,13 @@ left-right check rejects 8.7% of pixels, 84% of the occluded ones; bad pixels am
 | ORB-SLAM: a versatile and accurate monocular SLAM system (Mur-Artal, Montiel, Tardós) | IEEE T-RO | 2015 | [arXiv](https://arxiv.org/abs/1502.00956) | 地図の初期化でホモグラフィか基礎行列かを選ぶ |
 | End-to-end learning of geometry and context for deep stereo regression (Kendall et al.) | ICCV | 2017 | [arXiv](https://arxiv.org/abs/1703.04309) | 学習したコストボリューム、3D 畳み込みと soft argmin |
 | RAFT-Stereo: multilevel recurrent field transforms for stereo matching (Lipson, Teed, Deng) | 3DV | 2021 | [arXiv](https://arxiv.org/abs/2109.07547) | ステレオのための再帰的な精密化 |
-| FoundationStereo: zero-shot stereo matching (Wen et al.) | CVPR | 2025 | [arXiv](https://arxiv.org/abs/2501.09898) | 大規模な合成データでの学習と単眼深度の事前知識 |
+| FoundationStereo: zero-shot stereo matching (Wen et al.) | CVPR | 2025 | [arXiv](https://arxiv.org/abs/2501.09898) | 大規模な合成データでの学習と単眼奥行きの事前知識 |
 
 ## 学習リソース
 
 - R. Hartley、A. Zisserman『Multiple View Geometry in Computer Vision』第 2 版、2004：第 9 章（エピポーラ幾何と基礎行列）、第 10 章（カメラと構造の復元）、第 11 章（$F$ の計算。7 点アルゴリズムと Sampson 距離を含む）、第 12 章（三角測量）。
 - Y. Ma、S. Soatto、J. Košecká、S. Sastry『An Invitation to 3-D Vision』、2004：第 5、6 章（校正済みおよび未校正の 2 視点からの復元）。$E$ の分解の丁寧な証明があります。
-- R. Szeliski『Computer Vision: Algorithms and Applications』第 2 版、2022：第 11 章（2 フレームの方法を含む Structure from Motion）と第 12 章（深度推定：平行化、マッチングコスト、SGM）。[szeliski.org/Book](https://szeliski.org/Book/) で無料で読めます。
+- R. Szeliski『Computer Vision: Algorithms and Applications』第 2 版、2022：第 11 章（2 フレームの方法を含む Structure from Motion）と第 12 章（奥行き推定：平行化、マッチングコスト、SGM）。[szeliski.org/Book](https://szeliski.org/Book/) で無料で読めます。
 - OpenCV calib3d：`findFundamentalMat`、`findEssentialMat`、`recoverPose`、`triangulatePoints`、`stereoRectify`、`stereoRectifyUncalibrated`、`StereoBM`、`StereoSGBM`（[ドキュメント](https://docs.opencv.org/4.x/d9/d0c/group__calib3d.html)）。
 - コード：[PoseLib](https://github.com/PoseLib/PoseLib)（5 点・7 点を含む最小解法）、[COLMAP](https://github.com/colmap/colmap)（SfM の中での 2 視点幾何の推定）。
 - ベンチマーク：[Middlebury stereo](https://vision.middlebury.edu/stereo/)、[KITTI stereo](https://www.cvlibs.net/datasets/kitti/eval_scene_flow.php?benchmark=stereo)、[ETH3D](https://www.eth3d.net/)。
@@ -1351,4 +1351,4 @@ left-right check rejects 8.7% of pixels, 84% of the occluded ones; bad pixels am
    斜めの経路は $(x, y), (x+1, y+1), \dots$ と進み、漸化式は同じで、直前の画素は $(x-1, y-1)$ です。ベクトル化する 1 つの方法は、画像を 1 行ずつ処理し、`prev` を 1 つ前の行を 1 列ずらしたものから取ることです（空いた列は元のコスト $C$ で埋める）。census では、各画素の 24 個の近傍を中心と比べてビットを整数に詰め、XOR したコードの異なるビット数を参照表で数えます。ゲインはすべての絶対差を変えますが census のビットは 1 つも変えないので、SAD は悪化し census は悪化しないはずです。
    </details>
 
-**次回：** [第 05 回]({{ '/blog/2026/3d-vision-05-multi-view-geometry-and-bundle-adjustment/' | relative_url }})では 2 視点から多視点へ進みます。PnP によるカメラの位置推定、逐次型と大域型の Structure-from-Motion、そしてすべてのカメラと点を同時に精密化するバンドル調整です。本稿の相対姿勢と三角測量は、最終的にそこへ流れ込みます。
+**次回：**[多視点幾何とバンドル調整]({{ '/blog/2026/3d-vision-05-multi-view-geometry-and-bundle-adjustment/' | relative_url }})：2 視点から多視点へ進みます。PnP によるカメラの位置決め、インクリメンタル SfM とグローバル SfM、そしてすべてのカメラと点を同時に精密化するバンドル調整です。本稿の相対姿勢と三角測量は、最終的にそこへ流れ込みます。

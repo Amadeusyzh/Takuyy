@@ -2,7 +2,7 @@
 layout: post
 title: "多视图几何与光束法平差：PnP、运动恢复结构与 Schur 补"
 date: 2026-10-27 11:05:00+0900
-description: "从两视图到多视图：用 P3P、EPnP 和 RANSAC 做相机重定位（resectioning），从零推导光束法平差（雅可比、稀疏正规方程、Schur 补、Levenberg-Marquardt、规范自由度、鲁棒核函数），COLMAP 式的增量式 SfM，基于旋转平均和 GLOMAP 式全局定位的全局 SfM，以及尺度不确定性；全部配有在合成场景上运行的 NumPy 代码。"
+description: "从两视图到多视图：用 P3P、EPnP 和 RANSAC 做相机后方交会（resectioning），从零推导光束法平差（雅可比、稀疏正规方程、Schur 补、Levenberg-Marquardt、规范自由度、鲁棒核函数），COLMAP 式的增量式 SfM，基于旋转平均和 GLOMAP 式全局定位的全局 SfM，以及尺度不确定性；全部配有在合成场景上运行的 NumPy 代码。"
 categories: 3d-vision
 tags: [pnp, p3p, epnp, bundle-adjustment, schur-complement, structure-from-motion, colmap, glomap, rotation-averaging, gauge-freedom]
 series: 3d-vision
@@ -16,7 +16,7 @@ related_posts: false
 
 [第 04 篇]({{ '/blog/2026/3d-vision-04-two-view-geometry/' | relative_url }})恢复了两台已标定相机之间的相对位姿，并三角化了两者都能看到的点。真实的重建有几十、几千乃至几百万张图像。每张照片都必须放进**同一个**公共坐标系，每个三维点必须与所有看到它的图像一致，而且这一切还要经得起错误匹配、糟糕的初值和漂移。本文讲的就是完成这件事的三种工具：
 
-1. **相机重定位（camera resectioning，PnP）**：利用与已有三维点之间的 2D-3D 匹配，确定一台新相机的位姿。
+1. **相机后方交会（camera resectioning，PnP）**：利用与已有三维点之间的 2D-3D 匹配，确定一台新相机的位姿。
 2. **光束法平差（bundle adjustment，BA）**：同时调整所有相机和所有点，直到每条光线都穿过它对应的像素。它是运动恢复结构（Structure-from-Motion，SfM）、SLAM、标定的主力算法（正如[第 02 篇]({{ '/blog/2026/3d-vision-02-camera-calibration/' | relative_url }})指出的，标定就是一个标定板已知的小型 BA），NeRF 和 3D Gaussian Splatting 训练所用的相机位姿也来自它。
 3. 使用它们的 **SfM 流程**：**增量式（incremental）** SfM 每次加入一张图像来扩展重建（COLMAP）；**全局式（global）** SfM 一次性估计所有旋转和位置（GLOMAP）。
 
@@ -122,7 +122,7 @@ unknowns 6m + 3n = 408, residuals 2L = 1920, gauge 7
 
 多视图重建是一个先有鸡还是先有蛋的问题：相机已知，就能三角化点（第 04 篇）；点已知，就能确定相机（第 2 节）。单独做都很容易。同时求两者则是一个大型非线性最小二乘问题，即光束法平差（第 3 节），它需要一个好的初值。SfM 流程要么每次加入一台相机来逐步扩展重建（第 4 节），要么先求所有旋转、再求所有位置（第 5 节），以此得到初值。第 6 节处理任何流程都无法仅从图像恢复的那个量：尺度。
 
-## 2. 相机重定位：Perspective-n-Point
+## 2. 相机后方交会：Perspective-n-Point
 
 ### 2.1 问题
 

@@ -36,7 +36,7 @@ related_posts: false
 | 06 | [视觉 SLAM]({{ '/blog/2026/3d-vision-06-visual-slam/' | relative_url }}) | 实时跟踪相机并完成回环 |
 | 07 | [深度估计与多视图立体]({{ '/blog/2026/3d-vision-07-depth-estimation-and-multi-view-stereo/' | relative_url }}) | 把带位姿的图像变成稠密深度 |
 | 08 | [三维表示]({{ '/blog/2026/3d-vision-08-3d-representations/' | relative_url }}) | 在点云、网格、体素、SDF、神经场和高斯之间做选择 |
-| 09 | [三维重建：从经典到前馈]({{ '/blog/2026/3d-vision-09-3d-reconstruction-classic-to-feed-forward/' | relative_url }}) | 从照片得到表面，靠优化或靠一次网络前向 |
+| 09 | [三维重建]({{ '/blog/2026/3d-vision-09-3d-reconstruction-classic-to-feed-forward/' | relative_url }}) | 从照片得到表面，靠优化或靠一次网络前向 |
 | 10 | [面向 AR/VR 的三维视觉]({{ '/blog/2026/3d-vision-10-3d-vision-for-ar-vr/' | relative_url }}) | 理解头显的跟踪、延迟和配准误差 |
 
 ## 预备知识
@@ -142,7 +142,7 @@ $$
 
 {% include blog_figure.liquid path="assets/img/blog/3d-vision/01-transform-hierarchy.svg" caption="同一个 $3\times 3$ 网格（虚线正方形、淡灰色线）和圆在每个群的一个变换下的样子；群名后面的数字是自由度。$\mathrm{SE}(2)$ 旋转 25° 并平移；$\mathrm{Sim}(2)$ 改为旋转 −25°，缩放 0.65 倍并平移；仿射变换带有剪切，圆变成椭圆，但红线之间仍然平行。只有射影变换（最后一行为 $(0.2, 0.25, 1)$）让每一族平行线汇聚（虚线延长）到一个有限点：红色族汇聚到 $H(1,0,0)^\top$，蓝色族汇聚到 $H(0,1,0)^\top$。" %}
 
-单应并不只是抽象概念：针孔相机拍到的平面图像与平面本身之间就相差一个单应；同一平面的两张图像（或绕光心旋转的相机拍的两张图像）之间也相差一个单应。第 2 篇会用它从棋盘格图像中标定相机。
+单应并不只是抽象概念：针孔相机拍到的平面图像与平面本身之间就相差一个单应；同一平面的两张图像（或绕相机中心旋转的相机拍的两张图像）之间也相差一个单应。第 2 篇会用它从棋盘格图像中标定相机。
 
 ### 1.6 消失点、地平线以及用它们标定
 
@@ -701,4 +701,4 @@ print("LLFF reordered equals the OpenGL c2w:", np.allclose(nerf, c2w_gl[:3]))
    $T_{w2c}^{\text{CV}} = \big(T_{c2w}^{\text{GL}}\,\mathrm{diag}(1,-1,-1,1)\big)^{-1}$。反过来复用第 4.4 节的投影检查。同时要把 JSON 中的视场角或焦距换算成针对实际图像尺寸的像素焦距 $f_x, f_y$。
    </details>
 
-**下一篇：** [相机标定]({{ '/blog/2026/3d-vision-02-camera-calibration/' | relative_url }})：如何从棋盘格图像中估计 $K$ 和畸变系数，以及如何判断结果是否可信。
+**下一篇：**[相机标定]({{ '/blog/2026/3d-vision-02-camera-calibration/' | relative_url }})：如何从棋盘格图像中估计 $K$ 和畸变系数，以及如何判断结果是否可信。

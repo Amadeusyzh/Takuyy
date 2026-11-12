@@ -2,7 +2,7 @@
 layout: post
 title: "视觉 SLAM：因子图、里程计、回环与视觉惯性融合"
 date: 2026-10-27 11:06:00+0900
-description: "把 SLAM 看作因子图上的 MAP 推断；前端与后端；基于特征与直接法的视觉里程计；够用的李群知识；带鲁棒核的 SE(3) 位姿图优化；词袋回环检测；滤波与平滑之争（EKF、MSCKF、滑动窗口）；IMU 预积分与 VIO；ORB-SLAM3、VINS、DSO、DROID-SLAM，以及 2024-2026 年的学习型与高斯 SLAM 系统。"
+description: "把 SLAM 看作因子图上的 MAP 推断；前端与后端；基于特征与直接法的视觉里程计；够用的李群知识；带鲁棒核的 SE(3) 位姿图优化；词袋回环检测；滤波与平滑之争（EKF、MSCKF、滑动窗口）；IMU 预积分与 VIO；ORB-SLAM3、VINS、DSO、DROID-SLAM，以及 2024-2026 年的学习式与高斯 SLAM 系统。"
 categories: 3d-vision
 tags: [slam, visual-odometry, factor-graph, pose-graph, lie-groups, loop-closure, bag-of-words, ekf, msckf, imu-preintegration, vio, orb-slam]
 series: 3d-vision
@@ -359,7 +359,7 @@ single level from s = 10 : 12.989
 - **稀疏**直接法使用几千个分布良好的像素。**DSO**（Engel、Koltun 和 Cremers，TPAMI 2018）在关键帧滑动窗口中联合优化位姿、逆深度以及每帧的亮度参数（一种光度光束法平差）。它的关键观察是：只有经过**光度标定（photometric calibration）**——曝光时间 $t$、相机的非线性响应函数和镜头渐晕——光度误差才有意义。DSO 中帧 $i$ 的点 $\mathbf p$ 在帧 $j$ 中被观测时，残差比较的是 $I\_j[\mathbf p'] - b\_j$ 与 $\frac{t\_j e^{a\_j}}{t\_i e^{a\_i}}\big(I\_i[\mathbf p] - b\_i\big)$，其中 $a$ 和 $b$ 是每帧估计的仿射亮度校正；残差在 $\mathbf p$ 周围一小块像素模式上计算，并使用 Huber 范数。DSO 是纯里程计：没有回环。
 - **半直接**方法，例如 **SVO**（Forster、Pizzoli 和 Scaramuzza，ICRA 2014），为了速度直接对齐小图像块，再用类似特征的重投影误差精化。
 
-直接法利用了图像中更多的信息（边缘、弱纹理），在光度模型成立时非常精确。但它们在快速运动、卷帘快门（第 01 篇第 3.5 节）、未标定的自动曝光和大视角变化下很脆弱。基于特征的方法恰好相反。学习型系统（第 9 节）试图兼取两者之长。
+直接法利用了图像中更多的信息（边缘、弱纹理），在光度模型成立时非常精确。但它们在快速运动、卷帘快门（第 01 篇第 3.5 节）、未标定的自动曝光和大视角变化下很脆弱。基于特征的方法恰好相反。学习式系统（第 9 节）试图兼取两者之长。
 
 ### 3.3 单目相机的尺度问题
 
@@ -1080,7 +1080,7 @@ VIO 中有三个主导性的实际问题：
 
 **ORB-SLAM**（Mur-Artal、Montiel 和 Tardós，TRO 2015）是基于特征设计的最完整体现，其第三版（Campos 等，TRO 2021）是常用的基线。它运行三个线程。**跟踪**线程把 ORB 特征与局部地图匹配，并优化每一帧的位姿；有 IMU 时，预积分因子也加入优化。**局部建图**线程插入关键帧、三角化并剔除点，运行局部 BA（有 IMU 时为视觉惯性 BA）。**回环**线程查询 DBoW2，对候选做几何验证，融合重复的点，优化本质图，然后启动全局 BA。它的 **Atlas** 维护多张互不相连的地图：跟踪丢失时开始一张新地图，之后若地点识别命中把两张地图联系起来，就把它们合并。同样的 ORB 特征被用于一切（跟踪、建图、重定位、回环），这让系统保持一致。在作者的评测中，其视觉惯性版本比他们对比的此前方法精确数倍。
 
-### 9.3 学习型 SLAM
+### 9.3 学习式 SLAM
 
 **DROID-SLAM**（Teed 和 Deng，NeurIPS 2021）用一个由 RAFT 光流模型（第 03 篇第 8.3 节）衍生的循环网络取代手工前端。对帧图的每条边，它预测一个稠密光流校正和逐像素置信度。随后一个**可微稠密光束法平差层**用高斯-牛顿和对深度的舒尔补，求解最能解释该光流的位姿和逐像素逆深度——正是本文和第 05 篇的那套机制。网络通过 BA 层在合成数据（TartanAir）上端到端训练，作者报告相对早期方法误差大幅降低，灾难性失败也少得多。**DPVO**（Teed、Lipson 和 Deng，NeurIPS 2023）保留"循环更新 + BA"的设计，但跟踪稀疏图像块而不是稠密光流。作者报告其精度优于 DROID 的里程计，内存只用三分之一，平均速度约快三倍。
 
@@ -1138,7 +1138,7 @@ ATE without alignment 6.69 m;  Sim(3)-aligned 0.074 m (scale 2.713 = 1/0.37)
 - **TUM RGB-D**（Sturm 等，2012）：在办公室和工业厅中录制的 39 个序列，Kinect 彩色和深度图像，640×480、30 Hz，动作捕捉真值，以及参考评估工具。
 - **EuRoC MAV**（Burri 等，IJRR 2016）：来自微型飞行器的 11 个序列，双目图像和同步的 IMU，真值来自激光跟踪仪或动作捕捉；标准的 VIO 基准，从慢速飞行到带运动模糊的快速飞行。
 - **KITTI 里程计**（Geiger 等，CVPR 2012）：双目驾驶序列，GPS/INS 真值，按长距离分段的相对误差评分。
-- **TartanAir**（合成的、照片级真实感，运动和光照困难），广泛用于训练 DROID-SLAM 等学习型系统。
+- **TartanAir**（合成的、照片级真实感，运动和光照困难），广泛用于训练 DROID-SLAM 等学习式系统。
 
 ## 动手试试
 
@@ -1172,7 +1172,7 @@ ATE without alignment 6.69 m;  Sim(3)-aligned 0.074 m (scale 2.713 = 1/0.37)
 | A micro Lie theory for state estimation in robotics (Solà, Deray, Atchuthan) | arXiv 预印本 | 2018 | [arXiv](https://arxiv.org/abs/1812.01537) | 第 4 节的李群工具箱 |
 | ORB-SLAM3 (Campos, Elvira, Gómez Rodríguez, Montiel, Tardós) | IEEE TRO | 2021 | [arXiv](https://arxiv.org/abs/2007.11898) | 视觉、视觉惯性与多地图 SLAM |
 | DROID-SLAM (Teed, Deng) | NeurIPS | 2021 | [arXiv](https://arxiv.org/abs/2108.10869) | 循环稠密光流加可微 BA 层 |
-| Deep patch visual odometry (Teed, Lipson, Deng) | NeurIPS | 2023 | [arXiv](https://arxiv.org/abs/2208.04726) | 稀疏的学习型 VO |
+| Deep patch visual odometry (Teed, Lipson, Deng) | NeurIPS | 2023 | [arXiv](https://arxiv.org/abs/2208.04726) | 稀疏的学习式 VO |
 | MASt3R-SLAM (Murai, Dexheimer, Davison) | CVPR（已发表） | 2025 | [arXiv](https://arxiv.org/abs/2412.12392) | 基于两视图三维先验的实时稠密 SLAM |
 | VGGT-SLAM (Maggio, Lim, Carlone) | NeurIPS（已发表） | 2025 | [arXiv](https://arxiv.org/abs/2505.12549) | 在 $\mathrm{SL}(4)$ 上做射影对齐的子图 SLAM |
 
@@ -1223,4 +1223,4 @@ ATE without alignment 6.69 m;  Sim(3)-aligned 0.074 m (scale 2.713 = 1/0.37)
    把 `dbg` 乘以 $k$，比较 `dR @ so3_exp(Jb["dR_bg"] @ (k * dbg))` 与 `bg = k * dbg` 时的重新积分结果；两者之差的角度应按 $k^2$ 变化。对于区间长度，用越来越大的 `m` 重复 `j = i + m`（答案在 1 到 2 秒之间）。加速度计零偏线性地进入 $\Delta\mathbf v$ 和 $\Delta\mathbf p$，因为 $\Delta R$ 与它无关，所以它的一阶修正是精确的；二阶误差来自陀螺仪零偏，经由它在区间内附加的旋转。
    </details>
 
-**下一篇：** [深度估计与多视图立体]({{ '/blog/2026/3d-vision-07-depth-estimation-and-multi-view-stereo/' | relative_url }})：有了 SLAM 或 SfM 给出的位姿，为每个像素计算深度——从平面扫描和 PatchMatch 到学习型与单目深度——并把深度图融合成一个表面。
+**下一篇：**[深度估计与多视图立体]({{ '/blog/2026/3d-vision-07-depth-estimation-and-multi-view-stereo/' | relative_url }})：有了 SLAM 或 SfM 给出的位姿，为每个像素计算深度（从平面扫描和 PatchMatch 到学习式与单目深度），并把深度图融合成一个表面。

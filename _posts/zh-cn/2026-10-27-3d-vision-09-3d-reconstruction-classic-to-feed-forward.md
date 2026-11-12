@@ -2,7 +2,7 @@
 layout: post
 title: "三维重建：从经典流水线到前馈模型"
 date: 2026-10-27 11:09:00+0900
-description: "从照片到曲面：SfM、MVS、融合与网格化组成的经典流水线，TSDF 融合与 Marching Cubes，屏蔽泊松重建，神经隐式曲面（NeuS、Neuralangelo、2DGS），前馈式三维基础模型（DUSt3R、MASt3R、VGGT 及其 2025-2026 年的后继），以及如何在 DTU、Tanks and Temples 和 ETH3D 上评测重建结果；每一步都配有 NumPy 代码。"
+description: "从照片到曲面：SfM、MVS、融合与网格化组成的经典流水线，TSDF 融合与 Marching Cubes，屏蔽泊松重建，神经曲面（NeuS、Neuralangelo、2DGS），前馈式三维基础模型（DUSt3R、MASt3R、VGGT 及其 2025-2026 年的后继），以及如何在 DTU、Tanks and Temples 和 ETH3D 上评测重建结果；每一步都配有 NumPy 代码。"
 categories: 3d-vision
 tags: [3d-reconstruction, tsdf-fusion, marching-cubes, poisson-reconstruction, neus, dust3r, vggt, evaluation]
 series: 3d-vision
@@ -71,7 +71,7 @@ K = \begin{pmatrix} f_x & c_x \\ 0 & 1 \end{pmatrix}, \qquad
 \begin{pmatrix} x_c \\ z_c \end{pmatrix} = R \begin{pmatrix} x \\ z \end{pmatrix} + \mathbf t ,
 $$
 
-其中 $R$ 是 $2\times 2$ 旋转矩阵。场景是一个精确 SDF 的零水平集：半径 45 cm 的圆盘、旋转 20° 的方块，以及只有 8 cm 厚的细杆，用来检验每种方法能保留多细的结构。相机对 SDF 做球面追踪（sphere tracing，即[图形学第 8 篇]({{ '/blog/2026/graphics-08-geometry-processing/' | relative_url }})的光线步进），把每个命中距离换算成 $z$ 深度，再加上 $\sigma = 2$ cm 的高斯噪声，得到一次**深度扫描**；这大致是消费级深度相机在 2-3 m 处的噪声水平。64 台相机分布在半径 2.6 m 的圆上，每台看向原点附近一个随机偏移 15 cm 的点。
+其中 $R$ 是 $2\times 2$ 旋转矩阵。场景是一个精确 SDF 的零水平集：半径 45 cm 的圆盘、旋转 20° 的方块，以及只有 8 cm 厚的细杆，用来检验每种方法能保留多细的结构。相机对 SDF 做球体追踪（sphere tracing，即[图形学第 8 篇]({{ '/blog/2026/graphics-08-geometry-processing/' | relative_url }})的光线步进），把每个命中距离换算成 $z$ 深度，再加上 $\sigma = 2$ cm 的高斯噪声，得到一次**深度扫描**；这大致是消费级深度相机在 2-3 m 处的噪声水平。64 台相机分布在半径 2.6 m 的圆上，每台看向原点附近一个随机偏移 15 cm 的点。
 
 ```python
 import numpy as np
@@ -156,7 +156,7 @@ scan 0: 104 of 160 pixels hit, depth 1.54 to 2.97 m
 noise-free back-projection: max |sdf| = 1.6e-04 m
 ```
 
-第二行检查几何：无噪声的深度扫描用 $\mathbf X = R^\top(d\,K^{-1}(u, 1)^\top - \mathbf t)$ 反投影后，落在表面上，误差在球面追踪的容差之内。
+第二行检查几何：无噪声的深度扫描用 $\mathbf X = R^\top(d\,K^{-1}(u, 1)^\top - \mathbf t)$ 反投影后，落在表面上，误差在球体追踪的容差之内。
 
 {% include blog_figure.liquid path="assets/img/blog/3d-vision/09-flatland.svg" localized="true" caption="平面国试验台。左：场景（灰色：圆盘、方块和细杆）与环绕的 64 台相机；相机 $k=8$（橙色）发出 160 条射线（每八条画一条），红点是它带噪声的反投影深度读数。右：这次深度扫描随像素 $u$ 的变化，真值（黑）和加了 $\sigma = 2$ cm 噪声的测量值（红）。160 个像素中有 137 个命中物体，深度从 1.57 m 到 2.60 m；跳变处是遮挡边界，射线从一个物体转到另一个物体。" %}
 
@@ -747,7 +747,7 @@ $$
 
 置信度项让网络可以说"我不知道"（天空、反光、遮挡），但要付出代价：较小的 $C$ 降低误差的权重，却要付出 $-\beta\log C$。
 
-下面在一个三维玩具场景（地面、两个方块和一个球）上看看能从点图读出什么，两台 $64 \times 48$ 的针孔相机采用第 1 篇的 OpenCV 坐标约定。"网络"是模拟的：它返回尺度未知的真实点图，带 2% 的三维噪声，并有 5% 置信度低的离群点。
+下面在一个三维玩具场景（地面、两个方块和一个球）上看看能从点图读出什么，两台 $64 \times 48$ 的针孔相机采用第 1 篇的 OpenCV 坐标约定。"网络"是模拟的：它返回尺度未知的真实点图，带 2% 的三维噪声，并有 5% 置信度低的外点。
 
 **焦距。** 设主点在图像中心、像素为正方形，则每个像素 $(u\_i, v\_i)$ 及其在相机坐标系中的三维点 $(X\_i, Y\_i, Z\_i)$ 必须满足 $(u\_i - c\_x, v\_i - c\_y) = f\_x\,(X\_i/Z\_i, Y\_i/Z\_i)$。DUSt3R 通过最小化 $\sum\_i C\_i\,\lVert (u\_i - c\_x, v\_i - c\_y) - f\_x (X\_i, Y\_i)/Z\_i \rVert$ 估计 $f\_x$，这是一个鲁棒的（不平方的）代价，用 Weiszfeld 算法求解：交替进行加权最小二乘，权重为 $C\_i / r\_i$，$r\_i$ 是当前残差。
 
@@ -854,9 +854,9 @@ focal: true 56.0, least squares 12.38, Weiszfeld 55.08
 relative pose: rotation error 0.85 deg, translation direction error 7.5 deg
 ```
 
-普通最小二乘估计的焦距被离群点毁掉了（12.38 而不是 56）：深度错误且接近零的点会有很大的 $X/Z$，在平方代价中占据主导。Weiszfeld 估计与真值相差不到 2%。旋转误差在一度以内；平移方向不那么准（7.5°），因为它是从带噪的点本身估计的，而且基线相对场景深度较短，这正是第 4 篇在两视图几何中遇到的病态问题。
+普通最小二乘估计的焦距被外点毁掉了（12.38 而不是 56）：深度错误且接近零的点会有很大的 $X/Z$，在平方代价中占据主导。Weiszfeld 估计与真值相差不到 2%。旋转误差在一度以内；平移方向不那么准（7.5°），因为它是从带噪的点本身估计的，而且基线相对场景深度较短，这正是第 4 篇在两视图几何中遇到的病态问题。
 
-{% include blog_figure.liquid path="assets/img/blog/3d-vision/09-pointmap.svg" localized="true" caption="三维玩具场景的点图。左：两台相机（紫：1，橙：2）及其看到的物体点的俯视图（省略地面）。中：$X^{1,1}$ 和 $X^{2,1}$ 以图像显示，相机 1 坐标系中的 $(X, Y, Z)$ 用同一颜色尺度映射为 RGB（白：天空）。凡是两张图像看到同一表面的地方颜色都一致，尽管像素位置不同：对应关系内置于表示之中。右：模拟网络输出的焦距代价随 $f\_x$ 的变化（每条曲线除以其最小值）。鲁棒的 L1 代价最小值在 55.1 px，紧挨真值（56，黑线）；平方代价被 5% 的离群点拉到 12.5 px。" %}
+{% include blog_figure.liquid path="assets/img/blog/3d-vision/09-pointmap.svg" localized="true" caption="三维玩具场景的点图。左：两台相机（紫：1，橙：2）及其看到的物体点的俯视图（省略地面）。中：$X^{1,1}$ 和 $X^{2,1}$ 以图像显示，相机 1 坐标系中的 $(X, Y, Z)$ 用同一颜色尺度映射为 RGB（白：天空）。凡是两张图像看到同一表面的地方颜色都一致，尽管像素位置不同：对应关系内置于表示之中。右：模拟网络输出的焦距代价随 $f\_x$ 的变化（每条曲线除以其最小值）。鲁棒的 L1 代价最小值在 55.1 px，紧挨真值（56，黑线）；平方代价被 5% 的外点拉到 12.5 px。" %}
 
 ### 7.3 多视图：全局对齐
 
@@ -999,7 +999,7 @@ $$
 \text{comp} = \frac{1}{\lvert\mathcal G\rvert}\sum_{\mathbf g\in\mathcal G} \min_{\mathbf r\in\mathcal R}\lVert\mathbf g - \mathbf r\rVert .
 $$
 
-**准确度**（accuracy）问重建出来的东西是否正确；**完整度**（completeness）问是否把一切都重建出来了。二者的平均就是 DTU 上报告的 **Chamfer 距离**。平均距离对少数很远的离群点敏感，所以 Tanks and Temples 和 ETH3D 改用阈值：给定容差 $\tau$，
+**准确度**（accuracy）问重建出来的东西是否正确；**完整度**（completeness）问是否把一切都重建出来了。二者的平均就是 DTU 上报告的 **Chamfer 距离**。平均距离对少数很远的外点敏感，所以 Tanks and Temples 和 ETH3D 改用阈值：给定容差 $\tau$，
 
 $$
 P(\tau) = \frac{\lvert\{\mathbf r \in\mathcal R: d(\mathbf r, \mathcal G) < \tau\}\rvert}{\lvert\mathcal R\rvert},
@@ -1132,7 +1132,7 @@ DTU 干净、以物体为中心，因此成为神经曲面的默认基准；Tank
 
    <details markdown="1"><summary>提示</summary>
 
-   为每次扫描的反投影点建立一个 `cKDTree`。两个场在表面被掠射观察的地方差别最大（那里投影距离约为真实距离的 $1/\cos\theta$ 倍），在深度不连续处附近也是。过零点几乎不动；差别影响的是截断（投影截断带在倾斜表面上实际上更薄），以及把场值当作距离使用的方法，例如球面追踪。
+   为每次扫描的反投影点建立一个 `cKDTree`。两个场在表面被掠射观察的地方差别最大（那里投影距离约为真实距离的 $1/\cos\theta$ 倍），在深度不连续处附近也是。过零点几乎不动；差别影响的是截断（投影截断带在倾斜表面上实际上更薄），以及把场值当作距离使用的方法，例如球体追踪。
    </details>
 
 3. 推导朴素密度在平面上的偏差，并验证正对时的 $-0.481/s$。在 60° 入射下，要让偏差小于 1 mm，$s$ 需要多大？为什么这在实践中并不能解决问题？
@@ -1163,4 +1163,4 @@ DTU 干净、以物体为中心，因此成为神经曲面的默认基准；Tank
    使用 `evaluate(sample_segments(marching_squares(g_fit, xs_n)), gt, 0.02)`，以及在 `[(R, t, render_depth(R, t)) for R, t in orbit(24)]` 上运行 `tsdf_fuse`。注意这里 NeuS 用的是无噪声深度，所以也要和无噪声的 TSDF 比较。两者看到的是相同的表面；差别来自网格分辨率（3.4 cm 对 2.5 cm）、NeuS 拟合中的内部伪轮廓，以及 Eikonal 项在方块角点处的平滑作用。
    </details>
 
-**下一篇：**[第 10 篇]({{ '/blog/2026/3d-vision-10-3d-vision-for-ar-vr/' | relative_url }})以 AR/VR 头显上的三维视觉结束本系列：由内向外的跟踪、场景理解、空间锚点，以及决定虚拟物体能否稳稳停在原处的延迟预算。
+**下一篇：**[面向 AR/VR 的三维视觉]({{ '/blog/2026/3d-vision-10-3d-vision-for-ar-vr/' | relative_url }})：本系列的最后一篇，讲 AR/VR 头显上的三维视觉：由内向外的跟踪、场景理解、空间锚点，以及决定虚拟物体能否稳稳停在原处的延迟预算。

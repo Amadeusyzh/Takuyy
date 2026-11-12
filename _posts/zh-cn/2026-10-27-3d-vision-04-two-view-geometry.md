@@ -44,7 +44,7 @@ $$
 P_1 = K_1\,[I \mid \mathbf 0], \qquad P_2 = K_2\,[R \mid \mathbf t],
 $$
 
-相机 2 的光心在相机 1 坐标系中为 $\mathbf C\_2 = -R^\top\mathbf t$（第 01 篇 2.3 节：$\mathbf t$ 不是相机 2 的位置）。相机 $i$ 的像素 $\tilde{\mathbf x}\_i = (u\_i, v\_i, 1)^\top$ 的**归一化坐标**为
+相机 2 的相机中心在相机 1 坐标系中为 $\mathbf C\_2 = -R^\top\mathbf t$（第 01 篇 2.3 节：$\mathbf t$ 不是相机 2 的位置）。相机 $i$ 的像素 $\tilde{\mathbf x}\_i = (u\_i, v\_i, 1)^\top$ 的**归一化坐标**为
 
 $$
 \hat{\mathbf x}_i = K_i^{-1}\tilde{\mathbf x}_i = (x_i,\ y_i,\ 1)^\top ,
@@ -107,11 +107,11 @@ print(len(X), "points;  t =", t, " |t| =", round(np.linalg.norm(t), 4))
 200 points;  t = [-0.839  -0.1156 -0.151 ]  |t| = 0.8602
 ```
 
-基线长度为 $\lVert\mathbf t\rVert = \lVert\mathbf C\_2\rVert = 0.86$ m。注意 $\mathbf t = (-0.839, -0.116, -0.151)$ 是 $-R\,\mathbf C\_2$：从第二个相机看到的第一个相机的光心。
+基线长度为 $\lVert\mathbf t\rVert = \lVert\mathbf C\_2\rVert = 0.86$ m。注意 $\mathbf t = (-0.839, -0.116, -0.151)$ 是 $-R\,\mathbf C\_2$：从第二个相机看到的第一个相机中心。
 
 ### 1.2 极平面、极点与极线
 
-取一个场景点 $\mathbf X$。两个光心 $\mathbf C\_1$、$\mathbf C\_2$ 与 $\mathbf X$ 是三个点，因此张成一个平面，即 $\mathbf X$ 的**极平面**（epipolar plane）。所有有意思的东西都在这个平面上：
+取一个场景点 $\mathbf X$。两个相机中心 $\mathbf C\_1$、$\mathbf C\_2$ 与 $\mathbf X$ 是三个点，因此张成一个平面，即 $\mathbf X$ 的**极平面**（epipolar plane）。所有有意思的东西都在这个平面上：
 
 - 从 $\mathbf C\_1$ 经过 $\mathbf X$ 的射线，因而也包括像点 $\mathbf x\_1$；
 - 从 $\mathbf C\_2$ 经过 $\mathbf X$ 的射线，因而也包括 $\mathbf x\_2$；
@@ -121,7 +121,7 @@ print(len(X), "points;  t =", t, " |t| =", round(np.linalg.norm(t), 4))
 
 当 $\mathbf X$ 变化时，它的极平面绕基线转动，就像书页绕书脊翻动。每个极平面都包含基线，所以图像 2 中的每条极线都经过基线穿过像平面 2 的那个点：**极点**（epipole）$\mathbf e\_2$。它是 $\mathbf C\_1$ 在相机 2 中的像。同样，$\mathbf C\_2$ 在相机 1 中的像 $\mathbf e\_1$ 位于图像 1 的每条极线上。一幅图像的所有极线构成过其极点的**线束**（pencil）。
 
-{% include blog_figure.liquid path="assets/img/blog/3d-vision/04-epipolar-geometry.svg" caption="上：三维中的例子（相机 1 紫色，相机 2 蓝色，图像矩形画在 0.9 m 深度处，黑色线段是基线）。三个场景点（橙、红、青）各自与两个光心张成一个极三角形；每个三角形沿该点的极线（粗线段）切过两个图像矩形，点的投影就落在这些线上。下：同样的直线在像素坐标中，延伸到 640×480 画面之外。在图像 1 中它们都交于极点 $\mathbf e\_1=(1653, 407)$，即 $\mathbf C\_2$ 的像；在图像 2 中交于更靠右的 $\mathbf e\_2=(3099, 623)$。两个极点都远在画面之外，因为相机 2 主要是横向移动。" %}
+{% include blog_figure.liquid path="assets/img/blog/3d-vision/04-epipolar-geometry.svg" caption="上：三维中的例子（相机 1 紫色，相机 2 蓝色，图像矩形画在 0.9 m 深度处，黑色线段是基线）。三个场景点（橙、红、青）各自与两个相机中心张成一个极三角形；每个三角形沿该点的极线（粗线段）切过两个图像矩形，点的投影就落在这些线上。下：同样的直线在像素坐标中，延伸到 640×480 画面之外。在图像 1 中它们都交于极点 $\mathbf e\_1=(1653, 407)$，即 $\mathbf C\_2$ 的像；在图像 2 中交于更靠右的 $\mathbf e\_2=(3099, 623)$。两个极点都远在画面之外，因为相机 2 主要是横向移动。" %}
 
 在图中，两个极点都在图像右侧很远的地方。这很典型：对于以横向为主的运动，基线几乎平行于像平面，在很远处才穿过它们。3.3 节展示其他情形。
 
@@ -132,7 +132,7 @@ print(len(X), "points;  t =", t, " |t| =", round(np.linalg.norm(t), 4))
 现在把图转化为方程。在相机 2 的坐标系中工作。有三个向量位于极平面内，都从 $\mathbf C\_2$（该坐标系的原点）出发：
 
 1. $\mathbf x\_2$ 的射线，方向为 $\hat{\mathbf x}\_2$；
-2. 基线，从 $\mathbf C\_2$ 指向 $\mathbf C\_1$：相机 1 的光心在相机 2 中的坐标为 $R\,\mathbf 0 + \mathbf t = \mathbf t$；
+2. 基线，从 $\mathbf C\_2$ 指向 $\mathbf C\_1$：相机 1 的相机中心在相机 2 中的坐标为 $R\,\mathbf 0 + \mathbf t = \mathbf t$；
 3. 经过 $\mathbf C\_1$ 的 $\mathbf x\_1$ 射线，其方向 $\hat{\mathbf x}\_1$ 在相机 1 坐标中给出，在相机 2 中变为 $R\,\hat{\mathbf x}\_1$。
 
 三个向量共面当且仅当它们的混合积为零：
@@ -215,7 +215,7 @@ $$
 \qquad H_\infty = K_2 R K_1^{-1},\quad \mathbf e_2 = K_2\mathbf t .
 $$
 
-当 $\lambda\_1$ 从 0 变到 $\infty$ 时，像从 $\mathbf e\_2$（深度 0：相机 1 光心的像）移动到 $H\_\infty\tilde{\mathbf x}\_1$（深度无穷大：这条射线的消失点，见第 01 篇 1.6 节）。极线就是经过这两点的直线 $\mathbf l\_2 = \mathbf e\_2\times H\_\infty\tilde{\mathbf x}\_1$，所以
+当 $\lambda\_1$ 从 0 变到 $\infty$ 时，像从 $\mathbf e\_2$（深度 0：相机 1 的中心的像）移动到 $H\_\infty\tilde{\mathbf x}\_1$（深度无穷大：这条射线的消失点，见第 01 篇 1.6 节）。极线就是经过这两点的直线 $\mathbf l\_2 = \mathbf e\_2\times H\_\infty\tilde{\mathbf x}\_1$，所以
 
 $$
 F = [\mathbf e_2]_\times H_\infty = [K_2\mathbf t]_\times K_2 R K_1^{-1} ,
@@ -277,7 +277,7 @@ l2 passes through e2: True ; l1 through e1: True
 rank of F: 2  singular values: [1.     0.0014 0.    ]
 ```
 
-$F$ 的零向量与另一个相机光心的投影一致，两个极点都在极线上，$F$ 的秩为 2。它的奇异值 $(1, 0.0014, 0)$ 很不均衡，这与 $E$ 不同：像素单位混合了量级为 1 和 500 的尺度。
+$F$ 的零向量与另一个相机中心的投影一致，两个极点都在极线上，$F$ 的秩为 2。它的奇异值 $(1, 0.0014, 0)$ 很不均衡，这与 $E$ 不同：像素单位混合了量级为 1 和 500 的尺度。
 
 ### 3.3 运动对线束的影响
 
@@ -1349,4 +1349,4 @@ left-right check rejects 8.7% of pixels, 84% of the occluded ones; bad pixels am
    对角路径依次访问 $(x, y), (x+1, y+1), \dots$；递推式相同，前一个像素为 $(x-1, y-1)$。一种向量化方法是逐行处理图像，`prev` 取上一行平移一列的结果（空出的列用原始代价 $C$ 填充）。对 census，把每个像素的 24 个邻居与中心比较，把比特打包成一个整数，再用查找表统计异或后不同的比特数。增益会改变每个绝对差，但不改变任何 census 比特，所以 SAD 应当变差而 census 不会。
    </details>
 
-**下一篇：** [第 05 篇]({{ '/blog/2026/3d-vision-05-multi-view-geometry-and-bundle-adjustment/' | relative_url }})从两个视图走向多个视图：用 PnP 做相机重定位、增量式与全局式运动恢复结构，以及光束法平差，它同时精化所有相机和点，本篇的相对位姿和三角化最终都汇入其中。
+**下一篇：**[多视图几何与光束法平差]({{ '/blog/2026/3d-vision-05-multi-view-geometry-and-bundle-adjustment/' | relative_url }})：从两个视图走向多个视图，包括用 PnP 做相机后方交会、增量式与全局式运动恢复结构，以及光束法平差；它同时精化所有相机和点，本篇的相对位姿和三角化最终都汇入其中。

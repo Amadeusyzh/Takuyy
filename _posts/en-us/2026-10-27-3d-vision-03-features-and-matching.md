@@ -1035,4 +1035,4 @@ ORB   759 /  864 keypoints, 336 ratio-test matches, 316 MAGSAC++ inliers, corner
    Remember the sub-pixel part you lost by rounding: the corner returns to $(x_i + d^b_x) - (x_i - x_e)$, where $x_e$ is the forward end point and $x_i$ its rounding. Also skip end points whose window leaves the image. We found that the check catches all 6 failures but also rejects 4 of the 14 correct tracks: the backward track faces the same 14 px motion and fails just as often. The check is a reliable alarm only when both directions are tracked with a method that can handle the motion, such as the pyramid.
    </details>
 
-**Next:** [post 4]({{ '/blog/2026/3d-vision-04-two-view-geometry/' | relative_url }}) uses these correspondences to recover the geometry of two views: epipolar lines, the essential and fundamental matrices, relative pose and triangulation.
+**Next:** [Two-view geometry]({{ '/blog/2026/3d-vision-04-two-view-geometry/' | relative_url }}): recover the geometry of two views from these correspondences: epipolar lines, the essential and fundamental matrices, relative pose and triangulation.

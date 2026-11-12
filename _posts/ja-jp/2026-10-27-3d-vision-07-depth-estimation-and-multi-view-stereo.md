@@ -1,8 +1,8 @@
 ---
 layout: post
-title: "奥行き推定とマルチビューステレオ：センサー、平面掃引、PatchMatch、学習型 MVS、単眼深度"
+title: "奥行き推定とマルチビューステレオ：センサー、平面掃引、PatchMatch、学習型 MVS、単眼奥行き"
 date: 2026-10-27 11:07:00+0900
-description: "姿勢付き画像から密な奥行きへ：奥行き・距離・視差、ステレオ、構造化光、Time-of-Flight、LiDAR の各センサー、コストボリュームによる平面掃引ステレオ、傾いた平面を使う PatchMatch マルチビューステレオ、MVSNet と soft-argmin、MiDaS から Depth Anything、メトリック深度モデルまでの単眼深度推定、TSDF による奥行き統合を、各ステップの NumPy コード付きで解説します。"
+description: "姿勢付き画像から密な奥行きへ：奥行き・距離・視差、ステレオ、構造化光、Time-of-Flight、LiDAR の各センサー、コストボリュームによる平面掃引ステレオ、傾いた平面を使う PatchMatch マルチビューステレオ、MVSNet と soft-argmin、MiDaS から Depth Anything、メトリック奥行きモデルまでの単眼奥行き推定、TSDF による奥行き統合を、各ステップの NumPy コード付きで解説します。"
 categories: 3d-vision
 tags: [depth-estimation, multi-view-stereo, plane-sweep, patchmatch, mvsnet, monocular-depth, tsdf, time-of-flight, structured-light]
 series: 3d-vision
@@ -20,7 +20,7 @@ related_posts: false
 
 1. 能動センサーで**測る**：構造化光プロジェクター、Time-of-Flight（ToF）カメラ、LiDAR。
 2. 姿勢付きの複数画像から**密に三角測量する**：平面掃引ステレオ（plane-sweep stereo）、PatchMatch マルチビューステレオ（multi-view stereo、MVS）、そして MVSNet などの学習型版。
-3. 何百万ものシーンを見てきたネットワークで **1 枚の画像から推測する**：単眼深度推定（MiDaS、Depth Anything、メトリック深度モデル）。
+3. 何百万ものシーンを見てきたネットワークで **1 枚の画像から推測する**：単眼奥行き推定（MiDaS、Depth Anything、メトリック奥行きモデル）。
 
 最後に、多数の視点からの多数の奥行きマップを**打ち切り符号付き距離関数**（truncated signed distance function、TSDF）で一つの整合したモデルに統合します。以降のすべての話題がこれを土台にしています。[第 8 回]({{ '/blog/2026/3d-vision-08-3d-representations/' | relative_url }})の 3D 表現、[第 9 回]({{ '/blog/2026/3d-vision-09-3d-reconstruction-classic-to-feed-forward/' | relative_url }})の復元パイプライン、NeRF や 3D Gaussian Splatting の学習に使う奥行き事前分布、そして[第 10 回]({{ '/blog/2026/3d-vision-10-3d-vision-for-ar-vr/' | relative_url }})の AR ヘッドセットのシーンメッシュです。
 
@@ -331,7 +331,7 @@ ToF には固有の失敗モードがあります。**マルチパス**（部屋
 
 **LiDAR** は走査する dToF 測距器です。回転式のマルチビーム、MEMS ミラー、光フェーズドアレイ、あるいはシーン全体を一度に照らすフラッシュ LiDAR などがあります。画像の画素ごとの z 奥行きではなく、既知のビーム方向に沿った**距離**を、数十から数百メートルでセンチメートル級の精度で返します。FMCW LiDAR はパルスを計時する代わりにレーザー周波数をチャープし、ドップラーシフトから視線方向の速度も測ります。
 
-LiDAR と本シリーズをつなぐ点が二つあります。第一に、LiDAR をカメラと一緒に使うには、LiDAR-カメラ間の外部パラメータで点をカメラ座標系に変換し、$K$ で投影します（[第 1 回]({{ '/blog/2026/3d-vision-01-image-formation-and-camera-models/' | relative_url }})）。結果は**疎な**奥行き画像で、値のある画素は数パーセントしかないこともよくあります。**デプス補完**（depth completion）ネットワークは画像を手がかりにそれを密にします。第二に、2 つのセンサー間の外部キャリブレーションは[第 2 回]({{ '/blog/2026/3d-vision-02-camera-calibration/' | relative_url }})の意味でのキャリブレーション問題で、通常は両方から見えるターゲットで解きます。
+LiDAR と本シリーズをつなぐ点が二つあります。第一に、LiDAR をカメラと一緒に使うには、LiDAR-カメラ間の外部パラメータで点をカメラ座標系に変換し、$K$ で投影します（[第 1 回]({{ '/blog/2026/3d-vision-01-image-formation-and-camera-models/' | relative_url }})）。結果は**疎な**奥行き画像で、値のある画素は数パーセントしかないこともよくあります。**奥行き補完**（depth completion）ネットワークは画像を手がかりにそれを密にします。第二に、2 つのセンサー間の外部キャリブレーションは[第 2 回]({{ '/blog/2026/3d-vision-02-camera-calibration/' | relative_url }})の意味でのキャリブレーション問題で、通常は両方から見えるターゲットで解きます。
 
 ### 2.5 センサーの比較
 
@@ -344,7 +344,7 @@ LiDAR と本シリーズをつなぐ点が二つあります。第一に、LiDAR
 | 間接 ToF | 変調光の位相 | 密、小型、計算が少ない | マルチパス、フライングピクセル、位相の折り返し、日光 |
 | 直接 ToF / LiDAR | パルスの計時 | 遠距離、精度がほぼ距離によらない、暗闇でも動作 | 疎、高価（走査）、雨や霧、黒い面や鏡面 |
 
-完璧なセンサーはありません。そしてどれも同じ種類の出力を出します。ノイズ、穴、外れ値を含む奥行きマップです。7 節ではそうした奥行きマップの統合法を示します。その前に、普通の画像から奥行きを計算しましょう。
+完璧なセンサーはありません。そしてどれも同じ種類の出力を出します。ノイズ、穴、アウトライアを含む奥行きマップです。7 節ではそうした奥行きマップの統合法を示します。その前に、普通の画像から奥行きを計算しましょう。
 
 ## 3. 平面掃引ステレオとコストボリューム
 
@@ -492,7 +492,7 @@ for name, z in (("view 1 only", z_one), ("mean of 4", z_mean), ("best 2 of 4", z
 - **A（テクスチャ）**：理想的な場合。どの視点でも正しい場所に鋭く一意な最小があります。
 - **B（テクスチャなし）**：マッチングするものがありません。2 つのノイズ窓の NCC はランダムなので、「最良」の平面もランダムです。局所的なコストではどうにもならず、ポスター周囲のテクスチャのある領域から奥行きを伝える事前知識（滑らかさ、3.8 節；平面、4 節）か、能動的な光（2.2 節）が必要です。
 - **C（繰り返しテクスチャ）**：周期 $p$ 画素の縞は $p$ ずらすと自分自身と一致するので、一つの視点には同じくらい良い最小がいくつもあります。**基線の異なる**視点はこれらのエイリアスを異なる奥行きに置き、真の奥行きだけがすべての視点で最小になります。これが**マルチベースラインステレオ**（multiple-baseline stereo）の考え方で（Okutomi と Kanade、1993）、彼らは逆距離上で複数の基線の SSD 曲線を足し合わせました。エピポーラ線が縞**に沿って**走る視点は一定の模様を見るだけで情報を持ちません。第 3 回の開口問題の別の姿です。
-- **D（隠れ）**：視点 2（0.25 m 左）からはこの画素の表面点が箱に隠れているので、視点 2 は壁と箱を比べてしまい、真の奥行きで高いコストを出します。この外れ値を平均に入れると最小が動き、最悪の視点を無視すれば保たれます。
+- **D（隠れ）**：視点 2（0.25 m 左）からはこの画素の表面点が箱に隠れているので、視点 2 は壁と箱を比べてしまい、真の奥行きで高いコストを出します。このアウトライアを平均に入れると最小が動き、最悪の視点を無視すれば保たれます。
 
 ### 3.7 多数の視点：集約と隠れ
 
@@ -753,21 +753,21 @@ MVSNet 以降の主な研究の流れです（いずれも下の論文表で確�
 - **粗から密へのカスケード。** CasMVSNet（Gu ら、2020）は低解像度で奥行き範囲全体の粗いコストボリュームを作り、次に高解像度で前段の推定の周りに狭いボリュームを作ります。同じ奥行き精度がずっと少ない平面で得られます。
 - **学習型 PatchMatch。** PatchmatchNet（Wang ら、2021）は 4 節をネットワークにしました。学習した適応的な伝播と評価を粗から密へ反復し、完全なコストボリュームを必要としません。
 
-2 視点ステレオのネットワークは並行した道をたどりました。GC-Net が 3D CNN のコストボリュームと soft-argmin を導入し、RAFT-Stereo（Lipson ら、2021）は 3D CNN を、全ペア相関ピラミッドに駆動される視差場の再帰的更新で置き換え（第 3 回の RAFT のステレオ版）、FoundationStereo（Wen ら、CVPR 2025）は凍結した単眼深度モデル（Depth Anything V2）の特徴をマッチング用の特徴に取り込んでゼロショットで汎化します。学習型ステレオと MVS は単眼深度からますます多くを借りるようになっており、それが次節の話題です。
+2 視点ステレオのネットワークは並行した道をたどりました。GC-Net が 3D CNN のコストボリュームと soft-argmin を導入し、RAFT-Stereo（Lipson ら、2021）は 3D CNN を、全ペア相関ピラミッドに駆動される視差場の再帰的更新で置き換え（第 3 回の RAFT のステレオ版）、FoundationStereo（Wen ら、CVPR 2025）は凍結した単眼奥行きモデル（Depth Anything V2）の特徴をマッチング用の特徴に取り込んでゼロショットで汎化します。学習型ステレオと MVS は単眼奥行きからますます多くを借りるようになっており、それが次節の話題です。
 
 学習型 MVS もまだ**既知のカメラ**を必要とします。DUSt3R、VGGT、Depth Anything 3（Lin ら、arXiv 2025 年 11 月、ICLR 2026）などのフィードフォワード 3D モデルは、姿勢のない画像から奥行きとカメラ姿勢を同時に予測します。これらは[第 9 回]({{ '/blog/2026/3d-vision-09-3d-reconstruction-classic-to-feed-forward/' | relative_url }})の主題です。
 
-## 6. 単眼深度推定
+## 6. 単眼奥行き推定
 
 ### 6.1 1 枚では足りない理由、それでもうまくいく理由
 
 1 枚の画像からは、奥行きは原理的に曖昧です。シーン全体をカメラ中心を基準に $s$ 倍すると、各点 $\mathbf X\_c$ は $s\mathbf X\_c$ になり、$K(s\mathbf X\_c) \sim K\mathbf X\_c$ は同じ画素に投影されます。ドールハウスと本物の家が同じ写真になりえます。さらに悪いことに、焦点距離が奥行きと結びついています。奥行き $z$ にある高さ $h$ の物体の像の高さは $fh/z$ なので、長いレンズと遠い物体は同じに見えます。
 
-それでも人は片目で奥行きを判断します。世界は任意ではないからです。見慣れた物の大きさ、平行線の透視（第 1 回の消失点）、テクスチャの勾配、隠れの順序、陰影、かすみ、ぼけ。十分な画像で学習したネットワークは同じ手がかりを学びます。追加情報なしに学べないのは全体のスケール（とカメラが未知なら焦点距離）です。そのため単眼深度モデルには二種類あります。未知のスケールとシフトを除いて奥行きを予測する**相対**（アフィン不変）モデルと、メートル単位で予測し、何らかの方法でカメラを解決しなければならない**メトリック**モデルです。
+それでも人は片目で奥行きを判断します。世界は任意ではないからです。見慣れた物の大きさ、平行線の透視（第 1 回の消失点）、テクスチャの勾配、隠れの順序、陰影、かすみ、ぼけ。十分な画像で学習したネットワークは同じ手がかりを学びます。追加情報なしに学べないのは全体のスケール（とカメラが未知なら焦点距離）です。そのため単眼奥行きモデルには二種類あります。未知のスケールとシフトを除いて奥行きを予測する**相対**（アフィン不変）モデルと、メートル単位で予測し、何らかの方法でカメラを解決しなければならない**メトリック**モデルです。
 
 ### 6.2 スケール不変な損失
 
-初期の深層単眼深度ネットワークの一つである Eigen、Puhrsch、Fergus（2014）は、全体のスケールを無視する損失を導入しました。$n$ 画素について $g\_i = \log\hat z\_i - \log z\_i^\ast$ とすると
+初期の深層単眼奥行きネットワークの一つである Eigen、Puhrsch、Fergus（2014）は、全体のスケールを無視する損失を導入しました。$n$ 画素について $g\_i = \log\hat z\_i - \log z\_i^\ast$ とすると
 
 $$
 D(\hat{\mathbf z}, \mathbf z^\ast) = \frac1n\sum_i g_i^2 - \frac{\lambda}{n^2}\Big(\sum_i g_i\Big)^2 .
@@ -796,7 +796,7 @@ $$
 
 ### 6.4 相対モデルを使う：実践での位置合わせ
 
-少数のメトリックなアンカーがあれば、相対予測はメトリック深度になります。LiDAR の点、スケールの分かった SfM の点、床の高さ、ステレオ対などです。下のコードは、相対ネットワークを真の逆奥行きのアフィン関数に、空間的に相関した滑らかな誤差と画素ノイズを加えたものとして模擬し（実際のネットワークの誤差も似ています。物体の上では滑らかで、境界で大きい）、位置合わせします。
+少数のメトリックなアンカーがあれば、相対予測はメトリック奥行きになります。LiDAR の点、スケールの分かった SfM の点、床の高さ、ステレオ対などです。下のコードは、相対ネットワークを真の逆奥行きのアフィン関数に、空間的に相関した滑らかな誤差と画素ノイズを加えたものとして模擬し（実際のネットワークの誤差も似ています。物体の上では滑らかで、境界で大きい）、位置合わせします。
 
 ```python
 def align_scale_shift(pred, target, mask):
@@ -849,9 +849,9 @@ for n_anchor in (3, 10, 30, 100, 1000):                              # sparse me
 
 当てはめた `s = 0.5876, t = -0.1476` は、模擬したアフィン写像の正確な逆 $1/1.7 = 0.5882$ と $-0.25/1.7 = -0.1471$ に近く、`AbsRel 0.0144, RMSE 0.105 m, delta1 1.000` を与えます。シフトを無視してスケールだけを合わせると（$z = k/p$、$k$ は中央値）`AbsRel 0.1205, RMSE 0.751 m` で、8 倍悪くなります。モデルの出力がアフィン不変なときによくある誤りです。疎なアンカーでは、ランダムな 3 点で AbsRel の中央値は 0.0189 ですが裾が悪く（90 パーセンタイル 0.0677）、10 点で 0.0154（0.0180）、30 点で全 19,200 画素と同等（0.0148 対 0.0144）になります。未知数が二つなのでアンカーは少なくてよいのですが、散らばっている必要があります。
 
-{% include blog_figure.liquid path="assets/img/blog/3d-vision/07-mono-align.svg" localized="true" caption="(a) 模擬した相対深度の予測 $p$ と真の逆奥行き：ばらつきのあるアフィン関係で、当てはめた直線は $w = 0.588\,p - 0.148$。(b) スケールとシフトで位置合わせした後の相対奥行き誤差（AbsRel 0.0144）。残るのは予測誤差の滑らかな低周波成分で、どんな大域的な位置合わせでも取り除けません。(c) $n$ 個のランダムなメトリックアンカーで位置合わせした後の AbsRel（各 50 回の試行、中央値と 90 パーセンタイル）。点線は全画素での位置合わせ（灰、0.0144）とスケールのみの位置合わせ（赤、0.1205）。" %}
+{% include blog_figure.liquid path="assets/img/blog/3d-vision/07-mono-align.svg" localized="true" caption="(a) 模擬した相対奥行きの予測 $p$ と真の逆奥行き：ばらつきのあるアフィン関係で、当てはめた直線は $w = 0.588\,p - 0.148$。(b) スケールとシフトで位置合わせした後の相対奥行き誤差（AbsRel 0.0144）。残るのは予測誤差の滑らかな低周波成分で、どんな大域的な位置合わせでも取り除けません。(c) $n$ 個のランダムなメトリックアンカーで位置合わせした後の AbsRel（各 50 回の試行、中央値と 90 パーセンタイル）。点線は全画素での位置合わせ（灰、0.0144）とスケールのみの位置合わせ（赤、0.1205）。" %}
 
-**評価指標。** 単眼深度の論文は **AbsRel** $= \frac1n\sum\lvert\hat z - z^\ast\rvert/z^\ast$、メートル単位の **RMSE**、そしてしきい値精度 **$\delta\_1$**（$\max(\hat z/z^\ast, z^\ast/\hat z) < 1.25$ を満たす画素の割合。しきい値 $1.25^2$、$1.25^3$ の $\delta\_2$、$\delta\_3$ もあります）を報告します。相対モデルでは、これらの指標は上の位置合わせの後で計算します。$\delta\_1$ がいかに甘いかに注意してください。AbsRel が 8 倍悪いスケールのみの結果でも、$\delta\_1 = 0.991$ です。
+**評価指標。** 単眼奥行きの論文は **AbsRel** $= \frac1n\sum\lvert\hat z - z^\ast\rvert/z^\ast$、メートル単位の **RMSE**、そしてしきい値精度 **$\delta\_1$**（$\max(\hat z/z^\ast, z^\ast/\hat z) < 1.25$ を満たす画素の割合。しきい値 $1.25^2$、$1.25^3$ の $\delta\_2$、$\delta\_3$ もあります）を報告します。相対モデルでは、これらの指標は上の位置合わせの後で計算します。$\delta\_1$ がいかに甘いかに注意してください。AbsRel が 8 倍悪いスケールのみの結果でも、$\delta\_1 = 0.991$ です。
 
 ### 6.5 自己教師あり学習と基盤モデル
 
@@ -859,21 +859,21 @@ for n_anchor in (3, 10, 30, 100, 1000):                              # sparse me
 
 最近の飛躍は規模から来ました。**Depth Anything**（Yang ら、CVPR 2024）は、150 万枚のラベル付き画像に加え、教師モデルで疑似ラベルを付けた約 6,200 万枚のラベルなし画像で DPT 型のモデルを学習しました。強いデータ拡張と、凍結した DINOv2 エンコーダーへの特徴整合損失を使っています。**Depth Anything V2**（NeurIPS 2024）は教師モデルの実ラベル画像を精密な合成ラベル画像に置き換え、細部を鋭くしました。**Marigold**（Ke ら、CVPR 2024）は別の道をとりました。Stable Diffusion の画像生成器を微調整し、画像を条件としてアフィン不変な奥行きマップを「生成」させ、生成器が持つシーンの事前知識を利用します。**Video Depth Anything**（Chen ら、CVPR 2025）は時空間ヘッドを加え、長い動画で一貫した奥行きを出します。
 
-### 6.6 メトリック深度とカメラの問題
+### 6.6 メトリック奥行きとカメラの問題
 
 メートル単位で予測するには、6.1 節の $f$-$z$ の曖昧さのため、モデルはカメラを知る必要があります。2024-2025 年世代のメトリックモデルはこれをさまざまに扱います。
 
 - **正準カメラ。** Metric3D（Yin ら、ICCV 2023）と Metric3D v2（Hu ら、TPAMI 2024）はすべての学習画像（またはそのラベル）を正準の焦点距離に変換し、「高さ 50 画素の車」が常に同じ奥行きを意味するようにします。テスト時には既知の焦点距離で予測を元に戻します。
-- **カメラを予測する。** UniDepth（Piccinelli ら、CVPR 2024）は専用モジュールでカメラ光線を予測し、それを条件に奥行きを出します。Depth Pro（Bochkovskii ら、ICLR 2025）は焦点距離そのものを推定し、1 秒未満で鋭いメトリック深度を生成します。
+- **カメラを予測する。** UniDepth（Piccinelli ら、CVPR 2024）は専用モジュールでカメラ光線を予測し、それを条件に奥行きを出します。Depth Pro（Bochkovskii ら、ICLR 2025）は焦点距離そのものを推定し、1 秒未満で鋭いメトリック奥行きを生成します。
 - **奥行きではなく幾何を予測する。** MoGe（Wang ら、CVPR 2025）はアフィン不変な 3D 点マップ（奥行きと光線を一緒に）を予測し、小さな最適化で焦点距離とシフトを復元します。
 
-メトリック単眼深度は今や、ほとんどどこでも事前知識として使えるほど良くなりました。MVS や SLAM の初期化、センサー奥行きの穴埋め、NeRF や Gaussian Splatting の教師、ロボットへの最初の幾何の推測です。それでも学習による推測であることに変わりはありません。近距離ではキャリブレーション済みのステレオ対より誤差が大きく、珍しいシーン（鏡、絵画、ミニチュア模型）では自信満々に間違えることがあります。上の位置合わせのように幾何的な測定と組み合わせれば、両方の良いところを得られます。
+メトリック単眼奥行きは今や、ほとんどどこでも事前知識として使えるほど良くなりました。MVS や SLAM の初期化、センサー奥行きの穴埋め、NeRF や Gaussian Splatting の教師、ロボットへの最初の幾何の推測です。それでも学習による推測であることに変わりはありません。近距離ではキャリブレーション済みのステレオ対より誤差が大きく、珍しいシーン（鏡、絵画、ミニチュア模型）では自信満々に間違えることがあります。上の位置合わせのように幾何的な測定と組み合わせれば、両方の良いところを得られます。
 
 ## 7. 奥行きの統合
 
 ### 7.1 多数の奥行きマップから一つのモデルへ
 
-MVS は画像ごとに 1 枚の奥行きマップを、深度カメラは毎秒 30 枚を出します。それらは重なり合い、ノイズのため少しずつ食い違い、外れ値を含みます。統合はそれらを一つの整合したモデルにします。COLMAP が使う最も単純な統合は点の上で行います。
+MVS は画像ごとに 1 枚の奥行きマップを、奥行きカメラは毎秒 30 枚を出します。それらは重なり合い、ノイズのため少しずつ食い違い、アウトライアを含みます。統合はそれらを一つの整合したモデルにします。COLMAP が使う最も単純な統合は点の上で行います。
 
 1. **各奥行きマップを整合性でフィルタリング**：画素の 3D 点を隣の視点に投影し、そこで隣の奥行きを読み、逆投影し、最初の視点に投影し直します。1 画素程度以内に戻り、奥行きが 1% 程度以内で一致すれば、その画素はその隣と整合しています。2 つか 3 つ以上の隣と整合する画素を残します。
 2. すべての視点で残った点を**併合**し、複数の視点で同じ画素に投影される点は平均します。
@@ -899,7 +899,7 @@ $$
 
 距離を平均するのが正しい理由：各光線上の奥行きノイズがガウス分布なら、多数の観測からの表面位置の最尤推定は（重み付き）平均であり、平均した距離関数のゼロ交差がまさにその平均です。重み $w\_k$ には信頼度を込められます。斜めからの観測、遠距離、ToF の振幅が低いときは小さくします。表面は $T$ の**ゼロ等値面**で、マーチングキューブ（[グラフィックス第 8 回]({{ '/blog/2026/graphics-08-geometry-processing/' | relative_url }})で導出）で取り出すか、レイキャストで直接描画します。
 
-**KinectFusion**（Newcombe ら、2011）はこれを GPU でリアルタイムにしました。新しい奥行きフレームを、現在の TSDF をレイキャストしたものに ICP で位置合わせし（トラッキング）、それから統合します（マッピング）。密なグリッドはほとんどのボクセルが空なので無駄が多く、**ボクセルハッシング**（Nießner ら、2013）は表面の近くにだけ小さなボクセルブロックを割り当ててハッシュテーブルで索引付けし、部屋規模や建物規模の統合を可能にしました。密なグリッド、八分木、ハッシュ、その他の表現の間のトレードオフは[第 8 回]({{ '/blog/2026/3d-vision-08-3d-representations/' | relative_url }})の主題です。
+**KinectFusion**（Newcombe ら、2011）はこれを GPU でリアルタイムにしました。新しい奥行きフレームを、現在の TSDF をレイキャストしたものに ICP で位置合わせし（追跡）、それから統合します（マッピング）。密なグリッドはほとんどのボクセルが空なので無駄が多く、**ボクセルハッシング**（Nießner ら、2013）は表面の近くにだけ小さなボクセルブロックを割り当ててハッシュテーブルで索引付けし、部屋規模や建物規模の統合を可能にしました。密なグリッド、八分木、ハッシュ、その他の表現の間のトレードオフは[第 8 回]({{ '/blog/2026/3d-vision-08-3d-representations/' | relative_url }})の主題です。
 
 ### 7.3 2D の TSDF 統合をコードで
 
@@ -1003,7 +1003,7 @@ print("fused TSDF:", ", ".join("%d scans %.2f mm" % (k, 1000 * v) for k, v in ts
 
 ### 7.4 TSDF 統合の限界
 
-TSDF 統合は頑健で単純なので、今もあらゆる深度カメラの SDK に入っています。その限界が次の回々の動機になります。一様なグリッドはメモリを浪費するか細部をぼかします。打ち切り幅より薄い構造（椅子の脚、ケーブル）は、反対側から見ると平均で消えてしまいます。一方の側の「後ろ」がもう一方の側の「手前」を上書きするからです。統合は正確な既知の姿勢を仮定し、姿勢誤差は表面をにじませます（[第 6 回]({{ '/blog/2026/3d-vision-06-visual-slam/' | relative_url }})の SLAM のループクロージャーは後から TSDF を変形させます）。そして幾何だけを保存し、見え方や視点依存の効果は保存しません。[第 8 回]({{ '/blog/2026/3d-vision-08-3d-representations/' | relative_url }})は TSDF をメッシュ、点群、ニューラル場、ガウシアンと比較し、[第 9 回]({{ '/blog/2026/3d-vision-09-3d-reconstruction-classic-to-feed-forward/' | relative_url }})には対話的な TSDF 統合ウィジェットと完全な復元パイプラインがあります。
+TSDF 統合は頑健で単純なので、今もあらゆる奥行きカメラの SDK に入っています。その限界が次の回々の動機になります。一様なグリッドはメモリを浪費するか細部をぼかします。打ち切り幅より薄い構造（椅子の脚、ケーブル）は、反対側から見ると平均で消えてしまいます。一方の側の「後ろ」がもう一方の側の「手前」を上書きするからです。統合は正確な既知の姿勢を仮定し、姿勢誤差は表面をにじませます（[第 6 回]({{ '/blog/2026/3d-vision-06-visual-slam/' | relative_url }})の SLAM のループ閉じ込みーは後から TSDF を変形させます）。そして幾何だけを保存し、見え方や視点依存の効果は保存しません。[第 8 回]({{ '/blog/2026/3d-vision-08-3d-representations/' | relative_url }})は TSDF をメッシュ、点群、ニューラル場、ガウシアンと比較し、[第 9 回]({{ '/blog/2026/3d-vision-09-3d-reconstruction-classic-to-feed-forward/' | relative_url }})には対話的な TSDF 統合ウィジェットと完全な復元パイプラインがあります。
 
 ## 8. 奥行きと MVS の評価
 
@@ -1039,10 +1039,10 @@ TSDF 統合は頑健で単純なので、今もあらゆる深度カメラの SD
 | Accurate, dense, and robust multiview stereopsis (Furukawa, Ponce) | TPAMI | 2010 | [DOI](https://doi.org/10.1109/TPAMI.2009.161) | PMVS、パッチベースの MVS |
 | PatchMatch stereo: stereo matching with slanted support windows (Bleyer, Rhemann, Rother) | BMVC | 2011 | [DOI](https://doi.org/10.5244/C.25.14) | PatchMatch で求める画素ごとの傾いた平面 |
 | Structured-light 3D surface imaging: a tutorial (Geng) | Advances in Optics and Photonics | 2011 | [DOI](https://doi.org/10.1364/AOP.3.000128) | 構造化光の符号化方式のサーベイ |
-| KinectFusion: real-time dense surface mapping and tracking (Newcombe et al.) | ISMAR | 2011 | [DOI](https://doi.org/10.1109/ISMAR.2011.6092378) | ICP トラッキング付きのリアルタイム TSDF 統合 |
+| KinectFusion: real-time dense surface mapping and tracking (Newcombe et al.) | ISMAR | 2011 | [DOI](https://doi.org/10.1109/ISMAR.2011.6092378) | ICP 追跡付きのリアルタイム TSDF 統合 |
 | Real-time 3D reconstruction at scale using voxel hashing (Nießner et al.) | ACM TOG (SIGGRAPH Asia) | 2013 | [DOI](https://doi.org/10.1145/2508363.2508374) | ハッシュテーブルに格納した疎な TSDF ブロック |
 | Large scale multi-view stereopsis evaluation (Jensen et al.) | CVPR | 2014 | [DOI](https://doi.org/10.1109/CVPR.2014.59) | DTU MVS ベンチマーク |
-| Depth map prediction from a single image using a multi-scale deep network (Eigen, Puhrsch, Fergus) | NeurIPS | 2014 | [arXiv](https://arxiv.org/abs/1406.2283) | 初期の深層単眼深度推定。スケール不変損失 |
+| Depth map prediction from a single image using a multi-scale deep network (Eigen, Puhrsch, Fergus) | NeurIPS | 2014 | [arXiv](https://arxiv.org/abs/1406.2283) | 初期の深層単眼奥行き推定。スケール不変損失 |
 | Massively parallel multiview stereopsis by surface normal diffusion (Galliani, Lasinger, Schindler) | ICCV | 2015 | [DOI](https://doi.org/10.1109/ICCV.2015.106) | Gipuma：GPU 上の赤黒 PatchMatch |
 | Pixelwise view selection for unstructured multi-view stereo (Schönberger et al.) | ECCV | 2016 | [DOI](https://doi.org/10.1007/978-3-319-46487-9_31) | COLMAP MVS：奥行き、法線、視点選択の同時推定 |
 | End-to-end learning of geometry and context for deep stereo regression (Kendall et al.) | ICCV | 2017 | [arXiv](https://arxiv.org/abs/1703.04309) | GC-Net：3D CNN のコストボリュームと soft-argmin |
@@ -1057,12 +1057,12 @@ TSDF 統合は頑健で単純なので、今もあらゆる深度カメラの SD
 | Vision transformers for dense prediction (Ranftl, Bochkovskiy, Koltun) | ICCV | 2021 | [arXiv](https://arxiv.org/abs/2103.13413) | DPT |
 | PatchmatchNet: learned multi-view patchmatch stereo (Wang et al.) | CVPR | 2021 | [arXiv](https://arxiv.org/abs/2012.01411) | 学習型の反復 PatchMatch |
 | RAFT-Stereo: multilevel recurrent field transforms for stereo matching (Lipson, Teed, Deng) | 3DV | 2021 | [arXiv](https://arxiv.org/abs/2109.07547) | 相関ピラミッド上の再帰的ステレオ |
-| Depth Anything: unleashing the power of large-scale unlabeled data (Yang et al.) | CVPR | 2024 | [arXiv](https://arxiv.org/abs/2401.10891) | 6,200 万枚の疑似ラベル画像からの相対深度 |
+| Depth Anything: unleashing the power of large-scale unlabeled data (Yang et al.) | CVPR | 2024 | [arXiv](https://arxiv.org/abs/2401.10891) | 6,200 万枚の疑似ラベル画像からの相対奥行き |
 | Repurposing diffusion-based image generators for monocular depth estimation (Ke et al.) | CVPR | 2024 | [arXiv](https://arxiv.org/abs/2312.02145) | Marigold |
-| UniDepth: universal monocular metric depth estimation (Piccinelli et al.) | CVPR | 2024 | [arXiv](https://arxiv.org/abs/2403.18913) | 自己プロンプト型カメラモジュールによるメトリック深度 |
-| Metric3D v2: a versatile monocular geometric foundation model (Hu et al.) | TPAMI | 2024 | [arXiv](https://arxiv.org/abs/2404.15506) | メトリック深度と法線のための正準カメラ空間 |
+| UniDepth: universal monocular metric depth estimation (Piccinelli et al.) | CVPR | 2024 | [arXiv](https://arxiv.org/abs/2403.18913) | 自己プロンプト型カメラモジュールによるメトリック奥行き |
+| Metric3D v2: a versatile monocular geometric foundation model (Hu et al.) | TPAMI | 2024 | [arXiv](https://arxiv.org/abs/2404.15506) | メトリック奥行きと法線のための正準カメラ空間 |
 | Depth Anything V2 (Yang et al.) | NeurIPS | 2024 | [arXiv](https://arxiv.org/abs/2406.09414) | 合成ラベルの教師モデル、より細かな細部 |
-| Depth Pro: sharp monocular metric depth in less than a second (Bochkovskii et al.) | ICLR | 2025 | [arXiv](https://arxiv.org/abs/2410.02073) | 焦点距離推定付きのゼロショットメトリック深度 |
+| Depth Pro: sharp monocular metric depth in less than a second (Bochkovskii et al.) | ICLR | 2025 | [arXiv](https://arxiv.org/abs/2410.02073) | 焦点距離推定付きのゼロショットメトリック奥行き |
 | MoGe: unlocking accurate monocular geometry estimation for open-domain images (Wang et al.) | CVPR | 2025 | [arXiv](https://arxiv.org/abs/2410.19115) | アフィン不変な点マップ |
 | FoundationStereo: zero-shot stereo matching (Wen et al.) | CVPR | 2025 | [arXiv](https://arxiv.org/abs/2501.09898) | 単眼基盤モデルの事前知識を使うステレオ |
 | Video Depth Anything: consistent depth estimation for super-long videos (Chen et al.) | CVPR | 2025 | [arXiv](https://arxiv.org/abs/2501.12375) | 時間的に一貫した動画の奥行き |
@@ -1072,7 +1072,7 @@ TSDF 統合は頑健で単純なので、今もあらゆる深度カメラの SD
 
 ## 学習リソース
 
-- R. Szeliski『Computer Vision: Algorithms and Applications』第 2 版、2022：第 12 章（奥行き推定：ステレオ、平面掃引、MVS、単眼深度）と第 13 章（TSDF 統合を含む 3D 復元）。個人利用なら [szeliski.org/Book](https://szeliski.org/Book/) で無料です。
+- R. Szeliski『Computer Vision: Algorithms and Applications』第 2 版、2022：第 12 章（奥行き推定：ステレオ、平面掃引、MVS、単眼奥行き）と第 13 章（TSDF 統合を含む 3D 復元）。個人利用なら [szeliski.org/Book](https://szeliski.org/Book/) で無料です。
 - Y. Furukawa、C. Hernández『Multi-View Stereo: A Tutorial』Foundations and Trends in Computer Graphics and Vision、2015：光度一貫性の尺度、奥行きマップベースの MVS、統合と評価をコンパクトにまとめています。
 - R. Hartley、A. Zisserman『Multiple View Geometry in Computer Vision』第 2 版、2004、13.1 節（平面が誘導するホモグラフィ）。
 - M. Hansard、S. Lee、O. Choi、R. Horaud『Time-of-Flight Cameras: Principles, Methods and Applications』Springer、2012。ToF センサーの物理とキャリブレーション。
@@ -1106,7 +1106,7 @@ TSDF 統合は頑健で単純なので、今もあらゆる深度カメラの SD
 
    <details markdown="1"><summary>ヒント</summary>
 
-   `backproject`、`relative_pose`、$K$ で点を視点 1 に写し、丸めた画素で視点 1 の奥行きを読み、3D に逆投影し、相対姿勢の逆で参照に戻します。私たちの実行では、このチェックで画素の 80.9% が残り、そのうち 61.5% が 1% 以内（フィルター前 52.3%）、90.2% が 5% 以内（フィルター前 78.3%）でした。ポスターの約半分（ランダムな奥行きが二つの視点で一致するのは偶然だけ）と、視点 1 から見えない右端の帯の大部分が除かれます。視点が多ければ、そのうち 2 つか 3 つとの一致を要求することで、はるかに多くの外れ値を除けます。穴はその後、他の視点との統合で埋まります。
+   `backproject`、`relative_pose`、$K$ で点を視点 1 に写し、丸めた画素で視点 1 の奥行きを読み、3D に逆投影し、相対姿勢の逆で参照に戻します。私たちの実行では、このチェックで画素の 80.9% が残り、そのうち 61.5% が 1% 以内（フィルター前 52.3%）、90.2% が 5% 以内（フィルター前 78.3%）でした。ポスターの約半分（ランダムな奥行きが二つの視点で一致するのは偶然だけ）と、視点 1 から見えない右端の帯の大部分が除かれます。視点が多ければ、そのうち 2 つか 3 つとの一致を要求することで、はるかに多くのアウトライアを除けます。穴はその後、他の視点との統合で埋まります。
    </details>
 
 5. TSDF の実験では、今は統合の重みがすべて 1 です。それを、センサーのノイズモデル $\sigma(z) = 0.002 + 0.005z^2$ による $w = 1/\sigma(z)^2$ に置き換えてください。36 スキャン後の誤差は変わりますか。次に打ち切り $\mu$ を 2 倍の 16 cm にし、また 1/4 の 2 cm に下げてみてください。細い部分とノイズはどうなりますか。
@@ -1116,4 +1116,4 @@ TSDF 統合は頑健で単純なので、今もあらゆる深度カメラの SD
    `integrate` の中でグリッド点ごとの重み `w` $= 1/\sigma(z\_m)^2$ を計算し、更新に使います：`T = (Wt * T + w * tsdf) / (Wt + w)` と `Wt += w`（`ok` の要素のみ）。結果は 4.41 mm ではなく 4.36 mm で、ほとんど変わりません。この実験ではどのカメラも物体からほぼ同じ距離にあり、重みがみな似ているからです。逆分散重み付け（ガウス測定の最尤な組み合わせ）は、スキャンが同じ表面を大きく異なる距離から見るときに効きます。$\mu = 2$ cm では誤差が 12.9 mm に上がります。カメラから遠い所では更新される帯がノイズとほとんど同じ幅しかなく、ゼロ交差が偽の断片に砕けます。$\mu = 16$ cm では 10.1 mm に上がります。帯が正方形の角や円板と正方形の間の 10 cm の隙間といったシーンの特徴より広くなり、一方の表面の測定がもう一方のボクセルにあふれ出すからです。
    </details>
 
-**次回：**[第 8 回]({{ '/blog/2026/3d-vision-08-3d-representations/' | relative_url }})では、奥行きが得られた後に何を保存するかを考えます。点群、メッシュ、ボクセル、符号付き距離場、ニューラル場、3D ガウシアン、そしてそれらの間の変換です。
+**次回：**[3D 表現]({{ '/blog/2026/3d-vision-08-3d-representations/' | relative_url }})：奥行きが得られた後に何を保存するかを考えます。点群、メッシュ、ボクセル、符号付き距離場、ニューラル場、3D ガウシアン、そしてそれらの間の変換です。
