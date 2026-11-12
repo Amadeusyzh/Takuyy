@@ -56,7 +56,7 @@ ninja.data = [{
         
           title: "Learning roadmap: from computer graphics to 3D Gaussian Splatting, world models and embodied...",
         
-        description: "The map of this blog: five series plus a dated paper-digest column, in order, with what to learn at each stage.",
+        description: "The map of this blog: six series plus a dated paper-digest column, in order, with what to learn at each stage.",
         section: "Posts",
         handler: () => {
           
@@ -314,6 +314,83 @@ ninja.data = [{
         handler: () => {
           
             window.location.href = "/Takuyy/blog/2026/neural-rendering-01-cameras-and-multiview-geometry/";
+          
+        },
+      },{id: "post-3d-vision-for-ar-vr-tracking-latency-and-registration-error",
+        
+          title: "3D vision for AR/VR: tracking, latency and registration error",
+        
+        description: "The last post of 3D Vision Fundamentals: inside-out 6DoF tracking with VIO and maps, motion-to-photon latency and prediction, late-stage reprojection, registration error budgets, passthrough reprojection, hand and eye tracking, planes and meshes, spatial anchors and relocalization.",
+        section: "Posts",
+        handler: () => {
+          
+            window.location.href = "/Takuyy/blog/2026/3d-vision-10-3d-vision-for-ar-vr/";
+          
+        },
+      },{id: "post-3d-reconstruction-from-the-classical-pipeline-to-feed-forward-models",
+        
+          title: "3D reconstruction: from the classical pipeline to feed-forward models",
+        
+        description: "From photos to surfaces: the SfM, MVS, fusion and meshing pipeline, TSDF fusion and marching cubes, screened Poisson reconstruction, neural surfaces (NeuS, Neuralangelo, 2DGS), feed-forward 3D foundation models (DUSt3R, MASt3R, VGGT and their 2025-2026 successors), and how reconstructions are evaluated on DTU, Tanks and Temples and ETH3D, with NumPy code for every step.",
+        section: "Posts",
+        handler: () => {
+          
+            window.location.href = "/Takuyy/blog/2026/3d-vision-09-3d-reconstruction-classic-to-feed-forward/";
+          
+        },
+      },{id: "post-3d-representations-points-meshes-voxels-sdfs-neural-fields-and-gaussians",
+        
+          title: "3D representations: points, meshes, voxels, SDFs, neural fields and Gaussians",
+        
+        description: "One shape stored nine ways: depth maps and multi-plane images, point clouds, meshes, voxel grids and octrees, signed distance fields and TSDFs, neural fields and 3D Gaussians. How to convert between them, how memory and accuracy scale (measured on one torus), which to pick for which task, and PointNet and sparse convolution in brief.",
+        section: "Posts",
+        handler: () => {
+          
+            window.location.href = "/Takuyy/blog/2026/3d-vision-08-3d-representations/";
+          
+        },
+      },{id: "post-depth-estimation-and-multi-view-stereo-sensors-plane-sweeps-patchmatch-learned-mvs-and-monocular-depth",
+        
+          title: "Depth estimation and multi-view stereo: sensors, plane sweeps, PatchMatch, learned MVS and monocular...",
+        
+        description: "From posed images to dense depth: depth, range and disparity, stereo, structured light, time-of-flight and LiDAR sensors, plane-sweep stereo with cost volumes, PatchMatch multi-view stereo with slanted planes, MVSNet and soft-argmin, monocular depth from MiDaS to Depth Anything and metric models, and TSDF depth fusion, with NumPy code for every step.",
+        section: "Posts",
+        handler: () => {
+          
+            window.location.href = "/Takuyy/blog/2026/3d-vision-07-depth-estimation-and-multi-view-stereo/";
+          
+        },
+      },{id: "post-visual-slam-factor-graphs-odometry-loop-closure-and-visual-inertial-fusion",
+        
+          title: "Visual SLAM: factor graphs, odometry, loop closure and visual-inertial fusion",
+        
+        description: "SLAM as MAP inference on a factor graph; front end and back end; feature-based and direct visual odometry; just enough Lie theory; pose-graph optimization on SE(3) with robust kernels; bag-of-words loop closure; filters versus smoothers (EKF, MSCKF, sliding windows); IMU preintegration and VIO; ORB-SLAM3, VINS, DSO, DROID-SLAM and the learned and Gaussian systems of 2024-2026.",
+        section: "Posts",
+        handler: () => {
+          
+            window.location.href = "/Takuyy/blog/2026/3d-vision-06-visual-slam/";
+          
+        },
+      },{id: "post-multi-view-geometry-and-bundle-adjustment-pnp-structure-from-motion-and-the-schur-complement",
+        
+          title: "Multi-view geometry and bundle adjustment: PnP, Structure-from-Motion and the Schur complement",
+        
+        description: "From two views to many: camera resectioning with P3P, EPnP and RANSAC, bundle adjustment derived from scratch (Jacobians, sparse normal equations, the Schur complement, Levenberg-Marquardt, gauge freedom, robust kernels), incremental SfM as in COLMAP, global SfM with rotation averaging and GLOMAP-style positioning, and the scale ambiguity, all with NumPy code on synthetic scenes.",
+        section: "Posts",
+        handler: () => {
+          
+            window.location.href = "/Takuyy/blog/2026/3d-vision-05-multi-view-geometry-and-bundle-adjustment/";
+          
+        },
+      },{id: "post-two-view-geometry-epipolar-constraints-relative-pose-triangulation-and-stereo",
+        
+          title: "Two-view geometry: epipolar constraints, relative pose, triangulation and stereo",
+        
+        description: "Post 4 of 3D Vision Fundamentals: the epipolar constraint, essential and fundamental matrices, the normalized eight-point, seven-point and five-point algorithms, decomposing E with the cheirality check, midpoint, linear and optimal triangulation, pure rotation and planar degeneracies, and stereo: rectification, disparity and depth, block matching and semi-global matching.",
+        section: "Posts",
+        handler: () => {
+          
+            window.location.href = "/Takuyy/blog/2026/3d-vision-04-two-view-geometry/";
           
         },
       },{id: "post-features-and-matching-corners-sift-ransac-and-learned-matchers",

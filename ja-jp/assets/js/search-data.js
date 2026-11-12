@@ -56,7 +56,7 @@ ninja.data = [{
         
           title: "学習ロードマップ：コンピュータグラフィックスから 3D ガウシアンスプラッティング、世界モデル、身体性 AI まで",
         
-        description: "このブログの地図です。5 つのシリーズと日付入りの論文速報コラムを順番に、各段階で何を学ぶかをまとめました。",
+        description: "このブログの地図です。6 つのシリーズと日付入りの論文速報コラムを順番に、各段階で何を学ぶかをまとめました。",
         section: "記事",
         handler: () => {
           
@@ -314,6 +314,83 @@ ninja.data = [{
         handler: () => {
           
             window.location.href = "/Takuyy/ja-jp/blog/2026/neural-rendering-01-cameras-and-multiview-geometry/";
+          
+        },
+      },{id: "post-ar-vr-のための-3d-ビジョン-追跡-遅延-レジストレーション誤差",
+        
+          title: "AR/VR のための 3D ビジョン：追跡、遅延、レジストレーション誤差",
+        
+        description: "「3D ビジョンの基礎」の最終回：VIO と地図によるインサイドアウト 6DoF 追跡、モーション・トゥ・フォトン遅延と予測、後段リプロジェクション、レジストレーション誤差のバジェット、パススルーの再投影、ハンドトラッキングとアイトラッキング、平面とメッシュ、空間アンカーと再ローカライズ。",
+        section: "記事",
+        handler: () => {
+          
+            window.location.href = "/Takuyy/ja-jp/blog/2026/3d-vision-10-3d-vision-for-ar-vr/";
+          
+        },
+      },{id: "post-3d-再構成-古典的パイプラインからフィードフォワードモデルまで",
+        
+          title: "3D 再構成：古典的パイプラインからフィードフォワードモデルまで",
+        
+        description: "写真から表面へ：SfM、MVS、融合、メッシュ化からなる古典的パイプライン、TSDF 融合と Marching Cubes、スクリーン付きポアソン再構成、ニューラル表面（NeuS、Neuralangelo、2DGS）、フィードフォワード型の 3D 基盤モデル（DUSt3R、MASt3R、VGGT と 2025〜2026 年の後継）、そして DTU、Tanks and Temples、ETH3D での再構成の評価方法を、各ステップの NumPy コード付きで解説します。",
+        section: "記事",
+        handler: () => {
+          
+            window.location.href = "/Takuyy/ja-jp/blog/2026/3d-vision-09-3d-reconstruction-classic-to-feed-forward/";
+          
+        },
+      },{id: "post-3d-表現-点-メッシュ-ボクセル-sdf-ニューラル場-ガウシアン",
+        
+          title: "3D 表現：点、メッシュ、ボクセル、SDF、ニューラル場、ガウシアン",
+        
+        description: "同じ形状を 9 通りに保存します。奥行きマップと多平面画像、点群、メッシュ、ボクセルグリッドと八分木、符号付き距離場と TSDF、ニューラル場と 3D ガウシアン。表現間の変換、メモリと精度のスケーリング（1 つのトーラスで実測）、どのタスクにどれを選ぶか、そして PointNet とスパース畳み込みの概要を扱います。",
+        section: "記事",
+        handler: () => {
+          
+            window.location.href = "/Takuyy/ja-jp/blog/2026/3d-vision-08-3d-representations/";
+          
+        },
+      },{id: "post-奥行き推定とマルチビューステレオ-センサー-平面掃引-patchmatch-学習型-mvs-単眼奥行き",
+        
+          title: "奥行き推定とマルチビューステレオ：センサー、平面掃引、PatchMatch、学習型 MVS、単眼奥行き",
+        
+        description: "姿勢付き画像から密な奥行きへ：奥行き・距離・視差、ステレオ、構造化光、Time-of-Flight、LiDAR の各センサー、コストボリュームによる平面掃引ステレオ、傾いた平面を使う PatchMatch マルチビューステレオ、MVSNet と soft-argmin、MiDaS から Depth Anything、メトリック奥行きモデルまでの単眼奥行き推定、TSDF による奥行き統合を、各ステップの NumPy コード付きで解説します。",
+        section: "記事",
+        handler: () => {
+          
+            window.location.href = "/Takuyy/ja-jp/blog/2026/3d-vision-07-depth-estimation-and-multi-view-stereo/";
+          
+        },
+      },{id: "post-visual-slam-因子グラフ-オドメトリ-ループ閉じ込み-視覚慣性融合",
+        
+          title: "Visual SLAM：因子グラフ、オドメトリ、ループ閉じ込み、視覚慣性融合",
+        
+        description: "因子グラフ上の MAP 推定としての SLAM、フロントエンドとバックエンド、特徴点ベースと直接法の Visual Odometry、必要十分なリー群、ロバストカーネル付きの SE(3) 姿勢グラフ最適化、Bag of Words によるループ検出、フィルタと平滑化（EKF、MSCKF、スライディングウィンドウ）、IMU 事前積分と VIO、ORB-SLAM3・VINS・DSO・DROID-SLAM、そして 2024-2026 年の学習型・ガウシアン SLAM。",
+        section: "記事",
+        handler: () => {
+          
+            window.location.href = "/Takuyy/ja-jp/blog/2026/3d-vision-06-visual-slam/";
+          
+        },
+      },{id: "post-多視点幾何とバンドル調整-pnp-structure-from-motion-と-schur-補行列",
+        
+          title: "多視点幾何とバンドル調整：PnP、Structure-from-Motion と Schur 補行列",
+        
+        description: "2 視点から多視点へ：P3P・EPnP・RANSAC によるカメラの位置決め（resectioning）、バンドル調整のゼロからの導出（ヤコビアン、疎な正規方程式、Schur 補行列、Levenberg-Marquardt、ゲージの自由度、ロバストカーネル）、COLMAP 型のインクリメンタル SfM、回転平均と GLOMAP 型の全体位置推定によるグローバル SfM、そしてスケールの不定性。すべて合成シーン上で動く NumPy コード付きです。",
+        section: "記事",
+        handler: () => {
+          
+            window.location.href = "/Takuyy/ja-jp/blog/2026/3d-vision-05-multi-view-geometry-and-bundle-adjustment/";
+          
+        },
+      },{id: "post-2-視点幾何-エピポーラ拘束-相対姿勢-三角測量とステレオ",
+        
+          title: "2 視点幾何：エピポーラ拘束、相対姿勢、三角測量とステレオ",
+        
+        description: "3D ビジョンの基礎 第 4 回：エピポーラ拘束、基本行列と基礎行列、正規化 8 点・7 点・5 点アルゴリズム、E の分解とチラリティ（cheirality）検査、中点法・線形・最適三角測量、純回転と平面の退化、そしてステレオ：平行化、視差と奥行き、ブロックマッチングとセミグローバルマッチング。",
+        section: "記事",
+        handler: () => {
+          
+            window.location.href = "/Takuyy/ja-jp/blog/2026/3d-vision-04-two-view-geometry/";
           
         },
       },{id: "post-特徴とマッチング-コーナー-sift-ransac-学習型マッチャー",

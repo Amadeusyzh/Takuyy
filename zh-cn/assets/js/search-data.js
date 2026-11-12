@@ -56,7 +56,7 @@ ninja.data = [{
         
           title: "学习路线：从计算机图形学到 3D 高斯泼溅、世界模型与具身智能",
         
-        description: "这个博客的地图：五个系列加一个按日期更新的论文速递专栏，按顺序学习，以及每个阶段要掌握什么。",
+        description: "这个博客的地图：六个系列加一个按日期更新的论文速递专栏，按顺序学习，以及每个阶段要掌握什么。",
         section: "文章",
         handler: () => {
           
@@ -314,6 +314,83 @@ ninja.data = [{
         handler: () => {
           
             window.location.href = "/Takuyy/zh-cn/blog/2026/neural-rendering-01-cameras-and-multiview-geometry/";
+          
+        },
+      },{id: "post-面向-ar-vr-的三维视觉-跟踪-延迟与配准误差",
+        
+          title: "面向 AR/VR 的三维视觉：跟踪、延迟与配准误差",
+        
+        description: "「三维视觉基础」的最后一篇：基于 VIO 与地图的 inside-out 6DoF 跟踪、运动到光子延迟与预测、后期重投影、配准误差预算、透视（passthrough）重投影、手部与眼动追踪、平面与网格、空间锚点与重定位。",
+        section: "文章",
+        handler: () => {
+          
+            window.location.href = "/Takuyy/zh-cn/blog/2026/3d-vision-10-3d-vision-for-ar-vr/";
+          
+        },
+      },{id: "post-三维重建-从经典流水线到前馈模型",
+        
+          title: "三维重建：从经典流水线到前馈模型",
+        
+        description: "从照片到曲面：SfM、MVS、融合与网格化组成的经典流水线，TSDF 融合与 Marching Cubes，屏蔽泊松重建，神经曲面（NeuS、Neuralangelo、2DGS），前馈式三维基础模型（DUSt3R、MASt3R、VGGT 及其 2025-2026 年的后继），以及如何在 DTU、Tanks and Temples 和 ETH3D 上评测重建结果；每一步都配有 NumPy 代码。",
+        section: "文章",
+        handler: () => {
+          
+            window.location.href = "/Takuyy/zh-cn/blog/2026/3d-vision-09-3d-reconstruction-classic-to-feed-forward/";
+          
+        },
+      },{id: "post-三维表示-点-网格-体素-sdf-神经场与高斯",
+        
+          title: "三维表示：点、网格、体素、SDF、神经场与高斯",
+        
+        description: "同一个形状的九种存法：深度图与多平面图像、点云、网格、体素栅格与八叉树、有符号距离场与 TSDF、神经场与三维高斯。它们之间如何转换，内存与精度如何随分辨率变化（在同一个圆环上实测），什么任务该选哪一种，并简要介绍 PointNet 与稀疏卷积。",
+        section: "文章",
+        handler: () => {
+          
+            window.location.href = "/Takuyy/zh-cn/blog/2026/3d-vision-08-3d-representations/";
+          
+        },
+      },{id: "post-深度估计与多视图立体-传感器-平面扫描-patchmatch-学习式-mvs-与单目深度",
+        
+          title: "深度估计与多视图立体：传感器、平面扫描、PatchMatch、学习式 MVS 与单目深度",
+        
+        description: "从带位姿的图像到稠密深度：深度、距离与视差，立体相机、结构光、飞行时间（ToF）与 LiDAR 传感器，带代价体的平面扫描立体，带倾斜平面的 PatchMatch 多视图立体，MVSNet 与 soft-argmin，从 MiDaS 到 Depth Anything 再到度量深度模型的单目深度，以及 TSDF 深度融合；每一步都配有 NumPy 代码。",
+        section: "文章",
+        handler: () => {
+          
+            window.location.href = "/Takuyy/zh-cn/blog/2026/3d-vision-07-depth-estimation-and-multi-view-stereo/";
+          
+        },
+      },{id: "post-视觉-slam-因子图-里程计-回环与视觉惯性融合",
+        
+          title: "视觉 SLAM：因子图、里程计、回环与视觉惯性融合",
+        
+        description: "把 SLAM 看作因子图上的 MAP 推断；前端与后端；基于特征与直接法的视觉里程计；够用的李群知识；带鲁棒核的 SE(3) 位姿图优化；词袋回环检测；滤波与平滑之争（EKF、MSCKF、滑动窗口）；IMU 预积分与 VIO；ORB-SLAM3、VINS、DSO、DROID-SLAM，以及 2024-2026 年的学习式与高斯 SLAM 系统。",
+        section: "文章",
+        handler: () => {
+          
+            window.location.href = "/Takuyy/zh-cn/blog/2026/3d-vision-06-visual-slam/";
+          
+        },
+      },{id: "post-多视图几何与光束法平差-pnp-运动恢复结构与-schur-补",
+        
+          title: "多视图几何与光束法平差：PnP、运动恢复结构与 Schur 补",
+        
+        description: "从两视图到多视图：用 P3P、EPnP 和 RANSAC 做相机后方交会（resectioning），从零推导光束法平差（雅可比、稀疏正规方程、Schur 补、Levenberg-Marquardt、规范自由度、鲁棒核函数），COLMAP 式的增量式 SfM，基于旋转平均和 GLOMAP 式全局定位的全局 SfM，以及尺度不确定性；全部配有在合成场景上运行的 NumPy 代码。",
+        section: "文章",
+        handler: () => {
+          
+            window.location.href = "/Takuyy/zh-cn/blog/2026/3d-vision-05-multi-view-geometry-and-bundle-adjustment/";
+          
+        },
+      },{id: "post-两视图几何-对极约束-相对位姿-三角化与立体视觉",
+        
+          title: "两视图几何：对极约束、相对位姿、三角化与立体视觉",
+        
+        description: "三维视觉基础第 4 篇：对极约束，本质矩阵与基础矩阵，归一化八点、七点与五点算法，E 的分解与正深度（cheirality）检验，中点法、线性与最优三角化，纯旋转与平面退化，以及立体视觉：校正、视差与深度、块匹配与半全局匹配。",
+        section: "文章",
+        handler: () => {
+          
+            window.location.href = "/Takuyy/zh-cn/blog/2026/3d-vision-04-two-view-geometry/";
           
         },
       },{id: "post-特征与匹配-角点-sift-ransac-与学习式匹配器",
