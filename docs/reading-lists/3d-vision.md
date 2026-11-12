@@ -115,3 +115,77 @@
 - OpenCV USAC 教程：https://docs.opencv.org/5.0/tutorials/calib3d/usac.html
 - 代码：https://github.com/cvg/LightGlue 、https://github.com/magicleap/SuperGluePretrainedNetwork 、https://github.com/Parskatt/RoMa 、https://github.com/danini/magsac 、https://github.com/princeton-vl/RAFT
 - 基准：https://github.com/hpatches 、https://vision.uvic.ca/image-matching-challenge/
+
+## 06 视觉 SLAM
+
+### 基础、因子图与后端
+
+| 论文 | 会议/期刊 | 年份 | 链接 | 说明 |
+| --- | --- | --- | --- | --- |
+| Estimating uncertain spatial relationships in robotics (Smith, Self, Cheeseman) | Autonomous Robot Vehicles（论文集） | 1990 | — | 不确定空间关系的随机地图，EKF-SLAM 的源头 |
+| Simultaneous localization and mapping: part I (Durrant-Whyte, Bailey) | IEEE Robotics & Automation Magazine | 2006 | — | SLAM 经典教程综述 |
+| g2o: a general framework for graph optimization (Kümmerle et al.) | ICRA | 2011 | https://doi.org/10.1109/ICRA.2011.5979949 | 通用图优化框架，位姿图与 BA 的标准开源求解器 |
+| iSAM2: incremental smoothing and mapping using the Bayes tree (Kaess et al.) | IJRR | 2012 | https://people.csail.mit.edu/kaess/pub/Kaess12ijrr.html | 贝叶斯树上的增量平滑，无需周期性批量重排序 |
+| Switchable constraints for robust pose graph SLAM (Sünderhauf, Protzel) | IROS | 2012 | https://doi.org/10.1109/IROS.2012.6385590 | 每条回环边带开关变量，抵抗错误回环 |
+| Past, present, and future of simultaneous localization and mapping (Cadena et al.) | IEEE TRO | 2016 | https://arxiv.org/abs/1606.05830 | 因子图时代的 SLAM 综述与立场论文 |
+| Factor graphs for robot perception (Dellaert, Kaess) | Foundations and Trends in Robotics | 2017 | https://doi.org/10.1561/2300000043 | 以因子图统一 SLAM、稀疏性与增量求解的专著 |
+| A micro Lie theory for state estimation in robotics (Solà, Deray, Atchuthan) | arXiv 预印本 | 2018 | https://arxiv.org/abs/1812.01537 | 机器人估计所需的李群最小工具集（Exp/Log、扰动、雅可比） |
+
+### 滤波与优化
+
+| 论文 | 会议/期刊 | 年份 | 链接 | 说明 |
+| --- | --- | --- | --- | --- |
+| MonoSLAM: real-time single camera SLAM (Davison, Reid, Molton, Stasse) | TPAMI | 2007 | https://doi.org/10.1109/TPAMI.2007.1049 | 第一个实时单目 SLAM，EKF |
+| A multi-state constraint Kalman filter for vision-aided inertial navigation (Mourikis, Roumeliotis) | ICRA | 2007 | https://doi.org/10.1109/ROBOT.2007.364024 | MSCKF：左零空间投影消去特征，无路标的 VIO 滤波器 |
+| Visual SLAM: why filter? (Strasdat, Montiel, Davison) | Image and Vision Computing | 2012 | https://www.doc.ic.ac.uk/~ajd/Publications/strasdat_etal_ivc2012.pdf | 单位计算量下关键帧 BA 胜过滤波（作者 PDF） |
+
+### 视觉里程计与完整系统
+
+| 论文 | 会议/期刊 | 年份 | 链接 | 说明 |
+| --- | --- | --- | --- | --- |
+| Parallel tracking and mapping for small AR workspaces (Klein, Murray) | ISMAR | 2007 | https://doi.org/10.1109/ISMAR.2007.4538852 | PTAM：跟踪与建图分线程，关键帧 BA |
+| LSD-SLAM: large-scale direct monocular SLAM (Engel, Schöps, Cremers) | ECCV | 2014 | https://doi.org/10.1007/978-3-319-10605-2_54 | 半稠密直接法，$\mathrm{Sim}(3)$ 跟踪与位姿图 |
+| ORB-SLAM: a versatile and accurate monocular SLAM system (Mur-Artal, Montiel, Tardós) | IEEE TRO | 2015 | https://arxiv.org/abs/1502.00956 | ORB 特征贯穿跟踪、建图、重定位、回环；共视图与本质图 |
+| Direct sparse odometry (Engel, Koltun, Cremers) | TPAMI | 2018 | https://arxiv.org/abs/1607.02565 | 稀疏直接法 + 光度标定（曝光、响应、渐晕），窗口化光度 BA |
+| ORB-SLAM3: an accurate open-source library for visual, visual-inertial and multi-map SLAM (Campos et al.) | IEEE TRO | 2021 | https://arxiv.org/abs/2007.11898 | 单目/双目/RGB-D ± IMU，针孔与鱼眼，Atlas 多地图 |
+
+### 回环检测
+
+| 论文 | 会议/期刊 | 年份 | 链接 | 说明 |
+| --- | --- | --- | --- | --- |
+| Video Google: a text retrieval approach to object matching in videos (Sivic, Zisserman) | ICCV | 2003 | — | 视觉词袋 + tf-idf + 倒排文件 |
+| Scalable recognition with a vocabulary tree (Nistér, Stewénius) | CVPR | 2006 | — | 层次 k-means 词汇树 |
+| Bags of binary words for fast place recognition in image sequences (Gálvez-López, Tardós) | IEEE TRO | 2012 | https://doi.org/10.1109/TRO.2012.2197158 | DBoW2：二值描述子词袋，ORB-SLAM 与 VINS-Mono 的回环检测 |
+
+### 视觉惯性里程计
+
+| 论文 | 会议/期刊 | 年份 | 链接 | 说明 |
+| --- | --- | --- | --- | --- |
+| Visual-inertial-aided navigation for high-dynamic motion in built environments without initial conditions (Lupton, Sukkarieh) | IEEE TRO | 2012 | https://doi.org/10.1109/TRO.2011.2170332 | IMU 预积分的提出 |
+| On-manifold preintegration for real-time visual-inertial odometry (Forster, Carlone, Dellaert, Scaramuzza) | IEEE TRO | 2017 | https://arxiv.org/abs/1512.02363 | $SO(3)$ 流形上的预积分、零偏雅可比，GTSAM 实现 |
+| VINS-Mono: a robust and versatile monocular visual-inertial state estimator (Qin, Li, Shen) | IEEE TRO | 2018 | https://arxiv.org/abs/1708.03852 | 紧耦合滑动窗口优化、在线初始化、4 自由度全局位姿图 |
+
+### 学习型与基于基础模型的 SLAM（截至 2026 年 11 月）
+
+| 论文 | 会议/期刊 | 年份 | 链接 | 说明 |
+| --- | --- | --- | --- | --- |
+| DROID-SLAM: deep visual SLAM for monocular, stereo, and RGB-D cameras (Teed, Deng) | NeurIPS | 2021 | https://arxiv.org/abs/2108.10869 | RAFT 式循环更新 + 可微稠密 BA 层 |
+| Deep patch visual odometry (Teed, Lipson, Deng) | NeurIPS | 2023 | https://arxiv.org/abs/2208.04726 | 稀疏图像块 + 可微 BA，比 DROID 省内存、更快 |
+| MASt3R-SLAM: real-time dense SLAM with 3D reconstruction priors (Murai, Dexheimer, Davison) | CVPR（已发表） | 2025 | https://arxiv.org/abs/2412.12392 | 以 MASt3R 两视图点图为先验，约 15 FPS，带回环与二阶全局优化 |
+| VGGT-SLAM: dense RGB SLAM optimized on the SL(4) manifold (Maggio, Lim, Carlone) | NeurIPS（已发表） | 2025 | https://arxiv.org/abs/2505.12549 | 未标定相机下用 15 自由度单应在 $\mathrm{SL}(4)$ 上对齐 VGGT 子图 |
+| SplaTAM / Gaussian Splatting SLAM (MonoGS) | CVPR | 2024 | https://arxiv.org/abs/2312.02126 、https://arxiv.org/abs/2312.06741 | 高斯泼溅 SLAM，详见 neural-rendering 第 5 篇 |
+
+### 数据集与评测
+
+| 论文 | 会议/期刊 | 年份 | 链接 | 说明 |
+| --- | --- | --- | --- | --- |
+| A benchmark for the evaluation of RGB-D SLAM systems (Sturm et al.) | IROS | 2012 | https://doi.org/10.1109/IROS.2012.6385773 | TUM RGB-D，39 个序列；ATE 与 RPE |
+| The EuRoC micro aerial vehicle datasets (Burri et al.) | IJRR | 2016 | https://doi.org/10.1177/0278364915620033 | 双目 + IMU 的 11 个 MAV 序列，标准 VIO 基准 |
+
+### 课程、书与代码
+
+- Barfoot《State Estimation for Robotics》（第 2 版，2024）：李群、滤波与批量估计。
+- 高翔、张涛等《视觉 SLAM 十四讲》：配套代码 https://github.com/gaoxiang12/slambook2
+- Grisetti 等，"A tutorial on graph-based SLAM"（IEEE ITS Magazine，2010）：$SE(2)$ 位姿图雅可比。
+- 代码：https://github.com/UZ-SLAMLab/ORB_SLAM3 、https://github.com/HKUST-Aerial-Robotics/VINS-Mono 、https://github.com/JakobEngel/dso 、https://github.com/princeton-vl/DROID-SLAM 、https://github.com/princeton-vl/DPVO 、https://github.com/rpng/open_vins 、https://github.com/RainerKuemmerle/g2o 、https://github.com/borglab/gtsam
+- 评估工具：https://github.com/MichaelGrupp/evo
