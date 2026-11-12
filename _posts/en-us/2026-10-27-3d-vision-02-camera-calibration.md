@@ -16,7 +16,7 @@ related_posts: false
 
 [Post 01]({{ '/blog/2026/3d-vision-01-image-formation-and-camera-models/' | relative_url }}) wrote down the camera model: a pinhole $P = K[R \mid \mathbf t]$ plus a distortion polynomial. Every number in that model was given. In practice nobody hands you $f_x$ or $k_1$. A lens has a nominal focal length, but the effective focal length in pixels depends on the focus setting, the exact sensor position and manufacturing tolerances. The principal point can sit tens of pixels away from the image centre, and the distortion of a cheap wide-angle lens can move corner pixels by 30 px or more.
 
-**Calibration** measures these numbers. It is the first experiment in almost every 3D vision project: SfM, SLAM, stereo depth, AR registration, robot grasping. An error here spreads to everything downstream. A focal length that is 1% too long scales every depth estimated from a moving camera by about 1%. An uncorrected distortion bends straight lines, which breaks epipolar geometry. This post builds the standard pipeline from scratch, runs it on synthetic data where we know the truth, checks it against OpenCV, and then asks the question that tutorials usually skip: *how much should you trust the result, and where in the image?*
+**Calibration** measures these numbers. It is the first experiment in almost every 3D vision project: SfM, SLAM, stereo depth, AR registration, robot grasping. An error here spreads to everything downstream. A focal length that is 1% too long scales every depth triangulated from a known baseline (a stereo rig, or a camera moved by a known amount) by about 1%. An uncorrected distortion bends straight lines, which breaks epipolar geometry. This post builds the standard pipeline from scratch, runs it on synthetic data where we know the truth, checks it against OpenCV, and then asks the question that tutorials usually skip: *how much should you trust the result, and where in the image?*
 
 ## Prerequisites
 
@@ -367,7 +367,7 @@ $$
 
 and adapts $\lambda$: if the step lowers the cost, accept it and decrease $\lambda$ (trust the quadratic model more, approach Gauss-Newton); if not, reject it and increase $\lambda$ (shorter steps, closer to scaled gradient descent). Marquardt's scaling by $\mathrm{diag}(J^\top J)$ makes the damping independent of each parameter's units, important when $f_x \approx 600$ and $k_2 \approx 0.07$ live in the same vector.
 
-The code below is a complete, if slow, calibrator: closed-form initialization (distortion starts at zero), a forward-difference Jacobian and LM. Real implementations (OpenCV, Ceres) use analytic derivatives and exploit sparsity, but compute the same thing.
+The code below is a complete, if slow, calibrator: closed-form initialization (distortion starts at zero), a forward-difference Jacobian and LM. Real implementations (OpenCV, or a Ceres-based calibrator) use analytic or automatic derivatives and exploit sparsity, but compute the same thing.
 
 ```python
 def rvec_of(R):
@@ -458,7 +458,7 @@ fx fy cx cy: [601.06 596.97 325.19 235.49]
 k1 k2 p1 p2 k3: [-0.2806  0.0914  0.     -0.0005 -0.0526]
 ```
 
-(The `fix_k3` option and the `free` mask let us hold $k_3 = 0$, which we will need in section 5.3.) From an initial RMS error of 4.06 px, two iterations bring it to 0.42 px, and after 11 it has converged at 0.4036 px. The estimates are now within 1-3 px of the truth for $K$, and $k_1 = -0.2806$ is within 0.3% of $-0.28$.
+(The `fix_k3` option and the `free` mask let us hold $k_3 = 0$, which we will need in section 5.3.) From an initial RMS error of 4.06 px, two iterations bring it to 0.42 px, and after 11 it has converged at 0.4036 px. The estimates of $K$ are now within about 3 px of the truth ($c_x$ is the worst, 3.2 px off), and $k_1 = -0.2806$ is within 0.3% of $-0.28$.
 
 {% include blog_figure.liquid path="assets/img/blog/3d-vision/02-lm.svg" caption="Left: the sparsity pattern of the $1296\times 81$ Jacobian at the solution (black = nonzero). The first 9 columns (intrinsics, left of the red line) touch every residual; $f_x$ and $c_x$ only touch $u$ rows and $f_y$, $c_y$ only $v$ rows, hence the stripes. Each 6-column pose block touches only the 108 residuals of its own view: a block-diagonal 'arrowhead'. Right: LM on our data. The RMS reprojection error drops from 4.06 px (closed form, no distortion) to 0.42 px in two iterations and settles at 0.4036 px, just below $\sqrt 2\,\sigma = 0.42$ (dotted); every step was accepted, so the damping $\lambda$ (orange, right axis) fell by a factor of 3 each iteration." %}
 
@@ -515,7 +515,7 @@ Turned around, the formula gives a noise estimate, $\hat\sigma^2 = \lVert\mathbf
 
 ### 5.2 Parameter uncertainty: $\Sigma = \sigma^2 (J^\top J)^{-1}$
 
-Near the solution $\hat{\mathbf p}$ the residual is linear in a perturbation: $\mathbf r(\hat{\mathbf p} + \boldsymbol\delta) \approx \hat{\mathbf r} + J\boldsymbol\delta$. Now ask how the estimate moves if the noise $\boldsymbol\varepsilon$ in the detections changes. The least-squares solution of the linearized problem is $\boldsymbol\delta = -(J^\top J)^{-1}J^\top\boldsymbol\varepsilon$. With $\mathrm{Cov}(\boldsymbol\varepsilon) = \sigma^2 I$,
+Near the solution $\hat{\mathbf p}$ the residual is linear in a perturbation: $\mathbf r(\hat{\mathbf p} + \boldsymbol\delta) \approx \hat{\mathbf r} + J\boldsymbol\delta$. Now ask how the estimate moves if the detections move by a noise vector $\boldsymbol\varepsilon$. The residuals change by $-\boldsymbol\varepsilon$, so the linearized problem becomes $\min \lVert J\boldsymbol\delta - \boldsymbol\varepsilon\rVert^2$, whose least-squares solution is $\boldsymbol\delta = (J^\top J)^{-1}J^\top\boldsymbol\varepsilon$. With $\mathrm{Cov}(\boldsymbol\varepsilon) = \sigma^2 I$,
 
 $$
 \Sigma_{\mathbf p} = \mathrm{Cov}(\boldsymbol\delta) = (J^\top J)^{-1}J^\top(\sigma^2 I)J(J^\top J)^{-1} = \sigma^2 (J^\top J)^{-1}.
@@ -768,7 +768,7 @@ cv2.cornerSubPix [15.398 14.644] (error 0.037 px)
 | ChArUco | Checkerboard with ArUco markers in the white squares | Each corner has an ID: partial views and occlusions are fine, so you can fill the image corners | Needs good print quality; markers must be large enough to decode |
 | AprilGrid (Kalibr) | Grid of AprilTags; tag corners as points | Unique IDs, robust detection, the default target of Kalibr | Corners are tag corners, slightly less precise than X-junctions |
 
-Since only identifiable corners can be partially visible, **ChArUco** is the best default for single-camera calibration today: it lets you push the board into the image corners, which section 5.3 showed to matter most. Whatever you use, print it on a rigid, **flat** substrate (glass, aluminium composite) and **measure** the square size with calipers rather than trusting the printer: a 1% scale error on the board does not change $K$ (it is absorbed by the board distances), but every metric quantity you compute from the calibration (stereo baseline, hand-eye translation) inherits it.
+Since only identifiable corners can be partially visible, **ChArUco** is a good default for single-camera calibration: it lets you push the board into the image corners, which section 5.3 showed to matter most. Whatever you use, print it on a rigid, **flat** substrate (glass, aluminium composite) and **measure** the square size with calipers rather than trusting the printer: a 1% scale error on the board does not change $K$ (it is absorbed by the board distances), but every metric quantity you compute from the calibration (stereo baseline, hand-eye translation) inherits it.
 
 ## 7. Stereo calibration and rectification
 
@@ -782,7 +782,7 @@ $$
 R = R_{2i}R_{1i}^\top,\quad \mathbf t = \mathbf t_{2i} - R\,\mathbf t_{1i}.
 $$
 
-Each image gives an estimate; averaging them initializes a joint LM over both cameras' intrinsics, $(R, \mathbf t)$, and one board pose per image (the second camera's board pose is now *derived*, which ties the two cameras together). That is `cv2.stereoCalibrate`. Our second camera sits 12 cm to the right, toed in by 8°, with slightly different intrinsics and lens.
+Each image gives an estimate; combining them (an average or a median over the views) initializes a joint LM over both cameras' intrinsics, $(R, \mathbf t)$, and one board pose per image (the second camera's board pose is now *derived*, which ties the two cameras together). That is `cv2.stereoCalibrate`. Our second camera sits 12 cm to the right, toed in by 8°, with slightly different intrinsics and lens.
 
 ```python
 # a second camera 12 cm to the right, toed in by 8 degrees (about y), with 2 degrees of tilt and 4 of roll
@@ -827,7 +827,7 @@ first shared view: mean |v_l - v_r| before 20.69 px, after rectification 0.326 p
 rectified baseline from P2: 120.04 mm
 ```
 
-Look at the rotation error: 0.76° when each camera's intrinsics are calibrated separately and then frozen, 0.07° when everything is refined jointly. The reason is a coupling you saw in section 5.3: an error in a principal point looks like a small rotation of that camera. With frozen intrinsics, the relative rotation has to absorb both cameras' principal-point errors; jointly, the shared observations pin them down. For stereo depth this matters a lot: a 0.76° error in the relative yaw shifts the disparity by $f\cdot 0.0133 \approx 8$ px at every pixel.
+Look at the rotation error: 0.76° when each camera's intrinsics are calibrated separately and then frozen, 0.07° when everything is refined jointly. The reason is a coupling you saw in section 5.3: an error in a principal point looks like a small rotation of that camera. With frozen intrinsics, the relative rotation has to absorb both cameras' principal-point errors; jointly, the shared observations pin them down. The numbers fit: calibrated separately, camera 1's $c_x$ came out 3.2 px too large and camera 2's 5.4 px too small, and 8.6 px at $f \approx 600$ px is about 0.8° of yaw; 0.75° of the 0.76° error is indeed a rotation about the $y$ axis. For stereo depth this matters a lot: a 0.76° error in the relative yaw shifts the disparity by about $f\cdot 0.0133 \approx 8$ px across the whole image.
 
 ### 7.2 Rectification
 
@@ -911,9 +911,9 @@ ours:   rotation error 0.042 deg, translation error 0.73 mm
 OpenCV: rotation error 0.042 deg, translation error 0.73 mm
 ```
 
-{% include blog_figure.liquid path="assets/img/blog/3d-vision/02-hand-eye.svg" caption="Left: the setup, robot base $\lbrace b\rbrace$, four gripper stations (thick axes), the camera mounted on each by the same $X$ (thin axes, orange link) and the fixed target $\lbrace t\rbrace$. Right: median error of $X$ over 100 trials (camera-to-target poses with 0.05° and 0.5 mm of noise per axis) against the number of stations $n$, using all pairs. Solid: general rotations; the rotation error falls from 0.16° ($n=3$) to 0.04° ($n=20$) and the translation error from 1.8 mm to 0.5 mm. Dashed: every rotation about the same vertical axis; then the rotation of $X$ about that axis is unobservable and the errors stay near 90° and over 100 mm however many stations you add." %}
+{% include blog_figure.liquid path="assets/img/blog/3d-vision/02-hand-eye.svg" caption="Left: the setup, robot base $\lbrace b\rbrace$, four gripper stations (thick axes), the camera mounted on each by the same $X$ (thin axes, orange link), the fixed target $\lbrace t\rbrace$ and each camera's line of sight to it (gray dotted). Right: median error of $X$ over 100 trials (camera-to-target poses with 0.05° and 0.5 mm of noise per axis) against the number of stations $n$, using all pairs. Solid: general rotations; the rotation error falls from 0.16° ($n=3$) to 0.04° ($n=20$) and the translation error from 1.8 mm to 0.5 mm. Dashed: every rotation about the same vertical axis; then the rotation of $X$ about that axis is unobservable and the errors stay near 90° and over 100 mm however many stations you add." %}
 
-The dashed curves show the classic failure: the motions must contain rotations about **at least two non-parallel axes**. A robot that only turns its wrist about one axis (or a mobile robot driving on a floor) cannot calibrate a hand-eye transform this way. Other solvers (Tsai and Lenz 1989, Daniilidis' dual quaternions 1999, all available in `cv2.calibrateHandEye`) differ in how they weight rotation against translation, but all need this diversity. Variants: with the camera fixed in the world looking at a target on the gripper ("eye-to-hand") the same equation holds with the roles swapped; estimating the target pose at the same time gives $AX = YB$ (`cv2.calibrateRobotWorldHandEye`).
+The dashed curves show the classic failure: the motions must contain rotations about **at least two non-parallel axes**. A robot that only turns its wrist about one axis (or a mobile robot driving on a floor) cannot calibrate a hand-eye transform this way. Other solvers (Tsai and Lenz 1989, Daniilidis' dual quaternions 1999, all available in `cv2.calibrateHandEye`) differ in how they parameterize the motions and in whether they solve rotation and translation one after the other (Tsai-Lenz, Park-Martin) or together (Daniilidis), but all need this diversity. Variants: with the camera fixed in the world looking at a target on the gripper ("eye-to-hand") the same equation holds with the roles swapped; estimating the target pose at the same time gives $AX = YB$ (`cv2.calibrateRobotWorldHandEye`).
 
 ## 9. Camera-IMU calibration
 
@@ -923,9 +923,9 @@ Visual-inertial odometry ([post 06]({{ '/blog/2026/3d-vision-06-visual-slam/' | 
 - the **time offset** $t_d$ between their clocks: the camera timestamp of an image is usually not the instant of exposure;
 - the IMU's noise model (noise densities and bias random walks of gyro and accelerometer), usually measured beforehand from a long static recording (Allan variance).
 
-**Why the time offset matters, in numbers.** Turn your head at $\omega = 2$ rad/s (about 115°/s, an ordinary head turn). A clock offset of $t_d = 5$ ms means the IMU thinks the camera looked $\omega t_d = 0.01$ rad away from where it actually did. Near the image centre that is $f\,\omega\,t_d = 600 \times 0.01 = 6$ px with our camera: fifteen times the noise of the corner detector. For a headset this is a virtual object visibly swimming against the real world.
+**Why the time offset matters, in numbers.** Turn your head at $\omega = 2$ rad/s (about 115°/s, an ordinary head turn). A clock offset of $t_d = 5$ ms means the IMU thinks the camera looked $\omega t_d = 0.01$ rad away from where it actually did. Near the image centre that is $f\,\omega\,t_d = 600 \times 0.01 = 6$ px with our camera: twenty times the corner noise $\sigma = 0.3$ px. For a headset this is a virtual object visibly swimming against the real world.
 
-**How Kalibr does it** (Furgale, Rehder and Siegwart 2013). You wave the sensor rig in front of an AprilGrid for a minute or two, exciting all rotation and acceleration axes. The trajectory of the IMU is modelled as a **continuous-time B-spline** in $SE(3)$, so its pose, angular velocity and acceleration can be evaluated at any instant. One large nonlinear least-squares problem then estimates the spline, $T_{CI}$, $t_d$, gravity and the IMU biases together. Its residuals are the reprojection errors of the grid corners at the (shifted) image times, plus gyro residuals (measured minus spline angular velocity) and accelerometer residuals (measured minus spline acceleration minus gravity), each weighted by its noise. The continuous-time representation is what makes the time offset estimable, because a shift $t_d$ simply moves where along the spline the image residuals are evaluated. The paper reports time offsets estimated to a fraction of the IMU sampling period. In practice: `kalibr_calibrate_cameras` first, then `kalibr_calibrate_imu_camera` with your `imu.yaml` noise parameters. Rehder et al. (2016) extended the toolbox to several IMUs and to IMU intrinsics. Rolling-shutter cameras (post 01, section 3.5) need, in addition, a time offset that grows with the image row.
+**How Kalibr does it** (Furgale, Rehder and Siegwart 2013). You wave the sensor rig in front of an AprilGrid for a minute or two, exciting all rotation and acceleration axes. The trajectory of the IMU is modelled as a **continuous-time B-spline** (over its position and a parameterization of its rotation), so its pose, angular velocity and acceleration can be evaluated at any instant. One large nonlinear least-squares problem then estimates the spline, $T_{CI}$, $t_d$, gravity and the IMU biases together. Its residuals are the reprojection errors of the grid corners at the (shifted) image times, plus gyro residuals (measured minus spline angular velocity) and accelerometer residuals (measured minus spline acceleration minus gravity), each weighted by its noise. The continuous-time representation is what makes the time offset estimable, because a shift $t_d$ simply moves where along the spline the image residuals are evaluated. The paper reports time offsets estimated to a fraction of the IMU sampling period. In practice: `kalibr_calibrate_cameras` first, then `kalibr_calibrate_imu_camera` with your `imu.yaml` noise parameters. Rehder et al. (2016) extended the toolbox to several IMUs and to IMU intrinsics. Rolling-shutter cameras (post 01, section 3.5) need, in addition, a time offset that grows with the image row.
 
 ## 10. A practical checklist
 
@@ -948,7 +948,7 @@ The widget in section 5.4 is the hands-on part of this post. On the home page, t
 | --- | --- | --- | --- | --- |
 | An Algorithm for Least-Squares Estimation of Nonlinear Parameters (Marquardt) | J. SIAM | 1963 | [DOI](https://doi.org/10.1137/0111030) | The damping scheme behind every calibration solver |
 | A versatile camera calibration technique for high-accuracy 3D machine vision metrology using off-the-shelf TV cameras and lenses (Tsai) | IEEE J. Robotics and Automation | 1987 | [DOI](https://doi.org/10.1109/JRA.1987.1087109) | Classic two-stage calibration with radial distortion |
-| A new technique for fully autonomous and efficient 3D robotics hand/eye calibration (Tsai & Lenz) | IEEE Trans. Robotics and Automation | 1989 | [DOI](https://doi.org/10.1109/70.34770) | The first practical $AX = XB$ solver |
+| A new technique for fully autonomous and efficient 3D robotics hand/eye calibration (Tsai & Lenz) | IEEE Trans. Robotics and Automation | 1989 | [DOI](https://doi.org/10.1109/70.34770) | Fast closed-form $AX = XB$ solver, published the same year as Shiu & Ahmad's; still OpenCV's default |
 | Robot sensor calibration: solving AX = XB on the Euclidean group (Park & Martin) | IEEE Trans. Robotics and Automation | 1994 | [DOI](https://doi.org/10.1109/70.326576) | Lie-group view; closed-form least-squares rotation |
 | In Defense of the Eight-Point Algorithm (Hartley) | TPAMI | 1997 | [DOI](https://doi.org/10.1109/34.601246) | Coordinate normalization for linear estimators |
 | A four-step camera calibration procedure with implicit image correction (Heikkilä & Silvén) | CVPR | 1997 | [DOI](https://doi.org/10.1109/CVPR.1997.609468) | Radial and tangential distortion, an inverse model for undistortion, correction of the circle-centre bias |
@@ -962,7 +962,7 @@ The widget in section 5.4 is the hands-on part of this post. On the home page, t
 | Automatic generation and detection of highly reliable fiducial markers under occlusion (Garrido-Jurado et al.) | Pattern Recognition | 2014 | [DOI](https://doi.org/10.1016/j.patcog.2014.01.005) | ArUco markers, the basis of ChArUco boards |
 | Extending Kalibr: Calibrating the extrinsics of multiple IMUs and of individual axes (Rehder et al.) | ICRA | 2016 | [DOI](https://doi.org/10.1109/ICRA.2016.7487628) | Multi-IMU and IMU-intrinsic calibration |
 | Why Having 10,000 Parameters in Your Camera Model Is Better Than Twelve (Schöps et al.) | CVPR | 2020 | [arXiv](https://arxiv.org/abs/1912.02908) | Generic camera models and the bias of parametric ones |
-| GeoCalib: Learning Single-image Calibration with Geometric Optimization (Veicht et al.) | ECCV | 2024 | [arXiv](https://arxiv.org/abs/2409.06704) | Intrinsics and gravity from a single image, without a target |
+| GeoCalib: Learning Single-image Calibration with Geometric Optimization (Veicht et al.) | ECCV (published; status as of November 2026) | 2024 | [arXiv](https://arxiv.org/abs/2409.06704) | Intrinsics and gravity from a single image, without a target |
 
 ## Learning resources
 
@@ -994,14 +994,14 @@ The widget in section 5.4 is the hands-on part of this post. On the home page, t
 
    <details markdown="1"><summary>Hint</summary>
 
-   The held-out corners lie exactly in the region where figure (b) shows large or undefined uncertainty, so expect held-out errors of several pixels for the free-$k_3$ model, smaller with $k_3 = 0$, against about 0.4 px on the training views.
+   Both calibrations give about 1 px on the held-out views (free $k_3$: 1.00-1.23 px per view; $k_3 = 0$: 0.93-1.15 px), against 0.41 px on the training views, so the $k_3 = 0$ model generalizes slightly better. The held-out errors are much smaller than the corner values of map (b) suggest, for two reasons: PnP re-fits each held-out pose and absorbs part of the model error, and the held-out corners stop about 331 px from the centre, short of the extreme image corners where the map is worst. Still, a held-out error 2.5 times the training RMS is a clear warning that the model is extrapolating.
    </details>
 
 4. **Analytic Jacobian.** Replace the forward-difference `jacobian` by analytic derivatives of `project` with respect to $f_x, f_y, c_x, c_y$ (easy) and $k_1, k_2$ (chain rule through $r^2$). Check it against the numerical one, and time both.
 
    <details markdown="1"><summary>Hint</summary>
 
-   $\partial u/\partial f_x = x_d$, $\partial u/\partial c_x = 1$, $\partial u/\partial k_1 = f_x\, x\, r^2$, $\partial u/\partial k_2 = f_x\, x\, r^4$; similarly for $v$. The differences to the numerical Jacobian should be around $10^{-5}$ relative.
+   $\partial u/\partial f_x = x_d$, $\partial u/\partial c_x = 1$, $\partial u/\partial k_1 = f_x\, x\, r^2$, $\partial u/\partial k_2 = f_x\, x\, r^4$; similarly for $v$. The two Jacobians agree to better than $10^{-9}$ relative: $u$ is linear in each of these parameters taken alone, so the forward difference has no truncation error, only rounding error.
    </details>
 
 5. **Time offset.** A headset's camera runs at 30 Hz and its IMU at 1000 Hz. During a calibration you rotate it at up to 3 rad/s. If you require the time-offset error to cause less than 0.5 px of error at the image centre with $f = 450$ px, how accurately must $t_d$ be known?
