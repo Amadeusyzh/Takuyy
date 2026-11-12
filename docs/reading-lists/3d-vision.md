@@ -115,3 +115,63 @@
 - OpenCV USAC 教程：https://docs.opencv.org/5.0/tutorials/calib3d/usac.html
 - 代码：https://github.com/cvg/LightGlue 、https://github.com/magicleap/SuperGluePretrainedNetwork 、https://github.com/Parskatt/RoMa 、https://github.com/danini/magsac 、https://github.com/princeton-vl/RAFT
 - 基准：https://github.com/hpatches 、https://vision.uvic.ca/image-matching-challenge/
+
+## 09 三维重建：从经典流水线到前馈模型
+
+建议顺序：Curless & Levoy（TSDF）→ Lorensen & Cline（Marching Cubes）→ Kazhdan 等（泊松、屏蔽泊松）→ KinectFusion → 体素哈希 → Schönberger 等（COLMAP MVS）→ NeuS / VolSDF → Neuralangelo → DUSt3R → MASt3R → VGGT → 最后一组 2025–2026 年的后继。近期工作的状态截至 2026 年 11 月。
+
+### 经典：深度融合、等值面与泊松重建
+
+| 论文 | 会议/期刊 | 年份 | 链接 | 说明 |
+| --- | --- | --- | --- | --- |
+| Marching cubes: a high resolution 3D surface construction algorithm (Lorensen, Cline) | SIGGRAPH | 1987 | https://doi.org/10.1145/37401.37422 | 从体素网格提取等值面；顶点线性插值给出二阶精度 |
+| A volumetric method for building complex models from range images (Curless, Levoy) | SIGGRAPH | 1996 | https://doi.org/10.1145/237170.237269 | 累积加权有符号距离：TSDF 融合的起点 |
+| Poisson surface reconstruction (Kazhdan, Bolitho, Hoppe) | SGP | 2006 | https://doi.org/10.2312/SGP/SGP06/061-070 | 由有向点求指示函数，得到水密曲面 |
+| KinectFusion: real-time dense surface mapping and tracking (Newcombe et al.) | ISMAR | 2011 | https://doi.org/10.1109/ISMAR.2011.6092378 | GPU 实时 TSDF 融合 + 对模型做 ICP 跟踪 |
+| Screened Poisson surface reconstruction (Kazhdan, Hoppe) | ACM TOG | 2013 | https://doi.org/10.1145/2487228.2487237 | 在样本处加插值约束，减少过度平滑与漂移 |
+| Real-time 3D reconstruction at scale using voxel hashing (Nießner et al.) | ACM TOG (SIGGRAPH Asia) | 2013 | https://doi.org/10.1145/2508363.2508374 | 只在表面附近分配 TSDF 块的哈希表 |
+| Pixelwise view selection for unstructured multi-view stereo (Schönberger et al.) | ECCV | 2016 | https://doi.org/10.1007/978-3-319-46487-9_31 | COLMAP 的 PatchMatch MVS 与基于一致性的深度图融合 |
+
+### 神经隐式曲面与高斯曲面
+
+| 论文 | 会议/期刊 | 年份 | 链接 | 说明 |
+| --- | --- | --- | --- | --- |
+| Implicit geometric regularization for learning shapes (Gropp et al.) | ICML | 2020 | https://arxiv.org/abs/2002.10099 | IGR：Eikonal 正则项 |
+| NeuS: learning neural implicit surfaces by volume rendering for multi-view reconstruction (Wang et al.) | NeurIPS | 2021 | https://arxiv.org/abs/2106.10689 | 无偏且感知遮挡的 SDF 体渲染权重（第 09 篇推导并复现） |
+| Volume rendering of neural implicit surfaces (Yariv et al.) | NeurIPS | 2021 | https://arxiv.org/abs/2106.12052 | VolSDF：拉普拉斯 CDF 密度与不透明度误差界 |
+| Neuralangelo: high-fidelity neural surface reconstruction (Li et al.) | CVPR | 2023 | https://arxiv.org/abs/2306.03092 | 哈希网格 SDF、数值梯度、由粗到细 |
+| 2D Gaussian splatting for geometrically accurate radiance fields (Huang et al.) | SIGGRAPH | 2024 | https://arxiv.org/abs/2403.17888 | 面元高斯；渲染深度做 TSDF 融合得到网格 |
+| Gaussian opacity fields (Yu, Sattler, Geiger) | ACM TOG (SIGGRAPH Asia) | 2024 | https://arxiv.org/abs/2404.10772 | 由高斯直接定义水平集，适合无界场景 |
+
+### 前馈式三维基础模型
+
+| 论文 | 会议/期刊 | 年份 | 链接 | 说明 |
+| --- | --- | --- | --- | --- |
+| DUSt3R: geometric 3D vision made easy (Wang et al.) | CVPR | 2024 | https://arxiv.org/abs/2312.14132 | 图像对 → 同一坐标系下的点图；Weiszfeld 求焦距，全局对齐 |
+| Grounding image matching in 3D with MASt3R (Leroy, Cabon, Revaud) | ECCV | 2024 | https://arxiv.org/abs/2406.09756 | 在点图之上加稠密描述子头与快速互最近邻匹配 |
+| MASt3R-SfM: a fully-integrated solution for unconstrained structure-from-motion (Duisterhof et al.) | 3DV | 2025 | https://arxiv.org/abs/2409.19152 | 基于 MASt3R 的 SfM，可处理纯旋转与极少图像 |
+| VGGT: visual geometry grounded transformer (Wang et al.) | CVPR（最佳论文） | 2025 | https://arxiv.org/abs/2503.11651 | 逐帧/全局交替注意力，一次前向输出相机、深度、点图与轨迹 |
+| Fast3R: towards 3D reconstruction of 1000+ images in one forward pass (Yang et al.) | CVPR | 2025 | https://arxiv.org/abs/2501.13928 | 多视图 DUSt3R，无需全局对齐 |
+| Continuous 3D perception model with persistent state (Wang et al.) | CVPR | 2025 | https://arxiv.org/abs/2501.12387 | CUT3R：带持久状态的循环式在线重建 |
+| MASt3R-SLAM: real-time dense SLAM with 3D reconstruction priors (Murai, Dexheimer, Davison) | CVPR | 2025 | https://arxiv.org/abs/2412.12392 | 约 15 FPS 的稠密单目 SLAM |
+| MonST3R: a simple approach for estimating geometry in the presence of motion (Zhang et al.) | ICLR | 2025 | https://arxiv.org/abs/2410.03825 | 动态场景的逐时刻点图 |
+| Streaming 4D visual geometry transformer (Zhuo et al.) | arXiv 预印本（2025 年 7 月） | 2025 | https://arxiv.org/abs/2507.11539 | StreamVGGT：因果注意力 + 键值缓存，由 VGGT 蒸馏 |
+| π³: permutation-equivariant visual geometry learning (Wang et al.) | ICLR（据作者代码仓库） | 2026 | https://arxiv.org/abs/2507.13347 | 无参考视图，置换等变 |
+| MapAnything: universal feed-forward metric 3D reconstruction (Keetha et al.) | 3DV | 2026 | https://arxiv.org/abs/2509.13414 | 可选输入（内参、位姿、深度），分解式度量输出 |
+| Depth Anything 3: recovering the visual space from any views (Lin et al.) | ICLR | 2026 | https://arxiv.org/abs/2511.10647 | 朴素 Transformer + 深度-射线目标 |
+| LongStream: long-sequence streaming autoregressive visual geometry (Cheng et al.) | CVPR | 2026 | https://arxiv.org/abs/2602.13172 | 关键帧相对位姿、解耦尺度，公里级流式重建 |
+
+### 评测基准
+
+| 论文 | 会议/期刊 | 年份 | 链接 | 说明 |
+| --- | --- | --- | --- | --- |
+| Large-scale data for multiple-view stereopsis (Aanæs et al.) | IJCV | 2016 | https://doi.org/10.1007/s11263-016-0902-9 | DTU：80 个场景，结构光真值，准确度/完整度（Chamfer） |
+| Tanks and Temples: benchmarking large-scale scene reconstruction (Knapitsch et al.) | ACM TOG | 2017 | https://doi.org/10.1145/3072959.3073599 | 激光扫描真值，按场景阈值的精确率/召回率/F 值 |
+| A multi-view stereo benchmark with high-resolution images and multi-camera videos (Schöps et al.) | CVPR | 2017 | https://openaccess.thecvf.com/content_cvpr_2017/html/Schops_A_Multi-View_Stereo_CVPR_2017_paper.html | ETH3D：高分辨率图像，多容差 F1 |
+
+### 课程、书与代码
+
+- Szeliski《Computer Vision: Algorithms and Applications》第 2 版第 12–13 章（深度估计、三维重建）：https://szeliski.org/Book/
+- COLMAP 命令行与教程：https://colmap.github.io/cli.html 、https://colmap.github.io/tutorial.html
+- Open3D（TSDF 融合、泊松）：https://www.open3d.org/ ；屏蔽泊松参考实现与裁剪工具：https://github.com/mkazhdan/PoissonRecon
+- 代码：https://github.com/Totoro97/NeuS 、https://github.com/NVlabs/neuralangelo 、https://github.com/hbb1/2d-gaussian-splatting 、https://github.com/naver/dust3r 、https://github.com/naver/mast3r 、https://github.com/facebookresearch/vggt
