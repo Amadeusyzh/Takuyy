@@ -2,7 +2,7 @@
 layout: post
 title: "学習ロードマップ：コンピュータグラフィックスから 3D ガウシアンスプラッティング、世界モデル、身体性 AI まで"
 date: 2026-10-27 21:00:00+0900
-description: "このブログの地図です。5 つのシリーズと日付入りの論文速報コラムを順番に、各段階で何を学ぶかをまとめました。"
+description: "このブログの地図です。6 つのシリーズと日付入りの論文速報コラムを順番に、各段階で何を学ぶかをまとめました。"
 categories: roadmap
 tags: [roadmap]
 featured: true
@@ -14,9 +14,9 @@ mermaid:
   zoomable: true
 ---
 
-この記事はブログ全体の地図です。私は**身体性 AI、世界モデル、AR/VR、HCI、コンピュータグラフィックス**の交差点を研究している博士課程の学生です。これらの分野には、意外なほど一直線のストーリーがあります。まず画像がどのように作られるかを学び（グラフィックス）、写真からその過程を*逆算*する方法を学び（ニューラルレンダリング、3D ガウシアンスプラッティング）、世界がどう変化するかを*予測*するモデルを学び（世界モデル）、最後に世界の中に身体を置いて行動させます（身体性 AI）。
+この記事はブログ全体の地図です。私は**身体性 AI、世界モデル、AR/VR、HCI、コンピュータグラフィックス**の交差点を研究している博士課程の学生です。これらの分野には、意外なほど一直線のストーリーがあります。まず画像がどのように作られるかを学び（グラフィックス）、写真からその過程を*逆算*する方法を学び（まず 3D ビジョン、次にニューラルレンダリングと 3D ガウシアンスプラッティング）、世界がどう変化するかを*予測*するモデルを学び（世界モデル）、最後に世界の中に身体を置いて行動させます（身体性 AI）。
 
-ブログはこの流れに沿った 5 つのシリーズと、日付入りの論文速報コラムで構成しています。4 つのシリーズはストーリーの各段階そのもので、5 つ目のグラフィックスエンジンのシリーズはそれらをつなぐ橋渡しです。ロボットを学習させるシミュレータも、世界モデルが向かいつつあるニューラルゲームエンジンも、中身はエンジンだからです。すべての記事に日本語・英語・中国語の 3 バージョンがあり、数式の導出、実行できる短いコード、そして SIGGRAPH、CVPR/ICCV/ECCV、NeurIPS/ICLR/ICML、CoRL/RSS などのトップ会議・論文誌の代表的な論文へのリンクを載せています。各分野には、リポジトリ内に整理された文献リストもあります。
+ブログはこの流れに沿った 6 つのシリーズと、日付入りの論文速報コラムで構成しています。5 つのシリーズはストーリーの各段階そのもので、6 つ目のグラフィックスエンジンのシリーズはそれらをつなぐ橋渡しです。ロボットを学習させるシミュレータも、世界モデルが向かいつつあるニューラルゲームエンジンも、中身はエンジンだからです。すべての記事に日本語・英語・中国語の 3 バージョンがあり、数式の導出、実行できる短いコード、そして SIGGRAPH、CVPR/ICCV/ECCV、NeurIPS/ICLR/ICML、CoRL/RSS などのトップ会議・論文誌の代表的な論文へのリンクを載せています。各分野には、リポジトリ内に整理された文献リストもあります。
 
 ```mermaid
 flowchart TB
@@ -33,7 +33,14 @@ flowchart TB
     G11 --> G13[2026 年の研究フロンティア]
     G12 --> G13
   end
-  G --> N
+  G --> V
+  subgraph V[1.5 3D ビジョン]
+    direction LR
+    V1[カメラモデル] --> V2[キャリブレーション] --> V3[特徴とマッチング] --> V4[2 視点幾何] --> V5[SfM とバンドル調整] --> V6[Visual SLAM]
+    V5 --> V7[奥行きと MVS] --> V8[3D 表現] --> V9[3D 再構成]
+    V6 --> V10[AR/VR のための 3D ビジョン]
+  end
+  V --> N
   subgraph N[2. ニューラルレンダリング]
     direction LR
     N1[カメラと SfM] --> N2[NeRF] --> N3[高速な放射場] --> N4[3D ガウシアンスプラッティング] --> N5[3DGS の最前線] --> N6[撮影から VR まで]
@@ -82,9 +89,24 @@ flowchart TB
 12. [微分可能レンダリングと逆レンダリング：ピクセルを通る勾配]({{ '/blog/2026/graphics-12-differentiable-and-inverse-rendering/' | relative_url }})
 13. [グラフィックス研究のフロンティア 2026：SIGGRAPH、SIGGRAPH Asia と最新プレプリントの動向]({{ '/blog/2026/graphics-13-research-frontiers-2026/' | relative_url }})
 
+## ステージ 1.5：3D ビジョン
+
+グラフィックスはシーンから画像へ進みます。3D ビジョンはその逆で、画像から幾何へ戻ります。写真の集合から、それを撮ったカメラ（内部パラメータ、歪み、姿勢）、写真どうしの対応、そして写っている 3D 構造を復元します。これはまさに、ニューラルレンダリングが与えられたものとして前提にしている入力です。NeRF と 3DGS は COLMAP の姿勢で学習し、3DGS は SfM の点群から始まります。このステージを先に読んでおけば、その姿勢はブラックボックスではなく、自分で計算し、確かめ、撮影がうまくいかないときに原因を探せるものになります。SLAM、世界モデル、身体性 AI も同じ幾何の上に成り立っています。第 1〜5 回が中核で、カメラモデルからバンドル調整までを扱い、第 6〜10 回はそれをリアルタイムの追跡、密な奥行き、3D 表現、3D 再構成、AR/VR へ広げます。
+
+1. [画像形成とカメラモデル]({{ '/blog/2026/3d-vision-01-image-formation-and-camera-models/' | relative_url }})：同次座標、ピンホールカメラ $P = K[R \mid \mathbf t]$、レンズ歪み、そして OpenCV・OpenGL・COLMAP・NeRF の座標系。
+2. [カメラキャリブレーション]({{ '/blog/2026/3d-vision-02-camera-calibration/' | relative_url }})：ホモグラフィと Zhang の手法でチェッカーボードから $K$ と歪みを推定し、再投影誤差とパラメータの不確かさで結果の良し悪しを判断します。
+3. [特徴とマッチング]({{ '/blog/2026/3d-vision-03-features-and-matching/' | relative_url }})：コーナー、SIFT、ORB、学習型マッチャーで 2 枚の画像の同じ点を見つけ、RANSAC で誤対応を取り除きます。
+4. [2 視点幾何]({{ '/blog/2026/3d-vision-04-two-view-geometry/' | relative_url }})：基本行列と基礎行列、相対姿勢、三角測量、そして平行化したステレオ画像対からの奥行き。
+5. [多視点幾何とバンドル調整]({{ '/blog/2026/3d-vision-05-multi-view-geometry-and-bundle-adjustment/' | relative_url }})：PnP、インクリメンタル SfM とグローバル SfM、そして Schur 補行列を使うバンドル調整。
+6. [Visual SLAM]({{ '/blog/2026/3d-vision-06-visual-slam/' | relative_url }})：同じ推定をリアルタイムで行います。因子グラフ、Visual Odometry と視覚慣性オドメトリ、ループ閉じ込み、姿勢グラフ最適化。
+7. [奥行き推定とマルチビューステレオ]({{ '/blog/2026/3d-vision-07-depth-estimation-and-multi-view-stereo/' | relative_url }})：奥行きセンサー、平面掃引とコストボリューム、PatchMatch、学習型 MVS、単眼奥行き推定。
+8. [3D 表現]({{ '/blog/2026/3d-vision-08-3d-representations/' | relative_url }})：点群、メッシュ、ボクセル、SDF、ニューラル場、3D ガウシアン、その間の変換と使い分け。
+9. [3D 再構成]({{ '/blog/2026/3d-vision-09-3d-reconstruction-classic-to-feed-forward/' | relative_url }})：古典的な SfM・MVS・メッシュ化のパイプラインから、ニューラル表面、DUSt3R や VGGT などのフィードフォワードモデルまで。
+10. [AR/VR のための 3D ビジョン]({{ '/blog/2026/3d-vision-10-3d-vision-for-ar-vr/' | relative_url }})：ヘッドセットの追跡、モーション・トゥ・フォトン遅延、レジストレーション誤差、空間アンカー。シリーズの最終回です。
+
 ## ステージ 2：ニューラルレンダリングと 3D ガウシアンスプラッティング
 
-レンダリングの過程を逆にたどります。写真からカメラを復元し、それらの写真を再現する放射場（NeRF）や 3D ガウシアンの集合（3DGS）をフィットさせます。これらの表現は、いまや AR/VR の 3D キャプチャや多くの 3D 世界生成システムの中核になっています。
+レンダリングの過程を逆にたどります。写真からカメラを復元し（詳しくはステージ 1.5 で扱い、下の第 1 回はその要約です）、それらの写真を再現する放射場（NeRF）や 3D ガウシアンの集合（3DGS）をフィットさせます。これらの表現は、いまや AR/VR の 3D キャプチャや多くの 3D 世界生成システムの中核になっています。
 
 1. [カメラと多視点幾何]({{ '/blog/2026/neural-rendering-01-cameras-and-multiview-geometry/' | relative_url }})
 2. [NeRF]({{ '/blog/2026/neural-rendering-02-nerf/' | relative_url }})
@@ -130,6 +152,7 @@ flowchart TB
 | ステージ | 記事数 | 目安の期間 | マイルストーン |
 | --- | --- | --- | --- |
 | グラフィックス | 13 | 8〜11 週間（中核の第 1〜7 章：4〜6 週間） | ソフトウェアラスタライザと小さなパストレーサーを書く |
+| 3D ビジョン | 10 | 6〜8 週間（中核の第 1〜5 回：3〜4 週間） | 自分のカメラをキャリブレーションし、自分で撮った写真でバンドル調整付きの SfM を動かす |
 | ニューラルレンダリング | 6 | 3〜4 週間 | 自分で撮影したデータで 3DGS を学習し、VR で見る |
 | グラフィックスエンジン | 6 | 3〜5 週間 | レンダーグラフを備えたミニ WebGPU エンジンを作り、1 フレームをプロファイルする |
 | 世界モデル | 5 | 3〜4 週間 | 小さな潜在ダイナミクスモデルか DDPM を学習する |
@@ -145,6 +168,6 @@ flowchart TB
 
 ## カテゴリから探す
 
-[グラフィックス]({{ '/blog/category/graphics/' | relative_url }}) · [ニューラルレンダリング]({{ '/blog/category/neural-rendering/' | relative_url }}) · [グラフィックスエンジン]({{ '/blog/category/graphics-engine/' | relative_url }}) · [世界モデル]({{ '/blog/category/world-models/' | relative_url }}) · [身体性 AI]({{ '/blog/category/embodied-ai/' | relative_url }}) · [論文速報]({{ '/blog/category/paper-digest/' | relative_url }})
+[グラフィックス]({{ '/blog/category/graphics/' | relative_url }}) · [3D ビジョン]({{ '/blog/category/3d-vision/' | relative_url }}) · [ニューラルレンダリング]({{ '/blog/category/neural-rendering/' | relative_url }}) · [グラフィックスエンジン]({{ '/blog/category/graphics-engine/' | relative_url }}) · [世界モデル]({{ '/blog/category/world-models/' | relative_url }}) · [身体性 AI]({{ '/blog/category/embodied-ai/' | relative_url }}) · [論文速報]({{ '/blog/category/paper-digest/' | relative_url }})
 
 学びながらシリーズを少しずつ広げていきます。誤りの指摘や提案を歓迎します。

@@ -2,7 +2,7 @@
 layout: post
 title: "Learning roadmap: from computer graphics to 3D Gaussian Splatting, world models and embodied AI"
 date: 2026-10-27 21:00:00+0900
-description: "The map of this blog: five series plus a dated paper-digest column, in order, with what to learn at each stage."
+description: "The map of this blog: six series plus a dated paper-digest column, in order, with what to learn at each stage."
 categories: roadmap
 tags: [roadmap]
 featured: true
@@ -14,9 +14,9 @@ mermaid:
   zoomable: true
 ---
 
-This post is the map for the rest of the blog. I am a PhD student working at the intersection of **embodied AI, world models, AR/VR, HCI and computer graphics**, and these fields share one surprisingly linear story: learn how images are formed (graphics), learn how to *invert* that process from photos (neural rendering, 3D Gaussian Splatting), learn models that *predict* how the world evolves (world models), and finally put a body inside the world and let it act (embodied AI).
+This post is the map for the rest of the blog. I am a PhD student working at the intersection of **embodied AI, world models, AR/VR, HCI and computer graphics**, and these fields share one surprisingly linear story: learn how images are formed (graphics), learn how to *invert* that process from photos (3D vision, then neural rendering and 3D Gaussian Splatting), learn models that *predict* how the world evolves (world models), and finally put a body inside the world and let it act (embodied AI).
 
-The blog is organised as five series that follow that story, plus a dated paper-digest column. Four series are the stages of the story itself; the fifth, on graphics engines, is the bridge between them, because the simulators that train robots and the neural game engines that world models are becoming are both engines underneath. Every post comes in English, Chinese and Japanese, with the math written out, small runnable code snippets and links to representative papers from SIGGRAPH, CVPR/ICCV/ECCV, NeurIPS/ICLR/ICML, CoRL/RSS and other top venues. Each track also has a curated reading list in the repository.
+The blog is organised as six series that follow that story, plus a dated paper-digest column. Five series are the stages of the story itself; the sixth, on graphics engines, is the bridge between them, because the simulators that train robots and the neural game engines that world models are becoming are both engines underneath. Every post comes in English, Chinese and Japanese, with the math written out, small runnable code snippets and links to representative papers from SIGGRAPH, CVPR/ICCV/ECCV, NeurIPS/ICLR/ICML, CoRL/RSS and other top venues. Each track also has a curated reading list in the repository.
 
 ```mermaid
 flowchart TB
@@ -33,7 +33,14 @@ flowchart TB
     G11 --> G13[2026 frontiers]
     G12 --> G13
   end
-  G --> N
+  G --> V
+  subgraph V[1.5 3D vision]
+    direction LR
+    V1[Camera models] --> V2[Calibration] --> V3[Features and matching] --> V4[Two-view geometry] --> V5[SfM and bundle adjustment] --> V6[Visual SLAM]
+    V5 --> V7[Depth and MVS] --> V8[3D representations] --> V9[3D reconstruction]
+    V6 --> V10[3D vision for AR/VR]
+  end
+  V --> N
   subgraph N[2. Neural rendering]
     direction LR
     N1[Cameras and SfM] --> N2[NeRF] --> N3[Fast radiance fields] --> N4[3D Gaussian Splatting] --> N5[3DGS frontiers] --> N6[Capture to VR]
@@ -82,9 +89,24 @@ How an image is made: from transforms and rasterization to physically based ligh
 12. [Differentiable and inverse rendering: gradients through pixels]({{ '/blog/2026/graphics-12-differentiable-and-inverse-rendering/' | relative_url }})
 13. [Graphics research frontiers 2026: what SIGGRAPH, SIGGRAPH Asia and the latest preprints are doing]({{ '/blog/2026/graphics-13-research-frontiers-2026/' | relative_url }})
 
+## Stage 1.5: 3D vision
+
+Graphics goes from a scene to an image; 3D vision goes back, from images to geometry. Given photographs, it recovers the cameras that took them (intrinsics, distortion and poses), the correspondences between them and the 3D structure they see. That is exactly what neural rendering takes as given: NeRF and 3DGS are trained on COLMAP poses, and 3DGS starts from the SfM point cloud. Reading this stage first turns those poses from a black box into something you can compute, check and debug when a capture fails, and SLAM, world models and embodied AI build on the same geometry. Posts 1-5 are the core, from the camera model to bundle adjustment; posts 6-10 extend it to real-time tracking, dense depth, representations, reconstruction and AR/VR.
+
+1. [Image formation and camera models]({{ '/blog/2026/3d-vision-01-image-formation-and-camera-models/' | relative_url }}): homogeneous coordinates, the pinhole camera $P = K[R \mid \mathbf t]$, lens distortion, and the OpenCV, OpenGL, COLMAP and NeRF conventions.
+2. [Camera calibration]({{ '/blog/2026/3d-vision-02-camera-calibration/' | relative_url }}): estimate $K$ and the distortion from a checkerboard with homographies and Zhang's method, and judge the result by its reprojection error and uncertainty.
+3. [Features and matching]({{ '/blog/2026/3d-vision-03-features-and-matching/' | relative_url }}): find the same point in two images with corners, SIFT, ORB and learned matchers, and reject wrong matches with RANSAC.
+4. [Two-view geometry]({{ '/blog/2026/3d-vision-04-two-view-geometry/' | relative_url }}): the essential and fundamental matrices, relative pose, triangulation, and depth from a rectified stereo pair.
+5. [Multi-view geometry and bundle adjustment]({{ '/blog/2026/3d-vision-05-multi-view-geometry-and-bundle-adjustment/' | relative_url }}): PnP, incremental and global Structure-from-Motion, and bundle adjustment with the Schur complement.
+6. [Visual SLAM]({{ '/blog/2026/3d-vision-06-visual-slam/' | relative_url }}): the same estimation in real time, with factor graphs, visual and visual-inertial odometry, loop closure and pose-graph optimization.
+7. [Depth estimation and multi-view stereo]({{ '/blog/2026/3d-vision-07-depth-estimation-and-multi-view-stereo/' | relative_url }}): depth sensors, plane sweeps and cost volumes, PatchMatch, learned MVS and monocular depth.
+8. [3D representations]({{ '/blog/2026/3d-vision-08-3d-representations/' | relative_url }}): point clouds, meshes, voxels, SDFs, neural fields and 3D Gaussians, how to convert between them and which to choose.
+9. [3D reconstruction]({{ '/blog/2026/3d-vision-09-3d-reconstruction-classic-to-feed-forward/' | relative_url }}): from the classical SfM, MVS and meshing pipeline to neural surfaces and feed-forward models such as DUSt3R and VGGT.
+10. [3D vision for AR/VR]({{ '/blog/2026/3d-vision-10-3d-vision-for-ar-vr/' | relative_url }}): headset tracking, motion-to-photon latency, registration error and spatial anchors, which closes the series.
+
 ## Stage 2: neural rendering and 3D Gaussian Splatting
 
-Inverting the rendering process: recover cameras from photos, then fit a radiance field (NeRF) or a set of 3D Gaussians (3DGS) that reproduces them. These representations are now the backbone of 3D capture for AR/VR and of many 3D world-generation systems.
+Inverting the rendering process: recover cameras from photos (stage 1.5 in depth; the first post below is a compact review), then fit a radiance field (NeRF) or a set of 3D Gaussians (3DGS) that reproduces them. These representations are now the backbone of 3D capture for AR/VR and of many 3D world-generation systems.
 
 1. [Cameras and multi-view geometry]({{ '/blog/2026/neural-rendering-01-cameras-and-multiview-geometry/' | relative_url }})
 2. [NeRF]({{ '/blog/2026/neural-rendering-02-nerf/' | relative_url }})
@@ -130,6 +152,7 @@ Giving the model a body: kinematics and control, reinforcement learning and sim2
 | Stage | Posts | Suggested time | Milestone |
 | --- | --- | --- | --- |
 | Graphics | 13 | 8-11 weeks (core 1-7: 4-6 weeks) | write a software rasterizer and a small path tracer |
+| 3D vision | 10 | 6-8 weeks (core 1-5: 3-4 weeks) | calibrate your own camera and run SfM with bundle adjustment on your own photos |
 | Neural rendering | 6 | 3-4 weeks | train 3DGS on your own capture and view it in VR |
 | Graphics engines | 6 | 3-5 weeks | build a mini WebGPU engine with a render graph and profile a frame |
 | World models | 5 | 3-4 weeks | train a tiny latent dynamics model or DDPM |
@@ -145,6 +168,6 @@ The series explain the foundations; the dated **paper digest** column keeps them
 
 ## Browse by category
 
-[Graphics]({{ '/blog/category/graphics/' | relative_url }}) · [Neural rendering]({{ '/blog/category/neural-rendering/' | relative_url }}) · [Graphics engines]({{ '/blog/category/graphics-engine/' | relative_url }}) · [World models]({{ '/blog/category/world-models/' | relative_url }}) · [Embodied AI]({{ '/blog/category/embodied-ai/' | relative_url }}) · [Paper digest]({{ '/blog/category/paper-digest/' | relative_url }})
+[Graphics]({{ '/blog/category/graphics/' | relative_url }}) · [3D vision]({{ '/blog/category/3d-vision/' | relative_url }}) · [Neural rendering]({{ '/blog/category/neural-rendering/' | relative_url }}) · [Graphics engines]({{ '/blog/category/graphics-engine/' | relative_url }}) · [World models]({{ '/blog/category/world-models/' | relative_url }}) · [Embodied AI]({{ '/blog/category/embodied-ai/' | relative_url }}) · [Paper digest]({{ '/blog/category/paper-digest/' | relative_url }})
 
 I will keep extending these series as I learn; corrections and suggestions are very welcome.

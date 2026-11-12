@@ -2,7 +2,7 @@
 layout: post
 title: "学习路线：从计算机图形学到 3D 高斯泼溅、世界模型与具身智能"
 date: 2026-10-27 21:00:00+0900
-description: "这个博客的地图：五个系列加一个按日期更新的论文速递专栏，按顺序学习，以及每个阶段要掌握什么。"
+description: "这个博客的地图：六个系列加一个按日期更新的论文速递专栏，按顺序学习，以及每个阶段要掌握什么。"
 categories: roadmap
 tags: [roadmap]
 featured: true
@@ -14,9 +14,9 @@ mermaid:
   zoomable: true
 ---
 
-这篇文章是整个博客的地图。我是一名博士生，研究方向在**具身智能、世界模型、AR/VR、人机交互和计算机图形学**的交叉处。这些领域其实共享一条相当线性的主线：先学习图像是如何形成的（图形学），再学习如何从照片*反推*这个过程（神经渲染、3D 高斯泼溅），然后学习*预测*世界如何演化的模型（世界模型），最后把一个身体放进世界，让它行动（具身智能）。
+这篇文章是整个博客的地图。我是一名博士生，研究方向在**具身智能、世界模型、AR/VR、人机交互和计算机图形学**的交叉处。这些领域其实共享一条相当线性的主线：先学习图像是如何形成的（图形学），再学习如何从照片*反推*这个过程（先是三维视觉，然后是神经渲染与 3D 高斯泼溅），然后学习*预测*世界如何演化的模型（世界模型），最后把一个身体放进世界，让它行动（具身智能）。
 
-博客按这条主线组织成五个系列，外加一个按日期更新的论文速递专栏。其中四个系列就是主线上的四个阶段；第五个系列讲图形引擎，是连接它们的桥梁，因为训练机器人的仿真器和世界模型正在演变成的神经游戏引擎，底层都是引擎。每篇文章都有中文、英文、日文三个版本，写出完整的数学推导，附上可运行的小段代码，并给出 SIGGRAPH、CVPR/ICCV/ECCV、NeurIPS/ICLR/ICML、CoRL/RSS 等顶会顶刊的代表论文链接。每个方向在仓库里还有一份整理好的阅读清单。
+博客按这条主线组织成六个系列，外加一个按日期更新的论文速递专栏。其中五个系列就是主线上的五个阶段；第六个系列讲图形引擎，是连接它们的桥梁，因为训练机器人的仿真器和世界模型正在演变成的神经游戏引擎，底层都是引擎。每篇文章都有中文、英文、日文三个版本，写出完整的数学推导，附上可运行的小段代码，并给出 SIGGRAPH、CVPR/ICCV/ECCV、NeurIPS/ICLR/ICML、CoRL/RSS 等顶会顶刊的代表论文链接。每个方向在仓库里还有一份整理好的阅读清单。
 
 ```mermaid
 flowchart TB
@@ -33,7 +33,14 @@ flowchart TB
     G11 --> G13[2026 研究前沿]
     G12 --> G13
   end
-  G --> N
+  G --> V
+  subgraph V[1.5 三维视觉]
+    direction LR
+    V1[相机模型] --> V2[相机标定] --> V3[特征与匹配] --> V4[两视图几何] --> V5[SfM 与光束法平差] --> V6[视觉 SLAM]
+    V5 --> V7[深度与 MVS] --> V8[三维表示] --> V9[三维重建]
+    V6 --> V10[面向 AR/VR 的三维视觉]
+  end
+  V --> N
   subgraph N[2. 神经渲染]
     direction LR
     N1[相机与 SfM] --> N2[NeRF] --> N3[快速辐射场] --> N4[3D 高斯泼溅] --> N5[3DGS 前沿] --> N6[从采集到 VR]
@@ -82,9 +89,24 @@ flowchart TB
 12. [可微渲染与逆向渲染：穿过像素的梯度]({{ '/blog/2026/graphics-12-differentiable-and-inverse-rendering/' | relative_url }})
 13. [2026 年图形学研究前沿：SIGGRAPH、SIGGRAPH Asia 与最新预印本在做什么]({{ '/blog/2026/graphics-13-research-frontiers-2026/' | relative_url }})
 
+## 阶段 1.5：三维视觉
+
+图形学从场景走到图像；三维视觉则反过来，从图像走回几何。给定一组照片，它恢复拍摄这些照片的相机（内参、畸变和位姿）、照片之间的对应关系，以及它们所看到的三维结构。这正是神经渲染默认已经拥有的输入：NeRF 和 3DGS 都在 COLMAP 给出的位姿上训练，3DGS 还从 SfM 点云开始。先学这一阶段，那些位姿就不再是黑箱，而是你能够计算、检验，并在采集失败时排查的东西；SLAM、世界模型和具身智能也都建立在同一套几何之上。第 1-5 篇是核心，从相机模型讲到光束法平差；第 6-10 篇把它扩展到实时跟踪、稠密深度、三维表示、三维重建和 AR/VR。
+
+1. [成像与相机模型]({{ '/blog/2026/3d-vision-01-image-formation-and-camera-models/' | relative_url }})：齐次坐标、针孔相机 $P = K[R \mid \mathbf t]$、镜头畸变，以及 OpenCV、OpenGL、COLMAP 和 NeRF 的坐标约定。
+2. [相机标定]({{ '/blog/2026/3d-vision-02-camera-calibration/' | relative_url }})：用单应矩阵和张正友方法从棋盘格估计 $K$ 和畸变，并根据重投影误差和参数不确定度判断结果是否可信。
+3. [特征与匹配]({{ '/blog/2026/3d-vision-03-features-and-matching/' | relative_url }})：用角点、SIFT、ORB 和学习式匹配器在两幅图像中找到同一个点，并用 RANSAC 剔除错误匹配。
+4. [两视图几何]({{ '/blog/2026/3d-vision-04-two-view-geometry/' | relative_url }})：本质矩阵与基础矩阵、相对位姿、三角化，以及从校正后的双目图像对得到深度。
+5. [多视图几何与光束法平差]({{ '/blog/2026/3d-vision-05-multi-view-geometry-and-bundle-adjustment/' | relative_url }})：PnP、增量式与全局式运动恢复结构，以及借助 Schur 补的光束法平差。
+6. [视觉 SLAM]({{ '/blog/2026/3d-vision-06-visual-slam/' | relative_url }})：把同样的估计放到实时系统里，包括因子图、视觉与视觉惯性里程计、回环检测和位姿图优化。
+7. [深度估计与多视图立体]({{ '/blog/2026/3d-vision-07-depth-estimation-and-multi-view-stereo/' | relative_url }})：深度传感器、平面扫描与代价体、PatchMatch、学习式 MVS 和单目深度。
+8. [三维表示]({{ '/blog/2026/3d-vision-08-3d-representations/' | relative_url }})：点云、网格、体素、SDF、神经场和三维高斯，它们之间如何转换，以及该选哪一种。
+9. [三维重建]({{ '/blog/2026/3d-vision-09-3d-reconstruction-classic-to-feed-forward/' | relative_url }})：从经典的 SfM、MVS 与网格化流程，到神经曲面以及 DUSt3R、VGGT 等前馈模型。
+10. [面向 AR/VR 的三维视觉]({{ '/blog/2026/3d-vision-10-3d-vision-for-ar-vr/' | relative_url }})：头显跟踪、运动到光子延迟、配准误差和空间锚点，也是本系列的最后一篇。
+
 ## 阶段 2：神经渲染与 3D 高斯泼溅
 
-把渲染过程反过来：先从照片中恢复相机，再拟合一个能复现这些照片的辐射场（NeRF）或一组 3D 高斯（3DGS）。这些表示如今是 AR/VR 三维采集以及许多 3D 世界生成系统的核心。
+把渲染过程反过来：先从照片中恢复相机（阶段 1.5 会深入讲解，下面第一篇是它的浓缩回顾），再拟合一个能复现这些照片的辐射场（NeRF）或一组 3D 高斯（3DGS）。这些表示如今是 AR/VR 三维采集以及许多 3D 世界生成系统的核心。
 
 1. [相机与多视图几何]({{ '/blog/2026/neural-rendering-01-cameras-and-multiview-geometry/' | relative_url }})
 2. [NeRF]({{ '/blog/2026/neural-rendering-02-nerf/' | relative_url }})
@@ -130,6 +152,7 @@ flowchart TB
 | 阶段 | 篇数 | 建议时间 | 里程碑 |
 | --- | --- | --- | --- |
 | 图形学 | 13 | 8-11 周（核心第 1-7 章：4-6 周） | 写出一个软件光栅化器和一个小型路径追踪器 |
+| 三维视觉 | 10 | 6-8 周（核心第 1-5 篇：3-4 周） | 标定自己的相机，并在自己拍的照片上跑一遍带光束法平差的 SfM |
 | 神经渲染 | 6 | 3-4 周 | 用自己拍摄的数据训练 3DGS，并在 VR 中查看 |
 | 图形引擎 | 6 | 3-5 周 | 搭建一个带渲染图的迷你 WebGPU 引擎，并对一帧做性能剖析 |
 | 世界模型 | 5 | 3-4 周 | 训练一个小型隐空间动力学模型或 DDPM |
@@ -145,6 +168,6 @@ flowchart TB
 
 ## 按分类浏览
 
-[图形学]({{ '/blog/category/graphics/' | relative_url }}) · [神经渲染]({{ '/blog/category/neural-rendering/' | relative_url }}) · [图形引擎]({{ '/blog/category/graphics-engine/' | relative_url }}) · [世界模型]({{ '/blog/category/world-models/' | relative_url }}) · [具身智能]({{ '/blog/category/embodied-ai/' | relative_url }}) · [论文速递]({{ '/blog/category/paper-digest/' | relative_url }})
+[图形学]({{ '/blog/category/graphics/' | relative_url }}) · [三维视觉]({{ '/blog/category/3d-vision/' | relative_url }}) · [神经渲染]({{ '/blog/category/neural-rendering/' | relative_url }}) · [图形引擎]({{ '/blog/category/graphics-engine/' | relative_url }}) · [世界模型]({{ '/blog/category/world-models/' | relative_url }}) · [具身智能]({{ '/blog/category/embodied-ai/' | relative_url }}) · [论文速递]({{ '/blog/category/paper-digest/' | relative_url }})
 
 我会边学边持续扩展这些系列，欢迎指正和建议。
