@@ -634,9 +634,9 @@ corner error of H vs ground truth: 0.40 px (max)
 corner error of plain least squares: 381 px
 ```
 
-这次运行值得追踪一下。最初几个假设有 5、6、9、14 个内点；第 13 次采样找到 37 个（$N$ 降到 4130），第 49 次找到 82 个（$N = 168$），第 107 次找到 89 个，在 $p = 0.999$ 下 $N = 120$；循环在第 120 次停止。用这 89 个内点重新拟合后，恢复出全部 91 个正确匹配，最终的单应把图像角点映射到距真值 0.40 px 以内。下图在直线上展示同样的过程，那里每个假设都能画出来。
+这次运行值得追踪一下。最初几个假设有 5、6、9、14 个内点；第 13 次采样找到 37 个（$N$ 降到 4130），第 40 次找到 52 个（$N = 1056$），第 49 次找到 82 个（$N = 168$），第 107 次找到 89 个，在 $p = 0.999$ 下 $N = 120$；循环在第 120 次停止。用这 89 个内点重新拟合后，恢复出全部 91 个正确匹配，最终的单应把图像角点映射到距真值 0.40 px 以内。下图在直线上展示同样的过程，那里每个假设都能画出来。
 
-{% include blog_figure.liquid path="assets/img/blog/3d-vision/03-ransac-steps.svg" caption="在 60 个点上用 RANSAC 拟合直线，其中 36 个内点（噪声 $\sigma = 1$）和 24 个均匀分布的外点，阈值 $t = 2.5$（紫色带）。红圈：最小样本；绿色：距假设不超过 $t$ 的点。第 1 次采样（5 个内点）和第 2 次采样（4 个内点）包含外点；第 9 次采样不含外点，得到 35 个内点，之后的采样都没能超过它。右下：在这些内点上的总体最小二乘重新拟合（紫色，与真实直线（点线）的误差为 0.52 $\sigma$），以及在全部点上的最小二乘（红色虚线，误差 9.5 $\sigma$）。" %}
+{% include blog_figure.liquid path="assets/img/blog/3d-vision/03-ransac-steps.svg" caption="在 60 个点上用 RANSAC 拟合直线，其中 36 个内点（噪声 $\sigma = 1$）和 24 个均匀分布的外点，阈值 $t = 2.5$（紫色带）。红圈：最小样本；绿色：距假设不超过 $t$ 的点。第 1 次采样（5 个内点）和第 2 次采样（4 个内点）包含外点；第 9 次采样落在直线上（两个点中有一个是按外点生成的，但恰好落在距真实直线 0.4 处），得到 35 个内点，之后的采样都没能超过它。右下：在这些内点上的总体最小二乘重新拟合（紫色，与真实直线（点线）的误差为 0.52 $\sigma$），以及在全部点上的最小二乘（红色虚线，误差 9.5 $\sigma$）。" %}
 
 下面的组件让你亲手运行 RANSAC。提高外点比例，看所需的 $N$ 如何爆炸，尤其是圆（$s = 3$）；把阈值降到噪声以下，看好的假设如何失去内点。
 
@@ -737,11 +737,11 @@ eps = 0.6, N = 27 samples; median / 95th-percentile line error:
 - **PROSAC**（Chum 与 Matas，CVPR 2005）先从描述子得分最好的匹配（例如比值 $d_1/d_2$ 最低）中采样，再逐步扩大候选池。当得分有信息量时，好样本会早得多地出现。
 - **退化**（degeneracy）。一个样本可能不含外点却仍定义了错误的模型，例如基础矩阵样本的 8 个点中有 7 个位于同一平面上。DEGENSAC 检测并处理这种情况。
 - **USAC**（Raguram 等，TPAMI 2013）是一个把这些部件组装起来的框架：引导采样、用序贯检验（SPRT）提前拒绝坏假设、退化检查和局部优化。
-- **MAGSAC 与 MAGSAC++**（Barath 等，CVPR 2019 与 CVPR 2020）去掉了最难调的参数，即阈值 $t$。MAGSAC++ 不选定单一噪声尺度，而是在直到最大值 $\sigma_{\max}$ 的一系列噪声尺度上对模型质量进行边缘化，从而给每个点一个平滑的权重，而不是硬性的内点/外点判定；它还用这些权重通过迭代重加权最小二乘来精化模型。它是当前许多流水线的默认选择，在 OpenCV 中为 `cv2.USAC_MAGSAC`。
+- **MAGSAC 与 MAGSAC++**（Barath 等，CVPR 2019 与 CVPR 2020）去掉了最难调的参数，即阈值 $t$。MAGSAC++ 不选定单一噪声尺度，而是在直到最大值 $\sigma_{\max}$ 的一系列噪声尺度上对模型质量进行边缘化，从而给每个点一个平滑的权重，而不是硬性的内点/外点判定；它还用这些权重通过迭代重加权最小二乘来精化模型。它在当前的流水线中被广泛使用，在 OpenCV 中为 `cv2.USAC_MAGSAC`。
 
 ## 7. 学习式特征与匹配器
 
-手工设计的流水线会在可预见的情形下失败：强烈的光照变化（白天与夜晚）、大视角变化、弱纹理或重复纹理，以及运动模糊。2018 年以来，流水线的每个阶段都已从数据中学习；到 2026 年，学习式匹配器已是大多数用于 SfM 和视觉定位的研究系统中的默认选择。
+手工设计的流水线会在可预见的情形下失败：强烈的光照变化（白天与夜晚）、大视角变化、弱纹理或重复纹理，以及运动模糊。2018 年以来，流水线的每个阶段都已从数据中学习；到 2026 年，学习式匹配器已广泛用于 SfM 和视觉定位的研究系统（不过 COLMAP 的默认特征仍是经典的 SIFT）。
 
 ### 7.1 学习式检测器与描述子：SuperPoint 及其后继
 
@@ -892,7 +892,7 @@ motion [5.3, -3.6]  single-level LK 20/20, pyramidal LK 20/20 within 0.1 px
 motion [12.0, 7.0]  single-level LK 14/20, pyramidal LK 20/20 within 0.1 px
 ```
 
-我们的合成图像由大块均匀形状构成，所以单层的收敛盆地异常宽（6 px 的运动仍能收敛）；在自然的、纹理细密的图像上，它通常只有一两个像素。下图直接测量了这一点。
+我们的合成图像由大块均匀形状构成，所以单层的收敛盆地异常宽（上表中 6 px 的运动仍能收敛，下图中直到 9 px 所有角点都能收敛）；在自然的、纹理细密的图像上，它通常只有一两个像素。下图直接测量了这一点。
 
 {% include blog_figure.liquid path="assets/img/blog/3d-vision/03-lucas-kanade.svg" localized="true" caption="上：$15 \times 15$ 窗口中梯度最强的 40 个像素的光流约束 $I_x u + I_y v + I_t = 0$，真实运动 $\mathbf d = (0.6, -0.4)$（红色五角星），画成 $(u, v)$ 平面中的直线。在角点处（$\lambda_2/\lambda_1 = 0.54$），各直线在真值附近相交，最小二乘解（绿圈）一步后为 $(0.58, -0.43)$。在竖直边缘上（$\lambda_2/\lambda_1 = 0.004$），所有直线相互平行：只有法向光流 $(0.6, 0)$ 是确定的，绿色虚线上的任意一点都同样好。下：20 个角点中 LK 收敛到 0.1 px 以内的比例，随运动幅度的变化。单层 LK 在 9 px 以内全部成功，在 24 px 时降到 35%；3 层金字塔在 19.5 px 以内保持全部成功。" %}
 
@@ -907,7 +907,7 @@ Lucas-Kanade 是**局部的**：它在平坦区域和边缘上会失败。Horn �
 论文会报告多种指标，它们度量的东西不同：
 
 - **可重复率**（repeatability）：在两幅图像的对应位置上都被检测到的关键点比例（用真值几何映射后相距不超过 $\epsilon$ px）。它只评测检测器。
-- **匹配得分 / 平均匹配精度**（MMA@$\epsilon$）：（互为最近邻的）匹配中重投影误差小于 $\epsilon$ 的比例，对 $\epsilon$ = 1 到 10 px 作图。HPatches（Balntas 等，CVPR 2017）是一组带真值单应的平面场景，是标准基准；我们的玩具图像对就是它的微缩版。
+- **平均匹配精度**（mean matching accuracy，MMA@$\epsilon$）：（互为最近邻的）匹配中重投影误差小于 $\epsilon$ 的比例，对 $\epsilon$ = 1 到 10 px 作图。它只衡量精确率；相关的**匹配得分**（matching score）用正确匹配数除以关键点数，因此也奖励能产生大量正确匹配的方法。HPatches（Balntas 等，CVPR 2017）是一组带真值单应的平面场景，是标准基准；我们的玩具图像对就是它的微缩版。
 - **单应估计精度**：估计的 $H$ 把图像角点映射到距真值 $\epsilon$ px 以内的图像对比例（我们的 0.40 px），或这条曲线下的面积。
 - **相对位姿 AUC**：对三维场景，用 RANSAC 估计 $E$，分解为旋转和平移（第 4 篇），取两个角度误差中较大者，报告累积误差曲线在 5°、10° 和 20° 以内的面积，数据集如 MegaDepth（户外）和 ScanNet（室内）。
 - **下游重建**：Image Matching Challenge 及其基准（Jin 等，IJCV 2021）用整条流水线所得相机位姿的精度来评测。
@@ -994,7 +994,7 @@ ORB   759 /  864 keypoints, 336 ratio-test matches, 316 MAGSAC++ inliers, corner
 - R. Szeliski，*Computer Vision: Algorithms and Applications*，第 2 版，2022：第 7 章（特征检测与匹配）、第 8 章（图像对齐，包括 RANSAC）和第 9 章（运动估计与光流）。个人使用可在 [szeliski.org/Book](https://szeliski.org/Book/) 免费获取。
 - R. Hartley 与 A. Zisserman，*Multiple View Geometry in Computer Vision*，第 2 版，2004，第 4.7 节（鲁棒估计、RANSAC 迭代次数与 $\chi^2$ 阈值）。
 - D. Lowe 的 IJCV 论文非常好读；[作者自存版本](https://www.cs.ubc.ca/~lowe/papers/ijcv04.pdf)是第 3 节的好伴侣。
-- OpenCV：特征相关教程（`cv2.SIFT_create`、`cv2.ORB_create`、`cv2.BFMatcher`、`cv2.calcOpticalFlowPyrLK`），以及介绍现代 RANSAC 选项的 [USAC 教程](https://docs.opencv.org/5.0/tutorials/calib3d/usac.html)。
+- OpenCV：特征相关教程（`cv2.SIFT_create`、`cv2.ORB_create`、`cv2.BFMatcher`、`cv2.calcOpticalFlowPyrLK`），以及 calib3d 模块中介绍现代 RANSAC 选项的 USAC 教程。
 - 代码：[cvg/LightGlue](https://github.com/cvg/LightGlue)（SuperPoint、DISK、ALIKED 和 SIFT + LightGlue）、[magicleap/SuperGluePretrainedNetwork](https://github.com/magicleap/SuperGluePretrainedNetwork)、[Parskatt/RoMa](https://github.com/Parskatt/RoMa)、[danini/magsac](https://github.com/danini/magsac)、[princeton-vl/RAFT](https://github.com/princeton-vl/RAFT)。
 - 基准：[HPatches](https://github.com/hpatches)，以及 Jin 等人的 [Image Matching Challenge](https://vision.uvic.ca/image-matching-challenge/)。
 
