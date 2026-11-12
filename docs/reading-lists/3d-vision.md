@@ -155,17 +155,17 @@
 | Continuous 3D perception model with persistent state (Wang et al.) | CVPR | 2025 | https://arxiv.org/abs/2501.12387 | CUT3R：带持久状态的循环式在线重建 |
 | MASt3R-SLAM: real-time dense SLAM with 3D reconstruction priors (Murai, Dexheimer, Davison) | CVPR | 2025 | https://arxiv.org/abs/2412.12392 | 约 15 FPS 的稠密单目 SLAM |
 | MonST3R: a simple approach for estimating geometry in the presence of motion (Zhang et al.) | ICLR | 2025 | https://arxiv.org/abs/2410.03825 | 动态场景的逐时刻点图 |
-| Streaming 4D visual geometry transformer (Zhuo et al.) | arXiv 预印本（2025 年 7 月） | 2025 | https://arxiv.org/abs/2507.11539 | StreamVGGT：因果注意力 + 键值缓存，由 VGGT 蒸馏 |
+| Streaming 4D visual geometry transformer (Zhuo et al.) | ICLR（据作者代码仓库；arXiv 2025 年 7 月） | 2026 | https://arxiv.org/abs/2507.11539 | StreamVGGT：因果注意力 + 键值缓存，由 VGGT 蒸馏 |
 | π³: permutation-equivariant visual geometry learning (Wang et al.) | ICLR（据作者代码仓库） | 2026 | https://arxiv.org/abs/2507.13347 | 无参考视图，置换等变 |
 | MapAnything: universal feed-forward metric 3D reconstruction (Keetha et al.) | 3DV | 2026 | https://arxiv.org/abs/2509.13414 | 可选输入（内参、位姿、深度），分解式度量输出 |
-| Depth Anything 3: recovering the visual space from any views (Lin et al.) | ICLR | 2026 | https://arxiv.org/abs/2511.10647 | 朴素 Transformer + 深度-射线目标 |
-| LongStream: long-sequence streaming autoregressive visual geometry (Cheng et al.) | CVPR | 2026 | https://arxiv.org/abs/2602.13172 | 关键帧相对位姿、解耦尺度，公里级流式重建 |
+| Depth Anything 3: recovering the visual space from any views (Lin et al.) | arXiv 预印本（2025 年 11 月；截至 2026 年 11 月未核实到会议） | 2025 | https://arxiv.org/abs/2511.10647 | 朴素 Transformer + 深度-射线目标 |
+| LongStream: long-sequence streaming autoregressive visual geometry (Cheng et al.) | 状态未核实 | 2026 | （链接未核实） | 关键帧相对位姿、解耦尺度，公里级流式重建 |
 
 ### 评测基准
 
 | 论文 | 会议/期刊 | 年份 | 链接 | 说明 |
 | --- | --- | --- | --- | --- |
-| Large-scale data for multiple-view stereopsis (Aanæs et al.) | IJCV | 2016 | https://doi.org/10.1007/s11263-016-0902-9 | DTU：80 个场景，结构光真值，准确度/完整度（Chamfer） |
+| Large-scale data for multiple-view stereopsis (Aanæs et al.) | IJCV | 2016 | https://doi.org/10.1007/s11263-016-0902-9 | DTU：124 个场景，结构光真值，准确度/完整度（Chamfer） |
 | Tanks and Temples: benchmarking large-scale scene reconstruction (Knapitsch et al.) | ACM TOG | 2017 | https://doi.org/10.1145/3072959.3073599 | 激光扫描真值，按场景阈值的精确率/召回率/F 值 |
 | A multi-view stereo benchmark with high-resolution images and multi-camera videos (Schöps et al.) | CVPR | 2017 | https://openaccess.thecvf.com/content_cvpr_2017/html/Schops_A_Multi-View_Stereo_CVPR_2017_paper.html | ETH3D：高分辨率图像，多容差 F1 |
 

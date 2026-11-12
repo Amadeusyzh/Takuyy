@@ -257,7 +257,12 @@
         var s = segs[i], L = Math.hypot(s[2] - s[0], s[3] - s[1]);
         var mx = (s[0] + s[2]) / 2, mz = (s[1] + s[3]) / 2;
         accSum += L * Math.abs(sceneSdf(mx, mz)); len += L;
-        pts.push(mx, mz);
+        // points about 1 cm apart along the segment, so that recall does not depend on the voxel size
+        var m = Math.max(1, Math.ceil(L / 0.01));
+        for (var r = 0; r < m; r++) {
+          var tt = (r + 0.5) / m;
+          pts.push(s[0] + tt * (s[2] - s[0]), s[1] + tt * (s[3] - s[1]));
+        }
       }
       // bucket the reconstructed points for the recall query
       var B = 64, cell = 2 * EXT / B, grid = {};

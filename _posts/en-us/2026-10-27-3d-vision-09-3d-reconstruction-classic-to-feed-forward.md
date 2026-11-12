@@ -268,7 +268,7 @@ The figure below shows the field after 1, 4, 16 and 64 scans and measures the ex
 
 {% include blog_figure.liquid path="assets/img/blog/3d-vision/09-tsdf-fusion.svg" localized="true" caption="TSDF fusion of the noisy scans ($\mu$ = 6 cm, 2.5 cm voxels). Left: the fused value $F$ after 1, 4, 16 and 64 scans (blue: free space; white: the surface; red: just behind it; gray: never observed), the extracted zero crossings (black) and the directions of the cameras used (purple). Right: accuracy and completeness of the extracted curve. With one scan the surface is accurate (12.2 mm) but incomplete (327 mm); with 64 scans both reach 2.6-2.7 mm, almost an order of magnitude below the 20 mm noise of a single scan." %}
 
-Two things stand out. Completeness improves dramatically as new viewpoints reveal new surfaces, while accuracy improves slowly, roughly as $1/\sqrt n$ (from 9.2 mm at 4 scans to 2.6 mm at 64, close to the factor 4 that averaging 16 times more readings predicts). And the interior of every object stays gray: TSDF fusion never invents what it has not seen.
+Two things stand out. Completeness improves dramatically as new viewpoints reveal new surfaces, while accuracy improves slowly, roughly as $1/\sqrt n$ (from 9.2 mm at 4 scans to 2.6 mm at 64, a factor of 3.5, not far from the factor 4 that averaging 16 times more readings predicts; the figure measures distances to the sampled ground truth of section 8, which is why the exact-SDF measure of the code in section 3 prints 2.5 mm for 64 scans). And the interior of every object stays gray: TSDF fusion never invents what it has not seen.
 
 Try it yourself in the widget. Drag the camera around the scene and release to take a scan; the orbit button scans automatically. Watch the noise fall as scans accumulate, and use the sliders to break things: a truncation distance smaller than the noise, or larger than the bar.
 
@@ -276,9 +276,9 @@ Try it yourself in the widget. Drag the camera around the scene and release to t
 
 ### 2.5 Choosing the truncation, the voxel size and the weights
 
-**Truncation $\mu$.** The truncation band must be wide enough to contain the noise, otherwise readings that fall behind the true surface by more than $\mu$ are discarded and the average is biased. It must also be narrow enough not to destroy thin structures. Look at the bar from both sides: a camera above it writes "behind the surface" values into the bar and beyond, down to $\mu$ below its top face; a camera below writes "free space" values ($\psi > 0$) up to $\mu$ in front of its own surface, which, if $\mu$ exceeds the thickness, is inside the bar and above it. The two sides then cancel, and the bar thins or vanishes.
+**Truncation $\mu$.** The truncation band must be wide enough to contain the noise. Otherwise, for a voxel near the surface, readings that fall in front of the true surface by more than $\mu$ are discarded, while readings that fall behind it by more than $\mu$ are only clipped to $\psi = 1$, and the average is biased (exercise 1). It must also be narrow enough not to destroy thin structures. Look at the bar from both sides: a camera above it writes "behind the surface" values ($\psi < 0$) down to $\mu$ below the top face, which, if $\mu$ exceeds the thickness, reaches through the bar into the free space below it; a camera below does the same upward, into the free space above the bar. There each of these negative values is averaged with the small positive values of the camera on that side, and the negative one wins near the bar, because the voxel is farther behind one surface than it is in front of the other. The zero crossings move outward: the bar comes out too thick and smeared, and it no longer matches its true outline.
 
-{% include blog_figure.liquid path="assets/img/blog/3d-vision/09-truncation.svg" localized="true" caption="The truncation distance. Left: the thin bar (8 cm thick) fused from all 64 scans with $\mu$ = 4.5 cm: the extracted surface (black) follows the truth (dashed green). Middle: with $\mu$ = 15 cm the values from the two sides overlap, the band of negative values spreads, and only 50.6% of the bar's true outline is recovered within 2 cm. Right: the F-score of the whole scene and the recall on the bar against $\mu$ (both at $\tau$ = 2 cm). Below $\mu \approx \sigma$ the noise wins (F = 0.939 at $\mu$ = 2 cm); between 3 and 9 cm everything works; at 12 cm the bar recall drops to 0.58 and at 18 cm to 0.43." %}
+{% include blog_figure.liquid path="assets/img/blog/3d-vision/09-truncation.svg" localized="true" caption="The truncation distance. Left: the thin bar (8 cm thick) fused from all 64 scans with $\mu$ = 4.5 cm: the extracted surface (black) follows the truth (dashed green). Middle: with $\mu$ = 15 cm the values from the two sides overlap, the band of negative values spreads, the bar comes out too thick, and only 50.6% of the bar's true outline is recovered within 2 cm. Right: the F-score of the whole scene and the recall on the bar against $\mu$ (both at $\tau$ = 2 cm). Below $\mu \approx \sigma$ the noise wins (F = 0.939 at $\mu$ = 2 cm); between 3 and 9 cm everything works; at 12 cm the bar recall drops to 0.58 and at 18 cm to 0.43." %}
 
 The rule of thumb is $\mu \approx 2\sigma$ to $4\sigma$ and below the thickness of the thinnest part you care about; in practice a few voxel sizes. When the noise grows with depth, as for stereo where $\sigma\_z \propto z^2$ (post 4), the truncation can grow with depth too.
 
@@ -367,7 +367,7 @@ h =  12.5 mm: interpolated 0.045 mm, midpoint 2.20 mm
 
 **Detail 1: skip unobserved cells.** Unobserved voxels keep their initial value ($F = 1$, $W = 0$). Just behind every surface lies a band of negative values, and behind that band the unobserved interior with $F = 1$: a second sign change, a phantom surface a distance $\mu$ inside every object. The `valid` mask, which extracts only cells whose four corners have $W > 0$, removes it. Every implementation needs an equivalent test.
 
-**Detail 2: interpolate.** The second loop compares vertices placed by interpolation with vertices placed at edge midpoints, on the exact SDF of the scene. The interpolated surface is far more accurate, and its error shrinks four times faster.
+**Detail 2: interpolate.** The second loop compares vertices placed by interpolation with vertices placed at edge midpoints, on the exact SDF of the scene. The interpolated surface is far more accurate, and its error falls by a factor of about 4, rather than 2, each time the voxel size is halved.
 
 {% include blog_figure.liquid path="assets/img/blog/3d-vision/09-extraction.svg" localized="true" caption="Vertex placement in marching squares on the exact SDF. Left: the disk on a grid with $h$ = 20 cm (blue: corners inside, open: outside). Midpoint vertices (orange, dashed) make a staircase; interpolated vertices (purple) sit almost on the circle. Right: the mean $\lvert f\rvert$ of the extracted curve against the voxel size. Interpolation is second-order (0.667, 0.176, 0.045 mm at 5, 2.5, 1.25 cm: a factor of about 4 per halving), midpoints only first-order (7.84, 4.10, 2.20 mm: a factor of 2)." %}
 
@@ -537,7 +537,7 @@ c\,(2\Phi - 1) = \Phi(1-\Phi)
 t_{\text{peak}} - t^\ast = -\frac{1}{s\,c}\,\ln\frac{\Phi^\ast}{1 - \Phi^\ast} .
 $$
 
-The peak is always **in front of** the surface. Head-on ($c = 1$), $\Phi^\ast = (\sqrt5 - 1)/2 = 0.618$ (the golden ratio, as it happens) and the bias is $-0.481/s$; at grazing angles it grows like $1/\cos\theta$. The intuition: the density starts to absorb light before the ray reaches the zero crossing, so the transmittance has already dropped by the time $\sigma$ peaks. A different simple choice, the normalized bump $w = \phi\_s(f)/\int\phi\_s(f)$, is unbiased but ignores occlusion: every surface along the ray gets the same weight.
+The peak is always **in front of** the surface. Head-on ($c = 1$), $\Phi^\ast = (\sqrt5 - 1)/2 = 0.618$ (the golden ratio, as it happens) and the bias is $-0.481/s$; at grazing angles it grows even faster than $1/\cos\theta$: as $c \to 0$, $\Phi^\ast \approx 1 - c$ and the bias approaches $-\ln(1/c)/(s\,c)$. The intuition: the density starts to absorb light before the ray reaches the zero crossing, so the transmittance has already dropped by the time $\sigma$ peaks. A different simple choice, the normalized bump $w = \phi\_s(f)/\int\phi\_s(f)$, is unbiased but ignores occlusion: every surface along the ray gets the same weight.
 
 **NeuS** (Wang et al. 2021) derives a density that has both properties. Start from what we want for a plane: the weight should be the bump itself, $w(t) = c\,\phi\_s(f(\mathbf r(t)))$, which peaks at $t^\ast$. Since $\frac{d}{dt}\Phi\_s(f(\mathbf r(t))) = -c\,\phi\_s(f)$, this happens exactly when the transmittance equals $T(t) = \Phi\_s(f(\mathbf r(t)))$: it is close to 1 far in front of the surface (large positive $f$) and falls to 0 behind it. A transmittance determines its density through $\sigma = -T'/T$, which gives the **opaque density**
 
@@ -609,7 +609,7 @@ The second widget lets you vary $s$, the angle and the number of samples. Note h
 
 A network or grid that outputs $f$ is not automatically a distance function. The **eikonal** regularizer $\mathcal L\_{\text{eik}} = \mathbb E\big[(\lVert\nabla f\rVert - 1)^2\big]$, introduced for implicit surface learning by Gropp et al. (IGR, 2020), pushes it toward one, since a true SDF has unit gradient almost everywhere. Without it, $f$ can become very steep or very flat near the surface, and the relation between $s$ and the width of the weight bump (which assumes a unit gradient) breaks.
 
-To see the whole method at work, the next block fits a NeuS in flatland. The SDF is stored on a $96 \times 96$ grid of nodes and interpolated bilinearly (a stand-in for the MLP or hash grid of the real thing), each camera casts rays through every second pixel with 128 samples between 1.0 and 4.2 m, and the loss compares the rendered opacity $O = \sum\_i w\_i$ with the silhouette (did the ray hit anything?) and the rendered depth $D = \sum\_i w\_i t\_i$ with the true range. NeuS uses colour as its main signal and a mask term like ours as an option; in flatland, depth keeps the example short. Gradients are written out by hand: for a rendered quantity $Q = \sum\_k w\_k q\_k$, $\partial Q/\partial\alpha\_k = T\_k(q\_k - A\_{k+1})$, where $A\_k = \alpha\_k q\_k + (1 - \alpha\_k)A\_{k+1}$ is the value rendered from sample $k$ onward, and the chain rule continues through $\alpha\_k = 1 - \Phi\_{k+1}/\Phi\_k$ and $\Phi = \Phi\_s(sf)$ to the grid. (A finite-difference check of these gradients agrees to six digits.)
+To see the whole method at work, the next block fits a NeuS in flatland. The SDF is stored on a $96 \times 96$ grid of nodes and interpolated bilinearly (a stand-in for the MLP or hash grid of the real thing), each camera casts rays through every second pixel with 128 samples between 1.0 and 4.2 m, and the loss compares the rendered opacity $O = \sum\_i w\_i$ with the silhouette (did the ray hit anything?) and the rendered depth $D = \sum\_i w\_i t\_i$ with the true range. NeuS uses colour as its main signal and a mask term like ours as an option; in flatland, depth keeps the example short. Gradients are written out by hand: for a rendered quantity $Q = \sum\_k w\_k q\_k$, $\partial Q/\partial\alpha\_k = T\_k(q\_k - A\_{k+1})$, where $A\_k = \alpha\_k q\_k + (1 - \alpha\_k)A\_{k+1}$ is the value rendered from sample $k$ onward, and the chain rule continues through $\alpha\_k = 1 - \Phi\_{k+1}/\Phi\_k$ and $\Phi\_k = \Phi\_s(f\_k)$, the sigmoid of $s f\_k$, to the grid. (A finite-difference check of these gradients agrees to six digits.)
 
 ```python
 def neus_render(g, log_s, B, t_mid, n_samp, dO=None, dD=None):
@@ -725,7 +725,7 @@ The newest surface methods start from Gaussian splatting instead. A 3D Gaussian 
 
 ### 7.1 From pipelines to one network
 
-Everything so far optimizes, per scene, with hand-designed objectives: reprojection error, photo-consistency, a rendering loss. In 2024 a different approach took off. **DUSt3R** (Wang et al., CVPR 2024) trained a transformer on a large mix of 3D datasets to map two images directly to dense 3D geometry, without known intrinsics or poses. Its successors handle many views at once (VGGT), add matching (MASt3R), run on video streams (CUT3R and the streaming variants), and predict metric scale (MapAnything, Depth Anything 3). For a casual capture of a few photos, where SfM fails or takes minutes, these models now often give the better answer, and their outputs are used to initialize or replace COLMAP in many NeRF and 3DGS pipelines.
+Everything so far optimizes, per scene, with hand-designed objectives: reprojection error, photo-consistency, a rendering loss. In 2024 a different approach took off. **DUSt3R** (Wang et al., CVPR 2024) trained a transformer on a large mix of 3D datasets to map two images directly to dense 3D geometry, without known intrinsics or poses. Its successors handle many views at once (VGGT), add matching (MASt3R), run on video streams (CUT3R and the streaming variants), and predict metric scale (MapAnything, and the metric models of Depth Anything 3). For a casual capture of a few photos, where SfM fails or takes minutes, these models now often give the better answer, and their outputs are used to initialize or replace COLMAP in many NeRF and 3DGS pipelines.
 
 ### 7.2 DUSt3R: pointmaps
 
@@ -953,7 +953,7 @@ RMS error after chaining: 0.222 m, after global alignment: 0.078 m
 
 {% include blog_figure.liquid path="assets/img/blog/3d-vision/09-global-alignment.svg" localized="true" caption="Global alignment of 16 simulated pairwise predictions for 8 views around the toy scene (top view of the object points, colour = view). Each pair has its own random scale, 1% noise and a 2° error in its relative pose. Left: the ring pairs as predicted, each in its own frame and scale. Middle left: chaining the pairs one after another accumulates the pose errors (RMS error 0.222 m after the best similarity to the truth); the boxes and the ball are smeared. Middle right: global alignment spreads the errors over all pairs (0.078 m). Right: its weighted RMS residual over 30 iterations; it levels off because the 2° errors are inconsistent with every single world." %}
 
-This is the same story as SLAM's loop closure ([post 6]({{ '/blog/2026/3d-vision-06-visual-slam/' | relative_url }})) and as global SfM (post 5): local estimates are chained, errors accumulate, and a global optimization over all constraints distributes them. It is also DUSt3R's bottleneck: the number of pairs grows quadratically with the number of images, and the optimization takes time. The next generation removes it.
+This is the same story as SLAM's loop closure ([post 6]({{ '/blog/2026/3d-vision-06-visual-slam/' | relative_url }})) and as global SfM (post 5): local estimates are chained, errors accumulate, and a global optimization over all constraints distributes them. It is also DUSt3R's bottleneck: with all pairs the number of network passes grows quadratically with the number of images (sparser pair graphs help but lose constraints), and the optimization takes time. The next generation removes it.
 
 ### 7.4 MASt3R: matching on top of 3D
 
@@ -967,7 +967,7 @@ Two findings of the paper are worth remembering. Predicting depth and cameras an
 
 ### 7.6 2025-2026 successors (as of November 2026)
 
-The field moves fast; this list is a snapshot of verified works, with their status as of November 2026.
+The field moves fast; this list is a snapshot with each work's status as of November 2026. Where a venue could not be confirmed from the paper or the authors' repository, the table says so.
 
 | Work | Status | Idea |
 | --- | --- | --- |
@@ -975,11 +975,11 @@ The field moves fast; this list is a snapshot of verified works, with their stat
 | CUT3R (Wang et al.) | CVPR 2025 | A recurrent model with a persistent state, updated by each new image; online metric pointmaps |
 | MASt3R-SLAM (Murai et al.) | CVPR 2025 | Real-time dense SLAM on MASt3R's two-view priors |
 | MonST3R (Zhang et al.) | ICLR 2025 | Pointmaps per time step for dynamic scenes |
-| StreamVGGT (Zhuo et al.) | arXiv preprint, July 2025 | A causal VGGT with cached keys and values, distilled from VGGT, for streaming input |
+| StreamVGGT (Zhuo et al.) | ICLR 2026 (per the authors' repository; arXiv July 2025) | A causal VGGT with cached keys and values, distilled from VGGT, for streaming input |
 | $\pi^3$ (Wang et al.) | ICLR 2026 (per the authors' repository) | Permutation-equivariant: no reference view; predicts affine-invariant poses and scale-invariant local pointmaps |
 | MapAnything (Keetha et al.) | 3DV 2026 | Metric reconstruction from images plus any optional inputs (intrinsics, poses, depth) through a factored output: depth maps, ray maps, poses and a metric scale |
-| Depth Anything 3 (Lin et al.) | ICLR 2026 | A plain transformer with a single depth-ray target for any number of views, posed or not |
-| LongStream (Cheng et al.) | CVPR 2026 | Streaming reconstruction of kilometre-scale sequences with keyframe-relative poses and decoupled scale |
+| Depth Anything 3 (Lin et al.) | arXiv preprint, November 2025 (no venue verified) | A plain transformer with a single depth-ray target for any number of views, posed or not |
+| LongStream (Cheng et al.) | 2026; status not verified | Streaming reconstruction of kilometre-scale sequences with keyframe-relative poses and decoupled scale |
 
 Three trends run through the list. **Output parameterization** has moved from raw pointmaps toward factored outputs (depth, rays or cameras, scale), echoing VGGT's finding. **Reference frames** are being removed ($\pi^3$) or made relative (LongStream), because anchoring everything to the first image hurts long and unordered inputs. And **streaming** variants with bounded memory (CUT3R, StreamVGGT, LongStream and a wave of 2026 preprints) bring the models to SLAM-like settings.
 
@@ -1056,7 +1056,7 @@ Real evaluations add a few steps our toy does not need: the reconstruction is fi
 
 | Benchmark | Scenes | Ground truth | Main metric |
 | --- | --- | --- | --- |
-| DTU (Aanæs et al., IJCV 2016) | 80 table-top scenes in a lab, 49 or 64 calibrated views each, seven lighting conditions | structured-light scans | accuracy, completeness and their mean (Chamfer, in mm); neural-surface papers usually report a 15-scan subset with object masks |
+| DTU (Aanæs et al., IJCV 2016) | 124 table-top scenes in a lab, 49 or 64 calibrated views each, seven lighting conditions | structured-light scans | accuracy, completeness and their mean (Chamfer, in mm); neural-surface papers usually report a 15-scan subset with object masks |
 | Tanks and Temples (Knapitsch et al., ACM TOG 2017) | large indoor and outdoor scenes, video input, intermediate and advanced sets | industrial laser scanner | precision, recall and F-score at a per-scene $\tau$ |
 | ETH3D (Schöps et al., CVPR 2017) | high-resolution DSLR images and multi-camera videos, indoor and outdoor | laser scans | F1 score at several tolerances, 2 cm being the usual headline |
 
@@ -1075,8 +1075,8 @@ DTU is clean and object-centric, which made it the default for neural surfaces; 
 
 ## Try it
 
-- In the **TSDF widget** of section 2, take four scans from one side only and switch on "show weights": see where the field knows nothing. Then set $\mu$ to 20 cm and orbit: watch the bar disappear, and bring it back by lowering $\mu$ without rescanning.
-- In the **NeuS widget** of section 6, set $\theta = 70°$ and compare the naive peak with the theory as you vary $s$. Then switch to the slab, reduce $n$ to 16 and increase $s$: when does the discrete NeuS lose the surface?
+- In the **TSDF widget** of section 2, take four scans from one side only and switch on "show weights": see where the field knows nothing. Then set $\mu$ to 20 cm and orbit: watch the bar swell and lose its shape, and bring it back by lowering $\mu$ without rescanning.
+- In the **NeuS widget** of section 6, set $\theta = 70°$ and compare the naive peak with the theory as you vary $s$. Then switch to the slab, reduce $n$ to 16 and increase $s$: from which $s$ on does each surface put all its weight into a single interval, so that its position is only known to within one sample spacing?
 - The home page's [Interactive Lab]({{ '/' | relative_url }}#lab) includes Gaussian World, a 3D Gaussian splatting viewer: the representation that 2DGS and the feed-forward Gaussian methods of the [3DGS frontiers post]({{ '/blog/2026/neural-rendering-05-3dgs-frontiers/' | relative_url }}) produce.
 - Run the COLMAP commands of section 5 on 30 photos of an object on a table, then compare the Poisson and Delaunay meshes, and try a feed-forward model from its official repository on 5 of the photos.
 
@@ -1108,8 +1108,8 @@ DTU is clean and object-centric, which made it the default for neural surfaces; 
 | MASt3R-SLAM: real-time dense SLAM with 3D reconstruction priors (Murai et al.) | CVPR | 2025 | [arXiv](https://arxiv.org/abs/2412.12392) | Feed-forward priors in a SLAM system |
 | $\pi^3$: permutation-equivariant visual geometry learning (Wang et al.) | ICLR (per the authors' repository) | 2026 | [arXiv](https://arxiv.org/abs/2507.13347) | No reference view |
 | MapAnything: universal feed-forward metric 3D reconstruction (Keetha et al.) | 3DV | 2026 | [arXiv](https://arxiv.org/abs/2509.13414) | Metric output, optional geometric inputs |
-| Depth Anything 3: recovering the visual space from any views (Lin et al.) | ICLR | 2026 | [arXiv](https://arxiv.org/abs/2511.10647) | One transformer, depth-ray targets |
-| LongStream: long-sequence streaming autoregressive visual geometry (Cheng et al.) | CVPR | 2026 | [arXiv](https://arxiv.org/abs/2602.13172) | Kilometre-scale streaming |
+| Depth Anything 3: recovering the visual space from any views (Lin et al.) | arXiv preprint (no venue verified) | 2025 | [arXiv](https://arxiv.org/abs/2511.10647) | One transformer, depth-ray targets |
+| LongStream: long-sequence streaming autoregressive visual geometry (Cheng et al.) | status not verified | 2026 | (link not verified) | Kilometre-scale streaming |
 
 ## Learning resources
 
@@ -1125,7 +1125,7 @@ DTU is clean and object-centric, which made it the default for neural surfaces; 
 
    <details markdown="1"><summary>Hint</summary>
 
-   The likelihood of $F$ is $\prod\_k \exp(-(F - \eta\_k)^2/(2\sigma\_k^2))$; maximize its logarithm. Readings more than $\mu$ behind the voxel are skipped, so the remaining ones are a truncated sample and their mean is biased toward the camera. That is why $\mu$ must be several $\sigma$.
+   The likelihood of $F$ is $\prod\_k \exp(-(F - \eta\_k)^2/(2\sigma\_k^2))$; maximize its logarithm. Readings that put the surface more than $\mu$ in front of the voxel ($\eta\_k < -\mu$) are skipped, and readings with $\eta\_k > \mu$ are clipped, so the remaining values are a truncated sample. For a voxel on the surface the skipped readings are all negative, so the mean is biased upward and the fused surface moves away from the camera. That is why $\mu$ must be several $\sigma$.
    </details>
 
 2. In `tsdf_integrate`, replace the projective distance by the true distance to the back-projected scan points (the nearest point of the scan to the voxel, with the sign of $\eta$). Fuse the 64 scans with both versions and compare the accuracy. Where do the fields differ most, and does it matter for the zero crossing?
