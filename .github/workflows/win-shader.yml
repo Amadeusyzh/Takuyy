@@ -33,12 +33,21 @@ jobs:
           CONFIGS: d3d11
         run: |
           cd ops/win && node measure.js 2>&1 | tee "$RUNNER_TEMP/measure.txt" || true
-      - name: Locate FXC
+      - name: Compile ANGLE's HLSL with FXC
         shell: bash
         run: |
-          mkdir -p "$RUNNER_TEMP/winrep"
-          ls -d "/c/Program Files (x86)/Windows Kits/10/bin/"*/x64/fxc.exe > "$RUNNER_TEMP/winrep/fxc-path.txt" 2>&1 || true
-          cat "$RUNNER_TEMP/winrep/fxc-path.txt"
+          REP="$RUNNER_TEMP/winrep"; mkdir -p "$REP"
+          FXC="$(ls -d "/c/Program Files (x86)/Windows Kits/10/bin/"*/x64/fxc.exe | sort -V | tail -1)"
+          echo "$FXC" > "$REP/fxc-path.txt"
+          node ops/win/fxcprep.js "$REP/results.json" "$REP" || true
+          cd "$REP"
+          for O in O1 O3 Od; do
+            S=$(date +%s.%N)
+            MSYS_NO_PATHCONV=1 "$FXC" /nologo /T ps_5_0 /E main /$O /Fc "sdf-ps-$O.asm" sdf-ps.hlsl > "fxc-$O.log" 2>&1 || true
+            E=$(date +%s.%N)
+            echo "$O seconds: $(echo "$E - $S" | bc 2>/dev/null || echo "$S $E")" | tee -a fxc-times.txt
+          done
+          ls -la
       - name: Publish report
         shell: bash
         env:
