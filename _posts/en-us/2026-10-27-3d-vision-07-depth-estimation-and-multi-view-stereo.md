@@ -54,6 +54,8 @@ $$
 
 The factor $\lVert K^{-1}\tilde{\mathbf x}\rVert = \sqrt{1 + ((x - c\_x)/f\_x)^2 + ((y - c\_y)/f\_y)^2}$ is 1 at the principal point and grows towards the corners. In our test camera ($160 \times 120$ pixels, $f = 150$) the corner pixel has $\sqrt{1 + (79.5/150)^2 + (59.5/150)^2} = 1.1993$: range and z-depth differ by 20%. Treating a range image as z-depth bends every plane into a bowl.
 
+The snippet uses the test scene of section 1.2 (`K`, `Z_gt`, `R_ref`, `t_ref`); to run the post's code in order, run the scene block of section 1.2 first.
+
 ```python
 def backproject(depth, K):
     """z-depth map (H, W) -> 3D points (H, W, 3) in the camera frame: X = z K^-1 (x, y, 1)."""
@@ -239,7 +241,7 @@ Replace one camera of a stereo pair with a **projector**. A projector is an "inv
 How do we encode "which column" in light? Three families dominate:
 
 - **Single-shot pseudo-random patterns.** A fixed infrared dot pattern (speckle) gives every small window a unique texture, so ordinary block matching works even on a white wall. The first Kinect worked this way, and many "active stereo" modules add such a projector to a passive stereo pair: the pattern adds texture, and the two cameras do the stereo.
-- **Binary (Gray-code) patterns.** Project $\lceil \log\_2 N \rceil$ black-and-white stripe images; the on/off sequence observed at a pixel is the binary code of its column. Gray codes change one bit between neighbouring columns, so a decoding error costs at most one column.
+- **Binary (Gray-code) patterns.** Project $\lceil \log\_2 N \rceil$ black-and-white stripe images; the on/off sequence observed at a pixel is the binary code of its column. Gray codes change one bit between neighbouring columns, so a bit misread at a stripe boundary costs at most one column.
 - **Phase shifting.** Project a sinusoidal fringe pattern several times, shifted by known phases. Each pixel sees $I\_k = A + B\cos(\varphi + \delta\_k)$, where $A$ is the ambient light plus offset, $B$ the modulation and $\varphi$ the unknown phase, which encodes the projector column. With three shifts $\delta = -2\pi/3, 0, +2\pi/3$:
 
 $$
@@ -483,14 +485,14 @@ The next figure shows what the warps look like. For each plane, the region of th
 
 The cost volume is easiest to understand one pixel at a time. The figure below shows $C(z)$ for four probe pixels, per view (thin lines) and aggregated (thick).
 
-{% include blog_figure.liquid path="assets/img/blog/3d-vision/07-cost-curves.svg" localized="true" caption="Cost curves $1 - \mathrm{NCC}$ along the 64 planes for four probe pixels (5x5 windows), one thin line per source view and the best-2-of-4 aggregate in black; the dashed red line is the true depth, the black triangle the estimate. A: textured wall, one deep, narrow minimum in every view, estimate 6.36 m for a truth of 6.35 m. B: the flat poster, every curve is flat noise around 1 and the minimum lands at 4.58 m instead of 6.21 m. C: the stripes. The horizontal-baseline views 1 and 2 have periodic minima at different depths; view 3, whose baseline is nearly vertical, sees almost no change along its epipolar line (low cost at every depth), and view 4 gives a broad curve. The aggregate is ambiguous; the estimate is 6.12 m for 6.25 m. D: a wall pixel next to the box, hidden from view 1 (orange, high cost at the truth) but visible in the others: best-2 gives 6.62 m for 6.66 m, while the mean of all four views gives 5.29 m." %}
+{% include blog_figure.liquid path="assets/img/blog/3d-vision/07-cost-curves.svg" localized="true" caption="Cost curves $1 - \mathrm{NCC}$ along the 64 planes for four probe pixels (5x5 windows), one thin line per source view and the best-2-of-4 aggregate in black; the dashed red line is the true depth, the black triangle the estimate. A: textured wall, one deep, narrow minimum in every view, estimate 6.36 m for a truth of 6.35 m. B: the flat poster, every curve is flat noise around 1 and the minimum lands at 4.58 m instead of 6.21 m. C: the stripes. The horizontal-baseline views 1 and 2 have periodic minima at different depths; view 3, whose baseline is nearly vertical, sees almost no change along its epipolar line (low cost at every depth), and view 4 gives a broad curve. The aggregate is ambiguous; the estimate is 6.12 m for 6.25 m. D: a wall pixel next to the box, hidden from view 2 (blue, high cost at the truth) but visible in the others: best-2 gives 6.62 m for 6.66 m, while the mean of all four views gives 5.29 m." %}
 
 Each probe is a lesson:
 
 - **A (texture)**: the ideal case. A sharp, unique minimum at the right place in every view.
 - **B (no texture)**: there is nothing to match. NCC of two noise windows is random, so the "best" plane is random too. No local cost can fix this; we need either a prior that propagates depth from the poster's textured surroundings (smoothness, section 3.8; planes, section 4) or active light (section 2.2).
 - **C (repetitive texture)**: a stripe pattern with period $p$ pixels matches itself after a shift of $p$, so a single view has several equally good minima. Views with **different baselines** put these aliases at different depths, and only the true depth is a minimum in all of them. This is the idea of **multiple-baseline stereo** (Okutomi and Kanade, 1993), who summed SSD curves over baselines in inverse depth. Views whose epipolar lines run **along** the stripes see a constant pattern and carry no information: they are the aperture problem of post 3 in another form.
-- **D (occlusion)**: from view 1 the pixel's surface point is hidden behind the box, so view 1 compares the wall with the box and gives a high cost at the true depth. Averaging this outlier into the cost moves the minimum; ignoring the worst views keeps it.
+- **D (occlusion)**: from view 2 (0.25 m to the left) the pixel's surface point is hidden behind the box, so view 2 compares the wall with the box and gives a high cost at the true depth. Averaging this outlier into the cost moves the minimum; ignoring the worst views keeps it.
 
 ### 3.7 Many views: aggregation and occlusion
 
@@ -564,7 +566,7 @@ $$
 H_p = K_s\Big(R + \frac{\mathbf t\,\mathbf n_p^\top}{d_p}\Big)K_r^{-1},
 $$
 
-so the window follows the surface instead of facing the camera. A window on the floor is warped as a piece of the floor.
+so the window follows the surface instead of facing the camera. A window on the floor is warped as a piece of the floor. (Our code orients every normal towards the camera, so $d\_p < 0$, unlike the $d > 0$ of section 3.2. This does not matter: flipping $\mathbf n$ also flips $d$, and $\mathbf t\mathbf n^\top/d$ stays the same.)
 
 Propagation needs one more formula. When pixel $p$ borrows the plane $(\mathbf n\_q, \mathbf X\_q)$ of a neighbour $q$, the depth to test at $p$ is where $p$'s ray $\mathbf r\_p = K^{-1}\tilde{\mathbf x}\_p$ meets that plane: $\mathbf n\_q^\top(z\,\mathbf r\_p) = \mathbf n\_q^\top\mathbf X\_q$, so
 
@@ -672,6 +674,8 @@ PatchMatch iteration 0: AbsRel 0.365, |e| < 1%:  1.8%, |e| < 5%:  8.9%
 PatchMatch iteration 1: AbsRel 0.080, |e| < 1%: 20.1%, |e| < 5%: 64.9%
 PatchMatch iteration 2: AbsRel 0.043, |e| < 1%: 49.5%, |e| < 5%: 88.6%
 PatchMatch iteration 3: AbsRel 0.040, |e| < 1%: 60.9%, |e| < 5%: 89.2%
+PatchMatch iteration 4: AbsRel 0.039, |e| < 1%: 64.5%, |e| < 5%: 89.5%
+PatchMatch iteration 5: AbsRel 0.039, |e| < 1%: 66.2%, |e| < 5%: 89.5%
 PatchMatch iteration 6: AbsRel 0.039, |e| < 1%: 66.8%, |e| < 5%: 89.5%
 sweep, best 2       floor: |e| < 1%: 51.2%   all: AbsRel 0.034, |e| < 1%: 67.9%, |e| < 5%: 90.5%
 PatchMatch slanted  floor: |e| < 1%: 59.4%   all: AbsRel 0.039, |e| < 1%: 66.8%, |e| < 5%: 89.5%
@@ -702,9 +706,9 @@ Hand-crafted MVS struggles where photo-consistency is weak: low texture, reflect
 2. **Differentiable homography warping.** Each source feature map is warped onto $D$ fronto-parallel planes of the reference view with exactly the homography $H\_i$ of section 3.2, using bilinear sampling, which is differentiable.
 3. **Variance cost volume.** For each plane, the $N$ feature volumes $\mathbf V\_1, \dots, \mathbf V\_N$ (reference included) are combined by their per-channel variance, $\mathbf C = \frac1N\sum\_j(\mathbf V\_j - \bar{\mathbf V})^2$. Where the features agree, the variance is small. Unlike our "best 2", the variance works for any $N$.
 4. **Regularization.** A 3D U-Net processes the $C \times D \times H/4 \times W/4$ volume and outputs one score per plane and pixel, converted to a **probability volume** $P\_i(x, y)$ by a softmax over $i$. This replaces SGM or global optimization: the network learns how to propagate information into textureless areas.
-5. **Depth regression.** The depth is the expectation $\hat w = \sum\_i P\_i\,w\_i$ (the soft-argmin), and training minimizes an L1 loss against ground-truth depth (from the DTU structured-light scans).
+5. **Depth regression.** The depth is the expectation over the planes, $\hat z = \sum\_i P\_i\,z\_i$ (the soft-argmin; MVSNet samples its planes uniformly in depth, and with planes uniform in inverse depth, as in our code below, one takes the expectation of $w$ instead). A small 2D network refines the depth map with the reference image, and training minimizes an L1 loss against ground-truth depth (rendered from the DTU structured-light scans) for both the initial and the refined map.
 
-The weak point is memory. For a $1600 \times 1200$ image the quarter-resolution volume has $400 \times 300 \times 192 \times 32 \approx 7.4 \times 10^8$ entries for $D = 192$ planes, about 3 GB in 32-bit floats, before the 3D U-Net doubles it several times. Most follow-up work is about this number.
+The weak point is memory. For a $1600 \times 1200$ image the quarter-resolution volume has $400 \times 300 \times 192 \times 32 \approx 7.4 \times 10^8$ entries for $D = 192$ planes, about 3 GB in 32-bit floats, and the intermediate volumes of the 3D U-Net need several times more. Most follow-up work is about this number.
 
 ### 5.2 Soft-argmin: sub-pixel and differentiable, with a catch
 
@@ -737,9 +741,9 @@ for name, z in (("integer WTA", 1 / inv_z[agg.argmin(0)]), ("WTA + parabola", z_
 print("pixels with WTA within 2 planes: %.1f%%" % (100 * inlier.mean()))
 ```
 
-On the 88.4% of pixels where winner-take-all is within two planes of the truth, the RMS errors are `0.611` planes for integer WTA, `0.535` with the parabola, `1.566` for soft-argmin with $\tau = 0.05$ and `0.705` with $\tau = 0.01$. A soft-argmin on a broad, hand-crafted cost curve is **worse** than plain WTA: probability mass from distant, slightly-less-bad planes pulls the mean away. It only works when the distribution is sharp, and the network has to learn to make it sharp. This is why MVSNet's training loss implicitly pushes the probability volume towards unimodal peaks, and why later methods add an explicit cross-entropy loss on $P$ or regress only within a window around the peak.
+On the 88.4% of pixels where winner-take-all is within two planes of the truth, the RMS errors are `0.611` planes for integer WTA, `0.535` with the parabola, `1.566` for soft-argmin with $\tau = 0.05$ and `0.705` with $\tau = 0.01$. A soft-argmin on a broad, hand-crafted cost curve is **worse** than plain WTA: probability mass from distant, slightly-less-bad planes pulls the mean away. It only works when the distribution is sharp, and the network has to learn to make it sharp. MVSNet's L1 loss acts on the expectation only, so it does not by itself rule out a bimodal $P$ whose mean happens to be right; this is why R-MVSNet trains $P$ directly with a cross-entropy loss against the true plane, and why other methods take the expectation only within a window around the peak.
 
-{% include blog_figure.liquid path="assets/img/blog/3d-vision/07-soft-argmin.svg" localized="true" caption="(a) Probe A, best-2 cost (black) and the softmax probabilities for $\tau=0.05$ (orange) and $\tau=0.01$ (purple). The curve has one clean minimum; the integer argmin is the plane at 6.43 m, and the soft-argmin interpolates between planes: 6.31 m ($\tau=0.05$, a broad distribution with a tail towards nearer planes) and 6.34 m ($\tau=0.01$), for a truth of 6.35 m. (b) Probe C seen by view 1 only: two minima, near 3.5 m and 6.1 m (truth 6.25 m, dashed). The argmin picks the wrong one (3.54 m); the soft-argmin lands at 3.87 m with $\tau = 0.05$, between the modes, on a depth that no plane supports, and at 3.48 m with $\tau=0.01$. (c) RMS error in plane spacings over the 88% of pixels where WTA is within two planes: integer WTA 0.61, WTA with parabola 0.53, soft-argmin 1.57 ($\tau=0.05$) and 0.70 ($\tau=0.01$)." %}
+{% include blog_figure.liquid path="assets/img/blog/3d-vision/07-soft-argmin.svg" localized="true" caption="(a) Probe A, best-2 cost (black) and the softmax probabilities for $\tau=0.05$ (orange) and $\tau=0.01$ (purple). The curve has one clean minimum; the integer argmin is the plane at 6.43 m, and the soft-argmin interpolates between planes: 6.31 m ($\tau=0.05$, a broad distribution with a tail towards nearer planes) and 6.34 m ($\tau=0.01$), for a truth of 6.35 m. (b) Probe C seen by view 1 only: three minima, at the near end of the range (2.5 m), near 3.5 m and near 6.1 m (truth 6.25 m, dashed). The argmin picks a wrong one (3.54 m); the soft-argmin lands at 3.87 m with $\tau = 0.05$, between the modes, on a depth that no plane supports, and at 3.48 m with $\tau=0.01$, pulled slightly towards the 2.5 m mode. (c) RMS error in plane spacings over the 88% of pixels where WTA is within two planes: integer WTA 0.61, WTA with parabola 0.53, soft-argmin 1.57 ($\tau=0.05$) and 0.70 ($\tau=0.01$)." %}
 
 ### 5.3 Making it scale, and the stereo branch
 
@@ -749,7 +753,7 @@ The main lines of work after MVSNet, all verified in the paper table below:
 - **Coarse-to-fine cascades.** CasMVSNet (Gu et al., 2020) builds a coarse cost volume over the full depth range at low resolution, then narrower volumes around the previous estimate at higher resolutions. The same depth precision costs far fewer planes.
 - **Learned PatchMatch.** PatchmatchNet (Wang et al., 2021) puts section 4 into a network: learned, adaptive propagation and evaluation, iterated coarse to fine, without a full cost volume.
 
-Two-view stereo networks followed a parallel path: GC-Net introduced the 3D-CNN cost volume and the soft-argmin, RAFT-Stereo (Lipson et al., 2021) replaced the 3D CNN with recurrent updates of a disparity field driven by an all-pairs correlation pyramid (the stereo version of RAFT from post 3), and FoundationStereo (Wen et al., CVPR 2025) adds features of a frozen monocular depth model (Depth Anything V2) to the cost volume to generalize zero-shot. Learned stereo and MVS increasingly borrow from monocular depth, the topic of the next section.
+Two-view stereo networks followed a parallel path: GC-Net introduced the 3D-CNN cost volume and the soft-argmin, RAFT-Stereo (Lipson et al., 2021) replaced the 3D CNN with recurrent updates of a disparity field driven by an all-pairs correlation pyramid (the stereo version of RAFT from post 3), and FoundationStereo (Wen et al., CVPR 2025) feeds features of a frozen monocular depth model (Depth Anything V2) into its matching features to generalize zero-shot. Learned stereo and MVS increasingly borrow from monocular depth, the topic of the next section.
 
 Learned MVS still needs **known cameras**. Feed-forward 3D models such as DUSt3R, VGGT and Depth Anything 3 (Lin et al., arXiv November 2025, ICLR 2026) predict depth and camera poses together from unposed images; they are the subject of [post 9]({{ '/blog/2026/3d-vision-09-3d-reconstruction-classic-to-feed-forward/' | relative_url }}).
 
@@ -763,7 +767,7 @@ Humans still judge depth from one eye, because the world is not arbitrary: famil
 
 ### 6.2 Scale-invariant losses
 
-Eigen, Puhrsch and Fergus (2014), the first deep monocular depth network, introduced a loss that ignores the global scale. With $g\_i = \log\hat z\_i - \log z\_i^\ast$ over $n$ pixels,
+Eigen, Puhrsch and Fergus (2014), one of the first deep networks for monocular depth, introduced a loss that ignores the global scale. With $g\_i = \log\hat z\_i - \log z\_i^\ast$ over $n$ pixels,
 
 $$
 D(\hat{\mathbf z}, \mathbf z^\ast) = \frac1n\sum_i g_i^2 - \frac{\lambda}{n^2}\Big(\sum_i g_i\Big)^2 .
@@ -788,7 +792,7 @@ $$
 \begin{pmatrix} \sum_i p_i w_i^\ast \\ \sum_i w_i^\ast \end{pmatrix},
 $$
 
-then penalize the residual $s\,p\_i + t - w\_i^\ast$ (MiDaS uses robust, trimmed versions of this and a gradient-matching term for sharp edges). Why inverse depth? Because disparity data, the largest source, is affine in inverse depth, and an affine model in $w$ is exactly what unknown baseline and offset produce. DPT (Ranftl et al., 2021) replaced the CNN backbone with a vision transformer and became the standard architecture of the field.
+then penalize the residual $s\,p\_i + t - w\_i^\ast$ (MiDaS uses robust, trimmed versions of this and a gradient-matching term for sharp edges). Why inverse depth? Because disparity data, the largest source, is affine in inverse depth, and an affine model in $w$ is exactly what unknown baseline and offset produce. DPT (Ranftl et al., 2021) replaced the CNN backbone with a vision transformer; its decoder is reused by many later models, Depth Anything among them.
 
 ### 6.4 Using a relative model: alignment in practice
 
@@ -851,7 +855,7 @@ The fitted `s = 0.5876, t = -0.1476` are close to the exact inverse of the simul
 
 ### 6.5 Self-supervision and foundation models
 
-Ground-truth depth is expensive. **Self-supervised** methods train on video or stereo pairs without depth labels: predict depth for one frame (and the camera motion), warp the neighbouring frame into it with exactly the reprojection of section 3.2, and minimize the photometric error. Monodepth2 (Godard et al., 2019) made this work robustly with a per-pixel minimum over source frames (the same idea as our best-k for occlusions) and auto-masking of static pixels.
+Ground-truth depth is expensive. **Self-supervised** methods train on video or stereo pairs without depth labels: predict depth for one frame (and the camera motion), warp the neighbouring frame into it with the reprojection of section 3.2 (with a per-pixel depth in place of a plane), and minimize the photometric error. Monodepth2 (Godard et al., 2019) made this work robustly with a per-pixel minimum over source frames (the same idea as our best-k for occlusions) and auto-masking of static pixels.
 
 The recent jump came from scale. **Depth Anything** (Yang et al., CVPR 2024) trained a DPT-style model on 1.5 million labelled images plus about 62 million unlabelled images pseudo-labelled by a teacher, with strong augmentation and a feature-alignment loss to a frozen DINOv2 encoder. **Depth Anything V2** (NeurIPS 2024) replaced the real labelled images with precise synthetic ones for the teacher, which sharpened fine detail. **Marigold** (Ke et al., CVPR 2024) took a different route: fine-tune the Stable Diffusion image generator to "generate" an affine-invariant depth map conditioned on the image, exploiting the generator's prior about scenes. **Video Depth Anything** (Chen et al., CVPR 2025) adds a spatio-temporal head for depth that is consistent over long videos.
 
@@ -859,7 +863,7 @@ The recent jump came from scale. **Depth Anything** (Yang et al., CVPR 2024) tra
 
 To predict metres, a model must know the camera, because of the $f$-$z$ ambiguity of section 6.1. The 2024-2025 generation of metric models handles it in different ways:
 
-- **Canonical camera.** Metric3D and Metric3D v2 (Hu et al., TPAMI 2024) transform every training image (or its labels) to a canonical focal length, so that "a car 50 pixels tall" always means the same depth. At test time the known focal length maps the prediction back.
+- **Canonical camera.** Metric3D (Yin et al., ICCV 2023) and Metric3D v2 (Hu et al., TPAMI 2024) transform every training image (or its labels) to a canonical focal length, so that "a car 50 pixels tall" always means the same depth. At test time the known focal length maps the prediction back.
 - **Predict the camera.** UniDepth (Piccinelli et al., CVPR 2024) predicts the camera rays with a dedicated module and conditions the depth on them; Depth Pro (Bochkovskii et al., ICLR 2025) estimates the focal length itself and produces sharp metric depth in a fraction of a second.
 - **Predict geometry, not depth.** MoGe (Wang et al., CVPR 2025) predicts an affine-invariant 3D point map (depth and rays together) and recovers the focal length and shift from it by a small optimization.
 
@@ -995,7 +999,7 @@ print("fused TSDF:", ", ".join("%d scans %.2f mm" % (k, 1000 * v) for k, v in ts
 
 Output: the raw measured points lie on average `14.02 mm` (RMS) from the true surface. The zero level set of the fused TSDF has an RMS error of `15.36 mm` after one scan, `12.11`, `11.33`, `10.32` and `8.31 mm` after 2, 4, 8 and 16 scans, and `4.41 mm` after all 36. Each surface point is seen by a growing number of scans, and averaging reduces the noise roughly like one over the square root of that number: after all 36 scans a voxel on the surface has been updated by a median of 10 scans, and $14.0/\sqrt{10} = 4.4$ mm. (After one scan the error is slightly above the 13.1 mm of that scan's own points, because the 1.5 cm grid and the linear interpolation of the zero crossing add a little error of their own.)
 
-{% include blog_figure.liquid path="assets/img/blog/3d-vision/07-tsdf.svg" localized="true" caption="2D TSDF fusion (grid 201 x 201 over the dotted 3 m square, truncation $\mu = 8$ cm). (a) One scan from the camera on the right (blue triangle, orange rays, black measured points): the TSDF is +1 (blue) in observed free space, crosses zero at the measured surface and is red just behind it; nothing is updated further behind or outside the field of view. The dashed outline is the true scene. (b) After 36 scans from a circle of radius 2 m (every third camera shown): the zero level set (purple, under the white transition) closes around both objects. (c) RMS distance of the extracted zero crossings to the true surface against the number of fused scans, from 15.4 mm to 4.4 mm; the raw points have 14.0 mm." %}
+{% include blog_figure.liquid path="assets/img/blog/3d-vision/07-tsdf.svg" localized="true" caption="2D TSDF fusion (grid 201 x 201 over the dotted 3 m square, truncation $\mu = 8$ cm). (a) One scan from the camera on the right (orange triangle, thin orange rays, black measured points): the TSDF is +1 (blue) in observed free space, crosses zero at the measured surface and is red just behind it; nothing is updated further behind or outside the field of view. The dashed outline is the true scene. (b) After 36 scans from a circle of radius 2 m (every third camera shown as an orange triangle): the zero level set (purple, under the white transition) closes around both objects. (c) RMS distance of the extracted zero crossings to the true surface against the number of fused scans, from 15.4 mm to 4.4 mm; the raw points have 14.0 mm." %}
 
 ### 7.4 Limits of TSDF fusion
 
@@ -1005,7 +1009,7 @@ TSDF fusion is robust and simple, which is why it is still in every depth-camera
 
 **Depth maps** are evaluated per pixel against ground truth from a better sensor: AbsRel, RMSE, $\delta\_1$ (section 6.4), the fraction of pixels with error below a threshold (our "within 1%"), and for stereo the **bad-$\tau$ rate**, the percentage of pixels with disparity error above $\tau$ pixels. Classic benchmarks: Middlebury (high-resolution indoor stereo with structured-light ground truth, organized after the taxonomy of Scharstein and Szeliski, 2002), KITTI (driving, sparse LiDAR ground truth), NYU Depth v2 (indoor Kinect) and ETH3D.
 
-**MVS reconstructions** are evaluated as point clouds against a reference scan, with two numbers that mirror precision and recall. **Accuracy** is the distance from each reconstructed point to the reference (are the points correct?); **completeness** is the distance from each reference point to the reconstruction (is the surface covered?). Tanks and Temples (Knapitsch et al., 2017) combines them into an **F-score** at a distance threshold $\tau$: precision $P(\tau)$ is the fraction of reconstructed points within $\tau$ of the reference, recall $R(\tau)$ the fraction of reference points within $\tau$ of the reconstruction, and $F = 2PR/(P + R)$. The main MVS benchmarks are DTU (Jensen et al., 2014: objects on a turntable with structured-light reference scans), ETH3D (Schöps et al., 2017: high-resolution indoor and outdoor scenes with laser scans) and Tanks and Temples (large indoor and outdoor scenes). Note what the metrics reward: a method can raise accuracy by deleting uncertain points, so always look at both numbers.
+**MVS reconstructions** are evaluated as point clouds against a reference scan, with two numbers that mirror precision and recall. **Accuracy** is the distance from each reconstructed point to the reference (are the points correct?); **completeness** is the distance from each reference point to the reconstruction (is the surface covered?). Tanks and Temples (Knapitsch et al., 2017) combines them into an **F-score** at a distance threshold $\tau$: precision $P(\tau)$ is the fraction of reconstructed points within $\tau$ of the reference, recall $R(\tau)$ the fraction of reference points within $\tau$ of the reconstruction, and $F = 2PR/(P + R)$. The main MVS benchmarks are DTU (Jensen et al., 2014: table-top objects photographed by a camera on a robot arm, with structured-light reference scans), ETH3D (Schöps et al., 2017: high-resolution indoor and outdoor scenes with laser scans) and Tanks and Temples (large indoor and outdoor scenes). Note what the metrics reward: a method can raise accuracy by deleting uncertain points, so always look at both numbers.
 
 ## 9. A practical recipe
 
@@ -1038,7 +1042,7 @@ TSDF fusion is robust and simple, which is why it is still in every depth-camera
 | KinectFusion: real-time dense surface mapping and tracking (Newcombe et al.) | ISMAR | 2011 | [DOI](https://doi.org/10.1109/ISMAR.2011.6092378) | Real-time TSDF fusion with ICP tracking |
 | Real-time 3D reconstruction at scale using voxel hashing (Nießner et al.) | ACM TOG (SIGGRAPH Asia) | 2013 | [DOI](https://doi.org/10.1145/2508363.2508374) | Sparse TSDF blocks in a hash table |
 | Large scale multi-view stereopsis evaluation (Jensen et al.) | CVPR | 2014 | [DOI](https://doi.org/10.1109/CVPR.2014.59) | The DTU MVS benchmark |
-| Depth map prediction from a single image using a multi-scale deep network (Eigen, Puhrsch, Fergus) | NeurIPS | 2014 | [arXiv](https://arxiv.org/abs/1406.2283) | First deep monocular depth; scale-invariant loss |
+| Depth map prediction from a single image using a multi-scale deep network (Eigen, Puhrsch, Fergus) | NeurIPS | 2014 | [arXiv](https://arxiv.org/abs/1406.2283) | Early deep monocular depth network; scale-invariant loss |
 | Massively parallel multiview stereopsis by surface normal diffusion (Galliani, Lasinger, Schindler) | ICCV | 2015 | [DOI](https://doi.org/10.1109/ICCV.2015.106) | Gipuma: red-black PatchMatch on the GPU |
 | Pixelwise view selection for unstructured multi-view stereo (Schönberger et al.) | ECCV | 2016 | [DOI](https://doi.org/10.1007/978-3-319-46487-9_31) | COLMAP MVS: joint depth, normal and view selection |
 | End-to-end learning of geometry and context for deep stereo regression (Kendall et al.) | ICCV | 2017 | [arXiv](https://arxiv.org/abs/1703.04309) | GC-Net: 3D-CNN cost volume and soft-argmin |
@@ -1105,11 +1109,11 @@ Status as of November 2026: all entries are published at the venue listed; Depth
    Use `backproject`, `relative_pose` and $K$ to map the point into view 1, read view 1's depth at the rounded pixel, back-project that into 3D, and map it into the reference with the inverse relative pose. In our run the check keeps 80.9% of the pixels; among them 61.5% are within 1% (52.3% before filtering) and 90.2% within 5% (78.3% before). It removes about half of the poster (random depths agree between the two views only by chance) and most of the right border strip, which view 1 does not see. With more views, requiring agreement with two or three of them removes far more outliers; fusion with other views then fills the holes.
    </details>
 
-5. In the TSDF experiment, set all fusion weights to 1 as now, then replace them by $w = 1/\sigma(z)^2$ with the sensor's noise model $\sigma(z) = 0.002 + 0.005z^2$. Does the error after 36 scans change? Then double the truncation $\mu$, and halve it to 2 cm: what happens to thin parts and to the noise?
+5. In the TSDF experiment, set all fusion weights to 1 as now, then replace them by $w = 1/\sigma(z)^2$ with the sensor's noise model $\sigma(z) = 0.002 + 0.005z^2$. Does the error after 36 scans change? Then double the truncation $\mu$ to 16 cm, and reduce it to a quarter, 2 cm: what happens to thin parts and to the noise?
 
    <details markdown="1"><summary>Hint</summary>
 
-   Pass the per-grid-point weight $1/\sigma(z\_m)^2$ into `integrate` (replace the `+ 1` terms by `+ w` and `W + w`). We got 4.36 mm instead of 4.41 mm: almost no change, because every camera in this experiment is about equally far from the objects, so all weights are similar; inverse-variance weighting (the maximum-likelihood combination of Gaussian measurements) pays off when scans see the same surface from very different distances. With $\mu = 2$ cm the error rises to 12.9 mm: the band of updated voxels is barely wider than the noise far from the camera, and the zero crossing breaks into spurious fragments. With $\mu = 16$ cm it rises to 10.1 mm: the band is now wider than the features of the scene, such as the square's corners and the 10 cm gap between the disk and the square, so measurements of one surface spill into the other's voxels.
+   Compute the per-grid-point weight `w` $= 1/\sigma(z\_m)^2$ inside `integrate` and use it in the update: `T = (Wt * T + w * tsdf) / (Wt + w)` and `Wt += w` (on the `ok` entries). We got 4.36 mm instead of 4.41 mm: almost no change, because every camera in this experiment is about equally far from the objects, so all weights are similar; inverse-variance weighting (the maximum-likelihood combination of Gaussian measurements) pays off when scans see the same surface from very different distances. With $\mu = 2$ cm the error rises to 12.9 mm: the band of updated voxels is barely wider than the noise far from the camera, and the zero crossing breaks into spurious fragments. With $\mu = 16$ cm it rises to 10.1 mm: the band is now wider than the features of the scene, such as the square's corners and the 10 cm gap between the disk and the square, so measurements of one surface spill into the other's voxels.
    </details>
 
 **Next:** [post 8]({{ '/blog/2026/3d-vision-08-3d-representations/' | relative_url }}) asks what to store once we have depth: point clouds, meshes, voxels, signed distance fields, neural fields or 3D Gaussians, and how to convert between them.

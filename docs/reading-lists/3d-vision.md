@@ -162,7 +162,7 @@
 
 | 论文 | 会议/期刊 | 年份 | 链接 | 说明 |
 | --- | --- | --- | --- | --- |
-| Depth map prediction from a single image using a multi-scale deep network (Eigen, Puhrsch, Fergus) | NeurIPS | 2014 | https://arxiv.org/abs/1406.2283 | 第一个深度单目深度网络；尺度不变对数损失 |
+| Depth map prediction from a single image using a multi-scale deep network (Eigen, Puhrsch, Fergus) | NeurIPS | 2014 | https://arxiv.org/abs/1406.2283 | 早期的深度单目深度网络之一；尺度不变对数损失 |
 | Digging into self-supervised monocular depth estimation (Godard et al.) | ICCV | 2019 | https://arxiv.org/abs/1806.01260 | Monodepth2：最小重投影误差 + 自动掩膜 |
 | Vision transformers for dense prediction (Ranftl, Bochkovskiy, Koltun) | ICCV | 2021 | https://arxiv.org/abs/2103.13413 | DPT：ViT 主干的稠密预测 |
 | Towards robust monocular depth estimation: mixing datasets for zero-shot cross-dataset transfer (Ranftl et al.) | TPAMI | 2022 | https://arxiv.org/abs/1907.01341 | MiDaS：仿射不变逆深度损失，混合多数据集训练 |
@@ -180,7 +180,7 @@
 
 | 论文 | 会议/期刊 | 年份 | 链接 | 说明 |
 | --- | --- | --- | --- | --- |
-| Large scale multi-view stereopsis evaluation (Jensen et al.) | CVPR | 2014 | https://doi.org/10.1109/CVPR.2014.59 | DTU：转台物体 + 结构光参考扫描 |
+| Large scale multi-view stereopsis evaluation (Jensen et al.) | CVPR | 2014 | https://doi.org/10.1109/CVPR.2014.59 | DTU：机械臂上的相机拍摄的桌面物体 + 结构光参考扫描 |
 | A multi-view stereo benchmark with high-resolution images and multi-camera videos (Schöps et al.) | CVPR | 2017 | https://doi.org/10.1109/CVPR.2017.272 | ETH3D：高分辨率室内外场景，激光扫描真值 |
 | Tanks and Temples: benchmarking large-scale scene reconstruction (Knapitsch et al.) | ACM TOG (SIGGRAPH) | 2017 | https://doi.org/10.1145/3072959.3073599 | 精确率 / 召回率 / F 分数 |
 
