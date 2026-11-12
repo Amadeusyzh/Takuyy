@@ -115,3 +115,60 @@
 - OpenCV USAC 教程：https://docs.opencv.org/5.0/tutorials/calib3d/usac.html
 - 代码：https://github.com/cvg/LightGlue 、https://github.com/magicleap/SuperGluePretrainedNetwork 、https://github.com/Parskatt/RoMa 、https://github.com/danini/magsac 、https://github.com/princeton-vl/RAFT
 - 基准：https://github.com/hpatches 、https://vision.uvic.ca/image-matching-challenge/
+
+## 08 三维表示
+
+对应文章：`2026-10-27-3d-vision-08-3d-representations.md`（深度图与 MPI、点云、网格、体素与八叉树、SDF/TSDF、神经场、三维高斯，以及 PointNet 与稀疏卷积）。
+
+### 图像空间、点与网格
+
+| 论文 | 会议/期刊 | 年份 | 链接 | 说明 |
+| --- | --- | --- | --- | --- |
+| Marching cubes: a high resolution 3D surface construction algorithm (Lorensen, Cline) | SIGGRAPH | 1987 | https://doi.org/10.1145/37401.37422 | 从任意采样的隐式场提取网格 |
+| Layered depth images (Shade, Gortler, He, Szeliski) | SIGGRAPH | 1998 | https://doi.org/10.1145/280814.280882 | 每像素多个深度，渲染时可处理视差与去遮挡 |
+| Surfels: surface elements as rendering primitives (Pfister, Zwicker, van Baar, Gross) | SIGGRAPH | 2000 | https://doi.org/10.1145/344779.344936 | 带法向与半径的点基元（面元） |
+| A point set generation network for 3D object reconstruction from a single image (Fan, Su, Guibas) | CVPR | 2017 | https://arxiv.org/abs/1612.00603 | 直接预测点云；推广了 Chamfer / EMD 损失 |
+| Tanks and Temples: benchmarking large-scale scene reconstruction (Knapitsch, Park, Zhou, Koltun) | ACM TOG | 2017 | https://doi.org/10.1145/3072959.3073599 | 精确率 / 召回率 / F-score 评测重建 |
+| Stereo magnification: learning view synthesis using multiplane images (Zhou et al.) | SIGGRAPH (ACM TOG) | 2018 | https://arxiv.org/abs/1805.09817 | 多平面图像（MPI），按逆深度均匀分布的 RGBA 平面 |
+
+### 体素、八叉树与距离场
+
+| 论文 | 会议/期刊 | 年份 | 链接 | 说明 |
+| --- | --- | --- | --- | --- |
+| A volumetric method for building complex models from range images (Curless, Levoy) | SIGGRAPH | 1996 | https://doi.org/10.1145/237170.237269 | 累积加权有符号距离：TSDF 融合的起源 |
+| KinectFusion: real-time dense surface mapping and tracking (Newcombe et al.) | ISMAR | 2011 | https://doi.org/10.1109/ISMAR.2011.6092378 | 深度相机实时 TSDF 融合 + ICP 跟踪 |
+| OctoMap: an efficient probabilistic 3D mapping framework based on octrees (Hornung et al.) | Autonomous Robots | 2013 | https://doi.org/10.1007/s10514-012-9321-0 | 八叉树中的对数几率占据，机器人标准地图 |
+| Real-time 3D reconstruction at scale using voxel hashing (Nießner, Zollhöfer, Izadi, Stamminger) | ACM TOG (SIGGRAPH Asia) | 2013 | https://doi.org/10.1145/2508363.2508374 | 只在表面附近分配体素块，用哈希表索引 |
+| Voxblox: incremental 3D Euclidean signed distance fields for on-board MAV planning (Oleynikova et al.) | IROS | 2017 | https://arxiv.org/abs/1611.03631 | 由 TSDF 增量构建 ESDF，用于规划 |
+
+### 神经场与三维高斯
+
+| 论文 | 会议/期刊 | 年份 | 链接 | 说明 |
+| --- | --- | --- | --- | --- |
+| On the spectral bias of neural networks (Rahaman et al.) | ICML | 2019 | https://arxiv.org/abs/1806.08734 | MLP 先学低频：位置编码的动机 |
+| Occupancy networks: learning 3D reconstruction in function space (Mescheder et al.) | CVPR | 2019 | https://arxiv.org/abs/1812.03828 | 形状 = 分类器的决策边界 |
+| DeepSDF: learning continuous signed distance functions for shape representation (Park et al.) | CVPR | 2019 | https://arxiv.org/abs/1901.05103 | 自解码器 + 隐编码，一个网络表示一类形状 |
+| Implicit geometric regularization for learning shapes (Gropp et al.) | ICML | 2020 | https://arxiv.org/abs/2002.10099 | 程函损失；从原始点云学 SDF |
+| NeRF: representing scenes as neural radiance fields for view synthesis (Mildenhall et al.) | ECCV | 2020 | https://arxiv.org/abs/2003.08934 | 体渲染训练的辐射场 |
+| Fourier features let networks learn high frequency functions in low dimensional domains (Tancik et al.) | NeurIPS | 2020 | https://arxiv.org/abs/2006.10739 | 位置编码的 NTK 分析 |
+| Implicit neural representations with periodic activation functions (SIREN; Sitzmann et al.) | NeurIPS | 2020 | https://arxiv.org/abs/2006.09661 | 正弦激活 |
+| Instant neural graphics primitives with a multiresolution hash encoding (Müller et al.) | SIGGRAPH (ACM TOG) | 2022 | https://arxiv.org/abs/2201.05989 | 哈希栅格 + 小 MLP 的混合表示 |
+| 3D Gaussian splatting for real-time radiance field rendering (Kerbl et al.) | SIGGRAPH (ACM TOG) | 2023 | https://arxiv.org/abs/2308.04079 | 每个高斯 59 个可学习浮点数；显式、可微、实时 |
+| 2D Gaussian splatting for geometrically accurate radiance fields (Huang et al.) | SIGGRAPH | 2024 | https://arxiv.org/abs/2403.17888 | 扁平高斯面元，法向与表面定义明确 |
+
+### 三维数据上的学习
+
+| 论文 | 会议/期刊 | 年份 | 链接 | 说明 |
+| --- | --- | --- | --- | --- |
+| PointNet: deep learning on point sets for 3D classification and segmentation (Qi, Su, Mo, Guibas) | CVPR | 2017 | https://arxiv.org/abs/1612.00593 | 共享 MLP + 最大池化，排列不变；关键点 |
+| PointNet++: deep hierarchical feature learning on point sets in a metric space (Qi, Yi, Su, Guibas) | NeurIPS | 2017 | https://arxiv.org/abs/1706.02413 | FPS + 球查询的分层局部特征 |
+| 3D semantic segmentation with submanifold sparse convolutional networks (Graham, Engelcke, van der Maaten) | CVPR | 2018 | https://arxiv.org/abs/1711.10275 | 子流形稀疏卷积，不膨胀活跃集合 |
+| 4D spatio-temporal ConvNets: Minkowski convolutional neural networks (Choy, Gwak, Savarese) | CVPR | 2019 | https://arxiv.org/abs/1904.08755 | 广义稀疏卷积与 MinkowskiEngine |
+| Point Transformer V3: simpler, faster, stronger (Wu et al.) | CVPR | 2024 | https://arxiv.org/abs/2312.10035 | 点序列化 + 窗口注意力 + 稀疏卷积 |
+
+### 课程、书与代码
+
+- Botsch, Kobbelt, Pauly, Alliez, Lévy《Polygon Mesh Processing》（A K Peters，2010）：网格、转换与重新划分网格。
+- 本站图形学第 8 篇（网格、隐式曲面、Marching Cubes、泊松重建）。
+- Xie et al., "Neural Fields in Visual Computing and Beyond"（Eurographics STAR 2022）及论文列表：https://neuralfields.cs.brown.edu/
+- 代码：https://www.open3d.org/ 、https://trimesh.org/ 、https://octomap.github.io/ 、https://github.com/ethz-asl/voxblox 、https://github.com/NVIDIA/MinkowskiEngine 、https://github.com/Pointcept/Pointcept
