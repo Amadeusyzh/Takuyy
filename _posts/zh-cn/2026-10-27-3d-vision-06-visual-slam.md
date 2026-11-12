@@ -24,7 +24,7 @@ mermaid:
 ## 预备知识
 
 - [第 01 篇]({{ '/blog/2026/3d-vision-01-image-formation-and-camera-models/' | relative_url }})的相机模型与约定：$P = K[R \mid \mathbf t]$、OpenCV 相机坐标系、$T\_{w2c}$ 与 $T\_{c2w}$。
-- [第 02 篇]({{ '/blog/2026/3d-vision-02-camera-calibration/' | relative_url }})中的高斯-牛顿与 Levenberg-Marquardt（第 4.2 节），以及相机-IMU 标定（第 9 节）。
+- [第 02 篇]({{ '/blog/2026/3d-vision-02-camera-calibration/' | relative_url }})中的 Gauss-Newton 与 Levenberg-Marquardt（第 4.2 节），以及相机-IMU 标定（第 9 节）。
 - [第 03 篇]({{ '/blog/2026/3d-vision-03-features-and-matching/' | relative_url }})中的特征、RANSAC 和光流。
 - 两视图几何（[第 04 篇]({{ '/blog/2026/3d-vision-04-two-view-geometry/' | relative_url }})）以及 PnP 与光束法平差（[第 05 篇]({{ '/blog/2026/3d-vision-05-multi-view-geometry-and-bundle-adjustment/' | relative_url }})）。我们把它们当作积木使用，不再重新推导。
 - 刚体变换与 $SE(3)$：[具身智能第 1 篇]({{ '/blog/2026/embodied-ai-01-robotics-foundations/' | relative_url }})。下面第 4 节补充优化所需的内容。
@@ -138,7 +138,7 @@ $$
 
 其中 $\mathbf r\_k = h\_k(\mathcal X\_k) - \mathbf z\_k$ 是**残差（residual）**，$\Omega\_k = \Sigma\_k^{-1}$ 是它的**信息矩阵（information matrix）**。先验 $p(\mathcal X)$ 若为高斯，也只是同样形式的另一项。这与第 02 篇标定中"最大似然即最小二乘"的步骤相同，只是变量多得多。
 
-我们用高斯-牛顿法求解（第 02 篇第 4.2 节）：在当前估计处线性化每个残差，$\mathbf r\_k(\mathcal X \oplus \boldsymbol\delta) \approx \mathbf r\_k + J\_k\boldsymbol\delta$，然后求解正规方程
+我们用 Gauss-Newton 法求解（第 02 篇第 4.2 节）：在当前估计处线性化每个残差，$\mathbf r\_k(\mathcal X \oplus \boldsymbol\delta) \approx \mathbf r\_k + J\_k\boldsymbol\delta$，然后求解正规方程
 
 $$
 \underbrace{\Big(\sum_k J_k^\top \Omega_k J_k\Big)}_{H}\;\boldsymbol\delta = -\underbrace{\sum_k J_k^\top \Omega_k\,\mathbf r_k}_{\mathbf g}.
@@ -207,7 +207,7 @@ $$
 H = \begin{pmatrix} H_{xx} & H_{xl} \\ H_{lx} & H_{ll} \end{pmatrix}.
 $$
 
-在完整问题（"完全平滑"，full smoothing）中，$H\_{xx}$ 是块三对角的（里程计连接相邻位姿），$H\_{ll}$ 是块对角的（路标之间从不共享因子），$H\_{xl}$ 把每个位姿与它看到的路标相连。要去掉一些变量，就对它们做**边缘化（marginalization）**。对信息形式的高斯分布，去掉 $d$ 之后保留变量 $k$ 的边缘分布，其信息矩阵等于**舒尔补（Schur complement）**
+在完整问题（"完全平滑"，full smoothing）中，$H\_{xx}$ 是块三对角的（里程计连接相邻位姿），$H\_{ll}$ 是块对角的（路标之间从不共享因子），$H\_{xl}$ 把每个位姿与它看到的路标相连。要去掉一些变量，就对它们做**边缘化（marginalization）**。对信息形式的高斯分布，去掉 $d$ 之后保留变量 $k$ 的边缘分布，其信息矩阵等于**Schur 补（Schur complement）**
 
 $$
 H_{kk}^{\text{marg}} = H_{kk} - H_{kd}\,H_{dd}^{-1}\,H_{dk}.
@@ -276,7 +276,7 @@ poses only (landmarks marginalized): (20, 20) nonzeros 144 (36%)
 基于特征的方法先把每幅图像压缩成一组带描述子的关键点（第 03 篇），然后只在这些点上做几何。一个典型的跟踪流程（PTAM 和 ORB-SLAM 的风格）如下：
 
 1. **初始化。** 从视差足够的头两帧，用本质矩阵（对平面或低视差场景用单应）估计相对位姿，并三角化出初始地图（第 04 篇）。单目时尺度是任意的，通常把中位深度或第一条基线设为 1 来固定它。
-2. **跟踪。** 预测新帧的位姿（例如用匀速模型），把局部地图点投影到新帧，在投影附近搜索匹配，再通过最小化这些匹配的重投影误差来精化位姿。这就是**仅运动的光束法平差（motion-only bundle adjustment）**：PnP 之后接几步带鲁棒核的高斯-牛顿（第 05 篇）。若跟踪丢失，则通过地点识别（第 6 节）在所有关键帧中**重定位（relocalize）**。
+2. **跟踪。** 预测新帧的位姿（例如用匀速模型），把局部地图点投影到新帧，在投影附近搜索匹配，再通过最小化这些匹配的重投影误差来精化位姿。这就是**仅运动的光束法平差（motion-only bundle adjustment）**：PnP 之后接几步带鲁棒核的 Gauss-Newton（第 05 篇）。若跟踪丢失，则通过地点识别（第 6 节）在所有关键帧中**重定位（relocalize）**。
 3. **关键帧决策。** 若该帧跟踪到的地图点太少、看到的新内容很多，或离上一个关键帧很远，就把它设为关键帧。
 4. **局部建图。** 对新关键帧，与其邻居三角化新点，然后在该关键帧、与它共视的关键帧以及它们的点上运行**局部光束法平差**，更远的关键帧保持固定。很少被再次观测到的点会被删除。
 
@@ -292,7 +292,7 @@ $$
 r_{\mathbf u} = I_j(\mathbf u') - I_i(\mathbf u),
 $$
 
-其中 $\pi$ 是第 01 篇的相机投影，$\pi^{-1}(\mathbf u, d) = K^{-1}\tilde{\mathbf u}/d$ 是反投影。位姿通过对 $\sum\_{\mathbf u}\rho(r\_{\mathbf u}^2)$ 做高斯-牛顿求得。设 $\mathbf X = (X, Y, Z)$ 是该点在帧 $j$ 中的坐标，并施加一个小运动 $T\_{ji} \leftarrow \mathrm{Exp}(\boldsymbol\xi)\,T\_{ji}$（第 4 节），链式法则把单个残差的雅可比写成三个熟悉部分的乘积：
+其中 $\pi$ 是第 01 篇的相机投影，$\pi^{-1}(\mathbf u, d) = K^{-1}\tilde{\mathbf u}/d$ 是反投影。位姿通过对 $\sum\_{\mathbf u}\rho(r\_{\mathbf u}^2)$ 做 Gauss-Newton 求得。设 $\mathbf X = (X, Y, Z)$ 是该点在帧 $j$ 中的坐标，并施加一个小运动 $T\_{ji} \leftarrow \mathrm{Exp}(\boldsymbol\xi)\,T\_{ji}$（第 4 节），链式法则把单个残差的雅可比写成三个熟悉部分的乘积：
 
 $$
 \frac{\partial r_{\mathbf u}}{\partial \boldsymbol\xi}
@@ -348,9 +348,9 @@ pyramid 8, 4, 2, 1, 0    : 12.989
 single level from s = 10 : 12.989
 ```
 
-在清晰信号上从 $s = 0$ 出发，高斯-牛顿始终到不了 $s^\star$ 附近：代码中 15 次迭代后停在 $s = 1.92$，继续迭代则缓慢爬到 $s = 2.3$ 附近的一个虚假局部极小（见下图 (c)）；从 $s = 10$ 出发则能找到 $s^\star$。使用模糊金字塔后，从 $s = 0$ 出发也能找到 $s^\star$：模糊后的代价只有一个宽谷，而每个更细的层级都从下一层的收敛域内出发。统计 $-10$ 到 $35$ 之间的整数初值：清晰信号从 46 个中的 13 个（7 到 19）收敛；先用 $\sigma = 2$ 模糊再用清晰信号，从 19 个（4 到 22）收敛；先用 $\sigma = 8$ 模糊，则全部 46 个都收敛。
+在清晰信号上从 $s = 0$ 出发，Gauss-Newton 始终到不了 $s^\star$ 附近：代码中 15 次迭代后停在 $s = 1.92$，继续迭代则缓慢爬到 $s = 2.3$ 附近的一个虚假局部极小（见下图 (c)）；从 $s = 10$ 出发则能找到 $s^\star$。使用模糊金字塔后，从 $s = 0$ 出发也能找到 $s^\star$：模糊后的代价只有一个宽谷，而每个更细的层级都从下一层的收敛域内出发。统计 $-10$ 到 $35$ 之间的整数初值：清晰信号从 46 个中的 13 个（7 到 19）收敛；先用 $\sigma = 2$ 模糊再用清晰信号，从 19 个（4 到 22）收敛；先用 $\sigma = 8$ 模糊，则全部 46 个都收敛。
 
-{% include blog_figure.liquid path="assets/img/blog/3d-vision/06-direct-alignment.svg" localized="true" caption="一维直接对齐。(a) 参考行与当前行的一段，平移 $s^\star = 13$ px，噪声 0.01。(b) 不模糊以及高斯模糊 $\sigma = 2$ 和 8 时的光度代价 $E(s)$（已归一化）：清晰的代价又窄又崎岖，模糊使收敛域变宽。先做高斯-牛顿、再在清晰信号上精化，在 $[-10, 35]$ 的整数初值中分别有 13、19、46 个（共 46 个）收敛。(c) 从 $s\_0 = 0$ 出发的迭代：只用清晰信号时缓慢爬到约 2.3 这个虚假的局部极小并停在那里（图中画了 75 次迭代）；使用金字塔 $\sigma = 8, 4, 2, 1, 0$ 时几次迭代就到达 12.989。" %}
+{% include blog_figure.liquid path="assets/img/blog/3d-vision/06-direct-alignment.svg" localized="true" caption="一维直接对齐。(a) 参考行与当前行的一段，平移 $s^\star = 13$ px，噪声 0.01。(b) 不模糊以及高斯模糊 $\sigma = 2$ 和 8 时的光度代价 $E(s)$（已归一化）：清晰的代价又窄又崎岖，模糊使收敛域变宽。在这三种代价上分别先做 Gauss-Newton、再在清晰信号上精化：$[-10, 35]$ 中的 46 个整数初值分别有 13、19、46 个收敛。(c) 从 $s\_0 = 0$ 出发的迭代：只用清晰信号时缓慢爬到约 2.3 这个虚假的局部极小并停在那里（图中画了 75 次迭代）；使用金字塔 $\sigma = 8, 4, 2, 1, 0$ 时几次迭代就到达 12.989。" %}
 
 各种直接法的区别在于使用哪些像素以及如何对亮度建模：
 
@@ -369,7 +369,7 @@ single level from s = 10 : 12.989
 
 ### 4.1 为什么不能直接给旋转加一个 $\boldsymbol\delta$
 
-高斯-牛顿法计算一个更新向量 $\boldsymbol\delta$ 并把它加到变量上。旋转矩阵有 9 个元素却只有 3 个自由度；加上一个 $3\times3$ 的更新会破坏正交性。欧拉角有奇异性（万向节锁），四元数用 4 个数表示 3 个自由度。每个 SLAM 后端都采用的标准做法是：把位姿保存为矩阵，并通过**指数映射（exponential map）**施加更新——切空间中的最小 3 维向量（旋转）或 6 维向量（位姿）被映射到群上。Solà、Deray 和 Atchuthan 的"微型李理论"（2018）是最好的简明参考；我们需要四件工具。
+Gauss-Newton 法计算一个更新向量 $\boldsymbol\delta$ 并把它加到变量上。旋转矩阵有 9 个元素却只有 3 个自由度；加上一个 $3\times3$ 的更新会破坏正交性。欧拉角有奇异性（万向节锁），四元数用 4 个数表示 3 个自由度。每个 SLAM 后端都采用的标准做法是：把位姿保存为矩阵，并通过**指数映射（exponential map）**施加更新——切空间中的最小 3 维向量（旋转）或 6 维向量（位姿）被映射到群上。Solà、Deray 和 Atchuthan 的"微型李理论"（2018）是最好的简明参考；我们需要四件工具。
 
 **工具 1：$SO(3)$ 的指数与对数。** 旋转向量 $\boldsymbol\phi = \theta\,\mathbf k$（轴 $\mathbf k$，角 $\theta$）通过 Rodrigues 公式（第 02 篇）映射为旋转，对数是它的逆：
 
@@ -397,7 +397,7 @@ $$
 T \oplus \boldsymbol\delta = T\,\mathrm{Exp}(\boldsymbol\delta), \qquad T_a \ominus T_b = \mathrm{Log}(T_b^{-1}T_a) \in \mathbb R^6 .
 $$
 
-第 2.1 节的高斯-牛顿更新变成 $T\_i \leftarrow T\_i\,\mathrm{Exp}(\boldsymbol\delta\_i)$，这是一种**收缩映射（retraction）**：结果总是合法的位姿。（在世界坐标系中的左扰动 $\mathrm{Exp}(\boldsymbol\delta)\,T$ 同样可行，库只需保持一致即可。第 3.2 节直接对齐的雅可比用的就是 $T\_{ji}$ 的左扰动。）
+第 2.1 节的 Gauss-Newton 更新变成 $T\_i \leftarrow T\_i\,\mathrm{Exp}(\boldsymbol\delta\_i)$，这是一种**回缩（retraction）**：结果总是合法的位姿。（在世界坐标系中的左扰动 $\mathrm{Exp}(\boldsymbol\delta)\,T$ 同样可行，库只需保持一致即可。第 3.2 节直接对齐的雅可比用的就是 $T\_{ji}$ 的左扰动。）
 
 **工具 4：伴随（adjoint）。** 把扰动从位姿的一侧移到另一侧需要**伴随矩阵**：
 
@@ -450,7 +450,7 @@ def so3_left_jacobian(w):
 
 
 def se3_exp(xi):
-    """xi = (rho, phi) -> 4x4 pose. The translation is V(phi) rho, not rho itself."""
+    """xi = (rho, phi) -> 4x4 pose. The translation is J_l(phi) rho, not rho itself."""
     T = np.eye(4)
     T[:3, :3] = so3_exp(xi[3:])
     T[:3, 3] = so3_left_jacobian(xi[3:]) @ xi[:3]
@@ -520,7 +520,7 @@ $$
 J_r^{-1}(\mathbf r) \approx I + \tfrac12\mathrm{ad}(\mathbf r).
 $$
 
-每条边向 $H$ 贡献四个 $6\times6$ 块（位于 $(i,i)$、$(i,j)$、$(j,i)$、$(j,j)$），因此 $H$ 的稀疏性与图完全相同，用稀疏 Cholesky 分解即可求解正规方程。下面的代码是一个完整的高斯-牛顿位姿图优化器，大约 50 行，带有一个可选的鲁棒核（第 5.6 节解释）。
+每条边向 $H$ 贡献四个 $6\times6$ 块（位于 $(i,i)$、$(i,j)$、$(j,i)$、$(j,j)$），因此 $H$ 的稀疏性与图完全相同，用稀疏 Cholesky 分解即可求解正规方程。下面的代码是一个完整的 Gauss-Newton 位姿图优化器，大约 50 行，带有一个可选的鲁棒核（第 5.6 节解释）。
 
 ```python
 import scipy.sparse as sp
@@ -599,7 +599,7 @@ print(f"|r| = {np.linalg.norm(r0):.3f};  max Jacobian error: J_i {np.abs(Ji - Ji
       f" J_j {np.abs(Jj - Jj_num).max():.1e}")
 ```
 
-对范数为 0.056 的残差，$J\_i$ 的最大差异为 $1.6\times10^{-4}$，$J\_j$ 为 $1.9\times10^{-4}$。这正是 $J\_r^{-1}$ 被忽略的二阶项的预期大小（量级为 $\lVert\mathbf r\rVert^2/12 \approx 2.6\times10^{-4}$），并不是 bug。高斯-牛顿能容忍这样小的雅可比误差；它们改变的是通往极小点的路径，而不是极小点本身。
+对范数为 0.056 的残差，$J\_i$ 的最大差异为 $1.6\times10^{-4}$，$J\_j$ 为 $1.9\times10^{-4}$。这正是 $J\_r^{-1}$ 被忽略的二阶项的预期大小（量级为 $\lVert\mathbf r\rVert^2/12 \approx 2.6\times10^{-4}$），并不是 bug。Gauss-Newton 能容忍这样小的雅可比误差；它们改变的是通往极小点的路径，而不是极小点本身。
 
 ### 5.3 规范自由度
 
@@ -622,7 +622,7 @@ def camera_pose(p, forward, up=np.array([0.0, 0.0, 1.0])):
 
 def simulate_pose_graph(path, sig_odo, sig_loop, loop_radius=1.0, min_gap=20, stride=8, seed=0):
     """Ground-truth poses along `path` (k x 3 points), noisy odometry between consecutive poses,
-    and, every `stride` poses, a loop-closure edge to the nearest pose at least min_gap steps older
+    and, every `stride` poses, a loop-closure edge to the nearest pose more than min_gap steps older
     if it is closer than loop_radius.
     sig_* = (sigma_rho [m], sigma_phi [rad]). Returns truth, dead-reckoned initial guess, edges."""
     rng = np.random.default_rng(seed)
@@ -670,13 +670,13 @@ ATE: dead reckoning 2.702 m -> optimized 0.319 m
 cost per iteration: [29824.3   171.3    81.6    81.6    81.6    81.6]
 ```
 
-13 个回环把位置误差的 RMS（ATE，第 10 节）从 2.70 m 降到 0.32 m。高斯-牛顿只需两次迭代：代价从 29824 降到 171，再到 81.6，然后保持不变。最终代价是一个有用的合理性检查。在最优点处，一个一致的图的代价应接近其自由度数，即残差分量数减去未知量数：$(199 + 13)\times 6 - 199\times 6 = 78$，而我们得到 81.6。若最终代价远高于此，说明噪声模型过于乐观，或者存在外点。
+13 个回环把位置误差的 RMS（ATE，第 10 节）从 2.70 m 降到 0.32 m。Gauss-Newton 只需两次迭代：代价从 29824 降到 171，再到 81.6，然后保持不变。最终代价是一个有用的合理性检查。在最优点处，一个一致的图的代价应接近其自由度数，即残差分量数减去未知量数：$(199 + 13)\times 6 - 199\times 6 = 78$，而我们得到 81.6。若最终代价远高于此，说明噪声模型过于乐观，或者存在外点。
 
-{% include blog_figure.liquid path="assets/img/blog/3d-vision/06-pose-graph.svg" localized="true" caption="地面机器人的位姿图优化（俯视图，两圈，200 个位姿，黑点是固定的第一个位姿）。(a) 航位推算（红色）偏离真值（粗灰线）；每条绿色线段是一条回环边，画在它所连接的两个当前估计之间：ATE 2.70 m。(b) 高斯-牛顿之后，13 个回环把轨迹拉回到真值上：ATE 0.32 m。(c) 每次迭代的代价：29824、171、81.6，然后不变；81.6 接近图的 78 个自由度。" %}
+{% include blog_figure.liquid path="assets/img/blog/3d-vision/06-pose-graph.svg" localized="true" caption="地面机器人的位姿图优化（俯视图，两圈，200 个位姿，黑点是固定的第一个位姿）。(a) 航位推算（红色）偏离真值（粗灰线）；每条绿色线段是一条回环边，画在它所连接的两个当前估计之间：ATE 2.70 m。(b) Gauss-Newton 之后，13 个回环把轨迹拉回到真值上：ATE 0.32 m。(c) 每次迭代的代价：29824、171、81.6，然后不变；81.6 接近图的 78 个自由度。" %}
 
 在下面的小部件中亲自试一试。它在 $SE(2)$（平面位姿 $x, y, \theta$，每个位姿 3 个自由度）上运行同样的算法，机器人走一个"8"字再加四分之一圈。
 
-{% include widget.liquid name="3d-vision-pose-graph" height="480" caption="位姿图 SLAM。紫色轨迹是航位推算：从固定的黑色位姿 0 开始，把带有滑块所设航向噪声和距离噪声的里程计串起来。点击“添加回环”连接重访的地点（绿色），再点击“优化”（或“高斯-牛顿一步”）运行高斯-牛顿，观察轨迹贴回真值、ATE 下降。依次点击两个位姿可以自己添加回环。“添加错误回环”在两个相距很远的地点之间插入一条错误的边（红色虚线）：用 L2 核时整张地图被扭弯；把核函数切换为 Cauchy 再优化一次。" %}
+{% include widget.liquid name="3d-vision-pose-graph" height="480" caption="位姿图 SLAM。紫色轨迹是航位推算：从固定的黑色位姿 0 开始，把带有滑块所设航向噪声和距离噪声的里程计串起来。点击“添加回环”连接重访的地点（绿色），再点击“优化”（或“高斯-牛顿一步”）运行 Gauss-Newton，观察轨迹贴回真值、ATE 下降。依次点击两个位姿可以自己添加回环。“添加错误回环”在两个相距很远的地点之间插入一条错误的边（红色虚线）：用 L2 核时整张地图被扭弯；把核函数切换为 Cauchy 再优化一次。" %}
 
 ### 5.5 三维中的无人机
 
@@ -702,7 +702,7 @@ print(f"ATE {ate_rmse(init3, truth3):.3f} m -> {ate_rmse(est3, truth3):.3f} m;"
 ATE 1.368 m -> 0.330 m; max rotation error 19.76 deg -> 5.47 deg
 ```
 
-{% include blog_figure.liquid path="assets/img/blog/3d-vision/06-pose-graph-3d.svg" localized="true" caption="$SE(3)$ 上的位姿图优化：无人机绕 16 m × 10 m 的椭圆一边升降一边飞三圈（240 个位姿；每 20 个位姿用红、绿、蓝画出相机坐标轴 $x, y, z$）。(a) 航位推算（红色）与真值（粗灰线），13 条回环边为绿色。(b) 7 次高斯-牛顿迭代之后。(c) 优化前后每个位姿的位置误差；竖线标出找到回环的位姿。ATE 从 1.37 m 降到 0.33 m，最大旋转误差从 19.8° 降到 5.5°。优化之后误差不再沿轨迹增长；剩下的是整张地图一个平滑、缓慢变化的偏移。" %}
+{% include blog_figure.liquid path="assets/img/blog/3d-vision/06-pose-graph-3d.svg" localized="true" caption="$SE(3)$ 上的位姿图优化：无人机绕 16 m × 10 m 的椭圆一边升降一边飞三圈（240 个位姿；每 20 个位姿用红、绿、蓝画出相机坐标轴 $x, y, z$）。(a) 航位推算（红色）与真值（粗灰线），13 条回环边为绿色。(b) 7 次 Gauss-Newton 迭代之后。(c) 优化前后每个位姿的位置误差；竖线标出找到回环的位姿。ATE 从 1.37 m 降到 0.33 m，最大旋转误差从 19.8° 降到 5.5°。优化之后误差不再沿轨迹增长；剩下的是整张地图一个平滑、缓慢变化的偏移。" %}
 
 图中 (c) 包含一个实用的教训。优化之前，误差随行驶距离增长；优化之后，误差不再增长，但也没有消失。剩下的大部分是整张地图的平滑错位，而不是局部变形。位姿 0 被固定，地图只通过本身带噪声的里程计和回环与它相连，所以整张地图可以整体略微平移和转动。回环让地图与自身一致，而不是与世界一致。第 10.1 节表明，最佳拟合对齐能去除这类误差的大部分（0.330 m → 0.074 m）。一般而言，回环在其两端附近对轨迹的约束最强：回环稀疏时，回环之间以及最后一个回环之后的那段轨迹，好坏只取决于里程计。
 
@@ -716,7 +716,7 @@ $$
 \rho(e^2) = c^2\log\big(1 + e^2/c^2\big), \qquad w(e^2) = \rho'(e^2) = \frac{1}{1 + e^2/c^2}.
 $$
 
-用高斯-牛顿最小化 $\sum\rho(e\_k^2)$，等价于**迭代重加权最小二乘（iteratively reweighted least squares，IRLS）**：每次迭代根据每条边当前的误差计算其权重 $w$，然后求解加权正规方程。马氏误差为 $c$ 的边得到一半权重；$10c$ 的边只得到约 1%。上面的代码在 `kernel="cauchy"` 时正是这样做的。
+用 Gauss-Newton 最小化 $\sum\rho(e\_k^2)$，等价于**迭代重加权最小二乘（iteratively reweighted least squares，IRLS）**：每次迭代根据每条边当前的误差计算其权重 $w$，然后求解加权正规方程。马氏误差为 $c$ 的边得到一半权重；$10c$ 的边只得到约 1%。上面的代码在 `kernel="cauchy"` 时正是这样做的。
 
 ```python
 i_bad, j_bad = 25, 170                    # two different places that "look the same"
@@ -740,7 +740,7 @@ one false loop closure, L2:     ATE 13.251 m
 one false loop closure, Cauchy: ATE 0.321 m, weight of the false edge 4.43e-05
 ```
 
-{% include blog_figure.liquid path="assets/img/blog/3d-vision/06-robust-kernel.svg" localized="true" caption="在上一张图的 13 个正确回环之外，再加入一个错误回环（红色虚线；叉号标出两个真实地点，相距 14.1 m）。(a) 普通最小二乘（L2）：优化器把地图折叠起来，让两个地点靠在一起；100 次高斯-牛顿迭代之后代价仍为 19372（没有错误边时为 81.6），ATE 为 13.3 m。(b) $c = 3$ 的 Cauchy 核，从同样的航位推算初值出发：ATE 0.32 m，就像错误边不存在一样。(c) 14 条回环边最终的 Cauchy 权重（对数坐标）：正确的边保持在约 0.5 到 1 之间；错误的边只有 $4.4\times10^{-5}$。" %}
+{% include blog_figure.liquid path="assets/img/blog/3d-vision/06-robust-kernel.svg" localized="true" caption="在上一张图的 13 个正确回环之外，再加入一个错误回环（红色虚线；叉号标出两个真实地点，相距 14.1 m）。(a) 普通最小二乘（L2）：优化器把地图折叠起来，让两个地点靠在一起；100 次 Gauss-Newton 迭代之后代价仍为 19372（没有错误边时为 81.6），ATE 为 13.3 m。(b) $c = 3$ 的 Cauchy 核，从同样的航位推算初值出发：ATE 0.32 m，就像错误边不存在一样。(c) 14 条回环边最终的 Cauchy 权重（对数坐标）：正确的边保持在约 0.5 到 1 之间；错误的边只有 $4.4\times10^{-5}$。" %}
 
 有两点需要注意。第一，鲁棒核让代价变得非凸，因此好的初值很重要；在这次运行中航位推算已经足够好，但一个与严重漂移的估计*相容*的错误回环可能会存活下来。第二，尺度 $c$ 必须以马氏误差为单位设定：这里 $c = 3$ 意味着"三倍标准差的误差得到一半权重"。更有原则的后端把外点剔除显式化：**可切换约束（switchable constraints）**（Sünderhauf 和 Protzel，IROS 2012）为每条回环边配一个开关变量，优化器可以付出一定代价把它关掉，于是与图中其余部分不一致的边会在优化过程中被关掉；**动态协方差缩放（dynamic covariance scaling）**（Agarwal 等，ICRA 2013）是它的闭式版本；**渐进非凸（graduated non-convexity）**依次求解一系列越来越鲁棒的问题。前端同样有帮助：对回环候选做几何验证（第 6.2 节），并要求若干次连续一致的检测。
 
@@ -842,7 +842,7 @@ Strasdat、Montiel 和 Davison 在 "Visual SLAM: why filter?"（Image and Vision
 
 ### 7.3 滑动窗口优化与边缘化
 
-完全平滑器会无限增长。**滑动窗口**估计器（OKVIS、VINS-Mono、DSO）只优化最近的关键帧及其路标。当一个关键帧离开窗口时，并不是简单地删掉它，因为那会丢掉它的信息；而是对它做**边缘化**：第 2.4 节的舒尔补把它的因子变成剩余变量上的一个高斯**先验因子（prior factor）**。边缘化会产生填充，所以系统会仔细选择边缘化什么（例如 VINS-Mono 对非关键帧直接丢弃其视觉测量而不是边缘化，其 IMU 测量则保留在预积分中，以保持先验稀疏）。先验在边缘化那一刻被线性化；为了保持一致，之后这个先验中剩余变量的雅可比必须在同一个点上求值：这就是**首次估计雅可比（first-estimate Jacobian，FEJ）**技术。
+完全平滑器会无限增长。**滑动窗口**估计器（OKVIS、VINS-Mono、DSO）只优化最近的关键帧及其路标。当一个关键帧离开窗口时，并不是简单地删掉它，因为那会丢掉它的信息；而是对它做**边缘化**：第 2.4 节的 Schur 补把它的因子变成剩余变量上的一个高斯**先验因子（prior factor）**。边缘化会产生填充，所以系统会仔细选择边缘化什么（例如 VINS-Mono 对非关键帧直接丢弃其视觉测量而不是边缘化，其 IMU 测量则保留在预积分中，以保持先验稀疏）。先验在边缘化那一刻被线性化；为了保持一致，之后这个先验中剩余变量的雅可比必须在同一个点上求值：这就是**首次估计雅可比（first-estimate Jacobian，FEJ）**技术。
 
 ### 7.4 MSCKF：没有路标的滤波器
 
@@ -1082,7 +1082,7 @@ VIO 中有三个主导性的实际问题：
 
 ### 9.3 学习式 SLAM
 
-**DROID-SLAM**（Teed 和 Deng，NeurIPS 2021）用一个由 RAFT 光流模型（第 03 篇第 8.3 节）衍生的循环网络取代手工前端。对帧图的每条边，它预测一个稠密光流校正和逐像素置信度。随后一个**可微稠密光束法平差层**用高斯-牛顿和对深度的舒尔补，求解最能解释该光流的位姿和逐像素逆深度——正是本文和第 05 篇的那套机制。网络通过 BA 层在合成数据（TartanAir）上端到端训练，作者报告相对早期方法误差大幅降低，灾难性失败也少得多。**DPVO**（Teed、Lipson 和 Deng，NeurIPS 2023）保留"循环更新 + BA"的设计，但跟踪稀疏图像块而不是稠密光流。作者报告其精度优于 DROID 的里程计，内存只用三分之一，平均速度约快三倍。
+**DROID-SLAM**（Teed 和 Deng，NeurIPS 2021）用一个由 RAFT 光流模型（第 03 篇第 8.3 节）衍生的循环网络取代手工前端。对帧图的每条边，它预测一个稠密光流校正和逐像素置信度。随后一个**可微稠密光束法平差层**用 Gauss-Newton 和对深度的 Schur 补，求解最能解释该光流的位姿和逐像素逆深度——正是本文和第 05 篇的那套机制。网络通过 BA 层在合成数据（TartanAir）上端到端训练，作者报告相对早期方法误差大幅降低，灾难性失败也少得多。**DPVO**（Teed、Lipson 和 Deng，NeurIPS 2023）保留"循环更新 + BA"的设计，但跟踪稀疏图像块而不是稠密光流。作者报告其精度优于 DROID 的里程计，内存只用三分之一，平均速度约快三倍。
 
 最新的系统建立在[第 09 篇]({{ '/blog/2026/3d-vision-09-3d-reconstruction-classic-to-feed-forward/' | relative_url }})的前馈三维基础模型之上。截至 2026 年 11 月，两个有代表性的已发表例子：
 
@@ -1142,7 +1142,7 @@ ATE without alignment 6.69 m;  Sim(3)-aligned 0.074 m (scale 2.713 = 1/0.37)
 
 ## 动手试试
 
-- 第 5.4 节的**位姿图小部件**。把航向噪声设为 3°，观察轨迹比 10 cm 距离噪声时漂移得多多少（第 1.2 节）。只在一个地方手动添加回环，看误差气泡留在哪里。然后插入两个错误回环，比较 L2 与 Cauchy。
+- 第 5.4 节的**位姿图小部件**。把航向噪声设为 3°，观察轨迹比 10 cm 距离噪声时漂移得多多少（第 1.2 节）。只在一个地方手动添加回环，看看剩下的误差集中在哪里。然后插入两个错误回环，比较 L2 与 Cauchy。
 - 按顺序运行代码片段：它们构成一个完整脚本，打印出各段代码输出中的数字。图形脚本 `bin/figures/3d-vision/vision3d_06.py` 逐字包含了这些代码，并且还会打印正文和图注中引用的其余少数数字（收敛域、位姿间隔、归一化得分）。
 - 主页上的[交互实验室]({{ '/' | relative_url }}#lab)从你操控的相机位姿渲染场景。SLAM 解决的是逆问题：仅凭图像恢复那个位姿。
 

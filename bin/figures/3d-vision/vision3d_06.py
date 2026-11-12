@@ -191,7 +191,7 @@ def so3_left_jacobian(w):
 
 
 def se3_exp(xi):
-    """xi = (rho, phi) -> 4x4 pose. The translation is V(phi) rho, not rho itself."""
+    """xi = (rho, phi) -> 4x4 pose. The translation is J_l(phi) rho, not rho itself."""
     T = np.eye(4)
     T[:3, :3] = so3_exp(xi[3:])
     T[:3, 3] = so3_left_jacobian(xi[3:]) @ xi[:3]
@@ -303,7 +303,7 @@ def camera_pose(p, forward, up=np.array([0.0, 0.0, 1.0])):
 
 def simulate_pose_graph(path, sig_odo, sig_loop, loop_radius=1.0, min_gap=20, stride=8, seed=0):
     """Ground-truth poses along `path` (k x 3 points), noisy odometry between consecutive poses,
-    and, every `stride` poses, a loop-closure edge to the nearest pose at least min_gap steps older
+    and, every `stride` poses, a loop-closure edge to the nearest pose more than min_gap steps older
     if it is closer than loop_radius.
     sig_* = (sigma_rho [m], sigma_phi [rad]). Returns truth, dead-reckoned initial guess, edges."""
     rng = np.random.default_rng(seed)
