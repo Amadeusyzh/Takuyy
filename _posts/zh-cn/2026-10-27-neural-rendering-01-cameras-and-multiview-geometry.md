@@ -18,6 +18,8 @@ related_posts: false
 
 因此，在优化任何辐射场（radiance field）之前，我们需要先理解相机如何把 3D 映射到 2D、两个视图之间如何相互约束，以及数百个视图如何被联合求解。本文就是本系列后续内容所需的多视图几何工具箱。
 
+> **一份浓缩导览。** 本文用一篇的篇幅，过一遍[三维视觉基础]({{ '/blog/2026/3d-vision-01-image-formation-and-camera-models/' | relative_url }})系列用十篇展开的内容。如果你刚接触多视图几何，建议先读那个系列，或者把它放在旁边对照阅读：[相机模型]({{ '/blog/2026/3d-vision-01-image-formation-and-camera-models/' | relative_url }})、[相机标定]({{ '/blog/2026/3d-vision-02-camera-calibration/' | relative_url }})、[两视图几何]({{ '/blog/2026/3d-vision-04-two-view-geometry/' | relative_url }})和[光束法平差与 SfM]({{ '/blog/2026/3d-vision-05-multi-view-geometry-and-bundle-adjustment/' | relative_url }})会把下面第 1-5 节的内容放慢讲透，配有推导、数值算例和交互组件。
+
 ## 前置知识
 
 - 线性代数：旋转、齐次坐标（homogeneous coordinates）、SVD 与最小二乘。
@@ -454,5 +456,7 @@ SfM 点是稀疏的，只出现在有显著特征的地方。**多视图立体�
 3. 给合成图像加入径向畸变（$k_1 = -0.2$），在不对其建模的情况下运行整条管线，观察重建出的点如何弯曲。然后把 $k_1$ 作为一个参数加入光束法平差。
 4. 把 `triangulate` 扩展到 $N$ 个视图，并计算每个点的三角化角；剔除小于 1.5° 的点。
 5. 对桌上一个物体拍摄 30–50 张照片并运行 COLMAP，在 GUI 中检查 `cameras.txt`、`images.txt` 以及重投影误差。
+
+**深入阅读。** 本文的每一节在[三维视觉基础]({{ '/blog/2026/3d-vision-01-image-formation-and-camera-models/' | relative_url }})系列中都有完整的一篇：针孔模型、镜头畸变以及 OpenCV、OpenGL、COLMAP 和 NeRF 的坐标约定见[成像与相机模型]({{ '/blog/2026/3d-vision-01-image-formation-and-camera-models/' | relative_url }})；估计 $K$ 和畸变见[相机标定]({{ '/blog/2026/3d-vision-02-camera-calibration/' | relative_url }})；COLMAP 在任何几何计算之前都要先做的特征匹配与 RANSAC 见[特征与匹配]({{ '/blog/2026/3d-vision-03-features-and-matching/' | relative_url }})；对极约束、八点法与五点法、位姿恢复和三角化见[两视图几何]({{ '/blog/2026/3d-vision-04-two-view-geometry/' | relative_url }})；PnP、带 Schur 补的光束法平差以及增量式与全局式 SfM 见[多视图几何与光束法平差]({{ '/blog/2026/3d-vision-05-multi-view-geometry-and-bundle-adjustment/' | relative_url }})；平面扫描、PatchMatch 与学习式 MVS 见[深度估计与多视图立体]({{ '/blog/2026/3d-vision-07-depth-estimation-and-multi-view-stereo/' | relative_url }})；DUSt3R、MASt3R 与 VGGT 见[三维重建]({{ '/blog/2026/3d-vision-09-3d-reconstruction-classic-to-feed-forward/' | relative_url }})。
 
 **下一篇：**有了标定好的相机，[第 2 篇]({{ '/blog/2026/neural-rendering-02-nerf/' | relative_url }})将借助可微体渲染把图像变成神经辐射场。

@@ -18,6 +18,8 @@ related_posts: false
 
 したがって、放射輝度場（radiance field）を最適化する前に、カメラが 3D を 2D にどのように写すのか、2 枚のビューが互いにどう拘束し合うのか、そして数百枚のビューをどのように同時に解くのかを理解しておく必要があります。本記事は、シリーズの残りで使う多視点幾何のツールキットです。
 
+> **駆け足のまとめです。** 本記事は、[3D ビジョンの基礎]({{ '/blog/2026/3d-vision-01-image-formation-and-camera-models/' | relative_url }})シリーズが 10 回かけて積み上げる内容を 1 回で概観します。多視点幾何が初めての方は、先にそのシリーズを読むか、並べて読み進めてください。[カメラモデル]({{ '/blog/2026/3d-vision-01-image-formation-and-camera-models/' | relative_url }})、[キャリブレーション]({{ '/blog/2026/3d-vision-02-camera-calibration/' | relative_url }})、[2 視点幾何]({{ '/blog/2026/3d-vision-04-two-view-geometry/' | relative_url }})、[バンドル調整と SfM]({{ '/blog/2026/3d-vision-05-multi-view-geometry-and-bundle-adjustment/' | relative_url }}) の各回が、以下の第 1-5 節の内容を導出、数値例、インタラクティブなウィジェットとともにじっくり扱います。
+
 ## 前提知識
 
 - 線形代数：回転、同次座標（homogeneous coordinates）、SVD、最小二乗法。
@@ -454,5 +456,7 @@ SfM の点は疎で、特徴的な模様がある場所にしか存在しませ�
 3. 合成画像に放射方向の歪み（$k_1 = -0.2$）を加え、それをモデル化せずにパイプラインを実行して、再構成された点がどのように曲がるかを観察してください。その後、$k_1$ をバンドル調整のパラメータとして追加してください。
 4. `triangulate` を $N$ ビューに拡張し、点ごとに三角測量角を計算してください。1.5° 未満の点は棄却します。
 5. テーブル上の物体を撮影した 30–50 枚の写真で COLMAP を実行し、GUI で `cameras.txt`、`images.txt`、再投影誤差を確認してください。
+
+**さらに深く。** 本記事の各節には、[3D ビジョンの基礎]({{ '/blog/2026/3d-vision-01-image-formation-and-camera-models/' | relative_url }})シリーズにそれぞれ完全な 1 回があります。ピンホールモデル、レンズ歪み、OpenCV・OpenGL・COLMAP・NeRF の座標系は[画像形成とカメラモデル]({{ '/blog/2026/3d-vision-01-image-formation-and-camera-models/' | relative_url }})、$K$ と歪みの推定は[カメラキャリブレーション]({{ '/blog/2026/3d-vision-02-camera-calibration/' | relative_url }})、COLMAP が幾何計算の前に行う特徴マッチングと RANSAC は[特徴とマッチング]({{ '/blog/2026/3d-vision-03-features-and-matching/' | relative_url }})、エピポーラ拘束、8 点法と 5 点法、姿勢の復元、三角測量は[2 視点幾何]({{ '/blog/2026/3d-vision-04-two-view-geometry/' | relative_url }})、PnP、Schur 補行列を使うバンドル調整、インクリメンタル SfM とグローバル SfM は[多視点幾何とバンドル調整]({{ '/blog/2026/3d-vision-05-multi-view-geometry-and-bundle-adjustment/' | relative_url }})、平面掃引、PatchMatch、学習型 MVS は[奥行き推定とマルチビューステレオ]({{ '/blog/2026/3d-vision-07-depth-estimation-and-multi-view-stereo/' | relative_url }})、DUSt3R、MASt3R、VGGT は[3D 再構成]({{ '/blog/2026/3d-vision-09-3d-reconstruction-classic-to-feed-forward/' | relative_url }})で扱います。
 
 **次回：**キャリブレーション済みのカメラが手に入ったので、[第 2 回]({{ '/blog/2026/neural-rendering-02-nerf/' | relative_url }})では微分可能なボリュームレンダリングによって画像をニューラル放射輝度場に変えます。
