@@ -812,7 +812,7 @@ row-wise argmax of S: [0 2 2 1]   argmax of P (3 = dustbin): [0 1 2 3]
 
 先检测后描述在检测器不响应的地方会失败：白墙、均匀的地板、重复的建筑立面。**无检测器**（detector-free）匹配器跳过检测器。**LoFTR**（Sun 等，CVPR 2021）在 1/8 和 1/2 分辨率上提取特征图，用交替的自注意力和交叉注意力变换两幅图像的粗特征图，用双 softmax（或最优传输）匹配所有粗单元，再在细特征图的小窗口内把每个粗匹配细化到亚像素精度。由于注意力赋予每个单元全局感受野，LoFTR 能在仅靠描述子会产生歧义的弱纹理区域找到匹配。
 
-**稠密**（dense）匹配器更进一步，为每个像素估计一个变形（一个匹配和一个置信度）。**RoMa**（Edstedt 等，CVPR 2024）把冻结的 DINOv2 基础模型特征用于粗略而鲁棒的匹配，把专门的卷积网络特征用于精确细化，并把粗匹配视为对锚点位置的分类，这比回归更能处理多峰歧义。其后继 **RoMa v2**（arXiv 2511.15706，2025 年 11 月；作者所在大学的论文记录将其列为 ECCV 2026 发表论文）着重于速度、内存和精选的训练数据组合。稠密匹配器是当今处理困难图像对最鲁棒的选择，代价也比稀疏匹配器高得多。
+**稠密**（dense）匹配器更进一步，为每个像素估计一个变形（一个匹配和一个置信度）。**RoMa**（Edstedt 等，CVPR 2024）把冻结的 DINOv2 基础模型特征用于粗略而鲁棒的匹配，把专门的卷积网络特征用于精确细化，并把粗匹配视为对锚点位置的分类，这比回归更能处理多峰歧义。其后继 **RoMa v2**（arXiv 2511.15706，2025 年 11 月；ECCV 2026）着重于速度、内存和精选的训练数据组合。稠密匹配器是当今处理困难图像对最鲁棒的选择，代价也比稀疏匹配器高得多。
 
 两条相关路线（截至 2026 年 11 月）：**MASt3R**（Leroy 等，ECCV 2024）为一对图像预测稠密的三维点图，并在这个以三维为依据的空间中匹配，把匹配直接与第 9 篇的前馈重建模型联系起来；**MatchAnything**（He 等，arXiv 预印本 2501.07556，2025 年 1 月）在合成的跨模态图像对（例如可见光与热红外，或医学模态）上预训练无检测器匹配器。
 
@@ -962,7 +962,7 @@ ORB   759 /  864 keypoints, 336 ratio-test matches, 316 MAGSAC++ inliers, corner
 | 论文 | 会议/期刊 | 年份 | 链接 | 意义 |
 | --- | --- | --- | --- | --- |
 | Random sample consensus (Fischler, Bolles) | Communications of the ACM | 1981 | [DOI](https://doi.org/10.1145/358669.358692) | RANSAC：拟合最小样本，统计一致集 |
-| An iterative image registration technique with an application to stereo vision (Lucas, Kanade) | IJCAI | 1981 | — | Lucas-Kanade 方法：在图像窗口上做 Gauss-Newton |
+| An iterative image registration technique with an application to stereo vision (Lucas, Kanade) | IJCAI | 1981 | [PDF](https://www.ijcai.org/Proceedings/81-2/Papers/017.pdf) | Lucas-Kanade 方法：在图像窗口上做 Gauss-Newton |
 | Determining optical flow (Horn, Schunck) | Artificial Intelligence | 1981 | [DOI](https://doi.org/10.1016/0004-3702(81)90024-2) | 带平滑先验的全局变分光流 |
 | A combined corner and edge detector (Harris, Stephens) | Alvey Vision Conference | 1988 | [DOI](https://doi.org/10.5244/C.2.23) | 结构张量与 Harris 响应 |
 | Good features to track (Shi, Tomasi) | CVPR | 1994 | [DOI](https://doi.org/10.1109/CVPR.1994.323794) | 由跟踪推导出的最小特征值准则 |
@@ -987,7 +987,7 @@ ORB   759 /  864 keypoints, 336 ratio-test matches, 316 MAGSAC++ inliers, corner
 | RoMa: robust dense feature matching (Edstedt et al.) | CVPR | 2024 | [arXiv](https://arxiv.org/abs/2305.15404) | 使用基础模型特征的稠密匹配 |
 | XFeat: accelerated features for lightweight image matching (Potje et al.) | CVPR | 2024 | [arXiv](https://arxiv.org/abs/2404.19174) | 在 CPU 上实时运行的学习式特征 |
 | SEA-RAFT: simple, efficient, accurate RAFT for optical flow (Wang et al.) | ECCV | 2024 | [arXiv](https://arxiv.org/abs/2405.14793) | 更快、更简单的 RAFT |
-| RoMa v2: harder better faster denser feature matching (Edstedt et al.) | ECCV（据作者所在大学的记录） | 2026 | [arXiv](https://arxiv.org/abs/2511.15706) | 精选训练数据、更快的稠密匹配 |
+| RoMa v2: harder better faster denser feature matching (Edstedt et al.) | ECCV | 2026 | [arXiv](https://arxiv.org/abs/2511.15706) | 精选训练数据、更快的稠密匹配 |
 
 ## 学习资源
 

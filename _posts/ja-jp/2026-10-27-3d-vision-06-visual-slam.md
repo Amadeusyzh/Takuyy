@@ -1150,15 +1150,15 @@ ATE without alignment 6.69 m;  Sim(3)-aligned 0.074 m (scale 2.713 = 1/0.37)
 
 | 論文 | 会議・論文誌 | 年 | リンク | 意義 |
 | --- | --- | --- | --- | --- |
-| Video Google: a text retrieval approach to object matching in videos (Sivic, Zisserman) | ICCV | 2003 | — | tf-idf と転置ファイルを用いた Bag of Visual Words |
+| Video Google: a text retrieval approach to object matching in videos (Sivic, Zisserman) | ICCV | 2003 | [DOI](https://doi.org/10.1109/ICCV.2003.1238663) | tf-idf と転置ファイルを用いた Bag of Visual Words |
 | MonoSLAM: real-time single camera SLAM (Davison, Reid, Molton, Stasse) | TPAMI | 2007 | [DOI](https://doi.org/10.1109/TPAMI.2007.1049) | 初のリアルタイム単眼 SLAM、EKF |
 | Parallel tracking and mapping for small AR workspaces (Klein, Murray) | ISMAR | 2007 | [DOI](https://doi.org/10.1109/ISMAR.2007.4538852) | 追跡と地図作成を並列スレッドに；キーフレーム BA |
 | A multi-state constraint Kalman filter for vision-aided inertial navigation (Mourikis, Roumeliotis) | ICRA | 2007 | [DOI](https://doi.org/10.1109/ROBOT.2007.364024) | MSCKF：零空間射影、ランドマークのないフィルタ |
 | g2o: a general framework for graph optimization (Kümmerle et al.) | ICRA | 2011 | [DOI](https://doi.org/10.1109/ICRA.2011.5979949) | 標準的なオープンソースの姿勢グラフ・BA ソルバ |
 | Visual-inertial-aided navigation for high-dynamic motion in built environments without initial conditions (Lupton, Sukkarieh) | IEEE TRO | 2012 | [DOI](https://doi.org/10.1109/TRO.2011.2170332) | IMU 事前積分 |
 | Bags of binary words for fast place recognition in image sequences (Gálvez-López, Tardós) | IEEE TRO | 2012 | [DOI](https://doi.org/10.1109/TRO.2012.2197158) | DBoW2、ORB-SLAM と VINS-Mono のループ検出器 |
-| iSAM2: incremental smoothing and mapping using the Bayes tree (Kaess et al.) | IJRR | 2012 | — | 逐次的な因子グラフ最適化 |
-| Visual SLAM: why filter? (Strasdat, Montiel, Davison) | Image and Vision Computing | 2012 | — | 計算量あたりではキーフレーム最適化がフィルタに勝る |
+| iSAM2: incremental smoothing and mapping using the Bayes tree (Kaess et al.) | IJRR | 2012 | [DOI](https://doi.org/10.1177/0278364911430419) | 逐次的な因子グラフ最適化 |
+| Visual SLAM: why filter? (Strasdat, Montiel, Davison) | Image and Vision Computing | 2012 | [DOI](https://doi.org/10.1016/j.imavis.2012.02.009) | 計算量あたりではキーフレーム最適化がフィルタに勝る |
 | Switchable constraints for robust pose graph SLAM (Sünderhauf, Protzel) | IROS | 2012 | [DOI](https://doi.org/10.1109/IROS.2012.6385590) | 誤ったループ閉じ込みに対するロバストなバックエンド |
 | A benchmark for the evaluation of RGB-D SLAM systems (Sturm et al.) | IROS | 2012 | [DOI](https://doi.org/10.1109/IROS.2012.6385773) | TUM RGB-D；ATE と RPE |
 | LSD-SLAM: large-scale direct monocular SLAM (Engel, Schöps, Cremers) | ECCV | 2014 | [DOI](https://doi.org/10.1007/978-3-319-10605-2_54) | $\mathrm{Sim}(3)$ を用いた準密な直接法 SLAM |

@@ -812,7 +812,7 @@ row-wise argmax of S: [0 2 2 1]   argmax of P (3 = dustbin): [0 1 2 3]
 
 検出してから記述する方式は、検出器が反応しない場所で失敗します。白い壁、一様な床、繰り返しの多い建物の外壁などです。**検出器を使わない**（detector-free）マッチャーは検出器を省きます。**LoFTR**（Sun ら、CVPR 2021）は 1/8 と 1/2 の解像度で特徴マップを取り出し、両画像の粗い特徴マップを自己アテンションと交差アテンションを交互に使って変換し、すべての粗いセルを双方向 softmax（または最適輸送）でマッチさせ、各粗マッチを細かい特徴マップの小さな窓の中でサブピクセル精度まで精密化します。アテンションによって各セルが大域的な受容野を持つので、LoFTR は記述子だけでは曖昧になる弱テクスチャ領域でもマッチを見つけます。
 
-**密な**（dense）マッチャーはさらに進んで、すべての画素についてワープ（マッチと確信度）を推定します。**RoMa**（Edstedt ら、CVPR 2024）は、粗くロバストなマッチには凍結した DINOv2 基盤モデルの特徴を、精密な精緻化には専用の畳み込みネットワークの特徴を組み合わせ、粗マッチをアンカー位置上の分類として扱います。これは回帰よりも多峰的な曖昧さをうまく扱えます。後継の **RoMa v2**（arXiv 2511.15706、2025 年 11 月。著者の大学の論文記録では ECCV 2026 掲載とされています）は、速度、メモリ、厳選した学習データの構成に重点を置いています。密なマッチャーは今日、難しい画像ペアに対して最もロバストな選択肢ですが、疎なマッチャーよりはるかにコストがかかります。
+**密な**（dense）マッチャーはさらに進んで、すべての画素についてワープ（マッチと確信度）を推定します。**RoMa**（Edstedt ら、CVPR 2024）は、粗くロバストなマッチには凍結した DINOv2 基盤モデルの特徴を、精密な精緻化には専用の畳み込みネットワークの特徴を組み合わせ、粗マッチをアンカー位置上の分類として扱います。これは回帰よりも多峰的な曖昧さをうまく扱えます。後継の **RoMa v2**（arXiv 2511.15706、2025 年 11 月。ECCV 2026）は、速度、メモリ、厳選した学習データの構成に重点を置いています。密なマッチャーは今日、難しい画像ペアに対して最もロバストな選択肢ですが、疎なマッチャーよりはるかにコストがかかります。
 
 関連する 2 つの流れ（2026 年 11 月時点）：**MASt3R**（Leroy ら、ECCV 2024）は画像ペアに対して密な 3 次元ポイントマップを予測し、その 3 次元に根ざした空間でマッチングを行います。これはマッチングを第 9 回のフィードフォワード再構成モデルと直接結びつけます。**MatchAnything**（He ら、arXiv プレプリント 2501.07556、2025 年 1 月）は、合成したクロスモーダルな画像ペア（たとえば可視光と熱赤外、あるいは医用画像のモダリティ）で検出器を使わないマッチャーを事前学習します。
 
@@ -962,7 +962,7 @@ ORB   759 /  864 keypoints, 336 ratio-test matches, 316 MAGSAC++ inliers, corner
 | 論文 | 会議・論文誌 | 年 | リンク | 意義 |
 | --- | --- | --- | --- | --- |
 | Random sample consensus (Fischler, Bolles) | Communications of the ACM | 1981 | [DOI](https://doi.org/10.1145/358669.358692) | RANSAC：最小サンプルに当てはめ、コンセンサスを数える |
-| An iterative image registration technique with an application to stereo vision (Lucas, Kanade) | IJCAI | 1981 | — | Lucas-Kanade 法：画像窓上の Gauss-Newton |
+| An iterative image registration technique with an application to stereo vision (Lucas, Kanade) | IJCAI | 1981 | [PDF](https://www.ijcai.org/Proceedings/81-2/Papers/017.pdf) | Lucas-Kanade 法：画像窓上の Gauss-Newton |
 | Determining optical flow (Horn, Schunck) | Artificial Intelligence | 1981 | [DOI](https://doi.org/10.1016/0004-3702(81)90024-2) | 滑らかさの事前分布を持つ大域的な変分オプティカルフロー |
 | A combined corner and edge detector (Harris, Stephens) | Alvey Vision Conference | 1988 | [DOI](https://doi.org/10.5244/C.2.23) | 構造テンソルと Harris 応答 |
 | Good features to track (Shi, Tomasi) | CVPR | 1994 | [DOI](https://doi.org/10.1109/CVPR.1994.323794) | 追跡から導かれた最小固有値の基準 |
@@ -987,7 +987,7 @@ ORB   759 /  864 keypoints, 336 ratio-test matches, 316 MAGSAC++ inliers, corner
 | RoMa: robust dense feature matching (Edstedt et al.) | CVPR | 2024 | [arXiv](https://arxiv.org/abs/2305.15404) | 基盤モデルの特徴を使う密なマッチング |
 | XFeat: accelerated features for lightweight image matching (Potje et al.) | CVPR | 2024 | [arXiv](https://arxiv.org/abs/2404.19174) | CPU 上でリアルタイムに動く学習型特徴 |
 | SEA-RAFT: simple, efficient, accurate RAFT for optical flow (Wang et al.) | ECCV | 2024 | [arXiv](https://arxiv.org/abs/2405.14793) | より速く単純な RAFT |
-| RoMa v2: harder better faster denser feature matching (Edstedt et al.) | ECCV（著者の大学の記録による） | 2026 | [arXiv](https://arxiv.org/abs/2511.15706) | 厳選した学習データによる、より速い密なマッチング |
+| RoMa v2: harder better faster denser feature matching (Edstedt et al.) | ECCV | 2026 | [arXiv](https://arxiv.org/abs/2511.15706) | 厳選した学習データによる、より速い密なマッチング |
 
 ## 学習リソース
 

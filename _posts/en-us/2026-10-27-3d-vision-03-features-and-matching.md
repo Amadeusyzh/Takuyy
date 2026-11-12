@@ -812,7 +812,7 @@ The toy example shows the two things that row-wise argmax cannot do. $A_1$ sligh
 
 Detect-then-describe fails where no detector fires: white walls, uniform floors, repetitive façades. **Detector-free** matchers skip the detector. **LoFTR** (Sun et al., CVPR 2021) extracts feature maps at 1/8 and 1/2 resolution, transforms the coarse maps of both images with interleaved self- and cross-attention, matches all coarse cells with a dual softmax (or optimal transport), and refines each coarse match to sub-pixel precision in a small window of the fine map. Because attention gives every cell a global receptive field, LoFTR finds matches in low-texture regions where descriptors alone are ambiguous.
 
-**Dense** matchers go further and estimate a warp (a match and a certainty) for every pixel. **RoMa** (Edstedt et al., CVPR 2024) combines frozen DINOv2 foundation-model features for the coarse, robust match with specialized ConvNet features for precise refinement, and treats the coarse match as classification over anchor positions, which handles multi-modal ambiguity better than regression. Its successor **RoMa v2** (arXiv 2511.15706, November 2025; listed in the authors' university record as published at ECCV 2026) focuses on speed, memory and a curated training mix. Dense matchers are the most robust option for hard pairs today, at a much higher cost than sparse ones.
+**Dense** matchers go further and estimate a warp (a match and a certainty) for every pixel. **RoMa** (Edstedt et al., CVPR 2024) combines frozen DINOv2 foundation-model features for the coarse, robust match with specialized ConvNet features for precise refinement, and treats the coarse match as classification over anchor positions, which handles multi-modal ambiguity better than regression. Its successor **RoMa v2** (arXiv 2511.15706, November 2025; ECCV 2026) focuses on speed, memory and a curated training mix. Dense matchers are the most robust option for hard pairs today, at a much higher cost than sparse ones.
 
 Two related lines, as of November 2026: **MASt3R** (Leroy et al., ECCV 2024) predicts dense 3D point maps for an image pair and matches in that 3D-grounded space, linking matching directly to the feed-forward reconstruction models of post 9; and **MatchAnything** (He et al., arXiv preprint 2501.07556, January 2025) pre-trains detector-free matchers on synthetic cross-modal pairs (for example visible and thermal, or medical modalities).
 
@@ -962,7 +962,7 @@ ORB   759 /  864 keypoints, 336 ratio-test matches, 316 MAGSAC++ inliers, corner
 | Paper | Venue | Year | Link | Why it matters |
 | --- | --- | --- | --- | --- |
 | Random sample consensus (Fischler, Bolles) | Communications of the ACM | 1981 | [DOI](https://doi.org/10.1145/358669.358692) | RANSAC: fit minimal samples, count the consensus |
-| An iterative image registration technique with an application to stereo vision (Lucas, Kanade) | IJCAI | 1981 | — | The Lucas-Kanade method: Gauss-Newton on image windows |
+| An iterative image registration technique with an application to stereo vision (Lucas, Kanade) | IJCAI | 1981 | [PDF](https://www.ijcai.org/Proceedings/81-2/Papers/017.pdf) | The Lucas-Kanade method: Gauss-Newton on image windows |
 | Determining optical flow (Horn, Schunck) | Artificial Intelligence | 1981 | [DOI](https://doi.org/10.1016/0004-3702(81)90024-2) | Global variational optical flow with a smoothness prior |
 | A combined corner and edge detector (Harris, Stephens) | Alvey Vision Conference | 1988 | [DOI](https://doi.org/10.5244/C.2.23) | The structure tensor and the Harris response |
 | Good features to track (Shi, Tomasi) | CVPR | 1994 | [DOI](https://doi.org/10.1109/CVPR.1994.323794) | The minimum-eigenvalue criterion, derived from tracking |
@@ -987,7 +987,7 @@ ORB   759 /  864 keypoints, 336 ratio-test matches, 316 MAGSAC++ inliers, corner
 | RoMa: robust dense feature matching (Edstedt et al.) | CVPR | 2024 | [arXiv](https://arxiv.org/abs/2305.15404) | Dense matching with foundation-model features |
 | XFeat: accelerated features for lightweight image matching (Potje et al.) | CVPR | 2024 | [arXiv](https://arxiv.org/abs/2404.19174) | Real-time learned features on a CPU |
 | SEA-RAFT: simple, efficient, accurate RAFT for optical flow (Wang et al.) | ECCV | 2024 | [arXiv](https://arxiv.org/abs/2405.14793) | Faster, simpler RAFT |
-| RoMa v2: harder better faster denser feature matching (Edstedt et al.) | ECCV (per the authors' university record) | 2026 | [arXiv](https://arxiv.org/abs/2511.15706) | Faster dense matching with a curated training mix |
+| RoMa v2: harder better faster denser feature matching (Edstedt et al.) | ECCV | 2026 | [arXiv](https://arxiv.org/abs/2511.15706) | Faster dense matching with a curated training mix |
 
 ## Learning resources
 

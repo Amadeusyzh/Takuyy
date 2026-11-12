@@ -1585,6 +1585,12 @@ mjx-container.mjx-wide {
   max-width: 100%;
   padding: 0.15rem 0;
 }
+// MathJax keeps an invisible MathML copy of each formula for screen readers. The browser lays that copy out
+// with its own MathML fonts, so it can be a few pixels wider than the visible formula and, at the end of a
+// line on a phone, widen the page. It is clipped to nothing anyway, so limit it to the formula's width.
+mjx-container > mjx-assistive-mml {
+  max-width: 100% !important;
+}
 .blog-fig {
   margin: 1.6rem auto;
   max-width: var(--fig-w, 100%);

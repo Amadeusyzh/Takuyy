@@ -1150,15 +1150,15 @@ The scale of the simulated monocular result is recovered to within 0.4% (2.713 a
 
 | Paper | Venue | Year | Link | Why it matters |
 | --- | --- | --- | --- | --- |
-| Video Google: a text retrieval approach to object matching in videos (Sivic, Zisserman) | ICCV | 2003 | — | Bag of visual words with tf-idf and inverted files |
+| Video Google: a text retrieval approach to object matching in videos (Sivic, Zisserman) | ICCV | 2003 | [DOI](https://doi.org/10.1109/ICCV.2003.1238663) | Bag of visual words with tf-idf and inverted files |
 | MonoSLAM: real-time single camera SLAM (Davison, Reid, Molton, Stasse) | TPAMI | 2007 | [DOI](https://doi.org/10.1109/TPAMI.2007.1049) | First real-time monocular SLAM, an EKF |
 | Parallel tracking and mapping for small AR workspaces (Klein, Murray) | ISMAR | 2007 | [DOI](https://doi.org/10.1109/ISMAR.2007.4538852) | Tracking and mapping in parallel threads; keyframe BA |
 | A multi-state constraint Kalman filter for vision-aided inertial navigation (Mourikis, Roumeliotis) | ICRA | 2007 | [DOI](https://doi.org/10.1109/ROBOT.2007.364024) | MSCKF: null-space projection, a filter without landmarks |
 | g2o: a general framework for graph optimization (Kümmerle et al.) | ICRA | 2011 | [DOI](https://doi.org/10.1109/ICRA.2011.5979949) | The standard open-source pose-graph and BA solver |
 | Visual-inertial-aided navigation for high-dynamic motion in built environments without initial conditions (Lupton, Sukkarieh) | IEEE TRO | 2012 | [DOI](https://doi.org/10.1109/TRO.2011.2170332) | IMU preintegration |
 | Bags of binary words for fast place recognition in image sequences (Gálvez-López, Tardós) | IEEE TRO | 2012 | [DOI](https://doi.org/10.1109/TRO.2012.2197158) | DBoW2, the loop detector of ORB-SLAM and VINS-Mono |
-| iSAM2: incremental smoothing and mapping using the Bayes tree (Kaess et al.) | IJRR | 2012 | — | Incremental factor-graph optimization |
-| Visual SLAM: why filter? (Strasdat, Montiel, Davison) | Image and Vision Computing | 2012 | — | Keyframe optimization beats filtering per unit of compute |
+| iSAM2: incremental smoothing and mapping using the Bayes tree (Kaess et al.) | IJRR | 2012 | [DOI](https://doi.org/10.1177/0278364911430419) | Incremental factor-graph optimization |
+| Visual SLAM: why filter? (Strasdat, Montiel, Davison) | Image and Vision Computing | 2012 | [DOI](https://doi.org/10.1016/j.imavis.2012.02.009) | Keyframe optimization beats filtering per unit of compute |
 | Switchable constraints for robust pose graph SLAM (Sünderhauf, Protzel) | IROS | 2012 | [DOI](https://doi.org/10.1109/IROS.2012.6385590) | Robust back end against false loop closures |
 | A benchmark for the evaluation of RGB-D SLAM systems (Sturm et al.) | IROS | 2012 | [DOI](https://doi.org/10.1109/IROS.2012.6385773) | TUM RGB-D; ATE and RPE |
 | LSD-SLAM: large-scale direct monocular SLAM (Engel, Schöps, Cremers) | ECCV | 2014 | [DOI](https://doi.org/10.1007/978-3-319-10605-2_54) | Semi-dense direct SLAM with $\mathrm{Sim}(3)$ |

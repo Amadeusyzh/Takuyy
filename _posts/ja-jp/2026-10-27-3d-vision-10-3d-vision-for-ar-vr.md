@@ -771,7 +771,7 @@ $$
 | --- | --- | --- | --- | --- |
 | A survey of augmented reality (Azuma) | Presence | 1997 | [DOI](https://doi.org/10.1162/pres.1997.6.4.355) | AR を定義し、レジストレーションを中心問題と位置づけた |
 | Registration error analysis for augmented reality (Holloway) | Presence | 1997 | [DOI](https://doi.org/10.1162/pres.1997.6.4.413) | 光学シースルーシステムのエンドツーエンドの誤差バジェット。遅延が支配的 |
-| Single point active alignment method (SPAAM) for optical see-through HMD calibration for AR (Tuceryan, Navab) | ISAR | 2000 | — | ユーザー参加型のディスプレイ較正の古典 |
+| Single point active alignment method (SPAAM) for optical see-through HMD calibration for AR (Tuceryan, Navab) | ISAR | 2000 | [DOI](https://doi.org/10.1109/ISAR.2000.880938) | ユーザー参加型のディスプレイ較正の古典 |
 | General theory of remote gaze estimation using the pupil center and corneal reflections (Guestrin, Eizenman) | IEEE TBME | 2006 | [DOI](https://doi.org/10.1109/TBME.2005.863952) | PCCR アイトラッキングの背後にある 3D モデル |
 | A multi-state constraint Kalman filter for vision-aided inertial navigation (Mourikis, Roumeliotis) | ICRA | 2007 | [DOI](https://doi.org/10.1109/ROBOT.2007.364024) | モバイル機器の VIO で広く使われるフィルタ設計 MSCKF |
 | 1€ filter: a simple speed-based low-pass filter for noisy input in interactive systems (Casiez, Roussel, Vogel) | CHI | 2012 | [DOI](https://doi.org/10.1145/2207676.2208639) | 手やポインタの入力に使われる適応フィルタ |

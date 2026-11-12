@@ -1150,15 +1150,15 @@ ATE without alignment 6.69 m;  Sim(3)-aligned 0.074 m (scale 2.713 = 1/0.37)
 
 | 论文 | 会议/期刊 | 年份 | 链接 | 意义 |
 | --- | --- | --- | --- | --- |
-| Video Google: a text retrieval approach to object matching in videos (Sivic, Zisserman) | ICCV | 2003 | — | 带 tf-idf 和倒排文件的视觉词袋 |
+| Video Google: a text retrieval approach to object matching in videos (Sivic, Zisserman) | ICCV | 2003 | [DOI](https://doi.org/10.1109/ICCV.2003.1238663) | 带 tf-idf 和倒排文件的视觉词袋 |
 | MonoSLAM: real-time single camera SLAM (Davison, Reid, Molton, Stasse) | TPAMI | 2007 | [DOI](https://doi.org/10.1109/TPAMI.2007.1049) | 第一个实时单目 SLAM，基于 EKF |
 | Parallel tracking and mapping for small AR workspaces (Klein, Murray) | ISMAR | 2007 | [DOI](https://doi.org/10.1109/ISMAR.2007.4538852) | 跟踪与建图并行；关键帧 BA |
 | A multi-state constraint Kalman filter for vision-aided inertial navigation (Mourikis, Roumeliotis) | ICRA | 2007 | [DOI](https://doi.org/10.1109/ROBOT.2007.364024) | MSCKF：零空间投影，没有路标的滤波器 |
 | g2o: a general framework for graph optimization (Kümmerle et al.) | ICRA | 2011 | [DOI](https://doi.org/10.1109/ICRA.2011.5979949) | 标准的开源位姿图与 BA 求解器 |
 | Visual-inertial-aided navigation for high-dynamic motion in built environments without initial conditions (Lupton, Sukkarieh) | IEEE TRO | 2012 | [DOI](https://doi.org/10.1109/TRO.2011.2170332) | IMU 预积分 |
 | Bags of binary words for fast place recognition in image sequences (Gálvez-López, Tardós) | IEEE TRO | 2012 | [DOI](https://doi.org/10.1109/TRO.2012.2197158) | DBoW2，ORB-SLAM 和 VINS-Mono 的回环检测器 |
-| iSAM2: incremental smoothing and mapping using the Bayes tree (Kaess et al.) | IJRR | 2012 | — | 增量式因子图优化 |
-| Visual SLAM: why filter? (Strasdat, Montiel, Davison) | Image and Vision Computing | 2012 | — | 单位计算量下关键帧优化胜过滤波 |
+| iSAM2: incremental smoothing and mapping using the Bayes tree (Kaess et al.) | IJRR | 2012 | [DOI](https://doi.org/10.1177/0278364911430419) | 增量式因子图优化 |
+| Visual SLAM: why filter? (Strasdat, Montiel, Davison) | Image and Vision Computing | 2012 | [DOI](https://doi.org/10.1016/j.imavis.2012.02.009) | 单位计算量下关键帧优化胜过滤波 |
 | Switchable constraints for robust pose graph SLAM (Sünderhauf, Protzel) | IROS | 2012 | [DOI](https://doi.org/10.1109/IROS.2012.6385590) | 对抗错误回环的鲁棒后端 |
 | A benchmark for the evaluation of RGB-D SLAM systems (Sturm et al.) | IROS | 2012 | [DOI](https://doi.org/10.1109/IROS.2012.6385773) | TUM RGB-D；ATE 和 RPE |
 | LSD-SLAM: large-scale direct monocular SLAM (Engel, Schöps, Cremers) | ECCV | 2014 | [DOI](https://doi.org/10.1007/978-3-319-10605-2_54) | 使用 $\mathrm{Sim}(3)$ 的半稠密直接法 SLAM |

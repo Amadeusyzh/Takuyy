@@ -1286,18 +1286,18 @@ left-right check rejects 8.7% of pixels, 84% of the occluded ones; bad pixels am
 | 论文 | 会议/期刊 | 年份 | 链接 | 意义 |
 | --- | --- | --- | --- | --- |
 | A computer algorithm for reconstructing a scene from two projections (Longuet-Higgins) | Nature | 1981 | [DOI](https://doi.org/10.1038/293133a0) | 本质矩阵与线性八点算法 |
-| Non-parametric local transforms for computing visual correspondence (Zabih, Woodfill) | ECCV | 1994 | — | 鲁棒匹配代价 census 变换 |
+| Non-parametric local transforms for computing visual correspondence (Zabih, Woodfill) | ECCV | 1994 | [DOI](https://doi.org/10.1007/BFb0028345) | 鲁棒匹配代价 census 变换 |
 | In defense of the eight-point algorithm (Hartley) | TPAMI | 1997 | [DOI](https://doi.org/10.1109/34.601246) | 坐标归一化使线性算法变得精确 |
 | Triangulation (Hartley, Sturm) | CVIU | 1997 | [DOI](https://doi.org/10.1006/cviu.1997.0547) | 通过 6 次多项式实现最优两视图三角化 |
-| The problem of degeneracy in structure and motion recovery from uncalibrated image sequences (Torr, Fitzgibbon, Zisserman) | IJCV | 1999 | — | 纯旋转与平面场景及其检测 |
-| Theory and practice of projective rectification (Hartley) | IJCV | 1999 | — | 仅由 $F$ 进行校正 |
-| Computing rectifying homographies for stereo vision (Loop, Zhang) | CVPR | 1999 | — | 畸变最小的校正 |
+| The problem of degeneracy in structure and motion recovery from uncalibrated image sequences (Torr, Fitzgibbon, Zisserman) | IJCV | 1999 | [DOI](https://doi.org/10.1023/A:1008140928553) | 纯旋转与平面场景及其检测 |
+| Theory and practice of projective rectification (Hartley) | IJCV | 1999 | [DOI](https://doi.org/10.1023/A:1008115206617) | 仅由 $F$ 进行校正 |
+| Computing rectifying homographies for stereo vision (Loop, Zhang) | CVPR | 1999 | [DOI](https://doi.org/10.1109/CVPR.1999.786928) | 畸变最小的校正 |
 | A taxonomy and evaluation of dense two-frame stereo correspondence algorithms (Scharstein, Szeliski) | IJCV | 2002 | [DOI](https://doi.org/10.1023/A:1014573219977) | 代价、聚合、优化、细化；Middlebury 基准 |
 | An efficient solution to the five-point relative pose problem (Nistér) | TPAMI | 2004 | [DOI](https://doi.org/10.1109/TPAMI.2004.17) | RANSAC 中使用的标定最小解 |
-| Two-view geometry estimation unaffected by a dominant plane (Chum, Werner, Matas) | CVPR | 2005 | — | DEGENSAC |
-| Recent developments on direct relative orientation (Stewénius, Engels, Nistér) | ISPRS J. Photogrammetry and Remote Sensing | 2006 | — | 基于 Gröbner 基的五点求解器 |
+| Two-view geometry estimation unaffected by a dominant plane (Chum, Werner, Matas) | CVPR | 2005 | [DOI](https://doi.org/10.1109/CVPR.2005.354) | DEGENSAC |
+| Recent developments on direct relative orientation (Stewénius, Engels, Nistér) | ISPRS J. Photogrammetry and Remote Sensing | 2006 | [DOI](https://doi.org/10.1016/j.isprsjprs.2006.03.005) | 基于 Gröbner 基的五点求解器 |
 | Stereo processing by semiglobal matching and mutual information (Hirschmüller) | TPAMI | 2008 | [DOI](https://doi.org/10.1109/TPAMI.2007.1166) | SGM |
-| Triangulation made easy (Lindstrom) | CVPR | 2010 | — | 快速迭代的最优三角化 |
+| Triangulation made easy (Lindstrom) | CVPR | 2010 | [DOI](https://doi.org/10.1109/CVPR.2010.5539785) | 快速迭代的最优三角化 |
 | ORB-SLAM: a versatile and accurate monocular SLAM system (Mur-Artal, Montiel, Tardós) | IEEE T-RO | 2015 | [arXiv](https://arxiv.org/abs/1502.00956) | 地图初始化时在单应与基础矩阵之间选择 |
 | End-to-end learning of geometry and context for deep stereo regression (Kendall et al.) | ICCV | 2017 | [arXiv](https://arxiv.org/abs/1703.04309) | 学习的代价体，3D 卷积与 soft argmin |
 | RAFT-Stereo: multilevel recurrent field transforms for stereo matching (Lipson, Teed, Deng) | 3DV | 2021 | [arXiv](https://arxiv.org/abs/2109.07547) | 用于立体匹配的循环细化 |

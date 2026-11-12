@@ -771,7 +771,7 @@ $$
 | --- | --- | --- | --- | --- |
 | A survey of augmented reality (Azuma) | Presence | 1997 | [DOI](https://doi.org/10.1162/pres.1997.6.4.355) | 定义了 AR，并把配准列为其核心问题 |
 | Registration error analysis for augmented reality (Holloway) | Presence | 1997 | [DOI](https://doi.org/10.1162/pres.1997.6.4.413) | 光学透视系统的端到端误差预算；延迟占主导 |
-| Single point active alignment method (SPAAM) for optical see-through HMD calibration for AR (Tuceryan, Navab) | ISAR | 2000 | — | 经典的用户参与式显示标定 |
+| Single point active alignment method (SPAAM) for optical see-through HMD calibration for AR (Tuceryan, Navab) | ISAR | 2000 | [DOI](https://doi.org/10.1109/ISAR.2000.880938) | 经典的用户参与式显示标定 |
 | General theory of remote gaze estimation using the pupil center and corneal reflections (Guestrin, Eizenman) | IEEE TBME | 2006 | [DOI](https://doi.org/10.1109/TBME.2005.863952) | PCCR 眼动追踪背后的三维模型 |
 | A multi-state constraint Kalman filter for vision-aided inertial navigation (Mourikis, Roumeliotis) | ICRA | 2007 | [DOI](https://doi.org/10.1109/ROBOT.2007.364024) | MSCKF，移动设备 VIO 中广泛使用的滤波框架 |
 | 1€ filter: a simple speed-based low-pass filter for noisy input in interactive systems (Casiez, Roussel, Vogel) | CHI | 2012 | [DOI](https://doi.org/10.1145/2207676.2208639) | 用于手部和指针输入的自适应滤波器 |

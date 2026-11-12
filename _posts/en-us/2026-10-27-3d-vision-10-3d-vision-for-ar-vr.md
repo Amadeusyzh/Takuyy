@@ -771,7 +771,7 @@ A few engineering rules summarize the post:
 | --- | --- | --- | --- | --- |
 | A survey of augmented reality (Azuma) | Presence | 1997 | [DOI](https://doi.org/10.1162/pres.1997.6.4.355) | Defines AR and frames registration as its central problem |
 | Registration error analysis for augmented reality (Holloway) | Presence | 1997 | [DOI](https://doi.org/10.1162/pres.1997.6.4.413) | End-to-end error budget of an optical see-through system; latency dominates |
-| Single point active alignment method (SPAAM) for optical see-through HMD calibration for AR (Tuceryan, Navab) | ISAR | 2000 | — | The classic user-in-the-loop display calibration |
+| Single point active alignment method (SPAAM) for optical see-through HMD calibration for AR (Tuceryan, Navab) | ISAR | 2000 | [DOI](https://doi.org/10.1109/ISAR.2000.880938) | The classic user-in-the-loop display calibration |
 | General theory of remote gaze estimation using the pupil center and corneal reflections (Guestrin, Eizenman) | IEEE TBME | 2006 | [DOI](https://doi.org/10.1109/TBME.2005.863952) | The 3D model behind PCCR eye tracking |
 | A multi-state constraint Kalman filter for vision-aided inertial navigation (Mourikis, Roumeliotis) | ICRA | 2007 | [DOI](https://doi.org/10.1109/ROBOT.2007.364024) | The MSCKF, a filter design widely used for VIO on mobile devices |
 | 1€ filter: a simple speed-based low-pass filter for noisy input in interactive systems (Casiez, Roussel, Vogel) | CHI | 2012 | [DOI](https://doi.org/10.1145/2207676.2208639) | The adaptive filter used for hand and pointer input |

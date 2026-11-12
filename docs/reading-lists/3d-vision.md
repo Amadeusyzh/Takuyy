@@ -72,7 +72,7 @@
 | 论文 | 会议/期刊 | 年份 | 链接 | 说明 |
 | --- | --- | --- | --- | --- |
 | Random sample consensus: a paradigm for model fitting with applications to image analysis and automated cartography (Fischler, Bolles) | Communications of the ACM | 1981 | https://doi.org/10.1145/358669.358692 | RANSAC：最小样本拟合 + 一致集计数 |
-| An iterative image registration technique with an application to stereo vision (Lucas, Kanade) | IJCAI | 1981 | — | Lucas-Kanade：窗口内的 Gauss-Newton，光流与跟踪的基础 |
+| An iterative image registration technique with an application to stereo vision (Lucas, Kanade) | IJCAI | 1981 | https://www.ijcai.org/Proceedings/81-2/Papers/017.pdf | Lucas-Kanade：窗口内的 Gauss-Newton，光流与跟踪的基础 |
 | Determining optical flow (Horn, Schunck) | Artificial Intelligence | 1981 | https://doi.org/10.1016/0004-3702(81)90024-2 | 全局变分光流，加入平滑项 |
 | A combined corner and edge detector (Harris, Stephens) | Alvey Vision Conference | 1988 | https://doi.org/10.5244/C.2.23 | 结构张量与 Harris 响应 |
 | Good features to track (Shi, Tomasi) | CVPR | 1994 | https://doi.org/10.1109/CVPR.1994.323794 | 最小特征值准则，KLT 跟踪器 |
@@ -101,7 +101,7 @@
 | XFeat: accelerated features for lightweight image matching (Potje et al.) | CVPR | 2024 | https://arxiv.org/abs/2404.19174 | CPU 实时的轻量学习式特征 |
 | SEA-RAFT: simple, efficient, accurate RAFT for optical flow (Wang, Lipson, Deng) | ECCV | 2024 | https://arxiv.org/abs/2405.14793 | 更简单更快的 RAFT |
 | MatchAnything: universal cross-modality image matching with large-scale pre-training (He et al.) | arXiv 预印本（2025 年 1 月） | 2025 | https://arxiv.org/abs/2501.07556 | 合成跨模态数据预训练无检测器匹配器 |
-| RoMa v2: harder better faster denser feature matching (Edstedt et al.) | ECCV（据作者所在大学的论文记录） | 2026 | https://arxiv.org/abs/2511.15706 | 更快、更省内存的稠密匹配；arXiv 2025 年 11 月 |
+| RoMa v2: harder better faster denser feature matching (Edstedt et al.) | ECCV | 2026 | https://arxiv.org/abs/2511.15706 | 更快、更省内存的稠密匹配；arXiv 2025 年 11 月 |
 
 ### 评测
 
@@ -126,10 +126,10 @@
 | --- | --- | --- | --- | --- |
 | A computer algorithm for reconstructing a scene from two projections (Longuet-Higgins) | Nature | 1981 | https://doi.org/10.1038/293133a0 | 本质矩阵与线性八点算法的起点 |
 | In defense of the eight-point algorithm (Hartley) | TPAMI | 1997 | https://doi.org/10.1109/34.601246 | 坐标归一化使八点算法达到迭代方法的精度 |
-| The problem of degeneracy in structure and motion recovery from uncalibrated image sequences (Torr, Fitzgibbon, Zisserman) | IJCV 32(1) | 1999 | — | 纯旋转与平面场景两类退化及其检测 |
+| The problem of degeneracy in structure and motion recovery from uncalibrated image sequences (Torr, Fitzgibbon, Zisserman) | IJCV 32(1) | 1999 | https://doi.org/10.1023/A:1008140928553 | 纯旋转与平面场景两类退化及其检测 |
 | An efficient solution to the five-point relative pose problem (Nistér) | TPAMI | 2004 | https://doi.org/10.1109/TPAMI.2004.17 | 标定相机的五点最小解（10 次多项式），RANSAC 中的标准求解器 |
-| Two-view geometry estimation unaffected by a dominant plane (Chum, Werner, Matas) | CVPR | 2005 | — | DEGENSAC：检测七点样本中的单应退化 |
-| Recent developments on direct relative orientation (Stewénius, Engels, Nistér) | ISPRS J. Photogrammetry and Remote Sensing | 2006 | — | 用 Gröbner 基与特征值问题求解五点问题 |
+| Two-view geometry estimation unaffected by a dominant plane (Chum, Werner, Matas) | CVPR | 2005 | https://doi.org/10.1109/CVPR.2005.354 | DEGENSAC：检测七点样本中的单应退化 |
+| Recent developments on direct relative orientation (Stewénius, Engels, Nistér) | ISPRS J. Photogrammetry and Remote Sensing | 2006 | https://doi.org/10.1016/j.isprsjprs.2006.03.005 | 用 Gröbner 基与特征值问题求解五点问题 |
 | ORB-SLAM: a versatile and accurate monocular SLAM system (Mur-Artal, Montiel, Tardós) | IEEE T-RO | 2015 | https://arxiv.org/abs/1502.00956 | 初始化时并行拟合 H 与 F，按 R_H > 0.45 选择模型 |
 
 ### 三角化
@@ -137,15 +137,15 @@
 | 论文 | 会议/期刊 | 年份 | 链接 | 说明 |
 | --- | --- | --- | --- | --- |
 | Triangulation (Hartley, Sturm) | CVIU | 1997 | https://doi.org/10.1006/cviu.1997.0547 | 最优两视图三角化：沿极线束参数化，化为 6 次多项式；射影不变 |
-| Triangulation made easy (Lindstrom) | CVPR | 2010 | — | 不必求解 6 次多项式、更快的迭代式最优三角化 |
+| Triangulation made easy (Lindstrom) | CVPR | 2010 | https://doi.org/10.1109/CVPR.2010.5539785 | 不必求解 6 次多项式、更快的迭代式最优三角化 |
 
 ### 立体校正与稠密立体匹配
 
 | 论文 | 会议/期刊 | 年份 | 链接 | 说明 |
 | --- | --- | --- | --- | --- |
-| Non-parametric local transforms for computing visual correspondence (Zabih, Woodfill) | ECCV | 1994 | — | Census 变换与汉明距离代价，对单调亮度变化不变 |
-| Theory and practice of projective rectification (Hartley) | IJCV | 1999 | — | 仅由 F 求校正单应（OpenCV stereoRectifyUncalibrated） |
-| Computing rectifying homographies for stereo vision (Loop, Zhang) | CVPR | 1999 | — | 最小化射影畸变的校正单应 |
+| Non-parametric local transforms for computing visual correspondence (Zabih, Woodfill) | ECCV | 1994 | https://doi.org/10.1007/BFb0028345 | Census 变换与汉明距离代价，对单调亮度变化不变 |
+| Theory and practice of projective rectification (Hartley) | IJCV | 1999 | https://doi.org/10.1023/A:1008115206617 | 仅由 F 求校正单应（OpenCV stereoRectifyUncalibrated） |
+| Computing rectifying homographies for stereo vision (Loop, Zhang) | CVPR | 1999 | https://doi.org/10.1109/CVPR.1999.786928 | 最小化射影畸变的校正单应 |
 | A taxonomy and evaluation of dense two-frame stereo correspondence algorithms (Scharstein, Szeliski) | IJCV | 2002 | https://doi.org/10.1023/A:1014573219977 | 代价—聚合—优化—细化的分类框架与 Middlebury 基准 |
 | Stereo processing by semiglobal matching and mutual information (Hirschmüller) | TPAMI | 2008 | https://doi.org/10.1109/TPAMI.2007.1166 | SGM：多方向一维动态规划求和 |
 | End-to-end learning of geometry and context for deep stereo regression (Kendall et al.) | ICCV | 2017 | https://arxiv.org/abs/1703.04309 | GC-Net：学习特征构建代价体，3D 卷积 + soft argmin |
@@ -228,10 +228,10 @@
 
 | 论文 | 会议/期刊 | 年份 | 链接 | 说明 |
 | --- | --- | --- | --- | --- |
-| Estimating uncertain spatial relationships in robotics (Smith, Self, Cheeseman) | Autonomous Robot Vehicles（论文集） | 1990 | — | 不确定空间关系的随机地图，EKF-SLAM 的源头 |
-| Simultaneous localization and mapping: part I (Durrant-Whyte, Bailey) | IEEE Robotics & Automation Magazine | 2006 | — | SLAM 经典教程综述（两部分之一；SLAM 这一缩写出现于 20 世纪 90 年代中期） |
+| Estimating uncertain spatial relationships in robotics (Smith, Self, Cheeseman) | Autonomous Robot Vehicles（论文集） | 1990 | https://doi.org/10.1007/978-1-4613-8997-2_14 | 不确定空间关系的随机地图，EKF-SLAM 的源头 |
+| Simultaneous localization and mapping: part I (Durrant-Whyte, Bailey) | IEEE Robotics & Automation Magazine | 2006 | https://doi.org/10.1109/MRA.2006.1638022 | SLAM 经典教程综述（两部分之一；SLAM 这一缩写出现于 20 世纪 90 年代中期） |
 | g2o: a general framework for graph optimization (Kümmerle et al.) | ICRA | 2011 | https://doi.org/10.1109/ICRA.2011.5979949 | 通用图优化框架，位姿图与 BA 的标准开源求解器 |
-| iSAM2: incremental smoothing and mapping using the Bayes tree (Kaess et al.) | IJRR | 2012 | — | 贝叶斯树上的增量平滑，无需周期性批量重排序 |
+| iSAM2: incremental smoothing and mapping using the Bayes tree (Kaess et al.) | IJRR | 2012 | https://doi.org/10.1177/0278364911430419 | 贝叶斯树上的增量平滑，无需周期性批量重排序 |
 | Switchable constraints for robust pose graph SLAM (Sünderhauf, Protzel) | IROS | 2012 | https://doi.org/10.1109/IROS.2012.6385590 | 每条回环边带开关变量，抵抗错误回环 |
 | Past, present, and future of simultaneous localization and mapping (Cadena et al.) | IEEE TRO | 2016 | https://arxiv.org/abs/1606.05830 | 因子图时代的 SLAM 综述与立场论文 |
 | Factor graphs for robot perception (Dellaert, Kaess) | Foundations and Trends in Robotics | 2017 | https://doi.org/10.1561/2300000043 | 以因子图统一 SLAM、稀疏性与增量求解的专著 |
@@ -243,7 +243,7 @@
 | --- | --- | --- | --- | --- |
 | MonoSLAM: real-time single camera SLAM (Davison, Reid, Molton, Stasse) | TPAMI | 2007 | https://doi.org/10.1109/TPAMI.2007.1049 | 第一个实时单目 SLAM，EKF |
 | A multi-state constraint Kalman filter for vision-aided inertial navigation (Mourikis, Roumeliotis) | ICRA | 2007 | https://doi.org/10.1109/ROBOT.2007.364024 | MSCKF：左零空间投影消去特征，无路标的 VIO 滤波器 |
-| Visual SLAM: why filter? (Strasdat, Montiel, Davison) | Image and Vision Computing | 2012 | — | 单位计算量下关键帧 BA 胜过滤波 |
+| Visual SLAM: why filter? (Strasdat, Montiel, Davison) | Image and Vision Computing | 2012 | https://doi.org/10.1016/j.imavis.2012.02.009 | 单位计算量下关键帧 BA 胜过滤波 |
 
 ### 视觉里程计与完整系统
 
@@ -259,8 +259,8 @@
 
 | 论文 | 会议/期刊 | 年份 | 链接 | 说明 |
 | --- | --- | --- | --- | --- |
-| Video Google: a text retrieval approach to object matching in videos (Sivic, Zisserman) | ICCV | 2003 | — | 视觉词袋 + tf-idf + 倒排文件 |
-| Scalable recognition with a vocabulary tree (Nistér, Stewénius) | CVPR | 2006 | — | 层次 k-means 词汇树 |
+| Video Google: a text retrieval approach to object matching in videos (Sivic, Zisserman) | ICCV | 2003 | https://doi.org/10.1109/ICCV.2003.1238663 | 视觉词袋 + tf-idf + 倒排文件 |
+| Scalable recognition with a vocabulary tree (Nistér, Stewénius) | CVPR | 2006 | https://doi.org/10.1109/CVPR.2006.264 | 层次 k-means 词汇树 |
 | Bags of binary words for fast place recognition in image sequences (Gálvez-López, Tardós) | IEEE TRO | 2012 | https://doi.org/10.1109/TRO.2012.2197158 | DBoW2：二值描述子词袋，ORB-SLAM 与 VINS-Mono 的回环检测 |
 
 ### 视觉惯性里程计
@@ -324,7 +324,7 @@
 | Structured-light 3D surface imaging: a tutorial (Geng) | Advances in Optics and Photonics | 2011 | https://doi.org/10.1364/AOP.3.000128 | 结构光编码（格雷码、相移、伪随机）综述 |
 | KinectFusion: real-time dense surface mapping and tracking (Newcombe et al.) | ISMAR | 2011 | https://doi.org/10.1109/ISMAR.2011.6092378 | 实时 TSDF 融合 + 对模型的 ICP 跟踪 |
 | Real-time 3D reconstruction at scale using voxel hashing (Nießner et al.) | ACM TOG (SIGGRAPH Asia) | 2013 | https://doi.org/10.1145/2508363.2508374 | 体素哈希：只在表面附近分配 TSDF 块 |
-| Time-of-Flight Cameras: Principles, Methods and Applications (Hansard, Lee, Choi, Horaud) | Springer（书） | 2012 | — | ToF 相机的原理、误差来源与标定 |
+| Time-of-Flight Cameras: Principles, Methods and Applications (Hansard, Lee, Choi, Horaud) | Springer（书） | 2012 | https://doi.org/10.1007/978-1-4471-4658-2 | ToF 相机的原理、误差来源与标定 |
 
 ### 学习式立体与 MVS
 
@@ -495,7 +495,7 @@
 | --- | --- | --- | --- | --- |
 | A survey of augmented reality (Azuma) | Presence | 1997 | https://doi.org/10.1162/pres.1997.6.4.355 | AR 的经典定义；把配准（registration）列为核心问题 |
 | Registration error analysis for augmented reality (Holloway) | Presence | 1997 | https://doi.org/10.1162/pres.1997.6.4.413 | 光学透视系统的端到端误差预算；即使在中等头速下，系统延迟也是最大的单一误差来源 |
-| Single point active alignment method (SPAAM) for optical see-through HMD calibration for AR (Tuceryan, Navab) | ISAR | 2000 | — | 用户参与的光学透视显示标定（第 149–158 页） |
+| Single point active alignment method (SPAAM) for optical see-through HMD calibration for AR (Tuceryan, Navab) | ISAR | 2000 | https://doi.org/10.1109/ISAR.2000.880938 | 用户参与的光学透视显示标定（第 149–158 页） |
 | General theory of remote gaze estimation using the pupil center and corneal reflections (Guestrin, Eizenman) | IEEE TBME | 2006 | https://doi.org/10.1109/TBME.2005.863952 | 瞳孔-角膜反射（PCCR）眼动追踪的三维理论 |
 | A multi-state constraint Kalman filter for vision-aided inertial navigation (Mourikis, Roumeliotis) | ICRA | 2007 | https://doi.org/10.1109/ROBOT.2007.364024 | MSCKF：移动设备上常用的 VIO 滤波框架 |
 | 1€ filter: a simple speed-based low-pass filter for noisy input in interactive systems (Casiez, Roussel, Vogel) | CHI | 2012 | https://doi.org/10.1145/2207676.2208639 | 截止频率随速度增大的自适应低通；兼顾静止抖动与运动延迟 |
