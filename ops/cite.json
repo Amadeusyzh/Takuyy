@@ -1,6 +1,14 @@
 {
  "ref": "staging/wave-b",
- "meta": ["_posts/en-us/2026-10-27-3d-vision-*.md", "docs/reading-lists/3d-vision.md"],
- "links": ["_posts/zh-cn/2026-10-27-3d-vision-*.md", "_posts/ja-jp/2026-10-27-3d-vision-*.md",
-           "_posts/en-us/*world-models-04*.md", "docs/reading-lists/world-models.md"]
+ "meta": [
+  "_posts/en-us/2026-10-27-3d-vision-*.md",
+  "docs/reading-lists/3d-vision.md",
+  "../ops-src/ops/cite-candidates.md"
+ ],
+ "links": [
+  "_posts/zh-cn/2026-10-27-3d-vision-*.md",
+  "_posts/ja-jp/2026-10-27-3d-vision-*.md",
+  "_posts/en-us/*world-models-04*.md",
+  "docs/reading-lists/world-models.md"
+ ]
 }

@@ -47,7 +47,7 @@ def get(url, accept=None, data=None, tries=4, timeout=40, ctype=None):
                 pass
             if e.code in (429, 500, 502, 503, 504) and k < tries - 1:
                 ra = e.headers.get('Retry-After') if e.headers else None
-                time.sleep(min(60, int(ra)) if ra and ra.isdigit() else 4 * (k + 1) ** 2)
+                time.sleep(min(30, int(ra)) if ra and ra.isdigit() else 4 * (k + 1) ** 2)
                 continue
             log('HTTP', e.code, url)
             return e.code, url, body
@@ -221,134 +221,16 @@ dois = sorted({d for u in all_urls for d in [doi_of(u)] if d})
 arxivs = sorted({a for u in all_urls for a in [arxiv_of(u)] if a})
 print(f'unique urls {len(all_urls)}, dois {len(dois)}, arxiv ids {len(arxivs)}')
 
-# ---------------------------------------------------------------------------- Crossref / doi.org
-DOI = {}
-for d in dois:
-    st, _, body = get('https://api.crossref.org/works/' + urllib.parse.quote(d, safe='/'), accept='application/json')
-    rec = {'crossref': st}
-    if st == 200:
-        try:
-            m = json.loads(body)['message']
-            rec['title'] = (m.get('title') or [''])[0]
-            rec['container'] = (m.get('container-title') or [''])[0]
-            rec['event'] = (m.get('event') or {}).get('name', '')
-            dp = (m.get('published-print') or m.get('published-online') or m.get('issued') or {}).get('date-parts', [[None]])
-            rec['year'] = dp[0][0]
-            rec['type'] = m.get('type')
-        except Exception as e:  # noqa: BLE001
-            rec['err'] = str(e)
-    else:
-        st2, _, b2 = get('https://doi.org/api/handles/' + urllib.parse.quote(d, safe='/'), accept='application/json')
-        try:
-            rec['handle'] = json.loads(b2).get('responseCode') if st2 == 200 else st2
-        except Exception:  # noqa: BLE001
-            rec['handle'] = st2
-        if rec.get('handle') == 1:
-            st3, _, b3 = get('https://api.datacite.org/dois/' + urllib.parse.quote(d, safe='/'), accept='application/json')
-            if st3 == 200:
-                try:
-                    a = json.loads(b3)['data']['attributes']
-                    rec['title'] = (a.get('titles') or [{}])[0].get('title', '')
-                    rec['year'] = a.get('publicationYear')
-                    rec['container'] = (a.get('container') or {}).get('title', '') or a.get('publisher', '')
-                except Exception as e:  # noqa: BLE001
-                    rec['err'] = str(e)
-    DOI[d] = rec
-    time.sleep(0.3)
-print('crossref done')
-
-# ---------------------------------------------------------------------------- arXiv API
-ARX = {}
+# ---------------------------------------------------------------------------- network lookups (one thread per service)
+import threading
+DEADLINE = time.time() + float(os.environ.get('CITE_DEADLINE', '2400'))
+DOI, ARX, S2, LISTS, LIST_INDEX, HTTP, NOLINK, DBLP, OR = {}, {}, {}, {}, {}, {}, {}, {}, {}
 A = '{http://www.w3.org/2005/Atom}'
 AX = '{http://arxiv.org/schemas/atom}'
-for k in range(0, len(arxivs), 40):
-    chunk = arxivs[k:k + 40]
-    st, _, body = get('https://export.arxiv.org/api/query?max_results=100&id_list=' + ','.join(chunk))
-    if st == 200:
-        try:
-            root = ET.fromstring(body)
-            for e in root.findall(A + 'entry'):
-                eid = e.findtext(A + 'id') or ''
-                m = re.search(r'abs/(.+?)(v\d+)?$', eid)
-                if not m:
-                    continue
-                ARX[m.group(1)] = {
-                    'title': re.sub(r'\s+', ' ', e.findtext(A + 'title') or ''),
-                    'published': (e.findtext(A + 'published') or '')[:10],
-                    'journal_ref': e.findtext(AX + 'journal_ref') or '',
-                    'comment': re.sub(r'\s+', ' ', e.findtext(AX + 'comment') or '')[:200],
-                    'authors': [a.findtext(A + 'name') for a in e.findall(A + 'author')][:4],
-                }
-        except Exception as e:  # noqa: BLE001
-            log('arxiv parse', e)
-    time.sleep(3.5)
-for a in arxivs:
-    ARX.setdefault(a, {'missing': True})
-print('arxiv done', sum(1 for v in ARX.values() if 'missing' not in v), 'of', len(arxivs))
-
-# ---------------------------------------------------------------------------- Semantic Scholar batch
-S2 = {}
-ids = ['arXiv:' + a for a in arxivs] + ['DOI:' + d for d in dois]
-for k in range(0, len(ids), 400):
-    chunk = ids[k:k + 400]
-    st, _, body = get('https://api.semanticscholar.org/graph/v1/paper/batch?fields=title,venue,year,publicationVenue,journal,externalIds,publicationDate',
-                      data=json.dumps({'ids': chunk}).encode(), ctype='application/json', tries=6)
-    if st == 200:
-        try:
-            for i, p in zip(chunk, json.loads(body)):
-                if p:
-                    S2[i] = {'title': p.get('title'), 'venue': p.get('venue') or (p.get('publicationVenue') or {}).get('name', ''),
-                             'year': p.get('year'), 'journal': (p.get('journal') or {}).get('name', ''),
-                             'date': p.get('publicationDate'), 'doi': (p.get('externalIds') or {}).get('DOI')}
-        except Exception as e:  # noqa: BLE001
-            log('s2 parse', e)
-    time.sleep(3)
-print('s2 done', len(S2))
-
-# ---------------------------------------------------------------------------- venue listings (CVF, ECVA, NeurIPS)
-LISTS = {}
-for name, url in [('CVPR 2023', 'https://openaccess.thecvf.com/CVPR2023?day=all'),
-                  ('ICCV 2023', 'https://openaccess.thecvf.com/ICCV2023?day=all'),
-                  ('CVPR 2024', 'https://openaccess.thecvf.com/CVPR2024?day=all'),
-                  ('CVPR 2025', 'https://openaccess.thecvf.com/CVPR2025?day=all'),
-                  ('ICCV 2025', 'https://openaccess.thecvf.com/ICCV2025?day=all'),
-                  ('CVPR 2026', 'https://openaccess.thecvf.com/CVPR2026?day=all'),
-                  ('WACV 2025', 'https://openaccess.thecvf.com/WACV2025'),
-                  ('WACV 2026', 'https://openaccess.thecvf.com/WACV2026'),
-                  ('ECVA', 'https://www.ecva.net/papers.php'),
-                  ('NeurIPS 2023', 'https://papers.nips.cc/paper_files/paper/2023'),
-                  ('NeurIPS 2024', 'https://papers.nips.cc/paper_files/paper/2024'),
-                  ('NeurIPS 2025', 'https://papers.nips.cc/paper_files/paper/2025')]:
-    st, _, body = get(url, timeout=120)
-    if st != 200:
-        LISTS[name] = None
-        log('listing', name, st)
-        continue
-    txt = body.decode('utf-8', 'replace')
-    titles = set()
-    if name == 'ECVA':
-        # papers.php groups papers by year under headings "ECCV 2024 Papers" etc.
-        for part in re.split(r'(?=ECCV\s+20\d\d\s+Papers)', txt):
-            m = re.match(r'ECCV\s+(20\d\d)', part)
-            yr = m.group(1) if m else '?'
-            for t in re.findall(r'<dt class="ptitle">\s*<br>\s*<a[^>]*>([^<]+)</a>', part):
-                titles.add((norm(t), 'ECCV ' + yr))
-            for t in re.findall(r'class="ptitle"[^>]*>(?:\s*<br>)?\s*<a[^>]*>([^<]+)</a>', part):
-                titles.add((norm(t), 'ECCV ' + yr))
-        LISTS[name] = titles
-    else:
-        pat = r'<dt class="ptitle">\s*<br>\s*<a[^>]*>([^<]+)</a>' if 'thecvf' in url else r'<a title="paper title" href="[^"]*">([^<]+)</a>|<a href="/paper_files/paper/20\d\d/hash/[^"]*">([^<]+)</a>'
-        for m in re.finditer(pat, txt):
-            t = next(g for g in m.groups() if g)
-            titles.add((norm(t), name))
-        LISTS[name] = titles
-    log('listing', name, len(LISTS[name] or []))
-LIST_INDEX = {}
-for name, ts in LISTS.items():
-    for t, v in ts or []:
-        LIST_INDEX.setdefault(t, set()).add(v)
-print('listings:', {k: (len(v) if v is not None else None) for k, v in LISTS.items()})
-
+uniq_titles = sorted({r['title'] for r in ROWS if r['title'] and re.search(r'[A-Za-z]{3}', r['title'])})
+# DBLP only where no DOI link gives the venue; OpenReview only for recent or ICLR/NeurIPS-type rows
+dblp_titles = sorted({r['title'] for r in ROWS if r['title'] in uniq_titles and not any(doi_of(u) for u in r['urls'])})
+or_titles = sorted({r['title'] for r in ROWS if r['title'] in uniq_titles and (re.search(r'ICLR|NeurIPS|NIPS|ICML|TMLR|CoRL|preprint|arXiv|预印本|プレプリント', r['venue'], re.I) or (r['year'][:4].isdigit() and int(r['year'][:4]) >= 2022))})
 
 def listing_hits(title):
     n = norm(title)
@@ -365,83 +247,241 @@ def listing_hits(title):
     return sorted(out)
 
 
-# ---------------------------------------------------------------------------- DBLP and OpenReview by title
-uniq_titles = sorted({r['title'] for r in ROWS if r['title'] and re.search(r'[A-Za-z]{3}', r['title'])})
-DBLP, OR = {}, {}
-for t in uniq_titles:
-    q = re.sub(r'[^A-Za-z0-9 \-]', ' ', html.unescape(t))
-    q = re.sub(r'\s+', ' ', q).strip()
-    st, _, body = get('https://dblp.org/search/publ/api?format=json&h=10&q=' + urllib.parse.quote(q))
-    hits = []
-    if st == 200:
-        try:
-            for h in (json.loads(body)['result']['hits'].get('hit') or []):
-                inf = h['info']
-                hits.append({'title': inf.get('title', ''), 'venue': inf.get('venue', '') if isinstance(inf.get('venue'), str) else ' / '.join(inf.get('venue') or []),
-                             'year': inf.get('year'), 'type': inf.get('type'), 'doi': inf.get('doi'), 'ee': inf.get('ee'),
-                             'authors': [a.get('text') for a in ((inf.get('authors') or {}).get('author') or []) if isinstance(a, dict)][:4]
-                             if isinstance((inf.get('authors') or {}).get('author'), list) else [], 's': sim(t, inf.get('title', ''))})
-        except Exception as e:  # noqa: BLE001
-            log('dblp parse', t, e)
-    DBLP[t] = sorted(hits, key=lambda h: -h['s'])[:6]
-    time.sleep(1.2)
-print('dblp done')
-for t in uniq_titles:
-    st, _, body = get('https://api2.openreview.net/notes/search?term=' + urllib.parse.quote(t) + '&type=terms&content=all&source=forum&limit=6')
-    hits = []
-    if st == 200:
-        try:
-            for n in json.loads(body).get('notes', []):
-                c = n.get('content', {})
-                val = lambda k: (c.get(k) or {}).get('value') if isinstance(c.get(k), dict) else c.get(k)
-                hits.append({'title': val('title') or '', 'venue': val('venue') or '', 'venueid': val('venueid') or '', 's': sim(t, val('title') or '')})
-        except Exception as e:  # noqa: BLE001
-            log('openreview parse', t, e)
-    OR[t] = [h for h in sorted(hits, key=lambda h: -h['s']) if h['s'] >= 0.85][:3]
-    time.sleep(1.0)
-print('openreview done')
-NOLINK = {}
-for t in sorted({r['title'] for r in ROWS if not r['urls'] and len(norm(r['title'])) > 12}):
-    rec = {}
-    st, _, body = get('https://api.semanticscholar.org/graph/v1/paper/search/match?fields=title,venue,year,externalIds,publicationVenue&query=' + urllib.parse.quote(t), tries=5)
-    if st == 200:
-        try:
-            p = (json.loads(body).get('data') or [None])[0]
-            if p:
-                rec['s2'] = {'title': p.get('title'), 'venue': p.get('venue'), 'year': p.get('year'), 'ids': p.get('externalIds'), 's': sim(t, p.get('title'))}
-        except Exception as e:  # noqa: BLE001
-            log('s2 match', t, e)
-    time.sleep(2)
-    q = ' AND '.join('ti:' + w for w in re.findall(r'[A-Za-z0-9]{4,}', t)[:8])
-    st, _, body = get('https://export.arxiv.org/api/query?max_results=3&search_query=' + urllib.parse.quote(q))
-    if st == 200:
-        try:
-            root = ET.fromstring(body)
-            rec['arxiv'] = [{'id': (e.findtext(A + 'id') or '').split('/abs/')[-1], 'title': re.sub(r'\s+', ' ', e.findtext(A + 'title') or ''),
-                             'published': (e.findtext(A + 'published') or '')[:10], 'comment': re.sub(r'\s+', ' ', e.findtext(AX + 'comment') or '')[:160],
-                             's': sim(t, e.findtext(A + 'title') or '')} for e in root.findall(A + 'entry')]
-        except Exception as e:  # noqa: BLE001
-            log('arxiv search', t, e)
-    time.sleep(3.5)
-    NOLINK[t] = rec
-print('no-link lookups done', len(NOLINK))
 
-# ---------------------------------------------------------------------------- other URLs
-HTTP = {}
-for u in all_urls:
-    if doi_of(u) or arxiv_of(u):
-        continue
-    st, final, body = get(u, tries=2, timeout=40)
-    title = ''
-    if isinstance(st, int) and st < 400:
-        txt = body[:400000].decode('utf-8', 'replace')
-        m = re.search(r'<div id="papertitle">\s*([^<]+)', txt) or re.search(r'<meta name="citation_title" content="([^"]+)"', txt) \
-            or re.search(r'<title[^>]*>([\s\S]*?)</title>', txt, re.I)
-        title = re.sub(r'\s+', ' ', html.unescape(m.group(1))).strip()[:200] if m else ''
-    HTTP[u] = {'status': st, 'final': final if final != u else '', 'title': title}
-    time.sleep(0.4)
-print('http done', len(HTTP))
+def svc_crossref():
+    for d in dois:
+        if time.time() > DEADLINE:
+            log('deadline reached in svc_crossref'); break
+        st, _, body = get('https://api.crossref.org/works/' + urllib.parse.quote(d, safe='/'), accept='application/json')
+        rec = {'crossref': st}
+        if st == 200:
+            try:
+                m = json.loads(body)['message']
+                rec['title'] = (m.get('title') or [''])[0]
+                rec['container'] = (m.get('container-title') or [''])[0]
+                rec['event'] = (m.get('event') or {}).get('name', '')
+                dp = (m.get('published-print') or m.get('published-online') or m.get('issued') or {}).get('date-parts', [[None]])
+                rec['year'] = dp[0][0]
+                rec['type'] = m.get('type')
+            except Exception as e:  # noqa: BLE001
+                rec['err'] = str(e)
+        else:
+            st2, _, b2 = get('https://doi.org/api/handles/' + urllib.parse.quote(d, safe='/'), accept='application/json')
+            try:
+                rec['handle'] = json.loads(b2).get('responseCode') if st2 == 200 else st2
+            except Exception:  # noqa: BLE001
+                rec['handle'] = st2
+            if rec.get('handle') == 1:
+                st3, _, b3 = get('https://api.datacite.org/dois/' + urllib.parse.quote(d, safe='/'), accept='application/json')
+                if st3 == 200:
+                    try:
+                        a = json.loads(b3)['data']['attributes']
+                        rec['title'] = (a.get('titles') or [{}])[0].get('title', '')
+                        rec['year'] = a.get('publicationYear')
+                        rec['container'] = (a.get('container') or {}).get('title', '') or a.get('publisher', '')
+                    except Exception as e:  # noqa: BLE001
+                        rec['err'] = str(e)
+        DOI[d] = rec
+        time.sleep(0.3)
+    print('crossref done')
 
+
+def svc_arxiv():
+    for k in range(0, len(arxivs), 40):
+        if time.time() > DEADLINE:
+            log('deadline reached in svc_arxiv'); break
+        chunk = arxivs[k:k + 40]
+        st, _, body = get('https://export.arxiv.org/api/query?max_results=100&id_list=' + ','.join(chunk))
+        if st == 200:
+            try:
+                root = ET.fromstring(body)
+                for e in root.findall(A + 'entry'):
+                    eid = e.findtext(A + 'id') or ''
+                    m = re.search(r'abs/(.+?)(v\d+)?$', eid)
+                    if not m:
+                        continue
+                    ARX[m.group(1)] = {
+                        'title': re.sub(r'\s+', ' ', e.findtext(A + 'title') or ''),
+                        'published': (e.findtext(A + 'published') or '')[:10],
+                        'journal_ref': e.findtext(AX + 'journal_ref') or '',
+                        'comment': re.sub(r'\s+', ' ', e.findtext(AX + 'comment') or '')[:200],
+                        'authors': [a.findtext(A + 'name') for a in e.findall(A + 'author')][:4],
+                    }
+            except Exception as e:  # noqa: BLE001
+                log('arxiv parse', e)
+        time.sleep(3.5)
+    for a in arxivs:
+        ARX.setdefault(a, {'missing': True})
+    print('arxiv done', sum(1 for v in ARX.values() if 'missing' not in v), 'of', len(arxivs))
+
+
+def svc_s2():
+    ids = ['arXiv:' + a for a in arxivs] + ['DOI:' + d for d in dois]
+    for k in range(0, len(ids), 400):
+        if time.time() > DEADLINE:
+            log('deadline reached in svc_s2'); break
+        chunk = ids[k:k + 400]
+        st, _, body = get('https://api.semanticscholar.org/graph/v1/paper/batch?fields=title,venue,year,publicationVenue,journal,externalIds,publicationDate',
+                          data=json.dumps({'ids': chunk}).encode(), ctype='application/json', tries=6)
+        if st == 200:
+            try:
+                for i, p in zip(chunk, json.loads(body)):
+                    if p:
+                        S2[i] = {'title': p.get('title'), 'venue': p.get('venue') or (p.get('publicationVenue') or {}).get('name', ''),
+                                 'year': p.get('year'), 'journal': (p.get('journal') or {}).get('name', ''),
+                                 'date': p.get('publicationDate'), 'doi': (p.get('externalIds') or {}).get('DOI')}
+            except Exception as e:  # noqa: BLE001
+                log('s2 parse', e)
+        time.sleep(3)
+    print('s2 done', len(S2))
+
+
+def svc_listings():
+    for name, url in [('CVPR 2023', 'https://openaccess.thecvf.com/CVPR2023?day=all'),
+                      ('ICCV 2023', 'https://openaccess.thecvf.com/ICCV2023?day=all'),
+                      ('CVPR 2024', 'https://openaccess.thecvf.com/CVPR2024?day=all'),
+                      ('CVPR 2025', 'https://openaccess.thecvf.com/CVPR2025?day=all'),
+                      ('ICCV 2025', 'https://openaccess.thecvf.com/ICCV2025?day=all'),
+                      ('CVPR 2026', 'https://openaccess.thecvf.com/CVPR2026?day=all'),
+                      ('WACV 2025', 'https://openaccess.thecvf.com/WACV2025'),
+                      ('WACV 2026', 'https://openaccess.thecvf.com/WACV2026'),
+                      ('ECVA', 'https://www.ecva.net/papers.php'),
+                      ('NeurIPS 2023', 'https://papers.nips.cc/paper_files/paper/2023'),
+                      ('NeurIPS 2024', 'https://papers.nips.cc/paper_files/paper/2024'),
+                      ('NeurIPS 2025', 'https://papers.nips.cc/paper_files/paper/2025')]:
+        if time.time() > DEADLINE:
+            log('deadline reached in svc_listings'); break
+        st, _, body = get(url, timeout=120)
+        if st != 200:
+            LISTS[name] = None
+            log('listing', name, st)
+            continue
+        txt = body.decode('utf-8', 'replace')
+        titles = set()
+        if name == 'ECVA':
+            # papers.php groups papers by year under headings "ECCV 2024 Papers" etc.
+            for part in re.split(r'(?=ECCV\s+20\d\d\s+Papers)', txt):
+                m = re.match(r'ECCV\s+(20\d\d)', part)
+                yr = m.group(1) if m else '?'
+                for t in re.findall(r'<dt class="ptitle">\s*<br>\s*<a[^>]*>([^<]+)</a>', part):
+                    titles.add((norm(t), 'ECCV ' + yr))
+                for t in re.findall(r'class="ptitle"[^>]*>(?:\s*<br>)?\s*<a[^>]*>([^<]+)</a>', part):
+                    titles.add((norm(t), 'ECCV ' + yr))
+            LISTS[name] = titles
+        else:
+            pat = r'<dt class="ptitle">\s*<br>\s*<a[^>]*>([^<]+)</a>' if 'thecvf' in url else r'<a title="paper title" href="[^"]*">([^<]+)</a>|<a href="/paper_files/paper/20\d\d/hash/[^"]*">([^<]+)</a>'
+            for m in re.finditer(pat, txt):
+                t = next(g for g in m.groups() if g)
+                titles.add((norm(t), name))
+            LISTS[name] = titles
+        log('listing', name, len(LISTS[name] or []))
+    for name, ts in LISTS.items():
+        if time.time() > DEADLINE:
+            log('deadline reached in svc_listings'); break
+        for t, v in ts or []:
+            LIST_INDEX.setdefault(t, set()).add(v)
+    print('listings:', {k: (len(v) if v is not None else None) for k, v in LISTS.items()})
+
+
+
+def svc_dblp():
+    for t in dblp_titles:
+        if time.time() > DEADLINE:
+            log('deadline reached in svc_dblp'); break
+        q = re.sub(r'[^A-Za-z0-9 \-]', ' ', html.unescape(t))
+        q = re.sub(r'\s+', ' ', q).strip()
+        st, _, body = get('https://dblp.org/search/publ/api?format=json&h=10&q=' + urllib.parse.quote(q))
+        hits = []
+        if st == 200:
+            try:
+                for h in (json.loads(body)['result']['hits'].get('hit') or []):
+                    inf = h['info']
+                    hits.append({'title': inf.get('title', ''), 'venue': inf.get('venue', '') if isinstance(inf.get('venue'), str) else ' / '.join(inf.get('venue') or []),
+                                 'year': inf.get('year'), 'type': inf.get('type'), 'doi': inf.get('doi'), 'ee': inf.get('ee'),
+                                 'authors': [a.get('text') for a in ((inf.get('authors') or {}).get('author') or []) if isinstance(a, dict)][:4]
+                                 if isinstance((inf.get('authors') or {}).get('author'), list) else [], 's': sim(t, inf.get('title', ''))})
+            except Exception as e:  # noqa: BLE001
+                log('dblp parse', t, e)
+        DBLP[t] = sorted(hits, key=lambda h: -h['s'])[:6]
+        time.sleep(1.2)
+    print('dblp done')
+
+def svc_openreview():
+    for t in or_titles:
+        if time.time() > DEADLINE:
+            log('deadline reached in svc_openreview'); break
+        st, _, body = get('https://api2.openreview.net/notes/search?term=' + urllib.parse.quote(t) + '&type=terms&content=all&source=forum&limit=6')
+        hits = []
+        if st == 200:
+            try:
+                for n in json.loads(body).get('notes', []):
+                    c = n.get('content', {})
+                    val = lambda k: (c.get(k) or {}).get('value') if isinstance(c.get(k), dict) else c.get(k)
+                    hits.append({'title': val('title') or '', 'venue': val('venue') or '', 'venueid': val('venueid') or '', 's': sim(t, val('title') or '')})
+            except Exception as e:  # noqa: BLE001
+                log('openreview parse', t, e)
+        OR[t] = [h for h in sorted(hits, key=lambda h: -h['s']) if h['s'] >= 0.85][:3]
+        time.sleep(1.0)
+    print('openreview done')
+
+def svc_nolink():
+    for t in sorted({r['title'] for r in ROWS if not r['urls'] and len(norm(r['title'])) > 12}):
+        if time.time() > DEADLINE:
+            log('deadline reached in svc_nolink'); break
+        rec = {}
+        st, _, body = get('https://api.semanticscholar.org/graph/v1/paper/search/match?fields=title,venue,year,externalIds,publicationVenue&query=' + urllib.parse.quote(t), tries=5)
+        if st == 200:
+            try:
+                p = (json.loads(body).get('data') or [None])[0]
+                if p:
+                    rec['s2'] = {'title': p.get('title'), 'venue': p.get('venue'), 'year': p.get('year'), 'ids': p.get('externalIds'), 's': sim(t, p.get('title'))}
+            except Exception as e:  # noqa: BLE001
+                log('s2 match', t, e)
+        time.sleep(2)
+        q = ' AND '.join('ti:' + w for w in re.findall(r'[A-Za-z0-9]{4,}', t)[:8])
+        st, _, body = get('https://export.arxiv.org/api/query?max_results=3&search_query=' + urllib.parse.quote(q))
+        if st == 200:
+            try:
+                root = ET.fromstring(body)
+                rec['arxiv'] = [{'id': (e.findtext(A + 'id') or '').split('/abs/')[-1], 'title': re.sub(r'\s+', ' ', e.findtext(A + 'title') or ''),
+                                 'published': (e.findtext(A + 'published') or '')[:10], 'comment': re.sub(r'\s+', ' ', e.findtext(AX + 'comment') or '')[:160],
+                                 's': sim(t, e.findtext(A + 'title') or '')} for e in root.findall(A + 'entry')]
+            except Exception as e:  # noqa: BLE001
+                log('arxiv search', t, e)
+        time.sleep(3.5)
+        NOLINK[t] = rec
+    print('no-link lookups done', len(NOLINK))
+
+
+def svc_http():
+    for u in all_urls:
+        if time.time() > DEADLINE:
+            log('deadline reached in svc_http'); break
+        if doi_of(u) or arxiv_of(u):
+            continue
+        st, final, body = get(u, tries=2, timeout=40)
+        title = ''
+        if isinstance(st, int) and st < 400:
+            txt = body[:400000].decode('utf-8', 'replace')
+            m = re.search(r'<div id="papertitle">\s*([^<]+)', txt) or re.search(r'<meta name="citation_title" content="([^"]+)"', txt) \
+                or re.search(r'<title[^>]*>([\s\S]*?)</title>', txt, re.I)
+            title = re.sub(r'\s+', ' ', html.unescape(m.group(1))).strip()[:200] if m else ''
+        HTTP[u] = {'status': st, 'final': final if final != u else '', 'title': title}
+        time.sleep(0.4)
+    print('http done', len(HTTP))
+
+
+
+THREADS = [threading.Thread(target=f, name=f.__name__, daemon=True) for f in (svc_crossref, svc_arxiv, svc_s2, svc_listings, svc_dblp, svc_openreview, svc_nolink, svc_http)]
+for th in THREADS:
+    th.start()
+for th in THREADS:
+    th.join(max(1.0, DEADLINE + 180 - time.time()))
+print('still running at the deadline:', [th.name for th in THREADS if th.is_alive()])
+LIST_INDEX.clear()
+for name, ts in list(LISTS.items()):
+    for t, v in ts or []:
+        LIST_INDEX.setdefault(t, set()).add(v)
 
 # ---------------------------------------------------------------------------- assemble
 def link_info(u):
@@ -453,7 +493,7 @@ def link_info(u):
                 'year': r.get('year'), 's2': S2.get('DOI:' + d)}
     if a:
         r = ARX.get(a, {})
-        return {'kind': 'arxiv', 'id': a, 'ok': 'missing' not in r, 'title': r.get('title', ''), 'year': (r.get('published') or '')[:4],
+        return {'kind': 'arxiv', 'id': a, 'ok': bool(r) and 'missing' not in r, 'title': r.get('title', ''), 'year': (r.get('published') or '')[:4],
                 'venue': r.get('journal_ref', ''), 'comment': r.get('comment', ''), 's2': S2.get('arXiv:' + a)}
     r = HTTP.get(u, {})
     st = r.get('status')
