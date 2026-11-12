@@ -42,7 +42,7 @@ whose translation is the camera centre $\mathbf C$ and whose rotation columns ar
 
 ### 1.1 Two problems that need each other
 
-If you had a map (3D points with descriptors), localizing a new image would be PnP with RANSAC (post 05). If you had the camera poses, building the map would be triangulation (post 04). SLAM has neither: the map is built from poses that are estimated from the map. Solving the two together is what the "S" in SLAM means. The classical probabilistic formulation goes back to Smith, Self and Cheeseman's work on uncertain spatial relationships (1990) and was named and surveyed by Durrant-Whyte and Bailey (2006). Cadena et al. (2016) give the modern view used in this post.
+If you had a map (3D points with descriptors), localizing a new image would be PnP with RANSAC (post 05). If you had the camera poses, building the map would be triangulation (post 04). SLAM has neither: the map is built from poses that are estimated from the map. Solving the two together is what the "S" in SLAM means. The classical probabilistic formulation goes back to Smith, Self and Cheeseman's work on uncertain spatial relationships (1990); the acronym SLAM itself dates from the mid-1990s, and Durrant-Whyte and Bailey's two-part tutorial (2006) surveys the classical, filter-based era. Cadena et al. (2016) give the modern view used in this post.
 
 ### 1.2 Odometry drifts, and how fast
 
@@ -89,7 +89,7 @@ n = 1000: RMS error, distance noise   0.635 m (theory  0.632),  heading noise  1
 
 A heading error of only 0.5° per step leaves the robot 5 m off after 100 m, and 156 m off after 1 km, while 2 cm of distance noise per step costs only 0.6 m over the same kilometre.
 
-{% include blog_figure.liquid path="assets/img/blog/3d-vision/06-drift.svg" localized="true" caption="Left: twelve runs of 100 noisy odometry steps along the dashed line, with 2 cm of distance noise per step (blue, the runs stay on the line) or 0.5° of heading noise per step (red, the runs bend away like a fan). Right: the RMS end-point error over 1500 runs against the number of steps $n$ on log-log axes. Distance noise follows $\sigma\_d\sqrt n$ (slope 1/2); heading noise follows $\sigma\_\theta\sqrt{n(n+1)(2n+1)/6} \approx \sigma\_\theta n^{3/2}/\sqrt 3$ (slope 3/2): 0.17 m after 10 steps, 5 m after 100, 156 m after 1000." %}
+{% include blog_figure.liquid path="assets/img/blog/3d-vision/06-drift.svg" localized="true" caption="Left: twelve runs of 100 noisy odometry steps along the dashed line, with 2 cm of distance noise per step (blue, the runs stay on the line) or 0.5° of heading noise per step (red, the runs bend away like a fan). Right: the RMS end-point error over 1500 runs against the number of steps $n$ on log-log axes. Distance noise follows $\sigma\_d\sqrt n$ (slope 1/2); heading noise follows $\sigma\_\theta\sqrt{n(n+1)(2n+1)/6} \approx \sigma\_\theta n^{3/2}/\sqrt 3$ (slope 3/2), which gives 0.17 m after 10 steps, 5.1 m after 100 and 159 m after 1000." %}
 
 This is the central fact of SLAM. Odometry, whether from wheels, an IMU or a camera, drifts without bound. The only cure is to recognize a place you have seen before and to use that **loop closure** to pull the whole trajectory back into consistency. The rest of the post is about doing that correctly and efficiently.
 
@@ -249,7 +249,7 @@ H_toy = toy_slam_information()
 P, L = list(range(20)), list(range(20, 50))                      # pose and landmark indices
 H_filter = schur_marginalize(H_toy, keep=[19] + L, drop=P[:-1])   # EKF-SLAM: only the last pose
 H_rcs = schur_marginalize(H_toy, keep=P, drop=L)                    # BA: reduced camera system
-nnz = lambda M: int((np.abs(M) > 1e-12 * np.abs(M).max()).sum())     # count structural nonzeros
+nnz = lambda M: int((np.abs(M) > 1e-12 * np.abs(M).max()).sum())     # count nonzeros (relative threshold)
 print("full smoothing:", H_toy.shape, "nonzeros", nnz(H_toy), f"({nnz(H_toy) / H_toy.size:.0%})")
 print("filter (last pose + landmarks):", H_filter.shape, "nonzeros", nnz(H_filter),
       f"({nnz(H_filter) / H_filter.size:.0%})")
@@ -263,9 +263,9 @@ filter (last pose + landmarks): (31, 31) nonzeros 923 (96%)
 poses only (landmarks marginalized): (20, 20) nonzeros 144 (36%)
 ```
 
-{% include blog_figure.liquid path="assets/img/blog/3d-vision/06-marginalization.svg" caption="Nonzero pattern (black) of the information matrix of a toy problem with 20 poses $x$ and 30 landmarks $l$, each pose seeing the landmarks near it. (a) Full smoothing, ordered [poses | landmarks]: tridiagonal pose block, diagonal landmark block, banded pose-landmark block; 13% nonzero. (b) After marginalizing the landmarks (the reduced camera system of bundle adjustment): poses that share landmarks become connected; a band, 36% nonzero. (c) After marginalizing all past poses, as a filter does: almost every pair of landmarks is now connected, 96% nonzero. The few zeros left are landmarks seen only by the last pose." %}
+{% include blog_figure.liquid path="assets/img/blog/3d-vision/06-marginalization.svg" caption="Nonzero pattern (black) of the information matrix of a toy problem with 20 poses $x$ and 30 landmarks $l$, each pose seeing the landmarks near it. (a) Full smoothing, ordered [poses | landmarks]: tridiagonal pose block, diagonal landmark block, banded pose-landmark block; 13% nonzero. (b) After marginalizing the landmarks (the reduced camera system of bundle adjustment): poses that share landmarks become connected; a band, 36% nonzero. (c) After marginalizing all past poses, as a filter does: almost every pair of landmarks is now connected, 96% nonzero. The few white cells are not exact zeros: they couple the first landmarks with the last ones and with the last pose, and that coupling, passed along the whole odometry chain, has decayed below the threshold ($10^{-12}$ of the largest entry)." %}
 
-The figure is the essence of the "filtering versus smoothing" debate of section 7. A filter keeps the state small, but the state's information matrix becomes dense; a smoother keeps more variables, but its matrix stays sparse, and sparse matrices with $10^5$ variables are solved faster than dense ones with $10^3$.
+The figure is the essence of the "filtering versus smoothing" debate of section 7. A filter keeps the state small, but the state's information matrix becomes dense; a smoother keeps more variables, but its matrix stays sparse, and a sparse system with $10^5$ variables can be cheaper to solve than a dense one with $10^3$.
 
 ## 3. The front end: visual odometry
 
@@ -348,14 +348,14 @@ pyramid 8, 4, 2, 1, 0    : 12.989
 single level from s = 10 : 12.989
 ```
 
-Started at $s = 0$ on the sharp signal, Gauss-Newton gets stuck at $s = 1.92$, a local minimum. Started at $s = 10$, it finds $s^\star$. With a blur pyramid it finds $s^\star$ from $s = 0$ too: the blurred cost has one wide valley, and each finer level starts inside the basin of the next. Counting integer starts between $-10$ and $35$, the sharp signal converges from 13 of 46 (from 7 to 19), a blur of $\sigma = 2$ followed by the sharp signal from 19 (4 to 22), and a blur of $\sigma = 8$ from all 46.
+Started at $s = 0$ on the sharp signal, Gauss-Newton never gets near $s^\star$: after the 15 iterations of the snippet it is at $s = 1.92$, and with more iterations it creeps on to a spurious local minimum near $s = 2.3$ (panel (c) of the figure below). Started at $s = 10$, it finds $s^\star$. With a blur pyramid it finds $s^\star$ from $s = 0$ too: the blurred cost has one wide valley, and each finer level starts inside the basin of the next. Counting integer starts between $-10$ and $35$, the sharp signal converges from 13 of 46 (from 7 to 19), a blur of $\sigma = 2$ followed by the sharp signal from 19 (4 to 22), and a blur of $\sigma = 8$ from all 46.
 
-{% include blog_figure.liquid path="assets/img/blog/3d-vision/06-direct-alignment.svg" localized="true" caption="Direct alignment in 1D. (a) A window of the reference row and of the current row, shifted by $s^\star = 13$ px, with noise of 0.01. (b) The photometric cost $E(s)$ (normalized) for no blur and for Gaussian blurs of $\sigma = 2$ and 8: the sharp cost is narrow and ragged; blurring widens its basin. Gauss-Newton followed by a refinement on the sharp signal converges from 13, 19 and 46 of 46 integer starts in $[-10, 35]$ respectively. (c) The iterates from $s\_0 = 0$: on the sharp signal alone they stop at 1.92 (a local minimum); with the pyramid $\sigma = 8, 4, 2, 1, 0$ they reach 12.989 in a few iterations." %}
+{% include blog_figure.liquid path="assets/img/blog/3d-vision/06-direct-alignment.svg" localized="true" caption="Direct alignment in 1D. (a) A window of the reference row and of the current row, shifted by $s^\star = 13$ px, with noise of 0.01. (b) The photometric cost $E(s)$ (normalized) for no blur and for Gaussian blurs of $\sigma = 2$ and 8: the sharp cost is narrow and ragged; blurring widens its basin. Gauss-Newton followed by a refinement on the sharp signal converges from 13, 19 and 46 of 46 integer starts in $[-10, 35]$ respectively. (c) The iterates from $s\_0 = 0$: on the sharp signal alone they creep to about 2.3, a spurious local minimum, and stay there (75 iterations shown); with the pyramid $\sigma = 8, 4, 2, 1, 0$ they reach 12.989 in a few iterations." %}
 
 Direct methods differ in which pixels they use and how they model brightness:
 
 - **Dense** methods use every pixel. DTAM (Newcombe, Lovegrove and Davison, 2011) estimated a dense depth map per keyframe on the GPU and tracked against it.
-- **Semi-dense** methods, such as **LSD-SLAM** (Engel, Schöps and Cremers, ECCV 2014), use only pixels with sufficient gradient and keep a probabilistic inverse depth for each. LSD-SLAM tracks keyframes with direct $\mathrm{Sim}(3)$ alignment, so that scale drift can be detected and corrected, and runs on a CPU.
+- **Semi-dense** methods, such as **LSD-SLAM** (Engel, Schöps and Cremers, ECCV 2014), use only pixels with sufficient gradient and keep a probabilistic inverse depth for each. LSD-SLAM tracks new frames against the current keyframe on $SE(3)$ and aligns keyframes with each other by direct $\mathrm{Sim}(3)$ alignment, so that scale drift can be detected and corrected, and runs on a CPU.
 - **Sparse** direct methods use a few thousand well-distributed pixels. **DSO** (Engel, Koltun and Cremers, TPAMI 2018) optimizes poses, inverse depths and per-frame brightness parameters jointly in a sliding window of keyframes (a photometric bundle adjustment). Its key observation is that the photometric error is only meaningful with a **photometric calibration**: the exposure time $t$, the camera's nonlinear response function and the lens vignetting. DSO's residual for a point $\mathbf p$ of frame $i$ observed in frame $j$ compares $I\_j[\mathbf p'] - b\_j$ with $\frac{t\_j e^{a\_j}}{t\_i e^{a\_i}}\big(I\_i[\mathbf p] - b\_i\big)$, where $a$ and $b$ are an affine brightness correction estimated per frame, over a small pattern of pixels around $\mathbf p$ and with a Huber norm. DSO is pure odometry: it has no loop closure.
 - **Semi-direct** methods such as **SVO** (Forster, Pizzoli and Scaramuzza, ICRA 2014) align small patches directly for speed and then refine with feature-like reprojection errors.
 
@@ -520,7 +520,7 @@ $$
 J_r^{-1}(\mathbf r) \approx I + \tfrac12\mathrm{ad}(\mathbf r).
 $$
 
-Each edge contributes four $6\times6$ blocks to $H$ (at $(i,i)$, $(i,j)$, $(j,i)$, $(j,j)$), so $H$ has exactly the sparsity of the graph, and a sparse Cholesky factorization solves the normal equations. The code below is a complete Gauss-Newton pose-graph optimizer in about 50 lines, with an optional robust kernel that section 5.5 explains.
+Each edge contributes four $6\times6$ blocks to $H$ (at $(i,i)$, $(i,j)$, $(j,i)$, $(j,j)$), so $H$ has exactly the sparsity of the graph, and a sparse Cholesky factorization solves the normal equations. The code below is a complete Gauss-Newton pose-graph optimizer in about 50 lines, with an optional robust kernel that section 5.6 explains.
 
 ```python
 import scipy.sparse as sp
@@ -607,7 +607,7 @@ The cost $E$ depends only on *relative* poses. If you move every pose by the sam
 
 ### 5.4 A ground robot closes its loops
 
-The run below simulates a ground robot driving two laps of a 24 m × 12 m rounded rectangle with a forward-looking camera, 200 poses in all, about 0.7 m apart. The odometry between consecutive poses has noise of 2 cm and 0.6° per axis. Every eighth pose queries place recognition; if the robot is within 1 m of a pose at least 20 steps older, a loop-closure edge with noise of 5 cm and 1° is added. The initial guess is dead reckoning.
+The run below simulates a ground robot driving two laps of a 24 m × 12 m rounded rectangle with a forward-looking camera, 200 poses in all, 0.65 m apart on average (closer in the corners, farther apart in the middle of the straight sides). The odometry between consecutive poses has noise of 2 cm and 0.6° per axis. Every eighth pose queries place recognition; if the robot is within 1 m of a pose more than 20 steps older, a loop-closure edge with noise of 5 cm and 1° is added. The initial guess is dead reckoning.
 
 ```python
 def camera_pose(p, forward, up=np.array([0.0, 0.0, 1.0])):
@@ -650,7 +650,7 @@ def ate_rmse(est, truth):
     return np.sqrt(np.mean(np.sum(d ** 2, 1)))
 
 
-# a ground robot: two laps of a 24 m x 12 m rounded rectangle, one pose every ~0.75 m
+# a ground robot: two laps of a 24 m x 12 m rounded rectangle, poses 0.65 m apart on average
 s = np.linspace(0, 2, 200, endpoint=False) * 2 * np.pi
 path_2d = np.c_[12 * np.sign(np.cos(s)) * np.abs(np.cos(s)) ** 0.4,
                 6 * np.sign(np.sin(s)) * np.abs(np.sin(s)) ** 0.4,
@@ -680,10 +680,10 @@ Try this yourself in the widget below, which runs the same algorithm on $SE(2)$ 
 
 ### 5.5 A drone in 3D
 
-Nothing in the optimizer is planar. The next run is a drone flying three laps of an 8 m × 5 m ellipse while slowly climbing and descending 1.5 m, so its laps cross each other only at a few places; 240 poses, odometry noise of 2 cm and 0.5°, loop closures within 0.8 m.
+Nothing in the optimizer is planar. The next run is a drone flying three laps of a 16 m × 10 m ellipse while slowly climbing and descending by 1.5 m (four times in three laps), so its laps cross each other only at a few places; 240 poses, odometry noise of 2 cm and 0.5°, loop closures within 0.8 m.
 
 ```python
-# a drone: three laps of an 8 m x 5 m ellipse, climbing and descending 1.5 m each lap
+# a drone: three laps of a 16 m x 10 m ellipse, climbing and descending 1.5 m four times
 s = np.linspace(0, 3, 240, endpoint=False) * 2 * np.pi
 path_3d = np.c_[8 * np.cos(s), 5 * np.sin(s), 2.0 + 1.5 * np.sin(s / 1.5) ** 2]
 truth3, init3, edges3 = simulate_pose_graph(path_3d, sig_odo=(0.02, np.deg2rad(0.5)),
@@ -702,9 +702,9 @@ print(f"ATE {ate_rmse(init3, truth3):.3f} m -> {ate_rmse(est3, truth3):.3f} m;"
 ATE 1.368 m -> 0.330 m; max rotation error 19.76 deg -> 5.47 deg
 ```
 
-{% include blog_figure.liquid path="assets/img/blog/3d-vision/06-pose-graph-3d.svg" localized="true" caption="Pose-graph optimization on $SE(3)$: a drone flies three laps of an 8 m × 5 m ellipse while climbing and descending (240 poses; the camera axes $x, y, z$ are drawn in red, green and blue every 20 poses). (a) Dead reckoning (red) against the ground truth (thick gray), with the 13 loop-closure edges in green. (b) After 7 Gauss-Newton iterations. (c) Position error per pose before and after; vertical lines mark the poses where loop closures were found. The ATE falls from 1.37 m to 0.33 m and the worst rotation error from 19.8° to 5.5°. The error stays largest between loop closures and after the last one, where only odometry constrains the trajectory." %}
+{% include blog_figure.liquid path="assets/img/blog/3d-vision/06-pose-graph-3d.svg" localized="true" caption="Pose-graph optimization on $SE(3)$: a drone flies three laps of a 16 m × 10 m ellipse while climbing and descending (240 poses; the camera axes $x, y, z$ are drawn in red, green and blue every 20 poses). (a) Dead reckoning (red) against the ground truth (thick gray), with the 13 loop-closure edges in green. (b) After 7 Gauss-Newton iterations. (c) Position error per pose before and after; vertical lines mark the poses where loop closures were found. The ATE falls from 1.37 m to 0.33 m and the worst rotation error from 19.8° to 5.5°. After optimization the error no longer grows along the trajectory; what remains is a smooth, slowly varying offset of the whole map." %}
 
-Panel (c) of the figure carries a practical lesson. A loop closure is a strong constraint only near its two ends; between closures, the trajectory is as good as the odometry. Sparse loop closures leave error "bubbles" in between, and the poses after the last closure drift freely.
+Panel (c) of the figure carries a practical lesson. Before optimization the error grows with the distance travelled; after it, the error stops growing, but it does not vanish. Most of what remains is a smooth misalignment of the whole map, not a local distortion. Pose 0 is held fixed, and the map is attached to it only through odometry and loop closures that are themselves noisy, so the map as a whole can sit slightly shifted and turned. Loop closures make the map consistent with itself, not with the world. Section 10.1 shows that a best-fit alignment removes most of this error (0.330 m → 0.074 m). In general, a loop closure constrains the trajectory most strongly near its two ends: with sparse closures, the stretches between them and after the last one are only as good as the odometry.
 
 ### 5.6 Wrong loop closures and robust kernels
 
@@ -742,7 +742,7 @@ one false loop closure, Cauchy: ATE 0.321 m, weight of the false edge 4.43e-05
 
 {% include blog_figure.liquid path="assets/img/blog/3d-vision/06-robust-kernel.svg" localized="true" caption="One false loop closure (red dashed; the crosses mark the two true places, 14.1 m apart) added to the 13 correct ones of the previous figure. (a) Plain least squares (L2): the optimizer folds the map to bring the two places together; after 100 Gauss-Newton iterations the cost is still 19372 (against 81.6 without the false edge) and the ATE is 13.3 m. (b) Cauchy kernel with $c = 3$, started from the same dead-reckoning guess: ATE 0.32 m, as if the false edge were absent. (c) The final Cauchy weights of the 14 loop-closure edges on a log scale: the correct ones keep weights between about 0.5 and 1; the false one gets $4.4\times10^{-5}$." %}
 
-Two caveats. First, a robust kernel makes the cost non-convex, so a good initial guess matters; in this run dead reckoning was good enough, but a false loop that is *consistent* with a badly drifted estimate can survive. Second, the scale $c$ must be set in units of the Mahalanobis error: here $c = 3$ means "an error of three standard deviations gets half weight". More principled back ends make outlier rejection explicit: **switchable constraints** (Sünderhauf and Protzel, IROS 2012) give every loop edge a switch variable that the optimizer may turn off at a cost, and the authors report that it handles up to 1000 false loop closures on their datasets; **dynamic covariance scaling** (Agarwal et al., ICRA 2013) is a closed-form variant; **graduated non-convexity** solves a sequence of increasingly robust problems. Front ends help too, by verifying loop candidates geometrically (section 6.2) and by requiring several consecutive consistent detections.
+Two caveats. First, a robust kernel makes the cost non-convex, so a good initial guess matters; in this run dead reckoning was good enough, but a false loop that is *consistent* with a badly drifted estimate can survive. Second, the scale $c$ must be set in units of the Mahalanobis error: here $c = 3$ means "an error of three standard deviations gets half weight". More principled back ends make outlier rejection explicit: **switchable constraints** (Sünderhauf and Protzel, IROS 2012) give every loop edge a switch variable that the optimizer may turn off at a cost, so that edges inconsistent with the rest of the graph are switched off during the optimization; **dynamic covariance scaling** (Agarwal et al., ICRA 2013) is a closed-form variant; **graduated non-convexity** solves a sequence of increasingly robust problems. Front ends help too, by verifying loop candidates geometrically (section 6.2) and by requiring several consecutive consistent detections.
 
 ## 6. Loop closure detection: have I been here before?
 
@@ -829,7 +829,7 @@ Bags of words built on hand-crafted features struggle with large changes in appe
 
 ### 7.1 EKF-SLAM
 
-The first real-time visual SLAM system, **MonoSLAM** (Davison et al., TPAMI 2007), was an **extended Kalman filter**. The state is the current camera pose and velocity plus all landmark positions, $\mathbf s = (\mathbf x, \mathbf l\_1, \dots, \mathbf l\_M)$, with a mean and a full covariance $\Sigma$. Each frame does two things:
+The first real-time single-camera SLAM system, **MonoSLAM** (Davison, ICCV 2003; journal version Davison et al., TPAMI 2007), was an **extended Kalman filter**. The state is the current camera pose and velocity plus all landmark positions, $\mathbf s = (\mathbf x, \mathbf l\_1, \dots, \mathbf l\_M)$, with a mean and a full covariance $\Sigma$. Each frame does two things:
 
 - **Predict:** propagate the camera with a motion model, $\mathbf s \leftarrow f(\mathbf s)$, $\Sigma \leftarrow F\Sigma F^\top + Q$.
 - **Update:** for each observed landmark, with predicted measurement $h(\mathbf s)$ and Jacobian $H\_k$, compute the gain $K = \Sigma H\_k^\top(H\_k\Sigma H\_k^\top + R)^{-1}$ and update $\mathbf s \leftarrow \mathbf s + K(\mathbf z - h(\mathbf s))$, $\Sigma \leftarrow (I - KH\_k)\Sigma$.
@@ -838,11 +838,11 @@ This is exactly the "marginalize every past pose" strategy of section 2.4, in co
 
 ### 7.2 Why filter?
 
-Strasdat, Montiel and Davison asked exactly this in "Visual SLAM: why filter?" (Image and Vision Computing, 2012). They compared filtering with keyframe bundle adjustment on the same budget and concluded that keyframe optimization gives the most accuracy per unit of computing time. The reasons are the ones we have met. Optimization keeps the problem sparse (figure of section 2.4), uses many more features per frame, and can **relinearize** every constraint when the estimate improves. Since PTAM and this analysis, the mainstream of visual SLAM has been optimization-based, with filters surviving where computing power is very limited.
+Strasdat, Montiel and Davison asked exactly this in "Visual SLAM: why filter?" (Image and Vision Computing, 2012). They compared filtering with keyframe bundle adjustment on the same budget and concluded that keyframe optimization gives the most accuracy per unit of computing time. The reasons are the ones we have met. Optimization keeps the problem sparse (figure of section 2.4), uses many more features per frame, and can **relinearize** every constraint when the estimate improves. Since PTAM and this analysis, the mainstream of visual SLAM has been optimization-based. Filters remain popular mainly for visual-inertial odometry on devices with little computing power, above all the MSCKF family of section 7.4.
 
 ### 7.3 Sliding-window optimization and marginalization
 
-A full smoother grows forever. **Sliding-window** estimators (OKVIS, VINS-Mono, DSO) optimize only the most recent keyframes and their landmarks. When a keyframe leaves the window, it is not simply deleted, since that would throw its information away. It is **marginalized**: the Schur complement of section 2.4 turns its factors into a single Gaussian **prior factor** on the variables that remain. Marginalization creates fill-in, so systems choose carefully what to marginalize (VINS-Mono, for example, drops the measurements of a non-keyframe instead of marginalizing them, to keep the prior sparse). The prior is linearized at the moment of marginalization, and to stay consistent the remaining variables' Jacobians in that prior must be evaluated at the same point later on: the **first-estimate Jacobian** (FEJ) technique.
+A full smoother grows forever. **Sliding-window** estimators (OKVIS, VINS-Mono, DSO) optimize only the most recent keyframes and their landmarks. When a keyframe leaves the window, it is not simply deleted, since that would throw its information away. It is **marginalized**: the Schur complement of section 2.4 turns its factors into a single Gaussian **prior factor** on the variables that remain. Marginalization creates fill-in, so systems choose carefully what to marginalize (VINS-Mono, for example, drops the visual measurements of a non-keyframe instead of marginalizing them, while its IMU measurements stay in the preintegration, to keep the prior sparse). The prior is linearized at the moment of marginalization, and to stay consistent the remaining variables' Jacobians in that prior must be evaluated at the same point later on: the **first-estimate Jacobian** (FEJ) technique.
 
 ### 7.4 MSCKF: a filter without landmarks
 
@@ -1070,7 +1070,7 @@ Three practical issues dominate VIO:
 | OKVIS (Leutenegger et al.) | 2015 | stereo + IMU | keypoints | sliding-window optimization | — |
 | DSO (Engel et al.) | 2018 | mono | direct, sparse, photometric calibration | windowed photometric BA | — (odometry) |
 | VINS-Mono (Qin et al.) | 2018 | mono + IMU | KLT tracks | sliding window, preintegration | DBoW2, 4-DoF pose graph |
-| ORB-SLAM3 (Campos et al.) | 2021 | mono, stereo, RGB-D, ± IMU, pinhole and fisheye | ORB | local BA with IMU, MAP initialization | multi-map (Atlas) |
+| ORB-SLAM3 (Campos et al.) | 2021 | mono, stereo, RGB-D, ± IMU, pinhole and fisheye | ORB | local BA with IMU, MAP initialization | DBoW2, multi-map merging (Atlas) |
 | DROID-SLAM (Teed, Deng) | 2021 | mono, stereo, RGB-D | learned dense flow (recurrent) | differentiable dense BA layer | proximity edges, global BA |
 | DPVO (Teed et al.) | 2023 | mono | learned sparse patches | differentiable BA | — (odometry) |
 | MASt3R-SLAM (Murai et al.) | 2025 | mono | MASt3R two-view pointmaps | second-order global optimization | yes |
@@ -1078,7 +1078,7 @@ Three practical issues dominate VIO:
 
 ### 9.2 ORB-SLAM3 in a little more detail
 
-**ORB-SLAM** (Mur-Artal, Montiel and Tardós, TRO 2015) is the most complete expression of the feature-based design, and its third version (Campos et al., TRO 2021) is a common baseline. It runs three threads. **Tracking** matches ORB features to the local map and optimizes the pose of each frame; with an IMU, the preintegrated factor joins the optimization. **Local mapping** inserts keyframes, triangulates and culls points, and runs local BA (visual-inertial when an IMU is present). **Loop closing** queries DBoW2, verifies candidates geometrically, fuses duplicated points, optimizes the essential graph and then launches a full BA. Its **Atlas** keeps several disconnected maps. When tracking is lost, it starts a new map, and when a later place-recognition hit connects two maps, it merges them. The same ORB features are used for everything (tracking, mapping, relocalization, loop closing), which keeps the system coherent. Its authors report that it is 2 to 5 times more accurate than previous approaches in their evaluation.
+**ORB-SLAM** (Mur-Artal, Montiel and Tardós, TRO 2015) is the most complete expression of the feature-based design, and its third version (Campos et al., TRO 2021) is a common baseline. It runs three threads. **Tracking** matches ORB features to the local map and optimizes the pose of each frame; with an IMU, the preintegrated factor joins the optimization. **Local mapping** inserts keyframes, triangulates and culls points, and runs local BA (visual-inertial when an IMU is present). **Loop closing** queries DBoW2, verifies candidates geometrically, fuses duplicated points, optimizes the essential graph and then launches a full BA. Its **Atlas** keeps several disconnected maps. When tracking is lost, it starts a new map, and when a later place-recognition hit connects two maps, it merges them. The same ORB features are used for everything (tracking, mapping, relocalization, loop closing), which keeps the system coherent. In its authors' evaluation, the visual-inertial version is several times more accurate than the previous approaches they compare with.
 
 ### 9.3 Learned SLAM
 
@@ -1131,7 +1131,7 @@ print(f"ATE without alignment {ate(P_mono):.2f} m;  Sim(3)-aligned {ate(s_ * P_m
 ATE without alignment 6.69 m;  Sim(3)-aligned 0.074 m (scale 2.713 = 1/0.37)
 ```
 
-The scale of the simulated monocular result (0.37) is recovered exactly. Note that the aligned ATE, 0.074 m, is smaller than the 0.330 m of the same trajectory in section 5.5. There, pose 0 was pinned to the truth, so a small error in the first pose's orientation tilted the whole trajectory; the best-fit alignment removes such global errors. **Always state which alignment an ATE uses.** Comparing an $SE(3)$-aligned number with a $\mathrm{Sim}(3)$-aligned one is a common mistake in papers.
+The scale of the simulated monocular result is recovered to within 0.4% (2.713 against $1/0.37 = 2.703$); the small difference is the remaining error of the estimate itself, which the alignment fits as well as it can. Note that the aligned ATE, 0.074 m, is smaller than the 0.330 m of the same trajectory in section 5.5. There, pose 0 was pinned to the truth, and the map, attached to it through noisy odometry and loop closures, sat slightly shifted and turned as a whole; the best-fit alignment removes such global errors. **Always state which alignment an ATE uses.** Comparing an $SE(3)$-aligned number with a $\mathrm{Sim}(3)$-aligned one is a common mistake in papers.
 
 ### 10.2 Datasets
 
@@ -1143,7 +1143,7 @@ The scale of the simulated monocular result (0.37) is recovered exactly. Note th
 ## Try it
 
 - The **pose-graph widget** in section 5.4. Set the heading noise to 3° and watch how much more the trajectory drifts than with 10 cm of distance noise (section 1.2). Add loop closures by hand at only one place and see where the error bubbles stay. Then insert two false loops and compare L2 with Cauchy.
-- Run the snippets in order: they form one script, and every number in this post is printed by it. The figure script `bin/figures/3d-vision/vision3d_06.py` contains them verbatim.
+- Run the snippets in order: they form one script that prints the numbers of the code outputs. The figure script `bin/figures/3d-vision/vision3d_06.py` contains them verbatim and also prints the few other numbers quoted in the text and captions (convergence basins, pose spacing, normalized scores).
 - On the home page, the [Interactive Lab]({{ '/' | relative_url }}#lab) renders the scene from a camera pose that you drive. SLAM solves the inverse problem: it recovers that pose from the images alone.
 
 ## Representative papers
@@ -1157,8 +1157,8 @@ The scale of the simulated monocular result (0.37) is recovered exactly. Note th
 | g2o: a general framework for graph optimization (Kümmerle et al.) | ICRA | 2011 | [DOI](https://doi.org/10.1109/ICRA.2011.5979949) | The standard open-source pose-graph and BA solver |
 | Visual-inertial-aided navigation for high-dynamic motion in built environments without initial conditions (Lupton, Sukkarieh) | IEEE TRO | 2012 | [DOI](https://doi.org/10.1109/TRO.2011.2170332) | IMU preintegration |
 | Bags of binary words for fast place recognition in image sequences (Gálvez-López, Tardós) | IEEE TRO | 2012 | [DOI](https://doi.org/10.1109/TRO.2012.2197158) | DBoW2, the loop detector of ORB-SLAM and VINS-Mono |
-| iSAM2: incremental smoothing and mapping using the Bayes tree (Kaess et al.) | IJRR | 2012 | [author page](https://people.csail.mit.edu/kaess/pub/Kaess12ijrr.html) | Incremental factor-graph optimization |
-| Visual SLAM: why filter? (Strasdat, Montiel, Davison) | Image and Vision Computing | 2012 | [PDF](https://www.doc.ic.ac.uk/~ajd/Publications/strasdat_etal_ivc2012.pdf) | Keyframe optimization beats filtering per unit of compute |
+| iSAM2: incremental smoothing and mapping using the Bayes tree (Kaess et al.) | IJRR | 2012 | — | Incremental factor-graph optimization |
+| Visual SLAM: why filter? (Strasdat, Montiel, Davison) | Image and Vision Computing | 2012 | — | Keyframe optimization beats filtering per unit of compute |
 | Switchable constraints for robust pose graph SLAM (Sünderhauf, Protzel) | IROS | 2012 | [DOI](https://doi.org/10.1109/IROS.2012.6385590) | Robust back end against false loop closures |
 | A benchmark for the evaluation of RGB-D SLAM systems (Sturm et al.) | IROS | 2012 | [DOI](https://doi.org/10.1109/IROS.2012.6385773) | TUM RGB-D; ATE and RPE |
 | LSD-SLAM: large-scale direct monocular SLAM (Engel, Schöps, Cremers) | ECCV | 2014 | [DOI](https://doi.org/10.1007/978-3-319-10605-2_54) | Semi-dense direct SLAM with $\mathrm{Sim}(3)$ |
@@ -1173,8 +1173,8 @@ The scale of the simulated monocular result (0.37) is recovered exactly. Note th
 | ORB-SLAM3 (Campos, Elvira, Gómez Rodríguez, Montiel, Tardós) | IEEE TRO | 2021 | [arXiv](https://arxiv.org/abs/2007.11898) | Visual, visual-inertial and multi-map SLAM |
 | DROID-SLAM (Teed, Deng) | NeurIPS | 2021 | [arXiv](https://arxiv.org/abs/2108.10869) | Recurrent dense flow plus a differentiable BA layer |
 | Deep patch visual odometry (Teed, Lipson, Deng) | NeurIPS | 2023 | [arXiv](https://arxiv.org/abs/2208.04726) | Sparse learned VO |
-| MASt3R-SLAM (Murai, Dexheimer, Davison) | CVPR | 2025 | [arXiv](https://arxiv.org/abs/2412.12392) | Real-time dense SLAM on a two-view 3D prior |
-| VGGT-SLAM (Maggio, Lim, Carlone) | NeurIPS | 2025 | [arXiv](https://arxiv.org/abs/2505.12549) | Submap SLAM with projective alignment on $\mathrm{SL}(4)$ |
+| MASt3R-SLAM (Murai, Dexheimer, Davison) | CVPR (published) | 2025 | [arXiv](https://arxiv.org/abs/2412.12392) | Real-time dense SLAM on a two-view 3D prior |
+| VGGT-SLAM (Maggio, Lim, Carlone) | NeurIPS (published) | 2025 | [arXiv](https://arxiv.org/abs/2505.12549) | Submap SLAM with projective alignment on $\mathrm{SL}(4)$ |
 
 ## Learning resources
 
@@ -1216,11 +1216,11 @@ The scale of the simulated monocular result (0.37) is recovered exactly. Note th
    With a large $c$ the kernel is nearly quadratic and the false edge keeps a large weight. With a very small $c$ even the correct loop closures are down-weighted at the start, because dead reckoning makes their errors large too, so the optimizer may never pull the loops together. Print the weights of all loop edges after each iteration to see it happen.
    </details>
 
-5. Using `preintegrate`, show numerically that the first-order bias update of $\Delta R$ has an error that grows quadratically with the bias change, as $\Delta\mathbf p$ does in the figure. Then estimate how long the preintegration interval may be before the first-order update error reaches 1 mm for a bias change of 0.1 m/s².
+5. Using `preintegrate`, show numerically that the first-order bias update of $\Delta R$ has an error that grows quadratically with the bias change, as $\Delta\mathbf p$ does in the figure. Then estimate how long the preintegration interval may be before the first-order update error of $\Delta\mathbf p$ reaches 1 mm for a gyroscope bias change of 1°/s about each axis. Why would a change of the accelerometer bias alone never reach it?
 
    <details markdown="1"><summary>Hint</summary>
 
-   Scale `dbg` by $k$ and compare `dR @ so3_exp(Jb["dR_bg"] @ (k * dbg))` with a re-integration at `bg = k * dbg`; the angle of the difference should go as $k^2$. For the interval, repeat with `j = i + m` for growing `m`. The accelerometer bias enters $\Delta\mathbf p$ linearly (its Jacobian is exact), so the second-order error comes from the gyroscope part and from rotation during the interval.
+   Scale `dbg` by $k$ and compare `dR @ so3_exp(Jb["dR_bg"] @ (k * dbg))` with a re-integration at `bg = k * dbg`; the angle of the difference should go as $k^2$. For the interval, repeat with `j = i + m` for growing `m` (the answer is between 1 and 2 seconds). The accelerometer bias enters $\Delta\mathbf v$ and $\Delta\mathbf p$ linearly, because $\Delta R$ does not depend on it, so its first-order correction is exact; the second-order error comes from the gyroscope bias, through the rotation it adds during the interval.
    </details>
 
 **Next:** [Depth estimation and multi-view stereo]({{ '/blog/2026/3d-vision-07-depth-estimation-and-multi-view-stereo/' | relative_url }}): with the poses from SLAM or SfM in hand, compute a depth for every pixel, from plane sweeps and PatchMatch to learned and monocular depth, and fuse the depth maps into one surface.

@@ -42,7 +42,7 @@ $$
 
 ### 1.1 互相依赖的两个问题
 
-如果已经有地图（带描述子的三维点），对新图像定位就是带 RANSAC 的 PnP（第 05 篇）。如果已经有相机位姿，建图就是三角化（第 04 篇）。SLAM 两者都没有：地图由位姿构建，而位姿又由地图估计。把两者一起求解，正是 SLAM 中 "S"（同时）的含义。经典的概率表述可以追溯到 Smith、Self 和 Cheeseman 关于不确定空间关系的工作（1990），Durrant-Whyte 和 Bailey（2006）为其命名并做了综述。Cadena 等人（2016）给出了本文采用的现代视角。
+如果已经有地图（带描述子的三维点），对新图像定位就是带 RANSAC 的 PnP（第 05 篇）。如果已经有相机位姿，建图就是三角化（第 04 篇）。SLAM 两者都没有：地图由位姿构建，而位姿又由地图估计。把两者一起求解，正是 SLAM 中 "S"（同时）的含义。经典的概率表述可以追溯到 Smith、Self 和 Cheeseman 关于不确定空间关系的工作（1990）；SLAM 这个缩写本身出现于 20 世纪 90 年代中期，Durrant-Whyte 和 Bailey 的两部分教程（2006）综述了以滤波为主的经典时期。Cadena 等人（2016）给出了本文采用的现代视角。
 
 ### 1.2 里程计会漂移，漂移有多快
 
@@ -89,7 +89,7 @@ n = 1000: RMS error, distance noise   0.635 m (theory  0.632),  heading noise  1
 
 每步仅 0.5° 的航向误差，100 m 之后就让机器人偏离 5 m，1 km 之后偏离 156 m；而每步 2 cm 的距离噪声在同样 1 km 中只造成 0.6 m 的误差。
 
-{% include blog_figure.liquid path="assets/img/blog/3d-vision/06-drift.svg" localized="true" caption="左：沿虚线走 100 步带噪声里程计的 12 次运行，每步 2 cm 距离噪声（蓝色，轨迹留在直线上）或每步 0.5° 航向噪声（红色，轨迹像扇子一样弯开）。右：1500 次运行的终点误差 RMS 随步数 $n$ 的变化（双对数坐标）。距离噪声符合 $\sigma\_d\sqrt n$（斜率 1/2）；航向噪声符合 $\sigma\_\theta\sqrt{n(n+1)(2n+1)/6} \approx \sigma\_\theta n^{3/2}/\sqrt 3$（斜率 3/2）：10 步后 0.17 m，100 步后 5 m，1000 步后 156 m。" %}
+{% include blog_figure.liquid path="assets/img/blog/3d-vision/06-drift.svg" localized="true" caption="左：沿虚线走 100 步带噪声里程计的 12 次运行，每步 2 cm 距离噪声（蓝色，轨迹留在直线上）或每步 0.5° 航向噪声（红色，轨迹像扇子一样弯开）。右：1500 次运行的终点误差 RMS 随步数 $n$ 的变化（双对数坐标）。距离噪声符合 $\sigma\_d\sqrt n$（斜率 1/2）；航向噪声符合 $\sigma\_\theta\sqrt{n(n+1)(2n+1)/6} \approx \sigma\_\theta n^{3/2}/\sqrt 3$（斜率 3/2），理论值为 10 步后 0.17 m，100 步后 5.1 m，1000 步后 159 m。" %}
 
 这是 SLAM 的核心事实。无论来自轮子、IMU 还是相机，里程计的漂移都是无界的。唯一的办法是认出曾经到过的地方，并利用这个**回环（loop closure）**把整条轨迹拉回一致。本文其余部分讲的就是如何正确而高效地做到这一点。
 
@@ -249,7 +249,7 @@ H_toy = toy_slam_information()
 P, L = list(range(20)), list(range(20, 50))                      # pose and landmark indices
 H_filter = schur_marginalize(H_toy, keep=[19] + L, drop=P[:-1])   # EKF-SLAM: only the last pose
 H_rcs = schur_marginalize(H_toy, keep=P, drop=L)                    # BA: reduced camera system
-nnz = lambda M: int((np.abs(M) > 1e-12 * np.abs(M).max()).sum())     # count structural nonzeros
+nnz = lambda M: int((np.abs(M) > 1e-12 * np.abs(M).max()).sum())     # count nonzeros (relative threshold)
 print("full smoothing:", H_toy.shape, "nonzeros", nnz(H_toy), f"({nnz(H_toy) / H_toy.size:.0%})")
 print("filter (last pose + landmarks):", H_filter.shape, "nonzeros", nnz(H_filter),
       f"({nnz(H_filter) / H_filter.size:.0%})")
@@ -263,9 +263,9 @@ filter (last pose + landmarks): (31, 31) nonzeros 923 (96%)
 poses only (landmarks marginalized): (20, 20) nonzeros 144 (36%)
 ```
 
-{% include blog_figure.liquid path="assets/img/blog/3d-vision/06-marginalization.svg" caption="一个玩具问题信息矩阵的非零模式（黑色）：20 个位姿 $x$ 和 30 个路标 $l$，每个位姿看到附近的路标。(a) 完全平滑，按 [位姿 | 路标] 排列：位姿块三对角，路标块对角，位姿-路标块呈带状；13% 非零。(b) 边缘化路标之后（光束法平差的约化相机系统）：共享路标的位姿连了起来；一条带，36% 非零。(c) 像滤波器那样边缘化所有过去的位姿之后：几乎每一对路标都连了起来，96% 非零。剩下的少数零元对应只被最后一个位姿看到的路标。" %}
+{% include blog_figure.liquid path="assets/img/blog/3d-vision/06-marginalization.svg" caption="一个玩具问题信息矩阵的非零模式（黑色）：20 个位姿 $x$ 和 30 个路标 $l$，每个位姿看到附近的路标。(a) 完全平滑，按 [位姿 | 路标] 排列：位姿块三对角，路标块对角，位姿-路标块呈带状；13% 非零。(b) 边缘化路标之后（光束法平差的约化相机系统）：共享路标的位姿连了起来；一条带，36% 非零。(c) 像滤波器那样边缘化所有过去的位姿之后：几乎每一对路标都连了起来，96% 非零。剩下的少数白色格子并不是精确的零：它们把最前面的路标与最后面的路标以及最后一个位姿联系起来，这种耦合沿整条里程计链传递后已衰减到阈值（最大元素的 $10^{-12}$）以下。" %}
 
-这张图是第 7 节"滤波还是平滑"之争的精髓。滤波器让状态保持很小，但状态的信息矩阵变得稠密；平滑器保留更多变量，但矩阵保持稀疏，而有 $10^5$ 个变量的稀疏矩阵比有 $10^3$ 个变量的稠密矩阵解得还快。
+这张图是第 7 节"滤波还是平滑"之争的精髓。滤波器让状态保持很小，但状态的信息矩阵变得稠密；平滑器保留更多变量，但矩阵保持稀疏，而有 $10^5$ 个变量的稀疏系统，求解代价可能比有 $10^3$ 个变量的稠密系统还低。
 
 ## 3. 前端：视觉里程计
 
@@ -348,14 +348,14 @@ pyramid 8, 4, 2, 1, 0    : 12.989
 single level from s = 10 : 12.989
 ```
 
-在清晰信号上从 $s = 0$ 出发，高斯-牛顿卡在 $s = 1.92$ 这个局部极小；从 $s = 10$ 出发则能找到 $s^\star$。使用模糊金字塔后，从 $s = 0$ 出发也能找到 $s^\star$：模糊后的代价只有一个宽谷，而每个更细的层级都从下一层的收敛域内出发。统计 $-10$ 到 $35$ 之间的整数初值：清晰信号从 46 个中的 13 个（7 到 19）收敛；先用 $\sigma = 2$ 模糊再用清晰信号，从 19 个（4 到 22）收敛；先用 $\sigma = 8$ 模糊，则全部 46 个都收敛。
+在清晰信号上从 $s = 0$ 出发，高斯-牛顿始终到不了 $s^\star$ 附近：代码中 15 次迭代后停在 $s = 1.92$，继续迭代则缓慢爬到 $s = 2.3$ 附近的一个虚假局部极小（见下图 (c)）；从 $s = 10$ 出发则能找到 $s^\star$。使用模糊金字塔后，从 $s = 0$ 出发也能找到 $s^\star$：模糊后的代价只有一个宽谷，而每个更细的层级都从下一层的收敛域内出发。统计 $-10$ 到 $35$ 之间的整数初值：清晰信号从 46 个中的 13 个（7 到 19）收敛；先用 $\sigma = 2$ 模糊再用清晰信号，从 19 个（4 到 22）收敛；先用 $\sigma = 8$ 模糊，则全部 46 个都收敛。
 
-{% include blog_figure.liquid path="assets/img/blog/3d-vision/06-direct-alignment.svg" localized="true" caption="一维直接对齐。(a) 参考行与当前行的一段，平移 $s^\star = 13$ px，噪声 0.01。(b) 不模糊以及高斯模糊 $\sigma = 2$ 和 8 时的光度代价 $E(s)$（已归一化）：清晰的代价又窄又崎岖，模糊使收敛域变宽。先做高斯-牛顿、再在清晰信号上精化，在 $[-10, 35]$ 的整数初值中分别有 13、19、46 个（共 46 个）收敛。(c) 从 $s\_0 = 0$ 出发的迭代：只用清晰信号时停在 1.92（局部极小）；使用金字塔 $\sigma = 8, 4, 2, 1, 0$ 时几次迭代就到达 12.989。" %}
+{% include blog_figure.liquid path="assets/img/blog/3d-vision/06-direct-alignment.svg" localized="true" caption="一维直接对齐。(a) 参考行与当前行的一段，平移 $s^\star = 13$ px，噪声 0.01。(b) 不模糊以及高斯模糊 $\sigma = 2$ 和 8 时的光度代价 $E(s)$（已归一化）：清晰的代价又窄又崎岖，模糊使收敛域变宽。先做高斯-牛顿、再在清晰信号上精化，在 $[-10, 35]$ 的整数初值中分别有 13、19、46 个（共 46 个）收敛。(c) 从 $s\_0 = 0$ 出发的迭代：只用清晰信号时缓慢爬到约 2.3 这个虚假的局部极小并停在那里（图中画了 75 次迭代）；使用金字塔 $\sigma = 8, 4, 2, 1, 0$ 时几次迭代就到达 12.989。" %}
 
 各种直接法的区别在于使用哪些像素以及如何对亮度建模：
 
 - **稠密**方法使用每个像素。DTAM（Newcombe、Lovegrove 和 Davison，2011）在 GPU 上为每个关键帧估计稠密深度图，并以此为基准跟踪。
-- **半稠密**方法，例如 **LSD-SLAM**（Engel、Schöps 和 Cremers，ECCV 2014），只使用梯度足够大的像素，并为每个像素保留一个概率化的逆深度。LSD-SLAM 用直接的 $\mathrm{Sim}(3)$ 对齐跟踪关键帧，从而能检测并校正尺度漂移，并且在 CPU 上运行。
+- **半稠密**方法，例如 **LSD-SLAM**（Engel、Schöps 和 Cremers，ECCV 2014），只使用梯度足够大的像素，并为每个像素保留一个概率化的逆深度。LSD-SLAM 在 $SE(3)$ 上把新帧对当前关键帧做跟踪，而关键帧之间用直接的 $\mathrm{Sim}(3)$ 对齐，从而能检测并校正尺度漂移，并且在 CPU 上运行。
 - **稀疏**直接法使用几千个分布良好的像素。**DSO**（Engel、Koltun 和 Cremers，TPAMI 2018）在关键帧滑动窗口中联合优化位姿、逆深度以及每帧的亮度参数（一种光度光束法平差）。它的关键观察是：只有经过**光度标定（photometric calibration）**——曝光时间 $t$、相机的非线性响应函数和镜头渐晕——光度误差才有意义。DSO 中帧 $i$ 的点 $\mathbf p$ 在帧 $j$ 中被观测时，残差比较的是 $I\_j[\mathbf p'] - b\_j$ 与 $\frac{t\_j e^{a\_j}}{t\_i e^{a\_i}}\big(I\_i[\mathbf p] - b\_i\big)$，其中 $a$ 和 $b$ 是每帧估计的仿射亮度校正；残差在 $\mathbf p$ 周围一小块像素模式上计算，并使用 Huber 范数。DSO 是纯里程计：没有回环。
 - **半直接**方法，例如 **SVO**（Forster、Pizzoli 和 Scaramuzza，ICRA 2014），为了速度直接对齐小图像块，再用类似特征的重投影误差精化。
 
@@ -607,7 +607,7 @@ print(f"|r| = {np.linalg.norm(r0):.3f};  max Jacobian error: J_i {np.abs(Ji - Ji
 
 ### 5.4 地面机器人闭合回环
 
-下面的运行模拟一个装着前视相机的地面机器人，沿 24 m × 12 m 的圆角矩形绕行两圈，共 200 个位姿，间隔约 0.7 m。相邻位姿之间的里程计在每个轴上有 2 cm 和 0.6° 的噪声。每第八个位姿查询一次地点识别；如果机器人与至少 20 步之前的某个位姿相距不到 1 m，就加入一条噪声为 5 cm 和 1° 的回环边。初值来自航位推算（dead reckoning）。
+下面的运行模拟一个装着前视相机的地面机器人，沿 24 m × 12 m 的圆角矩形绕行两圈，共 200 个位姿，平均间隔 0.65 m（转角处更密，直边中段更稀）。相邻位姿之间的里程计在每个轴上有 2 cm 和 0.6° 的噪声。每第八个位姿查询一次地点识别；如果机器人与 20 步以前（不含第 20 步）的某个位姿相距不到 1 m，就加入一条噪声为 5 cm 和 1° 的回环边。初值来自航位推算（dead reckoning）。
 
 ```python
 def camera_pose(p, forward, up=np.array([0.0, 0.0, 1.0])):
@@ -650,7 +650,7 @@ def ate_rmse(est, truth):
     return np.sqrt(np.mean(np.sum(d ** 2, 1)))
 
 
-# a ground robot: two laps of a 24 m x 12 m rounded rectangle, one pose every ~0.75 m
+# a ground robot: two laps of a 24 m x 12 m rounded rectangle, poses 0.65 m apart on average
 s = np.linspace(0, 2, 200, endpoint=False) * 2 * np.pi
 path_2d = np.c_[12 * np.sign(np.cos(s)) * np.abs(np.cos(s)) ** 0.4,
                 6 * np.sign(np.sin(s)) * np.abs(np.sin(s)) ** 0.4,
@@ -680,10 +680,10 @@ cost per iteration: [29824.3   171.3    81.6    81.6    81.6    81.6]
 
 ### 5.5 三维中的无人机
 
-优化器里没有任何东西是平面的。下一次运行是一架无人机绕 8 m × 5 m 的椭圆飞三圈，同时缓慢地上升和下降 1.5 m，因此各圈只在少数几处相交；240 个位姿，里程计噪声 2 cm 和 0.5°，回环半径 0.8 m。
+优化器里没有任何东西是平面的。下一次运行是一架无人机绕 16 m × 10 m 的椭圆飞三圈，同时缓慢地上升和下降 1.5 m（三圈内共四次），因此各圈只在少数几处相交；240 个位姿，里程计噪声 2 cm 和 0.5°，回环半径 0.8 m。
 
 ```python
-# a drone: three laps of an 8 m x 5 m ellipse, climbing and descending 1.5 m each lap
+# a drone: three laps of a 16 m x 10 m ellipse, climbing and descending 1.5 m four times
 s = np.linspace(0, 3, 240, endpoint=False) * 2 * np.pi
 path_3d = np.c_[8 * np.cos(s), 5 * np.sin(s), 2.0 + 1.5 * np.sin(s / 1.5) ** 2]
 truth3, init3, edges3 = simulate_pose_graph(path_3d, sig_odo=(0.02, np.deg2rad(0.5)),
@@ -702,9 +702,9 @@ print(f"ATE {ate_rmse(init3, truth3):.3f} m -> {ate_rmse(est3, truth3):.3f} m;"
 ATE 1.368 m -> 0.330 m; max rotation error 19.76 deg -> 5.47 deg
 ```
 
-{% include blog_figure.liquid path="assets/img/blog/3d-vision/06-pose-graph-3d.svg" localized="true" caption="$SE(3)$ 上的位姿图优化：无人机绕 8 m × 5 m 的椭圆一边升降一边飞三圈（240 个位姿；每 20 个位姿用红、绿、蓝画出相机坐标轴 $x, y, z$）。(a) 航位推算（红色）与真值（粗灰线），13 条回环边为绿色。(b) 7 次高斯-牛顿迭代之后。(c) 优化前后每个位姿的位置误差；竖线标出找到回环的位姿。ATE 从 1.37 m 降到 0.33 m，最大旋转误差从 19.8° 降到 5.5°。误差在两个回环之间以及最后一个回环之后最大，那里只有里程计约束轨迹。" %}
+{% include blog_figure.liquid path="assets/img/blog/3d-vision/06-pose-graph-3d.svg" localized="true" caption="$SE(3)$ 上的位姿图优化：无人机绕 16 m × 10 m 的椭圆一边升降一边飞三圈（240 个位姿；每 20 个位姿用红、绿、蓝画出相机坐标轴 $x, y, z$）。(a) 航位推算（红色）与真值（粗灰线），13 条回环边为绿色。(b) 7 次高斯-牛顿迭代之后。(c) 优化前后每个位姿的位置误差；竖线标出找到回环的位姿。ATE 从 1.37 m 降到 0.33 m，最大旋转误差从 19.8° 降到 5.5°。优化之后误差不再沿轨迹增长；剩下的是整张地图一个平滑、缓慢变化的偏移。" %}
 
-图中 (c) 包含一个实用的教训。回环只在其两端附近是强约束；两个回环之间，轨迹的好坏取决于里程计。稀疏的回环会在中间留下误差"气泡"，而最后一个回环之后的位姿则自由漂移。
+图中 (c) 包含一个实用的教训。优化之前，误差随行驶距离增长；优化之后，误差不再增长，但也没有消失。剩下的大部分是整张地图的平滑错位，而不是局部变形。位姿 0 被固定，地图只通过本身带噪声的里程计和回环与它相连，所以整张地图可以整体略微平移和转动。回环让地图与自身一致，而不是与世界一致。第 10.1 节表明，最佳拟合对齐能去除这类误差的大部分（0.330 m → 0.074 m）。一般而言，回环在其两端附近对轨迹的约束最强：回环稀疏时，回环之间以及最后一个回环之后的那段轨迹，好坏只取决于里程计。
 
 ### 5.6 错误回环与鲁棒核
 
@@ -742,7 +742,7 @@ one false loop closure, Cauchy: ATE 0.321 m, weight of the false edge 4.43e-05
 
 {% include blog_figure.liquid path="assets/img/blog/3d-vision/06-robust-kernel.svg" localized="true" caption="在上一张图的 13 个正确回环之外，再加入一个错误回环（红色虚线；叉号标出两个真实地点，相距 14.1 m）。(a) 普通最小二乘（L2）：优化器把地图折叠起来，让两个地点靠在一起；100 次高斯-牛顿迭代之后代价仍为 19372（没有错误边时为 81.6），ATE 为 13.3 m。(b) $c = 3$ 的 Cauchy 核，从同样的航位推算初值出发：ATE 0.32 m，就像错误边不存在一样。(c) 14 条回环边最终的 Cauchy 权重（对数坐标）：正确的边保持在约 0.5 到 1 之间；错误的边只有 $4.4\times10^{-5}$。" %}
 
-有两点需要注意。第一，鲁棒核让代价变得非凸，因此好的初值很重要；在这次运行中航位推算已经足够好，但一个与严重漂移的估计*相容*的错误回环可能会存活下来。第二，尺度 $c$ 必须以马氏误差为单位设定：这里 $c = 3$ 意味着"三倍标准差的误差得到一半权重"。更有原则的后端把外点剔除显式化：**可切换约束（switchable constraints）**（Sünderhauf 和 Protzel，IROS 2012）为每条回环边配一个开关变量，优化器可以付出一定代价把它关掉，作者报告在他们的数据集上它能处理多达 1000 个错误回环；**动态协方差缩放（dynamic covariance scaling）**（Agarwal 等，ICRA 2013）是它的闭式版本；**渐进非凸（graduated non-convexity）**依次求解一系列越来越鲁棒的问题。前端同样有帮助：对回环候选做几何验证（第 6.2 节），并要求若干次连续一致的检测。
+有两点需要注意。第一，鲁棒核让代价变得非凸，因此好的初值很重要；在这次运行中航位推算已经足够好，但一个与严重漂移的估计*相容*的错误回环可能会存活下来。第二，尺度 $c$ 必须以马氏误差为单位设定：这里 $c = 3$ 意味着"三倍标准差的误差得到一半权重"。更有原则的后端把外点剔除显式化：**可切换约束（switchable constraints）**（Sünderhauf 和 Protzel，IROS 2012）为每条回环边配一个开关变量，优化器可以付出一定代价把它关掉，于是与图中其余部分不一致的边会在优化过程中被关掉；**动态协方差缩放（dynamic covariance scaling）**（Agarwal 等，ICRA 2013）是它的闭式版本；**渐进非凸（graduated non-convexity）**依次求解一系列越来越鲁棒的问题。前端同样有帮助：对回环候选做几何验证（第 6.2 节），并要求若干次连续一致的检测。
 
 ## 6. 回环检测：我来过这里吗？
 
@@ -829,7 +829,7 @@ mean similarity: same place 0.560, neighbouring frame 0.207, unrelated 0.050
 
 ### 7.1 EKF-SLAM
 
-第一个实时视觉 SLAM 系统 **MonoSLAM**（Davison 等，TPAMI 2007）是一个**扩展卡尔曼滤波器（extended Kalman filter）**。状态是当前相机位姿和速度加上所有路标位置，$\mathbf s = (\mathbf x, \mathbf l\_1, \dots, \mathbf l\_M)$，带有均值和完整的协方差 $\Sigma$。每一帧做两件事：
+第一个实时单相机 SLAM 系统 **MonoSLAM**（Davison，ICCV 2003；期刊版 Davison 等，TPAMI 2007）是一个**扩展卡尔曼滤波器（extended Kalman filter）**。状态是当前相机位姿和速度加上所有路标位置，$\mathbf s = (\mathbf x, \mathbf l\_1, \dots, \mathbf l\_M)$，带有均值和完整的协方差 $\Sigma$。每一帧做两件事：
 
 - **预测：** 用运动模型传播相机，$\mathbf s \leftarrow f(\mathbf s)$，$\Sigma \leftarrow F\Sigma F^\top + Q$。
 - **更新：** 对每个被观测的路标，设预测测量为 $h(\mathbf s)$、雅可比为 $H\_k$，计算增益 $K = \Sigma H\_k^\top(H\_k\Sigma H\_k^\top + R)^{-1}$，然后更新 $\mathbf s \leftarrow \mathbf s + K(\mathbf z - h(\mathbf s))$，$\Sigma \leftarrow (I - KH\_k)\Sigma$。
@@ -838,11 +838,11 @@ mean similarity: same place 0.560, neighbouring frame 0.207, unrelated 0.050
 
 ### 7.2 为什么要滤波？
 
-Strasdat、Montiel 和 Davison 在 "Visual SLAM: why filter?"（Image and Vision Computing，2012）中恰恰问了这个问题。他们在相同的计算预算下比较了滤波与关键帧光束法平差，结论是关键帧优化在单位计算时间内给出最高的精度。原因正是我们已经见过的：优化保持问题的稀疏性（第 2.4 节的图），每帧使用多得多的特征，并且能在估计改进时**重新线性化**每一个约束。自 PTAM 和这项分析以来，视觉 SLAM 的主流一直是基于优化的，滤波器只在计算能力非常有限的场合保留下来。
+Strasdat、Montiel 和 Davison 在 "Visual SLAM: why filter?"（Image and Vision Computing，2012）中恰恰问了这个问题。他们在相同的计算预算下比较了滤波与关键帧光束法平差，结论是关键帧优化在单位计算时间内给出最高的精度。原因正是我们已经见过的：优化保持问题的稀疏性（第 2.4 节的图），每帧使用多得多的特征，并且能在估计改进时**重新线性化**每一个约束。自 PTAM 和这项分析以来，视觉 SLAM 的主流一直是基于优化的。滤波器主要在计算能力很有限的设备上的视觉惯性里程计中仍然流行，尤其是第 7.4 节的 MSCKF 一族。
 
 ### 7.3 滑动窗口优化与边缘化
 
-完全平滑器会无限增长。**滑动窗口**估计器（OKVIS、VINS-Mono、DSO）只优化最近的关键帧及其路标。当一个关键帧离开窗口时，并不是简单地删掉它，因为那会丢掉它的信息；而是对它做**边缘化**：第 2.4 节的舒尔补把它的因子变成剩余变量上的一个高斯**先验因子（prior factor）**。边缘化会产生填充，所以系统会仔细选择边缘化什么（例如 VINS-Mono 对非关键帧直接丢弃其测量而不是边缘化，以保持先验稀疏）。先验在边缘化那一刻被线性化；为了保持一致，之后这个先验中剩余变量的雅可比必须在同一个点上求值：这就是**首次估计雅可比（first-estimate Jacobian，FEJ）**技术。
+完全平滑器会无限增长。**滑动窗口**估计器（OKVIS、VINS-Mono、DSO）只优化最近的关键帧及其路标。当一个关键帧离开窗口时，并不是简单地删掉它，因为那会丢掉它的信息；而是对它做**边缘化**：第 2.4 节的舒尔补把它的因子变成剩余变量上的一个高斯**先验因子（prior factor）**。边缘化会产生填充，所以系统会仔细选择边缘化什么（例如 VINS-Mono 对非关键帧直接丢弃其视觉测量而不是边缘化，其 IMU 测量则保留在预积分中，以保持先验稀疏）。先验在边缘化那一刻被线性化；为了保持一致，之后这个先验中剩余变量的雅可比必须在同一个点上求值：这就是**首次估计雅可比（first-estimate Jacobian，FEJ）**技术。
 
 ### 7.4 MSCKF：没有路标的滤波器
 
@@ -1070,7 +1070,7 @@ VIO 中有三个主导性的实际问题：
 | OKVIS（Leutenegger 等） | 2015 | 双目 + IMU | 关键点 | 滑动窗口优化 | — |
 | DSO（Engel 等） | 2018 | 单目 | 直接法，稀疏，光度标定 | 窗口化光度 BA | —（里程计） |
 | VINS-Mono（Qin 等） | 2018 | 单目 + IMU | KLT 轨迹 | 滑动窗口，预积分 | DBoW2，4 自由度位姿图 |
-| ORB-SLAM3（Campos 等） | 2021 | 单目、双目、RGB-D，± IMU，针孔与鱼眼 | ORB | 带 IMU 的局部 BA，MAP 初始化 | 多地图（Atlas） |
+| ORB-SLAM3（Campos 等） | 2021 | 单目、双目、RGB-D，± IMU，针孔与鱼眼 | ORB | 带 IMU 的局部 BA，MAP 初始化 | DBoW2，多地图合并（Atlas） |
 | DROID-SLAM（Teed、Deng） | 2021 | 单目、双目、RGB-D | 学习的稠密光流（循环更新） | 可微稠密 BA 层 | 近邻边，全局 BA |
 | DPVO（Teed 等） | 2023 | 单目 | 学习的稀疏图像块 | 可微 BA | —（里程计） |
 | MASt3R-SLAM（Murai 等） | 2025 | 单目 | MASt3R 两视图点图 | 二阶全局优化 | 有 |
@@ -1078,7 +1078,7 @@ VIO 中有三个主导性的实际问题：
 
 ### 9.2 再细看 ORB-SLAM3
 
-**ORB-SLAM**（Mur-Artal、Montiel 和 Tardós，TRO 2015）是基于特征设计的最完整体现，其第三版（Campos 等，TRO 2021）是常用的基线。它运行三个线程。**跟踪**线程把 ORB 特征与局部地图匹配，并优化每一帧的位姿；有 IMU 时，预积分因子也加入优化。**局部建图**线程插入关键帧、三角化并剔除点，运行局部 BA（有 IMU 时为视觉惯性 BA）。**回环**线程查询 DBoW2，对候选做几何验证，融合重复的点，优化本质图，然后启动全局 BA。它的 **Atlas** 维护多张互不相连的地图：跟踪丢失时开始一张新地图，之后若地点识别命中把两张地图联系起来，就把它们合并。同样的 ORB 特征被用于一切（跟踪、建图、重定位、回环），这让系统保持一致。作者报告，在他们的评测中它比此前的方法精确 2 到 5 倍。
+**ORB-SLAM**（Mur-Artal、Montiel 和 Tardós，TRO 2015）是基于特征设计的最完整体现，其第三版（Campos 等，TRO 2021）是常用的基线。它运行三个线程。**跟踪**线程把 ORB 特征与局部地图匹配，并优化每一帧的位姿；有 IMU 时，预积分因子也加入优化。**局部建图**线程插入关键帧、三角化并剔除点，运行局部 BA（有 IMU 时为视觉惯性 BA）。**回环**线程查询 DBoW2，对候选做几何验证，融合重复的点，优化本质图，然后启动全局 BA。它的 **Atlas** 维护多张互不相连的地图：跟踪丢失时开始一张新地图，之后若地点识别命中把两张地图联系起来，就把它们合并。同样的 ORB 特征被用于一切（跟踪、建图、重定位、回环），这让系统保持一致。在作者的评测中，其视觉惯性版本比他们对比的此前方法精确数倍。
 
 ### 9.3 学习型 SLAM
 
@@ -1131,7 +1131,7 @@ print(f"ATE without alignment {ate(P_mono):.2f} m;  Sim(3)-aligned {ate(s_ * P_m
 ATE without alignment 6.69 m;  Sim(3)-aligned 0.074 m (scale 2.713 = 1/0.37)
 ```
 
-模拟单目结果的尺度（0.37）被精确恢复。注意，对齐后的 ATE 为 0.074 m，小于第 5.5 节同一条轨迹的 0.330 m。那里位姿 0 被固定在真值上，所以第一个位姿姿态上的一点小误差会让整条轨迹倾斜；最佳拟合对齐去除了这类全局误差。**报告 ATE 时务必说明使用的是哪种对齐。** 把 $SE(3)$ 对齐的数字与 $\mathrm{Sim}(3)$ 对齐的数字放在一起比较，是论文中常见的错误。
+模拟单目结果的尺度恢复到 0.4% 以内（2.713，而 $1/0.37 = 2.703$）；这点差别来自估计本身剩余的误差，对齐只能尽量拟合它。注意，对齐后的 ATE 为 0.074 m，小于第 5.5 节同一条轨迹的 0.330 m。那里位姿 0 被固定在真值上，而通过带噪声的里程计和回环与它相连的地图整体略有平移和转动；最佳拟合对齐去除了这类全局误差。**报告 ATE 时务必说明使用的是哪种对齐。** 把 $SE(3)$ 对齐的数字与 $\mathrm{Sim}(3)$ 对齐的数字放在一起比较，是论文中常见的错误。
 
 ### 10.2 数据集
 
@@ -1143,7 +1143,7 @@ ATE without alignment 6.69 m;  Sim(3)-aligned 0.074 m (scale 2.713 = 1/0.37)
 ## 动手试试
 
 - 第 5.4 节的**位姿图小部件**。把航向噪声设为 3°，观察轨迹比 10 cm 距离噪声时漂移得多多少（第 1.2 节）。只在一个地方手动添加回环，看误差气泡留在哪里。然后插入两个错误回环，比较 L2 与 Cauchy。
-- 按顺序运行代码片段：它们构成一个完整脚本，本文每个数字都由它打印。图形脚本 `bin/figures/3d-vision/vision3d_06.py` 逐字包含了这些代码。
+- 按顺序运行代码片段：它们构成一个完整脚本，打印出各段代码输出中的数字。图形脚本 `bin/figures/3d-vision/vision3d_06.py` 逐字包含了这些代码，并且还会打印正文和图注中引用的其余少数数字（收敛域、位姿间隔、归一化得分）。
 - 主页上的[交互实验室]({{ '/' | relative_url }}#lab)从你操控的相机位姿渲染场景。SLAM 解决的是逆问题：仅凭图像恢复那个位姿。
 
 ## 代表性论文
@@ -1157,8 +1157,8 @@ ATE without alignment 6.69 m;  Sim(3)-aligned 0.074 m (scale 2.713 = 1/0.37)
 | g2o: a general framework for graph optimization (Kümmerle et al.) | ICRA | 2011 | [DOI](https://doi.org/10.1109/ICRA.2011.5979949) | 标准的开源位姿图与 BA 求解器 |
 | Visual-inertial-aided navigation for high-dynamic motion in built environments without initial conditions (Lupton, Sukkarieh) | IEEE TRO | 2012 | [DOI](https://doi.org/10.1109/TRO.2011.2170332) | IMU 预积分 |
 | Bags of binary words for fast place recognition in image sequences (Gálvez-López, Tardós) | IEEE TRO | 2012 | [DOI](https://doi.org/10.1109/TRO.2012.2197158) | DBoW2，ORB-SLAM 和 VINS-Mono 的回环检测器 |
-| iSAM2: incremental smoothing and mapping using the Bayes tree (Kaess et al.) | IJRR | 2012 | [作者页面](https://people.csail.mit.edu/kaess/pub/Kaess12ijrr.html) | 增量式因子图优化 |
-| Visual SLAM: why filter? (Strasdat, Montiel, Davison) | Image and Vision Computing | 2012 | [PDF](https://www.doc.ic.ac.uk/~ajd/Publications/strasdat_etal_ivc2012.pdf) | 单位计算量下关键帧优化胜过滤波 |
+| iSAM2: incremental smoothing and mapping using the Bayes tree (Kaess et al.) | IJRR | 2012 | — | 增量式因子图优化 |
+| Visual SLAM: why filter? (Strasdat, Montiel, Davison) | Image and Vision Computing | 2012 | — | 单位计算量下关键帧优化胜过滤波 |
 | Switchable constraints for robust pose graph SLAM (Sünderhauf, Protzel) | IROS | 2012 | [DOI](https://doi.org/10.1109/IROS.2012.6385590) | 对抗错误回环的鲁棒后端 |
 | A benchmark for the evaluation of RGB-D SLAM systems (Sturm et al.) | IROS | 2012 | [DOI](https://doi.org/10.1109/IROS.2012.6385773) | TUM RGB-D；ATE 和 RPE |
 | LSD-SLAM: large-scale direct monocular SLAM (Engel, Schöps, Cremers) | ECCV | 2014 | [DOI](https://doi.org/10.1007/978-3-319-10605-2_54) | 使用 $\mathrm{Sim}(3)$ 的半稠密直接法 SLAM |
@@ -1173,8 +1173,8 @@ ATE without alignment 6.69 m;  Sim(3)-aligned 0.074 m (scale 2.713 = 1/0.37)
 | ORB-SLAM3 (Campos, Elvira, Gómez Rodríguez, Montiel, Tardós) | IEEE TRO | 2021 | [arXiv](https://arxiv.org/abs/2007.11898) | 视觉、视觉惯性与多地图 SLAM |
 | DROID-SLAM (Teed, Deng) | NeurIPS | 2021 | [arXiv](https://arxiv.org/abs/2108.10869) | 循环稠密光流加可微 BA 层 |
 | Deep patch visual odometry (Teed, Lipson, Deng) | NeurIPS | 2023 | [arXiv](https://arxiv.org/abs/2208.04726) | 稀疏的学习型 VO |
-| MASt3R-SLAM (Murai, Dexheimer, Davison) | CVPR | 2025 | [arXiv](https://arxiv.org/abs/2412.12392) | 基于两视图三维先验的实时稠密 SLAM |
-| VGGT-SLAM (Maggio, Lim, Carlone) | NeurIPS | 2025 | [arXiv](https://arxiv.org/abs/2505.12549) | 在 $\mathrm{SL}(4)$ 上做射影对齐的子图 SLAM |
+| MASt3R-SLAM (Murai, Dexheimer, Davison) | CVPR（已发表） | 2025 | [arXiv](https://arxiv.org/abs/2412.12392) | 基于两视图三维先验的实时稠密 SLAM |
+| VGGT-SLAM (Maggio, Lim, Carlone) | NeurIPS（已发表） | 2025 | [arXiv](https://arxiv.org/abs/2505.12549) | 在 $\mathrm{SL}(4)$ 上做射影对齐的子图 SLAM |
 
 ## 学习资源
 
@@ -1216,11 +1216,11 @@ ATE without alignment 6.69 m;  Sim(3)-aligned 0.074 m (scale 2.713 = 1/0.37)
    $c$ 很大时，核几乎是二次的，错误边保持很大的权重。$c$ 很小时，连正确的回环一开始也会被降权，因为航位推算让它们的误差同样很大，于是优化器可能永远无法把回环拉拢。在每次迭代后打印所有回环边的权重，就能看到这一过程。
    </details>
 
-5. 用 `preintegrate` 数值地说明：$\Delta R$ 的一阶零偏更新误差随零偏变化二次增长，与图中的 $\Delta\mathbf p$ 一样。然后估计：对 0.1 m/s² 的零偏变化，预积分区间可以多长，一阶更新误差才达到 1 mm。
+5. 用 `preintegrate` 数值地说明：$\Delta R$ 的一阶零偏更新误差随零偏变化二次增长，与图中的 $\Delta\mathbf p$ 一样。然后估计：对每个轴 1°/s 的陀螺仪零偏变化，预积分区间可以多长，$\Delta\mathbf p$ 的一阶更新误差才达到 1 mm。为什么只改变加速度计零偏永远达不到这个误差？
 
    <details markdown="1"><summary>提示</summary>
 
-   把 `dbg` 乘以 $k$，比较 `dR @ so3_exp(Jb["dR_bg"] @ (k * dbg))` 与 `bg = k * dbg` 时的重新积分结果；两者之差的角度应按 $k^2$ 变化。对于区间长度，用越来越大的 `m` 重复 `j = i + m`。加速度计零偏线性地进入 $\Delta\mathbf p$（其雅可比是精确的），所以二阶误差来自陀螺仪部分以及区间内的旋转。
+   把 `dbg` 乘以 $k$，比较 `dR @ so3_exp(Jb["dR_bg"] @ (k * dbg))` 与 `bg = k * dbg` 时的重新积分结果；两者之差的角度应按 $k^2$ 变化。对于区间长度，用越来越大的 `m` 重复 `j = i + m`（答案在 1 到 2 秒之间）。加速度计零偏线性地进入 $\Delta\mathbf v$ 和 $\Delta\mathbf p$，因为 $\Delta R$ 与它无关，所以它的一阶修正是精确的；二阶误差来自陀螺仪零偏，经由它在区间内附加的旋转。
    </details>
 
 **下一篇：** [深度估计与多视图立体]({{ '/blog/2026/3d-vision-07-depth-estimation-and-multi-view-stereo/' | relative_url }})：有了 SLAM 或 SfM 给出的位姿，为每个像素计算深度——从平面扫描和 PatchMatch 到学习型与单目深度——并把深度图融合成一个表面。

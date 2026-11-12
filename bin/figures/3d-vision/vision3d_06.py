@@ -111,7 +111,7 @@ H_toy = toy_slam_information()
 P, L = list(range(20)), list(range(20, 50))                      # pose and landmark indices
 H_filter = schur_marginalize(H_toy, keep=[19] + L, drop=P[:-1])   # EKF-SLAM: only the last pose
 H_rcs = schur_marginalize(H_toy, keep=P, drop=L)                    # BA: reduced camera system
-nnz = lambda M: int((np.abs(M) > 1e-12 * np.abs(M).max()).sum())     # count structural nonzeros
+nnz = lambda M: int((np.abs(M) > 1e-12 * np.abs(M).max()).sum())     # count nonzeros (relative threshold)
 print("full smoothing:", H_toy.shape, "nonzeros", nnz(H_toy), f"({nnz(H_toy) / H_toy.size:.0%})")
 print("filter (last pose + landmarks):", H_filter.shape, "nonzeros", nnz(H_filter),
       f"({nnz(H_filter) / H_filter.size:.0%})")
@@ -331,7 +331,7 @@ def ate_rmse(est, truth):
     return np.sqrt(np.mean(np.sum(d ** 2, 1)))
 
 
-# a ground robot: two laps of a 24 m x 12 m rounded rectangle, one pose every ~0.75 m
+# a ground robot: two laps of a 24 m x 12 m rounded rectangle, poses 0.65 m apart on average
 s = np.linspace(0, 2, 200, endpoint=False) * 2 * np.pi
 path_2d = np.c_[12 * np.sign(np.cos(s)) * np.abs(np.cos(s)) ** 0.4,
                 6 * np.sign(np.sin(s)) * np.abs(np.sin(s)) ** 0.4,
@@ -374,7 +374,7 @@ print(f"|r| = {np.linalg.norm(r0):.3f};  max Jacobian error: J_i {np.abs(Ji - Ji
 
 
 # ---- pgo3d-run -----------------------------------------------------------------------------
-# a drone: three laps of an 8 m x 5 m ellipse, climbing and descending 1.5 m each lap
+# a drone: three laps of a 16 m x 10 m ellipse, climbing and descending 1.5 m four times
 s = np.linspace(0, 3, 240, endpoint=False) * 2 * np.pi
 path_3d = np.c_[8 * np.cos(s), 5 * np.sin(s), 2.0 + 1.5 * np.sin(s / 1.5) ** 2]
 truth3, init3, edges3 = simulate_pose_graph(path_3d, sig_odo=(0.02, np.deg2rad(0.5)),
@@ -748,6 +748,14 @@ for sg in (0, 2, 8):
 for sg in (0, 2, 8):
     b_ = BASIN[sg]
     print(f"blur sigma {sg}: GN converges to s_true from s0 in [{b_.min()}, {b_.max()}] ({len(b_)} of 46 integer starts)")
+print(f"single level from s = 0 after 75 iterations: {align_1d(I_ref, I_cur, iters=75):.3f}")
+_step = np.linalg.norm(np.diff(path_2d, axis=0), axis=1)
+print(f"ground robot: pose spacing mean {_step.mean():.2f} m (min {_step.min():.2f}, max {_step.max():.2f});"
+      f" drone path extent {np.ptp(path_3d, 0).round(1)} m")
+_eb = np.linalg.norm(np.array([T[:3, 3] - G[:3, 3] for T, G in zip(est3, truth3)]), axis=1)
+print(f"drone after optimization: largest position error {_eb.max():.2f} m")
+print(f"BoW normalized score at frames 100 and 140: {S[100, :70].max() / S[100, 99]:.1f}, "
+      f"{S[140, :110].max() / S[140, 139]:.1f}")
 
 
 def fig_direct(lang):

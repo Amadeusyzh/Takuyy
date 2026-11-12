@@ -123,9 +123,9 @@
 | 论文 | 会议/期刊 | 年份 | 链接 | 说明 |
 | --- | --- | --- | --- | --- |
 | Estimating uncertain spatial relationships in robotics (Smith, Self, Cheeseman) | Autonomous Robot Vehicles（论文集） | 1990 | — | 不确定空间关系的随机地图，EKF-SLAM 的源头 |
-| Simultaneous localization and mapping: part I (Durrant-Whyte, Bailey) | IEEE Robotics & Automation Magazine | 2006 | — | SLAM 经典教程综述 |
+| Simultaneous localization and mapping: part I (Durrant-Whyte, Bailey) | IEEE Robotics & Automation Magazine | 2006 | — | SLAM 经典教程综述（两部分之一；SLAM 这一缩写出现于 20 世纪 90 年代中期） |
 | g2o: a general framework for graph optimization (Kümmerle et al.) | ICRA | 2011 | https://doi.org/10.1109/ICRA.2011.5979949 | 通用图优化框架，位姿图与 BA 的标准开源求解器 |
-| iSAM2: incremental smoothing and mapping using the Bayes tree (Kaess et al.) | IJRR | 2012 | https://people.csail.mit.edu/kaess/pub/Kaess12ijrr.html | 贝叶斯树上的增量平滑，无需周期性批量重排序 |
+| iSAM2: incremental smoothing and mapping using the Bayes tree (Kaess et al.) | IJRR | 2012 | — | 贝叶斯树上的增量平滑，无需周期性批量重排序 |
 | Switchable constraints for robust pose graph SLAM (Sünderhauf, Protzel) | IROS | 2012 | https://doi.org/10.1109/IROS.2012.6385590 | 每条回环边带开关变量，抵抗错误回环 |
 | Past, present, and future of simultaneous localization and mapping (Cadena et al.) | IEEE TRO | 2016 | https://arxiv.org/abs/1606.05830 | 因子图时代的 SLAM 综述与立场论文 |
 | Factor graphs for robot perception (Dellaert, Kaess) | Foundations and Trends in Robotics | 2017 | https://doi.org/10.1561/2300000043 | 以因子图统一 SLAM、稀疏性与增量求解的专著 |
@@ -137,14 +137,14 @@
 | --- | --- | --- | --- | --- |
 | MonoSLAM: real-time single camera SLAM (Davison, Reid, Molton, Stasse) | TPAMI | 2007 | https://doi.org/10.1109/TPAMI.2007.1049 | 第一个实时单目 SLAM，EKF |
 | A multi-state constraint Kalman filter for vision-aided inertial navigation (Mourikis, Roumeliotis) | ICRA | 2007 | https://doi.org/10.1109/ROBOT.2007.364024 | MSCKF：左零空间投影消去特征，无路标的 VIO 滤波器 |
-| Visual SLAM: why filter? (Strasdat, Montiel, Davison) | Image and Vision Computing | 2012 | https://www.doc.ic.ac.uk/~ajd/Publications/strasdat_etal_ivc2012.pdf | 单位计算量下关键帧 BA 胜过滤波（作者 PDF） |
+| Visual SLAM: why filter? (Strasdat, Montiel, Davison) | Image and Vision Computing | 2012 | — | 单位计算量下关键帧 BA 胜过滤波 |
 
 ### 视觉里程计与完整系统
 
 | 论文 | 会议/期刊 | 年份 | 链接 | 说明 |
 | --- | --- | --- | --- | --- |
 | Parallel tracking and mapping for small AR workspaces (Klein, Murray) | ISMAR | 2007 | https://doi.org/10.1109/ISMAR.2007.4538852 | PTAM：跟踪与建图分线程，关键帧 BA |
-| LSD-SLAM: large-scale direct monocular SLAM (Engel, Schöps, Cremers) | ECCV | 2014 | https://doi.org/10.1007/978-3-319-10605-2_54 | 半稠密直接法，$\mathrm{Sim}(3)$ 跟踪与位姿图 |
+| LSD-SLAM: large-scale direct monocular SLAM (Engel, Schöps, Cremers) | ECCV | 2014 | https://doi.org/10.1007/978-3-319-10605-2_54 | 半稠密直接法：新帧在 $SE(3)$ 上跟踪，关键帧之间用 $\mathrm{Sim}(3)$ 对齐并构成位姿图 |
 | ORB-SLAM: a versatile and accurate monocular SLAM system (Mur-Artal, Montiel, Tardós) | IEEE TRO | 2015 | https://arxiv.org/abs/1502.00956 | ORB 特征贯穿跟踪、建图、重定位、回环；共视图与本质图 |
 | Direct sparse odometry (Engel, Koltun, Cremers) | TPAMI | 2018 | https://arxiv.org/abs/1607.02565 | 稀疏直接法 + 光度标定（曝光、响应、渐晕），窗口化光度 BA |
 | ORB-SLAM3: an accurate open-source library for visual, visual-inertial and multi-map SLAM (Campos et al.) | IEEE TRO | 2021 | https://arxiv.org/abs/2007.11898 | 单目/双目/RGB-D ± IMU，针孔与鱼眼，Atlas 多地图 |
