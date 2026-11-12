@@ -281,7 +281,7 @@ $$
 \varphi = \operatorname{atan2}(Q_1 - Q_3,\; Q_0 - Q_2), \qquad A = \tfrac12\sqrt{(Q_1 - Q_3)^2 + (Q_0 - Q_2)^2}, \qquad d = \frac{c\,\varphi}{4\pi f}.
 $$
 
-As in phase shifting, the offset $B$ (ambient light) cancels. The amplitude $A$ is a free confidence value: dark or distant surfaces return little light and give noisy phases.
+As in phase shifting, the offset $B$ (ambient light) cancels. (Mind the letters: this follows the usual iToF notation, where $A$ is the amplitude and $B$ the offset, the reverse of the phase-shifting formula above; here $B$ is not the stereo baseline either.) The amplitude $A$ is a free confidence value: dark or distant surfaces return little light and give noisy phases.
 
 ```python
 c_light = 299_792_458.0
@@ -498,7 +498,7 @@ Each probe is a lesson:
 
 How should the per-view costs $C\_j(x, y, i)$ be combined? The printed results answer it on our scene:
 
-```
+```text
 view 1 only  AbsRel 0.079, |e| < 1%: 52.3%, |e| < 5%: 78.3%
 mean of 4    AbsRel 0.047, |e| < 1%: 65.5%, |e| < 5%: 82.8%
 best 2 of 4  AbsRel 0.034, |e| < 1%: 67.9%, |e| < 5%: 90.5%
@@ -669,7 +669,7 @@ for name, z in (("sweep, best 2", z_best2), ("PatchMatch slanted", z_pm), ("Patc
 
 The output tells the story of the iterations:
 
-```
+```text
 PatchMatch iteration 0: AbsRel 0.365, |e| < 1%:  1.8%, |e| < 5%:  8.9%
 PatchMatch iteration 1: AbsRel 0.080, |e| < 1%: 20.1%, |e| < 5%: 64.9%
 PatchMatch iteration 2: AbsRel 0.043, |e| < 1%: 49.5%, |e| < 5%: 88.6%

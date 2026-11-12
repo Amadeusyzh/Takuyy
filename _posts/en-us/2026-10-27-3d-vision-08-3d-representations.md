@@ -255,7 +255,7 @@ $$
 \tilde{\mathbf u}' \sim K\Big(R + \frac{\mathbf t\,\mathbf n^\top}{d}\Big)K^{-1}\tilde{\mathbf u} .
 $$
 
-This is the plane homography of [post 2]({{ '/blog/2026/3d-vision-02-camera-calibration/' | relative_url }}) seen from two cameras instead of one; [post 4]({{ '/blog/2026/3d-vision-04-two-view-geometry/' | relative_url }}) meets it again in two-view geometry. The sign of the $\mathbf t\,\mathbf n^\top$ term depends on whether the plane equation is written $\mathbf n^\top\mathbf X = d$ or $\mathbf n^\top\mathbf X + d = 0$, so check it numerically.
+This is the plane homography of [post 2]({{ '/blog/2026/3d-vision-02-camera-calibration/' | relative_url }}) seen from two cameras instead of one; [post 4]({{ '/blog/2026/3d-vision-04-two-view-geometry/' | relative_url }}) met it again for planar scenes, and [post 7]({{ '/blog/2026/3d-vision-07-depth-estimation-and-multi-view-stereo/' | relative_url }}) warps with it for every plane of the plane sweep. The sign of the $\mathbf t\,\mathbf n^\top$ term depends on whether the plane equation is written $\mathbf n^\top\mathbf X = d$ or $\mathbf n^\top\mathbf X + d = 0$, so check it numerically.
 
 ```python
 def mpi_planes(near, far, D):
@@ -398,7 +398,7 @@ $$
 
 So the error falls with the **square** of the edge length. For a surface of area $A$ meshed with edges of length $s$, the number of triangles is $F \approx 2A/(\tfrac{\sqrt 3}{2}s^2) \propto s^{-2}$, hence $\delta \propto F^{-1}$: doubling the triangle count halves the error. For our torus meshed as an $n \times m$ grid of the angles $(\varphi, \theta)$, the largest bulge comes from the outer equator, a circle of radius $R + r$ divided into $n$ chords, plus the tube circle of radius $r$ divided into $m$ chords: $\delta\_{\max} \lesssim (R + r)(1 - \cos\frac{\pi}{n}) + r(1 - \cos\frac{\pi}{m})$.
 
-To measure the error we also need to **sample a mesh uniformly**, which is how meshes are compared with point clouds in every benchmark. Pick a triangle with probability proportional to its area, then a point inside it with barycentric coordinates $(1 - \sqrt{s},\ \sqrt{s}(1 - t),\ \sqrt{s}\,t)$ for $s, t$ uniform in $[0, 1]$; the square root compensates for the triangle being narrower near its apex.
+To measure the error we also need to **sample a mesh uniformly**, which is how meshes are compared with point clouds in every benchmark. Pick a triangle with probability proportional to its area, then a point inside it with barycentric coordinates $(1 - \sqrt{\xi\_1},\ \sqrt{\xi\_1}(1 - \xi\_2),\ \sqrt{\xi\_1}\,\xi\_2)$ for $\xi\_1, \xi\_2$ uniform in $[0, 1]$ (not to be confused with the edge length $s$ above); the square root compensates for the triangle being narrower near its apex.
 
 ```python
 def torus_mesh(n, m):

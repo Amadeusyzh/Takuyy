@@ -450,7 +450,7 @@ def so3_left_jacobian(w):
 
 
 def se3_exp(xi):
-    """xi = (rho, phi) -> 4x4 pose. The translation is V(phi) rho, not rho itself."""
+    """xi = (rho, phi) -> 4x4 pose. The translation is J_l(phi) rho, not rho itself."""
     T = np.eye(4)
     T[:3, :3] = so3_exp(xi[3:])
     T[:3, 3] = so3_left_jacobian(xi[3:]) @ xi[:3]
@@ -622,7 +622,7 @@ def camera_pose(p, forward, up=np.array([0.0, 0.0, 1.0])):
 
 def simulate_pose_graph(path, sig_odo, sig_loop, loop_radius=1.0, min_gap=20, stride=8, seed=0):
     """Ground-truth poses along `path` (k x 3 points), noisy odometry between consecutive poses,
-    and, every `stride` poses, a loop-closure edge to the nearest pose at least min_gap steps older
+    and, every `stride` poses, a loop-closure edge to the nearest pose more than min_gap steps older
     if it is closer than loop_radius.
     sig_* = (sigma_rho [m], sigma_phi [rad]). Returns truth, dead-reckoned initial guess, edges."""
     rng = np.random.default_rng(seed)
@@ -1142,7 +1142,7 @@ The scale of the simulated monocular result is recovered to within 0.4% (2.713 a
 
 ## Try it
 
-- The **pose-graph widget** in section 5.4. Set the heading noise to 3° and watch how much more the trajectory drifts than with 10 cm of distance noise (section 1.2). Add loop closures by hand at only one place and see where the error bubbles stay. Then insert two false loops and compare L2 with Cauchy.
+- The **pose-graph widget** in section 5.4. Set the heading noise to 3° and watch how much more the trajectory drifts than with 10 cm of distance noise (section 1.2). Add loop closures by hand at only one place and see where the remaining error is largest. Then insert two false loops and compare L2 with Cauchy.
 - Run the snippets in order: they form one script that prints the numbers of the code outputs. The figure script `bin/figures/3d-vision/vision3d_06.py` contains them verbatim and also prints the few other numbers quoted in the text and captions (convergence basins, pose spacing, normalized scores).
 - On the home page, the [Interactive Lab]({{ '/' | relative_url }}#lab) renders the scene from a camera pose that you drive. SLAM solves the inverse problem: it recovers that pose from the images alone.
 

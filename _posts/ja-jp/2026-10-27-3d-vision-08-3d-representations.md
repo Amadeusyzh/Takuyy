@@ -255,7 +255,7 @@ $$
 \tilde{\mathbf u}' \sim K\Big(R + \frac{\mathbf t\,\mathbf n^\top}{d}\Big)K^{-1}\tilde{\mathbf u} .
 $$
 
-これは[第 2 回]({{ '/blog/2026/3d-vision-02-camera-calibration/' | relative_url }})の平面ホモグラフィを 1 台ではなく 2 台のカメラから見たもので、[第 4 回]({{ '/blog/2026/3d-vision-04-two-view-geometry/' | relative_url }})の 2 視点幾何で再び登場します。$\mathbf t\,\mathbf n^\top$ の項の符号は平面の式を $\mathbf n^\top\mathbf X = d$ と書くか $\mathbf n^\top\mathbf X + d = 0$ と書くかで変わるので、数値で確認してください。
+これは[第 2 回]({{ '/blog/2026/3d-vision-02-camera-calibration/' | relative_url }})の平面ホモグラフィを 1 台ではなく 2 台のカメラから見たもので、[第 4 回]({{ '/blog/2026/3d-vision-04-two-view-geometry/' | relative_url }})では平面シーンで再び登場し、[第 7 回]({{ '/blog/2026/3d-vision-07-depth-estimation-and-multi-view-stereo/' | relative_url }})の平面掃引では各平面のワープに使いました。$\mathbf t\,\mathbf n^\top$ の項の符号は平面の式を $\mathbf n^\top\mathbf X = d$ と書くか $\mathbf n^\top\mathbf X + d = 0$ と書くかで変わるので、数値で確認してください。
 
 ```python
 def mpi_planes(near, far, D):
@@ -398,7 +398,7 @@ $$
 
 だけ離れます。つまり誤差は辺の長さの **2 乗**で減ります。面積 $A$ の曲面を辺の長さ $s$ でメッシュ化すると三角形の数は $F \approx 2A/(\tfrac{\sqrt 3}{2}s^2) \propto s^{-2}$ なので、$\delta \propto F^{-1}$、つまり三角形の数を 2 倍にすると誤差は半分になります。トーラスを角度 $(\varphi, \theta)$ の $n \times m$ 格子でメッシュ化すると、最大のふくらみは外側の赤道（半径 $R + r$ の円を $n$ 本の弦に分割）と、半径 $r$ の管の円を $m$ 本の弦に分割したものから来ます：$\delta\_{\max} \lesssim (R + r)(1 - \cos\frac{\pi}{n}) + r(1 - \cos\frac{\pi}{m})$。
 
-誤差を測るには**メッシュ上の一様サンプリング**も必要です。これはあらゆるベンチマークでメッシュを点群と比べる方法でもあります。面積に比例する確率で三角形を選び、$s, t$ を $[0, 1]$ の一様乱数として重心座標 $(1 - \sqrt{s},\ \sqrt{s}(1 - t),\ \sqrt{s}\,t)$ の点を取ります。平方根は、三角形が頂点付近で細くなることを補正します。
+誤差を測るには**メッシュ上の一様サンプリング**も必要です。これはあらゆるベンチマークでメッシュを点群と比べる方法でもあります。面積に比例する確率で三角形を選び、$\xi\_1, \xi\_2$ を $[0, 1]$ の一様乱数として（上の辺の長さ $s$ とは別物です）、重心座標 $(1 - \sqrt{\xi\_1},\ \sqrt{\xi\_1}(1 - \xi\_2),\ \sqrt{\xi\_1}\,\xi\_2)$ の点を取ります。平方根は、三角形が頂点付近で細くなることを補正します。
 
 ```python
 def torus_mesh(n, m):

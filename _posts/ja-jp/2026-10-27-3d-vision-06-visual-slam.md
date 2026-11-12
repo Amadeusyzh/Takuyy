@@ -450,7 +450,7 @@ def so3_left_jacobian(w):
 
 
 def se3_exp(xi):
-    """xi = (rho, phi) -> 4x4 pose. The translation is V(phi) rho, not rho itself."""
+    """xi = (rho, phi) -> 4x4 pose. The translation is J_l(phi) rho, not rho itself."""
     T = np.eye(4)
     T[:3, :3] = so3_exp(xi[3:])
     T[:3, 3] = so3_left_jacobian(xi[3:]) @ xi[:3]
@@ -622,7 +622,7 @@ def camera_pose(p, forward, up=np.array([0.0, 0.0, 1.0])):
 
 def simulate_pose_graph(path, sig_odo, sig_loop, loop_radius=1.0, min_gap=20, stride=8, seed=0):
     """Ground-truth poses along `path` (k x 3 points), noisy odometry between consecutive poses,
-    and, every `stride` poses, a loop-closure edge to the nearest pose at least min_gap steps older
+    and, every `stride` poses, a loop-closure edge to the nearest pose more than min_gap steps older
     if it is closer than loop_radius.
     sig_* = (sigma_rho [m], sigma_phi [rad]). Returns truth, dead-reckoned initial guess, edges."""
     rng = np.random.default_rng(seed)
@@ -1142,7 +1142,7 @@ ATE without alignment 6.69 m;  Sim(3)-aligned 0.074 m (scale 2.713 = 1/0.37)
 
 ## 試してみよう
 
-- 5.4 節の**姿勢グラフのウィジェット**。方位ノイズを 3° にして、距離ノイズ 10 cm のときよりどれだけ大きくドリフトするかを見てください（1.2 節）。1 か所だけに手でループ閉じ込みを加え、誤差の泡がどこに残るかを確かめましょう。それから誤ったループを 2 つ入れて、L2 と Cauchy を比べてください。
+- 5.4 節の**姿勢グラフのウィジェット**。方位ノイズを 3° にして、距離ノイズ 10 cm のときよりどれだけ大きくドリフトするかを見てください（1.2 節）。1 か所だけに手でループ閉じ込みを加え、残った誤差がどこで大きいかを確かめましょう。それから誤ったループを 2 つ入れて、L2 と Cauchy を比べてください。
 - コード片を順番に実行してください。全体で 1 つのスクリプトになっていて、コードの出力に出てくる数値を表示します。図のスクリプト `bin/figures/3d-vision/vision3d_06.py` にはこれらがそのまま含まれており、本文と図の説明で引用しているその他の少数の数値（収束域、姿勢の間隔、正規化スコア）も表示します。
 - ホームページの[インタラクティブラボ]({{ '/' | relative_url }}#lab)は、あなたが操作するカメラ姿勢からシーンをレンダリングします。SLAM が解くのはその逆問題、つまり画像だけからその姿勢を復元することです。
 

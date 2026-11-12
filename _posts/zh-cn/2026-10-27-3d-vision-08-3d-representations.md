@@ -25,7 +25,7 @@ related_posts: false
 - [第 1 篇]({{ '/blog/2026/3d-vision-01-image-formation-and-camera-models/' | relative_url }})中的针孔相机 $P = K[R \mid \mathbf t]$、反投影 $K^{-1}\tilde{\mathbf u}$ 与 OpenCV 相机坐标系。
 - 深度图及其来源：[第 7 篇]({{ '/blog/2026/3d-vision-07-depth-estimation-and-multi-view-stereo/' | relative_url }})。这里只需知道深度图是一幅由深度组成的图像。
 - [图形学第 8 篇]({{ '/blog/2026/graphics-08-geometry-processing/' | relative_url }})程度的网格、有符号距离函数与 Marching Cubes。本文链接过去，不再重复。
-- 第 7、8 节若了解 [NeRF]({{ '/blog/2026/neural-rendering-02-nerf/' | relative_url }}) 与 [3D 高斯泼溅]({{ '/blog/2026/neural-rendering-04-3d-gaussian-splatting/' | relative_url }})的基础会更好，但不是必需。
+- 第 7、8 节若了解 [NeRF]({{ '/blog/2026/neural-rendering-02-nerf/' | relative_url }}) 与 [三维高斯泼溅]({{ '/blog/2026/neural-rendering-04-3d-gaussian-splatting/' | relative_url }})的基础会更好，但不是必需。
 - Python、NumPy 与 SciPy。各代码块相互依赖：请在同一个文件或 notebook 中按顺序运行。它们全部摘自 `bin/figures/3d-vision/vision3d_08.py`，该脚本也绘制了所有插图，文中引用的每个数字都由它打印出来。
 
 ## 1. 同一个形状，多种表示
@@ -255,7 +255,7 @@ $$
 \tilde{\mathbf u}' \sim K\Big(R + \frac{\mathbf t\,\mathbf n^\top}{d}\Big)K^{-1}\tilde{\mathbf u} .
 $$
 
-这正是[第 2 篇]({{ '/blog/2026/3d-vision-02-camera-calibration/' | relative_url }})的平面单应，只是从一台相机换成了两台；[第 4 篇]({{ '/blog/2026/3d-vision-04-two-view-geometry/' | relative_url }})在两视图几何中会再次遇到它。$\mathbf t\,\mathbf n^\top$ 项的符号取决于平面方程写成 $\mathbf n^\top\mathbf X = d$ 还是 $\mathbf n^\top\mathbf X + d = 0$，务必用数值检查。
+这正是[第 2 篇]({{ '/blog/2026/3d-vision-02-camera-calibration/' | relative_url }})的平面单应，只是从一台相机换成了两台；[第 4 篇]({{ '/blog/2026/3d-vision-04-two-view-geometry/' | relative_url }})在平面场景中再次遇到过它，[第 7 篇]({{ '/blog/2026/3d-vision-07-depth-estimation-and-multi-view-stereo/' | relative_url }})的平面扫描也用它变换每一个平面。$\mathbf t\,\mathbf n^\top$ 项的符号取决于平面方程写成 $\mathbf n^\top\mathbf X = d$ 还是 $\mathbf n^\top\mathbf X + d = 0$，务必用数值检查。
 
 ```python
 def mpi_planes(near, far, D):
@@ -398,7 +398,7 @@ $$
 
 所以误差随边长的**平方**下降。面积为 $A$、边长为 $s$ 的曲面需要的三角形数为 $F \approx 2A/(\tfrac{\sqrt 3}{2}s^2) \propto s^{-2}$，因此 $\delta \propto F^{-1}$：三角形数翻倍，误差减半。我们把圆环按角度 $(\varphi, \theta)$ 划成 $n \times m$ 的网格，最大的鼓出来自外赤道（半径 $R + r$ 的圆被分成 $n$ 段弦），再加上半径 $r$ 的管截面圆被分成 $m$ 段弦：$\delta\_{\max} \lesssim (R + r)(1 - \cos\frac{\pi}{n}) + r(1 - \cos\frac{\pi}{m})$。
 
-为了测量误差，我们还需要**在网格上均匀采样**，这也是所有基准把网格与点云比较的方法。按面积比例的概率选一个三角形，然后取重心坐标 $(1 - \sqrt{s},\ \sqrt{s}(1 - t),\ \sqrt{s}\,t)$ 的点，其中 $s, t$ 在 $[0, 1]$ 上均匀；平方根补偿了三角形在顶点附近更窄这一点。
+为了测量误差，我们还需要**在网格上均匀采样**，这也是所有基准把网格与点云比较的方法。按面积比例的概率选一个三角形，然后取重心坐标 $(1 - \sqrt{\xi\_1},\ \sqrt{\xi\_1}(1 - \xi\_2),\ \sqrt{\xi\_1}\,\xi\_2)$ 的点，其中 $\xi\_1, \xi\_2$ 在 $[0, 1]$ 上均匀（不要与上面的边长 $s$ 混淆）；平方根补偿了三角形在顶点附近更窄这一点。
 
 ```python
 def torus_mesh(n, m):
@@ -777,7 +777,7 @@ grid 70x70      4900 floats  mean |error| 0.0007  near the boundary 0.0008  IoU 
 
 ### 8.1 基元
 
-[3D 高斯泼溅]({{ '/blog/2026/neural-rendering-04-3d-gaussian-splatting/' | relative_url }})（Kerbl 等，2023）把场景表示为一组各向异性高斯。每个高斯有均值 $\boldsymbol\mu \in \mathbb R^3$、协方差 $\Sigma = R S S^\top R^\top$（旋转 $R$ 来自单位四元数，尺度 $S = \mathrm{diag}(s\_1, s\_2, s\_3)$）、不透明度 $o$ 以及用球谐表示的依赖视角的颜色。它在 $\mathbf x$ 处的密度为
+[三维高斯泼溅]({{ '/blog/2026/neural-rendering-04-3d-gaussian-splatting/' | relative_url }})（Kerbl 等，2023）把场景表示为一组各向异性高斯。每个高斯有均值 $\boldsymbol\mu \in \mathbb R^3$、协方差 $\Sigma = R S S^\top R^\top$（旋转 $R$ 来自单位四元数，尺度 $S = \mathrm{diag}(s\_1, s\_2, s\_3)$）、不透明度 $o$ 以及用球谐表示的依赖视角的颜色。它在 $\mathbf x$ 处的密度为
 
 $$
 G(\mathbf x) = o \, \exp\Big(-\tfrac12 (\mathbf x - \boldsymbol\mu)^\top \Sigma^{-1} (\mathbf x - \boldsymbol\mu)\Big).
@@ -819,7 +819,7 @@ print("centres inside the tube by: median %.4f" % np.median(-sdf_torus(mu_g)))
 
 {% include blog_figure.liquid path="assets/img/blog/3d-vision/08-gaussians.svg" caption="左：用 k-means 拟合到 20,000 个表面采样的 100 个高斯，画在 $\pm 2\sigma$ 处；它们变成贴在表面上的扁圆盘。中：混合密度在切片 $y = 0$ 上的对数，以及真实的管截面圆（虚线）；密度是一层壳，在相邻圆盘重叠处最厚。右：每个高斯最薄轴与其中心处真实法向的夹角：中位数 1.6°，最大 4.4°；厚度的中位数是长度的 0.14。" %}
 
-高斯自己压扁成与表面相切的圆盘，最薄轴沿着法向。它们并不恰好在表面上：弯曲面片上一簇点的均值位于曲线内侧（这里中心平均位于管内 0.017 处，取中位数），与网格中的弓高效应相同。这一观察推动了面向表面的变体：**2D 高斯泼溅**（Huang 等，2024）使用扁平的二维高斯圆盘（面元），法向定义明确，使深度和法向一致、表面可以提取。[神经渲染第 5 篇]({{ '/blog/2026/neural-rendering-05-3dgs-frontiers/' | relative_url }})综述了这些及其他变体。
+高斯自己压扁成与表面相切的圆盘，最薄轴沿着法向。它们并不恰好在表面上：弯曲面片上一簇点的均值位于曲线内侧（这里中心平均位于管内 0.017 处，取中位数），与网格中的弓高效应相同。这一观察推动了面向表面的变体：**二维高斯泼溅**（2D Gaussian Splatting，2DGS；Huang 等，2024）使用扁平的二维高斯圆盘（面元），法向定义明确，使深度和法向一致、表面可以提取。[神经渲染第 5 篇]({{ '/blog/2026/neural-rendering-05-3dgs-frontiers/' | relative_url }})综述了这些及其他变体。
 
 从高斯得到网格，最常见的路线是间接的：从许多视角渲染深度图，融合进 TSDF（第 6.2 节），再运行 Marching Cubes。第 9 节列出了所有表示之间的路线。
 
@@ -853,7 +853,7 @@ print("centres inside the tube by: median %.4f" % np.median(-sdf_torus(mu_g)))
 
 ### 10.2 标度律
 
-对数坐标图上每条曲线都是直线，斜率由两件事决定：误差如何依赖分辨率，内存如何依赖分辨率。设 $h$ 为分辨率（采样间距、体素边长或边长），$M$ 为内存。
+对数坐标图上每条曲线都是直线，斜率由两件事决定：误差如何依赖分辨率，内存如何依赖分辨率。设 $h$ 为分辨率（采样间距、体素边长或网格的边长），$M$ 为内存。
 
 | 表示 | 误差 | 内存 | 误差作为内存的函数 |
 | --- | --- | --- | --- |
@@ -900,7 +900,7 @@ $$
 g(\{\mathbf p_1, \dots, \mathbf p_n\}) = \psi\Big(\max_{i} h(\mathbf p_i)\Big).
 $$
 
-其中 $\psi$ 是作用在池化向量上的第二个 MLP（论文中记为 $\gamma$；这里改名，以免与第 7.2 节的位置编码冲突）。因为最大值不关心顺序，$g$ 按构造就是排列不变的。最大值的 $K$ 个通道中每个都由一个点"赢得"，所以至多 $K$ 个点决定全局特征；论文称它们为**关键点**（critical points），其余每个点都可以删掉或稍微移动而不改变输出。
+其中 $\psi$ 是作用在池化向量上的第二个 MLP（论文中记为 $\gamma$；这里改名，以免与第 7.2 节的位置编码冲突）。因为最大值不关心顺序，$g$ 按构造就是排列不变的。最大值的 $K$ 个通道中每个都由一个点"赢得"，所以至多 $K$ 个点决定全局特征；论文称它们为**临界点**（critical points；与第 3 篇的特征关键点无关），其余每个点都可以删掉或稍微移动而不改变输出。
 
 ```python
 def pointnet_feature(P, Ws):
@@ -923,7 +923,7 @@ print("permuted input, same feature:", np.allclose(g1, g2))
 print("critical points: %d of 2000; feature from them alone equal: %s" % (len(crit), np.allclose(g1, g3)))
 ```
 
-输出：`permuted input, same feature: True` 和 `critical points: 218 of 2000; feature from them alone equal: True`。即使权重是随机的，2000 个点中也只有 218 个承载了全部 256 维特征。训练后的权重下，关键点勾勒出形状的骨架，这就是 PointNet 对缺失和扰动的点很鲁棒的原因。PointNet 缺少的是**局部性**：没有哪一层能看到一个点与其邻居之间的关系。**PointNet++**（Qi 等，2017）把 PointNet 分层地施加到局部邻域上来弥补这一点：用最远点采样（第 3.2 节）选取邻域中心，用半径查询收集邻域成员。
+输出：`permuted input, same feature: True` 和 `critical points: 218 of 2000; feature from them alone equal: True`。即使权重是随机的，2000 个点中也只有 218 个承载了全部 256 维特征。训练后的权重下，临界点勾勒出形状的骨架，这就是 PointNet 对缺失和扰动的点很鲁棒的原因。PointNet 缺少的是**局部性**：没有哪一层能看到一个点与其邻居之间的关系。**PointNet++**（Qi 等，2017）把 PointNet 分层地施加到局部邻域上来弥补这一点：用最远点采样（第 3.2 节）选取邻域中心，用半径查询收集邻域成员。
 
 ### 12.2 稀疏卷积
 
