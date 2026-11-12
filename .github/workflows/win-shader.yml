@@ -1,0 +1,44 @@
+# Measures Lab demo variants in Chrome on Windows, where WebGL runs on ANGLE -> Direct3D 11 and shaders are
+# compiled by FXC (a different compiler from the Linux runners). No AI and no API key involved.
+# Triggered by pushes to ops/win; the variants are the files in ops/win/variants. Results go to report/win.
+name: Windows shader check
+
+on:
+  push:
+    branches: ["ops/win"]
+
+permissions:
+  contents: write
+
+jobs:
+  win:
+    runs-on: windows-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Install Playwright
+        shell: bash
+        run: |
+          cd ops/win && npm init -y >/dev/null && npm install --silent playwright@1.49.1
+      - name: Measure
+        shell: bash
+        env:
+          REPORT_DIR: ${{ runner.temp }}/winrep
+        run: |
+          cd ops/win && node measure.js 2>&1 | tee "$RUNNER_TEMP/measure.txt" || true
+      - name: Publish report
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          REP="$RUNNER_TEMP/winrep"; mkdir -p "$REP"; cp "$RUNNER_TEMP/measure.txt" "$REP/" || true
+          cd "$REP" && git init -q && git add -A \
+            && git -c user.name=yangzehua -c user.email=yangzehua@akane.waseda.jp commit -q -m "windows shader report" \
+            && git -c http.extraheader="AUTHORIZATION: basic $(printf 'x-access-token:%s' "$GH_TOKEN" | base64 -w0)" \
+                 push -q -f "https://github.com/$GITHUB_REPOSITORY" HEAD:refs/heads/report/win
+          echo "report pushed"

@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>SDF harness</title>
+<style>
+body { margin: 0; font: 14px sans-serif; background: #111; color: #ddd; }
+.lab-stage { position: relative; width: 960px; height: 540px; }
+.lab-stage canvas { width: 960px; height: 540px; display: block; }
+.lab-hint, .lab-stats { position: absolute; left: 8px; color: #ddd; font-size: 12px; }
+.lab-hint { top: 8px; } .lab-stats { bottom: 8px; white-space: pre-line; }
+[hidden] { display: none !important; }
+</style></head><body>
+<section class="lab" id="lab">
+<div class="lab-panel" role="tabpanel" id="lab-sdf" aria-labelledby="lab-tab-sdf" data-lang="en">
+  <div class="lab-stage">
+    <canvas role="img" style="touch-action: none; cursor: grab"></canvas>
+    <span class="lab-hint"></span>
+    <span class="lab-stats"></span>
+    <span class="sdf-legend" hidden=""><span class="sdf-legend-bar"></span><span data-t="lo"></span><span class="sdf-legend-hi"></span><span class="sdf-legend-over" data-t="over"></span></span>
+  </div>
+  <div class="lab-controls">
+    <div class="lab-seg" role="group">
+      <button type="button" class="lab-b" data-tool="move" data-t="t_move"></button>
+      <button type="button" class="lab-b" data-tool="add" data-t="t_add"></button>
+      <button type="button" class="lab-b" data-tool="probe" data-t="t_probe"></button>
+    </div>
+    <div class="lab-seg sdf-shapes" role="group" hidden="">
+      <button type="button" class="lab-b" data-shape="0" data-t="s0"></button>
+      <button type="button" class="lab-b" data-shape="1" data-t="s1"></button>
+      <button type="button" class="lab-b" data-shape="2" data-t="s2"></button>
+      <button type="button" class="lab-b" data-shape="3" data-t="s3"></button>
+    </div>
+    <div class="lab-seg" role="group">
+      <button type="button" class="lab-b" data-preset="0" data-t="p0"></button>
+      <button type="button" class="lab-b" data-preset="1" data-t="p1"></button>
+      <button type="button" class="lab-b" data-preset="2" data-t="p2"></button>
+    </div>
+  </div>
+  <div class="lab-controls">
+    <div class="lab-seg" role="group">
+      <button type="button" class="lab-b" data-view="0" data-t="v0"></button>
+      <button type="button" class="lab-b" data-view="1" data-t="v1"></button>
+      <button type="button" class="lab-b" data-view="2" data-t="v2"></button>
+    </div>
+    <label><span data-t="k"></span> <input type="range" data-input="k" min="0" max="1" step="0.01"> <span class="sdf-k"></span></label>
+    <label><span data-t="steps"></span> <input type="range" data-input="steps" min="8" max="256" step="1"> <span class="sdf-steps"></span></label>
+    <label class="sdf-slice" hidden=""><span data-t="slice"></span> <input type="range" data-input="slice" min="0.05" max="2.2" step="0.01"></label>
+    <div class="lab-seg" role="group">
+      <button type="button" class="lab-b" data-toggle="relax" data-t="relax"></button>
+      <button type="button" class="lab-b" data-toggle="soft" data-t="soft"></button>
+      <button type="button" class="lab-b" data-toggle="ao" data-t="ao"></button>
+    </div>
+  </div>
+  <div class="sdf-editor">
+    <span class="sdf-selname"></span>
+    <div class="sdf-seltools" hidden="">
+      <div class="lab-seg" role="group">
+        <button type="button" class="lab-b" data-op="0" data-t="op0"></button>
+        <button type="button" class="lab-b" data-op="1" data-t="op1"></button>
+      </div>
+      <label><span data-t="size"></span> <input type="range" data-input="size" min="0.3" max="1.8" step="0.01"></label>
+      <label><span data-t="height"></span> <input type="range" data-input="height" min="-0.6" max="3" step="0.01"></label>
+      <button type="button" class="lab-b lab-solo" data-action="delete" data-t="del"></button>
+    </div>
+  </div>
+  <p class="lab-caption"><span data-t="caption"></span> <span data-t="more"></span> <a href="/Takuyy/blog/2026/graphics-08-geometry-processing/" data-t="l08"></a> · <a href="/Takuyy/blog/2026/graphics-05-ray-and-path-tracing/" data-t="l05"></a></p>
+</div>
+</section>
+<script>
+(function () {
+  var v = (location.search.match(/v=([\w-]+)/) || [])[1] || 'orig';
+  var s = document.createElement('script');
+  s.src = 'variants/' + v + '.js';
+  document.body.appendChild(s);
+})();
+</script>
+</body></html>
