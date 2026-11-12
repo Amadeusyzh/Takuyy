@@ -46,7 +46,7 @@ There is a catch. Images alone cannot tell where the world origin is, which way 
 
 ### 1.2 The running example
 
-We build one scene and use it for sections 2 and 3: 120 points on the ground and on two boxes, seen by 8 cameras on an arc 5 m away, with $f = 500$ px and $640\times480$ images. Every observation gets Gaussian noise with $\sigma = 0.5$ px. This is the same setup as post 02's synthetic calibration, but now the 3D points are unknown too.
+We build one scene and use it for sections 2 and 3: 120 points on the ground and on two boxes, seen by 8 cameras on an arc 5 m away, with $f = 500$ px and $640\times480$ images. Every observation gets Gaussian noise with $\sigma = 0.5$ px. As in post 02's synthetic calibration, we simulate so that the truth is known, but now the 3D points are unknown too.
 
 ```python
 import numpy as np
@@ -237,7 +237,7 @@ true centre [-0.745 -2.    -4.944]
 
 This triple has **four** real solutions. One is the true camera to machine precision. The others are genuine, exact solutions of the three-point problem: each places a camera that sees the three points at exactly the observed pixels. One of them even sits below the ground plane ($y = +2.1$, under the floor, looking up). A fourth point removes the ambiguity at once: projected with the wrong poses it misses its pixel by 88 to 209 px. Inside RANSAC we do not even need a separate check, because the wrong poses get few inliers.
 
-{% include blog_figure.liquid path="assets/img/blog/3d-vision/05-p3p.svg" caption="P3P on three points seen by camera 4 (two on the ground, one on the tall box). Left: the four camera centres $\mathbf C^{(1)}$ to $\mathbf C^{(4)}$ that see $\mathbf X\_1,\mathbf X\_2,\mathbf X\_3$ under exactly the observed angles; $\mathbf C^{(2)}$ is the true camera, $\mathbf C^{(3)}$ lies under the floor. Right: the quartic $q(v)$ of the snippet, with its four positive real roots $v=0.522$, $0.846$, $1.285$, $1.608$, one per candidate. How many roots are real depends on where the camera is relative to the 'danger cylinder' through the three points; Gao et al. (2003) classify all cases." %}
+{% include blog_figure.liquid path="assets/img/blog/3d-vision/05-p3p.svg" caption="P3P on three points seen by camera 4 (two on the ground, one on the tall box). Left: the four camera centres $\mathbf C^{(1)}$ to $\mathbf C^{(4)}$ that see $\mathbf X\_1,\mathbf X\_2,\mathbf X\_3$ under exactly the observed angles; $\mathbf C^{(2)}$ is the true camera, $\mathbf C^{(3)}$ lies under the floor. Right: the quartic $q(v)$ of the snippet, with its four positive real roots $v=0.522$, $0.846$, $1.285$, $1.608$, one per candidate. The number of real roots changes only where two roots merge. When one of the merging solutions is the true pose, the camera lies on the 'danger cylinder' (through the three points, with its axis perpendicular to their plane), where P3P is also ill-conditioned; Gao et al. (2003) classify all cases." %}
 
 Modern P3P solvers, such as Kneip et al. (2011) and Lambda Twist (Persson and Nordberg, 2018), compute the same solutions more stably and faster. Lambda Twist avoids the quartic altogether. They differ in numerics, not in what they compute.
 
@@ -509,7 +509,7 @@ $$
 
 This **reduced camera system** has only $6m$ unknowns. Once it is solved, each point is updated independently by **back-substitution**, $\delta\mathbf X\_j = C\_j^{-1}\big(-\mathbf g\_{p,j} - \sum\_i E\_{ij}^\top\delta\mathbf c\_i\big)$. Nothing is approximated: the result is exactly the Gauss-Newton step of the full system. The cost changes dramatically. A typical internet-photo reconstruction with $m = 1000$ cameras and $n = 200\,000$ points has $606\,000$ unknowns; a dense solve would be hopeless, while the Schur complement leaves a $6000\times6000$ system plus 200 000 inversions of $3\times3$ matrices. Photogrammetrists used this reduction from the early days of bundle adjustment, and it is the core of every BA solver since (Triggs et al. 2000, Lourakis and Argyros 2009).
 
-Levenberg-Marquardt adds the damping of post 02, $\lambda\,\mathrm{diag}$, to the diagonals of $B$ and $C$ before the elimination; it does not change the structure. One more detail: we hold camera 1 fixed by removing its 6 unknowns from $S$. That fixes 6 of the 7 gauge freedoms; section 3.7 explains why the seventh, scale, does no harm. Here is the whole bundle adjuster:
+**Levenberg-Marquardt** (post 02, section 4.2) makes this Gauss-Newton step safe. It solves $\big(J^\top J + \lambda\,\mathrm{diag}(J^\top J)\big)\boldsymbol\delta = -J^\top\mathbf r$; if the cost drops, it accepts the step and lowers $\lambda$ (we divide by 3), otherwise it rejects the step and raises $\lambda$ (we multiply by 4). A small $\lambda$ gives the fast Gauss-Newton step near the minimum, a large one gives short steps along the scaled gradient far from it. In BA the damping is added to the diagonals of $B$ and $C$ before the elimination, so it does not change the structure. One more detail: we hold camera 1 fixed by removing its 6 unknowns from $S$. That fixes 6 of the 7 gauge freedoms; section 3.7 explains why the seventh, scale, does no harm. Here is the whole bundle adjuster:
 
 ```python
 def robust_weight(s, kernel, delta):
@@ -626,11 +626,11 @@ expected rms at the optimum: sigma * sqrt(dof / L) = 0.6289 px
 rms with the true cameras and points: 0.7070 px
 ```
 
-(The coupling blocks are stored densely for readability; with $\vert\mathcal O\vert \ll mn$ a real solver stores only the nonzero $E\_{ij}$.) We start from the true scene with every camera rotated by about 2° and every centre and every point moved by about 15 cm, an RMS reprojection error of 47 px. Two iterations bring it to 0.63 px, and after six the cost no longer changes.
+(The coupling blocks are stored densely for readability; with $\vert\mathcal O\vert \ll mn$ a real solver stores only the nonzero $E\_{ij}$.) We start from the true scene with every camera rotated by a random 2° per axis (2.0° to 6.6° in total) and every centre and every point moved by 15 cm per coordinate (26 cm RMS in 3D), an RMS reprojection error of 47 px. Two iterations bring it to 0.63 px, and after six the cost no longer changes.
 
 Is 0.6283 px the right answer? At the optimum of a least-squares problem, the residuals have lost the degrees of freedom the model used to fit the noise: $\mathbb E\,\lVert\mathbf r\rVert^2 = \sigma^2(2L - p)$ with $p = 6m + 3n - 7 = 401$ effective parameters. Our RMS is the per-observation length, $\sqrt{\lVert\mathbf r\rVert^2/L}$, so the expected value is $\sigma\sqrt{(2L - p)/L} = 0.6289$ px, against 0.6283 px measured. The true scene, with no degrees of freedom fitted, gives $\sigma\sqrt2 = 0.707$ px; the optimum is *below* the truth, which is the signature of a correctly converged estimator, not of overfitting gone wrong.
 
-{% include blog_figure.liquid path="assets/img/blog/3d-vision/05-ba.svg" caption="Bundle adjustment of the running example. Left: RMS reprojection error per LM iteration $k$ (purple, left axis): 46.81, 2.38, 0.63 px, then flat at the expected 0.629 px (dotted). The damping $\lambda$ (orange, right axis) falls by 3 each time, because every step was accepted. Middle and right: top view ($x$ against $z$) of the estimate (purple) over the truth (gray) after aligning the two with a similarity transform; red lines join each estimated point to its true position. At $k=0$ the RMS 3D errors are 0.26 for the camera centres and 0.25 for the points; after BA they are 0.0047 and 0.0043, 2 to 5 mm in a 10 m scene." %}
+{% include blog_figure.liquid path="assets/img/blog/3d-vision/05-ba.svg" caption="Bundle adjustment of the running example. Left: RMS reprojection error per LM iteration $k$ (purple, left axis): 46.81, 2.38, 0.63 px, then flat at the expected 0.629 px (dotted). The damping $\lambda$ (orange, right axis) falls by 3 each time, because every step was accepted. Middle and right: top view ($x$ against $z$) of the estimate (purple) over the truth (gray) after aligning the two with a similarity transform; red lines join each estimated point to its true position. At $k=0$ the RMS 3D errors are 0.26 for the camera centres and 0.25 for the points; after BA they are 0.0047 and 0.0043, about 4 to 5 mm in a scene about 9 m across." %}
 
 ### 3.6 How accurate is the result?
 
@@ -669,7 +669,7 @@ The errors drop by a factor of 55 to 60, to about 4 to 5 mm. This also answers a
 
 Try it yourself in the widget below. It runs the same algorithm on a smaller scene (6 cameras, 42 points) in your browser.
 
-{% include widget.liquid name="3d-vision-bundle-adjustment" height="760" caption="Bundle adjustment, one Levenberg-Marquardt step at a time: the post's algorithm (Jacobians of section 3.3, Schur complement with camera 1 fixed, back-substitution, Marquardt damping) on 6 cameras and 42 points. The 3D view shows the truth in gray and the estimate in blue (cameras) and purple (points), after removing the free scale; red lines are point errors. Drag to orbit. The image shows the observations of the selected camera (dots), the current predictions (purple crosses) and the residuals between them. Try a larger start error, then switch on outliers and compare the L2, Huber and Cauchy kernels: with 15% outliers, L2 converges to a wrong answer with a large residual, while Cauchy recovers the scene. The dashed line in the chart is the RMS expected at the optimum, $\sigma\sqrt{(2L-p)/L}$." %}
+{% include widget.liquid name="3d-vision-bundle-adjustment" height="760" caption="Bundle adjustment, one Levenberg-Marquardt step at a time: the post's algorithm (Jacobians of section 3.3, Schur complement with camera 1 fixed, back-substitution, Marquardt damping) on 6 cameras and 42 points. The 3D view shows the truth in gray and the estimate in blue (cameras) and purple (points), after removing the free scale; red lines are point errors. Drag to orbit. The image shows the observations of the selected camera (dots), the current predictions (purple crosses) and the residuals between them. Try a larger start error, then switch on outliers and compare the L2, Huber and Cauchy kernels. With 15% outliers L2 converges to a wrong answer with inlier residuals of several pixels, and Huber gets close to the scene. Cauchy is not convex: from the default start it can get stuck with some points left at large residuals, but with the start error lowered to ×0.3 it recovers the scene best of the three. The dashed line in the chart is the RMS expected at the optimum, $\sigma\sqrt{(2L-p)/L}$." %}
 
 ### 3.7 Gauge freedom
 
@@ -709,8 +709,8 @@ eigenvalues of J^T J: 7 smallest all below 5e-09, then 2359, 5140, ..., largest 
 
 The rank is $408 - 7 = 401$, and the gap between the seventh and the eighth eigenvalue is more than 11 orders of magnitude. Plain Gauss-Newton would try to invert a singular matrix. There are four standard ways out:
 
-1. **Fix parameters.** Hold one camera fixed (6 DoF) and one more number for the scale, for example the distance between two camera centres or one coordinate of the second camera. COLMAP fixes the first camera's pose and one coordinate of the second camera's position.
-2. **Let damping handle it.** LM's $\lambda\,\mathrm{diag}$ makes the system invertible, and the step it produces has no component along the flat directions, because those directions do not lower the cost. Our solver fixes camera 1 and leaves the scale to the damping.
+1. **Fix parameters.** Hold one camera fixed (6 DoF) and one more number for the scale, for example the distance between two camera centres or one coordinate of the second camera. COLMAP's global BA, for example, fixes the pose of one image and one translation coordinate of a second image.
+2. **Let damping handle it.** LM's damping makes the system invertible. The gradient $J^\top\mathbf r$ has no component along the flat directions (moving along them does not change any residual), so with Levenberg's $\lambda I$ the step has none either; with Marquardt's $\lambda\,\mathrm{diag}$ it can drift slightly along them, which is harmless because the cost does not change there. Our solver fixes camera 1 and leaves the scale to the damping.
 3. **Minimal or inner constraints.** Add constraints that remove exactly the gauge, such as fixing the centroid and the mean distance of the points, or solve with a pseudo-inverse. Photogrammetrists call this a free-network adjustment.
 4. **Priors.** GPS positions, an IMU's gravity direction or a known baseline pin down some or all of the gauge with real information.
 
@@ -913,13 +913,13 @@ BA True : 826 points, order [0, 4, 3, 5, 7, 8, 10, 6]..., centre error at camera
 
 Errors are measured in the frame the reconstruction itself defines: camera 0 at its true pose, and the scale set by the initial baseline from camera 0 to camera 4. Without BA, each registration inherits the errors of the points it was placed against, and those points inherit the errors of the cameras that triangulated them. The errors compound: after 20 m the last camera is 1.2 m off. With a BA after every image, all observations constrain all parameters together, and the last camera is 4.4 cm off, 27 times better.
 
-{% include blog_figure.liquid path="assets/img/blog/3d-vision/05-incremental.svg" localized="true" caption="The toy incremental SfM on the corridor scene (30 cameras every 0.7 m, 900 points 4 to 12 m away, 1 px noise). Left: top view of the camera centres (the $z$ axis is stretched about 10 times); the reconstruction is anchored at camera 0 and scaled by the initial baseline to camera 4. Without BA (orange) rotation errors bend the trajectory and scale errors stretch it: the last camera is 1.20 m off. With BA after every image (purple) it stays on the truth (black). Top right: centre error per camera, log scale (camera 29: 1.202 m against 0.044 m). Bottom right: the local scale, estimated over true distance between consecutive cameras; without BA it drifts to 1.09 at the end (single steps up to 1.19), with BA it stays within 1% of 1." %}
+{% include blog_figure.liquid path="assets/img/blog/3d-vision/05-incremental.svg" localized="true" caption="The toy incremental SfM on the corridor scene (30 cameras every 0.7 m, 900 points 4 to 12 m away, 1 px noise). Left: top view of the camera centres (the $z$ axis is stretched about 10 times); the reconstruction is anchored at camera 0 and scaled by the initial baseline to camera 4. Without BA (orange) rotation errors bend the trajectory and scale errors stretch it: the last camera is 1.20 m off. With BA after every image (purple) it stays on the truth (black). Top right: centre error per camera, log scale (camera 29: 1.202 m against 0.044 m). Bottom right: the local scale, estimated over true distance between consecutive cameras; without BA it drifts upwards, to 1.16 on the last step (1.19 at most); with BA it stays within about 1% of 1." %}
 
 ### 4.3 What COLMAP does better, and why each step matters
 
 Our toy shows the skeleton. The details that make COLMAP robust on real photo collections are worth knowing, because they are also the knobs you turn when a reconstruction fails.
 
-**Choosing the initial pair.** The first pair defines the frame and the scale and seeds everything else, so it must be reliable. It needs many verified matches *and* a wide baseline. A pair whose matches are explained about as well by a homography as by an essential matrix is a bad choice: it is either a pure rotation (no baseline, no depth, post 04) or a nearly planar scene, where the essential matrix is poorly determined. Our first version of the corridor scene had all points within a 2 m deep slab 8 m away; the linear eight-point estimate for the pair (0, 4) was then 65° off in its translation direction, and the reconstruction failed. Spreading the points over 4 to 12 m fixed it. COLMAP prefers pairs with many verified matches in a densely connected part of the scene graph, and its two-view geometry step compares homography and essential-matrix inliers to flag planar and pure-rotation pairs.
+**Choosing the initial pair.** The first pair defines the frame and the scale and seeds everything else, so it must be reliable. It needs many verified matches *and* a wide baseline. A pair whose matches are explained about as well by a homography as by an essential matrix is a bad choice: it is either a pure rotation (no baseline, no depth, post 04) or a nearly planar scene, where the essential matrix is poorly determined. Our first version of the corridor scene had all points within a 2 m deep slab 8 m away; the linear eight-point estimate for the pair (0, 4) was then about 50° off in its translation direction (median 52° over 20 random versions of that scene, against 0.4° for points spread over 4 to 12 m), and the reconstruction failed. Spreading the points over 4 to 12 m fixed it. COLMAP prefers pairs with many verified matches in a densely connected part of the scene graph, and its two-view geometry step compares homography and essential-matrix inliers to flag planar and pure-rotation pairs.
 
 **Next-best-view selection.** Registering an image against few or clustered points gives a poorly constrained pose, and errors made early are hard to undo later. COLMAP scores candidate images not only by the number of visible 3D points but also by how evenly they are spread over the image, using a multi-resolution grid; a pose is better constrained by points spread over the whole image.
 
@@ -949,11 +949,11 @@ $$
 \min_{R_1,\dots,R_m \in SO(3)} \sum_{(i,j)\in\mathcal E} \lVert R_j - R_{ij}R_i\rVert_F^2 .
 $$
 
-**A spectral solution.** Because rotations are orthogonal, $\lVert R\_j - R\_{ij}R\_i\rVert\_F^2 = 6 - 2\,\mathrm{tr}(R\_j^\top R\_{ij} R\_i)$, so minimizing the cost is the same as maximizing $\sum \mathrm{tr}(R\_j^\top R\_{ij}R\_i)$. Stack the unknowns into a $3m\times3$ matrix $Q = (R\_1; R\_2; \dots; R\_m)$ and the measurements into a symmetric $3m\times3m$ matrix $G$ whose block $(j, i)$ is $R\_{ij}$ and block $(i, j)$ is $R\_{ij}^\top$. Then the objective is $\mathrm{tr}(Q^\top G Q)$, up to a factor of 2. Now relax: keep only the constraint $Q^\top Q = mI$ that all rotations satisfy and forget the rest. The maximizer of $\mathrm{tr}(Q^\top GQ)$ under this constraint is spanned by the **top three eigenvectors** of $G$ (the Rayleigh quotient, three dimensions at once). Finally, project each $3\times3$ block of the eigenvector matrix onto the nearest rotation with an SVD. When the measurements are consistent, $G$ is (up to missing edges) exactly $QQ^\top$, a rank-3 matrix, and the relaxation is exact. Moulon et al. (2013) solved global rotations with an eigenvalue solver of this kind; we normalize each block row by its number of edges.
+**A spectral solution.** Because rotations are orthogonal, $\lVert R\_j - R\_{ij}R\_i\rVert\_F^2 = 6 - 2\,\mathrm{tr}(R\_j^\top R\_{ij} R\_i)$, so minimizing the cost is the same as maximizing $\sum \mathrm{tr}(R\_j^\top R\_{ij}R\_i)$. Stack the unknowns into a $3m\times3$ matrix $Q = (R\_1; R\_2; \dots; R\_m)$ and the measurements into a symmetric $3m\times3m$ matrix $G$ whose block $(j, i)$ is $R\_{ij}$ and block $(i, j)$ is $R\_{ij}^\top$. Then the objective is $\mathrm{tr}(Q^\top G Q)$, up to a factor of 2. Now relax: keep only the constraint $Q^\top Q = mI$ that all rotations satisfy and forget the rest. The maximizer of $\mathrm{tr}(Q^\top GQ)$ under this constraint is spanned by the **top three eigenvectors** of $G$ (the Rayleigh quotient, three dimensions at once). Finally, project each $3\times3$ block of the eigenvector matrix onto the nearest rotation with an SVD. Why this works: with noise-free measurements, block row $j$ of $GQ$ is $\sum\_i R\_jR\_i^\top R\_i = d\_j R\_j$, where $d\_j$ is the number of edges at camera $j$. After dividing each block row by $d\_j$, as the code does, the three columns of $Q$ are exact eigenvectors with eigenvalue 1, the largest possible for a connected view graph, so the relaxation recovers the rotations exactly (up to the global rotation). Linear relaxations of this kind, which drop the orthogonality constraints and project onto $SO(3)$ at the end, are the classic initializers of global SfM (Martinec and Pajdla, CVPR 2007).
 
 **Robustness by IRLS.** One wrong relative rotation, for example from a repetitive facade, can be off by 90°. The spectral solution is a least-squares method and spreads that error over everybody. As in BA, iterate: solve, measure the residual angle of every edge, down-weight the edges with large residuals (Cauchy weights with a 5° scale), and solve again. Chatterjee and Govindu (2013) popularized this approach for large problems (an $L\_1$ solution, then IRLS); Hartley et al. (2013) is the reference for the theory.
 
-We simulate a view graph: 40 cameras on a circle around the running example, each connected to its neighbours up to 45° away (200 edges), relative rotations with 1.5° of noise, and 8% of them replaced by wrong rotations (in a real pipeline they would come from post 04's essential-matrix decomposition; simulating them keeps the run short).
+We simulate a view graph: 40 cameras on a circle around the running example, each connected to its neighbours up to 45° away (200 edges), relative rotations with 1.5° of noise per axis (a typical error of about 2°), and 8% of them replaced by wrong rotations (in a real pipeline they would come from post 04's essential-matrix decomposition; simulating them keeps the run short).
 
 ```python
 def rot_angle(R):
@@ -1033,7 +1033,7 @@ spectral L2      median 4.48 deg, max 10.05 deg
 spectral + IRLS  median 0.90 deg, max 1.78 deg
 ```
 
-Chaining rotations along a spanning tree (what an incremental method implicitly does) is as good as the edges it happens to use: a wrong edge in the tree makes everything behind it 57° off. The spectral $L\_2$ solution uses all edges, so no camera is catastrophically wrong, but the 15 wrong edges spread a 4.5° error everywhere. Ten rounds of reweighting isolate them, and the median error drops to 0.9°: averaging 10 measurements per camera gives a result more accurate than any single 1.5° measurement.
+Chaining rotations along a spanning tree (what an incremental method implicitly does) is as good as the edges it happens to use: a wrong edge in the tree makes everything behind it 57° off. The spectral $L\_2$ solution uses all edges, so no camera is catastrophically wrong, but the 15 wrong edges spread a 4.5° error everywhere. Ten rounds of reweighting isolate them, and the median error drops to 0.9°: averaging 10 measurements per camera gives a result more accurate than any single measurement (about 2° each).
 
 {% include blog_figure.liquid path="assets/img/blog/3d-vision/05-rotation-averaging.svg" localized="true" caption="Rotation averaging on 40 cameras and 200 relative rotations, 15 of them wrong. Left: per-camera rotation error after removing the global rotation gauge, log scale. Spanning tree: median 5.1°, maximum 57°; spectral $L\_2$: median 4.5°, maximum 10°; spectral with IRLS: median 0.90°, maximum 1.8°. Right: the edge residuals after IRLS. The correct pairs (purple) stay below 5.4°, the wrong ones (red) above 32.6°, so the Cauchy weights (dashed, right axis) separate them cleanly." %}
 
@@ -1104,7 +1104,7 @@ From positions drawn uniformly in a $2\times2\times2$ cube, 51 function evaluati
 
 {% include blog_figure.liquid path="assets/img/blog/3d-vision/05-global-positioning.svg" caption="Global positioning from a random start: top views ($x$ against $z$) of the camera centres (triangles, colored by their index around the circle) and the points (gray) after $n\_{\mathrm{eval}}$ function evaluations of the solver, each panel at its own scale (the scale is a gauge freedom). The title gives $\tilde e$, the median camera-centre error after a similarity alignment to the truth, for a 5 m circle. At the start (random, $\tilde e=5.07$) and after 3, 8 and 15 evaluations the cameras are still a jumble, but the colors begin to sort; after 25 the ring has formed ($\tilde e=1.27$), and at convergence (51 evaluations) the circle and its order are recovered, $\tilde e=0.06$." %}
 
-GLOMAP reports accuracy on par with or better than COLMAP's incremental mapper while being orders of magnitude faster. Since COLMAP 4.0 it is part of COLMAP as the `global_mapper` command (as of November 2026). The COLMAP documentation notes that it depends on good focal-length priors and can be less robust to outliers than the incremental mapper.
+GLOMAP reports accuracy on par with or better than COLMAP's incremental mapper while being orders of magnitude faster. As of November 2026 COLMAP itself ships it as the `global_mapper` command, and the COLMAP documentation recommends running `view_graph_calibrator` on a copy of the database first. Like every global method it depends on robust averaging (section 5.1), so the incremental mapper remains the safer choice for difficult collections.
 
 ### 5.5 Which one to use
 
@@ -1139,22 +1139,22 @@ def drift_scale(poses):
 
 for use_ba in (False, True):
     ratio = drift_scale(runs[use_ba][0])
-    print("BA %-5s: local scale at steps 1, 15, 28: %s" % (use_ba, ratio[[0, 14, 27]].round(3)))
+    print("BA %-5s: local scale at steps 1, 15, 29: %s" % (use_ba, ratio[[0, 14, 28]].round(3)))
 ```
 
 ```text
 scale   0.1: rms 0.628297 px
 scale   1.0: rms 0.628297 px
 scale  37.0: rms 0.628297 px
-BA False: local scale at steps 1, 15, 28: [1.009 1.028 1.094]
-BA True : local scale at steps 1, 15, 28: [0.999 1.    1.   ]
+BA False: local scale at steps 1, 15, 29: [1.009 1.028 1.159]
+BA True : local scale at steps 1, 15, 29: [0.999 1.    0.994]
 ```
 
-The RMS is identical to six digits for a scene 10 times smaller and 37 times larger. COLMAP models are therefore in arbitrary units, and NeRF and 3DGS code normalizes scenes by the spread of the camera centres before training.
+The RMS is identical to six digits for a scene 10 times smaller and 37 times larger. COLMAP models are therefore in arbitrary units, and NeRF and 3DGS code typically normalizes scenes by the spread of the camera centres before training.
 
 ### 6.2 Scale drift
 
-In a single global optimization the scale is one number. In a sequential process it is re-estimated at every step: each newly triangulated point and each newly registered camera carries the scale of the points it was computed from, with a little error. Those errors random-walk. The second half of the snippet measures the **local scale**, the ratio of estimated to true distance between consecutive cameras, in the corridor reconstruction: without BA it reaches 1.09 at the end of the corridor (a single step even 1.19, as the incremental figure shows), so the far end of the map is 9% too large; with BA after every image it stays at 1.00. Monocular visual odometry and SLAM suffer from the same **scale drift**, and loop closures in [post 06]({{ '/blog/2026/3d-vision-06-visual-slam/' | relative_url }}) are optimized over similarities ($\mathrm{Sim}(3)$) rather than rigid motions for exactly this reason.
+In a single global optimization the scale is one number. In a sequential process it is re-estimated at every step: each newly triangulated point and each newly registered camera carries the scale of the points it was computed from, with a little error. Those errors random-walk. The second half of the snippet measures the **local scale**, the ratio of estimated to true distance between consecutive cameras, in the corridor reconstruction: without BA it climbs to 1.16 on the last step (1.19 at most, as the incremental figure shows), so distances at the far end of the map come out 10 to 20% too large; with BA after every image it stays within about 1% of 1 (0.994 on the last step). Monocular visual odometry and SLAM suffer from the same **scale drift**, and loop closures in [post 06]({{ '/blog/2026/3d-vision-06-visual-slam/' | relative_url }}) are optimized over similarities ($\mathrm{Sim}(3)$) rather than rigid motions for exactly this reason.
 
 ### 6.3 Getting metric scale
 
@@ -1181,7 +1181,7 @@ When an SfM result looks wrong, check in this order:
 
 - The bundle adjustment widget in section 3.6: watch LM converge, then break it with outliers and fix it with a robust kernel.
 - The [Gaussian World demo]({{ '/' | relative_url }}#lab) on the home page renders 3D Gaussians from camera poses of exactly the kind this post estimates.
-- Run COLMAP on 30 to 50 photos of an object you walk around. Compare `colmap mapper` with `colmap global_mapper` (COLMAP 4.0 or later), and read the registration order and the reprojection errors in the log.
+- Run COLMAP on 30 to 50 photos of an object you walk around. Compare `colmap mapper` with `colmap global_mapper` (a recent COLMAP that includes `global_mapper`), and read the registration order and the reprojection errors in the log.
 
 ## Representative papers
 
@@ -1200,7 +1200,7 @@ When an SfM result looks wrong, check in this order:
 | Multicore bundle adjustment (Wu, Agarwal, Curless, Seitz) | CVPR | 2011 | [DOI](https://doi.org/10.1109/CVPR.2011.5995552) | BA on multicore CPUs and GPUs |
 | Rotation averaging (Hartley, Trumpf, Dai, Li) | IJCV | 2013 | [DOI](https://doi.org/10.1007/s11263-012-0601-0) | Theory of single and multiple rotation averaging |
 | Efficient and robust large-scale rotation averaging (Chatterjee, Govindu) | ICCV | 2013 | [CVF](https://openaccess.thecvf.com/content_iccv_2013/html/Chatterjee_Efficient_and_Robust_2013_ICCV_paper.html) | $L\_1$ followed by IRLS, robust to wrong pairs |
-| Global fusion of relative motions for robust, accurate and scalable structure from motion (Moulon, Monasse, Marlet) | ICCV | 2013 | [CVF](https://openaccess.thecvf.com/content_iccv_2013/html/Moulon_Global_Fusion_of_2013_ICCV_paper.html) | Global SfM with spectral rotations (OpenMVG) |
+| Global fusion of relative motions for robust, accurate and scalable structure from motion (Moulon, Monasse, Marlet) | ICCV | 2013 | [CVF](https://openaccess.thecvf.com/content_iccv_2013/html/Moulon_Global_Fusion_of_2013_ICCV_paper.html) | Robust global SfM: rotations first, then translations from triplets of views; the basis of OpenMVG's global pipeline |
 | Towards linear-time incremental structure from motion (Wu) | 3DV | 2013 | [DOI](https://doi.org/10.1109/3DV.2013.25) | Keeping incremental SfM close to O(n) (VisualSFM) |
 | Robust global translations with 1DSfM (Wilson, Snavely) | ECCV | 2014 | [Project](https://research.cs.cornell.edu/1dsfm) | Removing wrong translation directions |
 | Robust camera location estimation by convex programming (Özyeşil, Singer) | CVPR | 2015 | [CVF](https://openaccess.thecvf.com/content_cvpr_2015/html/Ozyesil_Robust_Camera_Location_2015_CVPR_paper.html) | LUD: robust convex translation averaging, parallel rigidity |
@@ -1211,6 +1211,8 @@ When an SfM result looks wrong, check in this order:
 | VGGSfM: visual geometry grounded deep structure from motion (Wang, Karaev, Rupprecht, Novotny) | CVPR | 2024 | [CVF](https://openaccess.thecvf.com/content/CVPR2024/html/Wang_VGGSfM_Visual_Geometry_Grounded_Deep_Structure_From_Motion_CVPR_2024_paper.html) | A fully differentiable SfM with a differentiable BA |
 | Global structure-from-motion revisited (Pan, Baráth, Pollefeys, Schönberger) | ECCV | 2024 | [arXiv](https://arxiv.org/abs/2407.20219) | GLOMAP: joint global positioning of cameras and points |
 | VGGT: visual geometry grounded transformer (Wang et al.) | CVPR | 2025 | [arXiv](https://arxiv.org/abs/2503.11651) | Feed-forward cameras, depth and points; BA optional afterwards |
+
+Status as of November 2026: every entry is published at the venue listed, including the recent VGGSfM (CVPR 2024), GLOMAP (ECCV 2024) and VGGT (CVPR 2025).
 
 ## Learning resources
 
@@ -1227,7 +1229,7 @@ When an SfM result looks wrong, check in this order:
 
    <details markdown="1"><summary>Hint</summary>
 
-   Reuse `p3p` with `project(K, R, t, X_true[sel])` for cameras from `look_at`. The number of solutions changes when two real roots merge (the quartic touches zero); this happens when the camera crosses the "danger cylinder" through the three points, where also the problem becomes ill-conditioned.
+   Reuse `p3p` with `project(K, R, t, X_true[sel])` for cameras from `look_at`. The number of solutions changes when two real roots merge (the quartic touches zero); when one of the two merging roots is the true pose, the camera is crossing the "danger cylinder" through the three points, where the problem is also ill-conditioned. (Two false solutions can also merge elsewhere.)
    </details>
 
 2. **Schur by hand.** For one camera and two points, write $H$ as a $12\times12$ block matrix and verify numerically that the Schur complement step equals `np.linalg.solve(H, -g)` on the full system.

@@ -658,7 +658,7 @@ def drift_scale(poses):
 
 for use_ba in (False, True):
     ratio = drift_scale(runs[use_ba][0])
-    print("BA %-5s: local scale at steps 1, 15, 28: %s" % (use_ba, ratio[[0, 14, 27]].round(3)))
+    print("BA %-5s: local scale at steps 1, 15, 29: %s" % (use_ba, ratio[[0, 14, 28]].round(3)))
 
 
 # =============================================================================================

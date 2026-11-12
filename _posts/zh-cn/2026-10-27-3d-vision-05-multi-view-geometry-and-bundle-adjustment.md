@@ -46,7 +46,7 @@ $$
 
 ### 1.2 贯穿全文的例子
 
-我们构造一个场景，供第 2、3 节使用：地面和两个箱子上共 120 个点，由 5 m 外一段圆弧上的 8 台相机观测，$f = 500$ 像素，图像 $640\times480$。每次观测都加上 $\sigma = 0.5$ 像素的高斯噪声。这与第 02 篇的合成标定设置相同，只是现在三维点也是未知的。
+我们构造一个场景，供第 2、3 节使用：地面和两个箱子上共 120 个点，由 5 m 外一段圆弧上的 8 台相机观测，$f = 500$ 像素，图像 $640\times480$。每次观测都加上 $\sigma = 0.5$ 像素的高斯噪声。和第 02 篇的合成标定一样，我们用仿真数据，以便知道真值；不同的是，现在三维点也是未知的。
 
 ```python
 import numpy as np
@@ -237,7 +237,7 @@ true centre [-0.745 -2.    -4.944]
 
 这三个点有**四个**实数解。其中一个以机器精度等于真实相机。其他几个是三点问题货真价实的精确解：每个解放置的相机都恰好在观测到的像素处看到这三个点。其中一个甚至位于地面以下（$y = +2.1$，在地板下面往上看）。第四个点立即消除了歧义：用错误的位姿投影，它会偏离观测像素 88 到 209 像素。在 RANSAC 中甚至不需要单独检查，因为错误的位姿只会得到很少的内点。
 
-{% include blog_figure.liquid path="assets/img/blog/3d-vision/05-p3p.svg" caption="相机 4 所见三个点（两个在地面，一个在高箱上）的 P3P。左：以恰好等于观测夹角看到 $\mathbf X\_1,\mathbf X\_2,\mathbf X\_3$ 的四个相机中心 $\mathbf C^{(1)}$ 到 $\mathbf C^{(4)}$；$\mathbf C^{(2)}$ 是真实相机，$\mathbf C^{(3)}$ 位于地板之下。右：代码中的四次多项式 $q(v)$，四个正实根 $v=0.522$、$0.846$、$1.285$、$1.608$，各对应一个候选解。实根的个数取决于相机相对于过这三点的“危险圆柱面”（danger cylinder）的位置；Gao 等人（2003）对所有情况做了分类。" %}
+{% include blog_figure.liquid path="assets/img/blog/3d-vision/05-p3p.svg" caption="相机 4 所见三个点（两个在地面，一个在高箱上）的 P3P。左：以恰好等于观测夹角看到 $\mathbf X\_1,\mathbf X\_2,\mathbf X\_3$ 的四个相机中心 $\mathbf C^{(1)}$ 到 $\mathbf C^{(4)}$；$\mathbf C^{(2)}$ 是真实相机，$\mathbf C^{(3)}$ 位于地板之下。右：代码中的四次多项式 $q(v)$，四个正实根 $v=0.522$、$0.846$、$1.285$、$1.608$，各对应一个候选解。实根的个数只在两个根合并处发生变化。若合并的解之一是真实位姿，相机就位于“危险圆柱面”（danger cylinder，过这三点、轴垂直于三点所在平面）上，此时 P3P 也是病态的；Gao 等人（2003）对所有情况做了分类。" %}
 
 现代 P3P 求解器，如 Kneip 等人（2011）和 Lambda Twist（Persson 与 Nordberg，2018），以更稳定、更快的方式计算出同样的解；Lambda Twist 完全避开了四次方程。它们的差别在数值方面，而不在于算出了什么。
 
@@ -509,7 +509,7 @@ $$
 
 这个**约化相机系统（reduced camera system）**只有 $6m$ 个未知量。解出它之后，每个点通过**回代**独立更新：$\delta\mathbf X\_j = C\_j^{-1}\big(-\mathbf g\_{p,j} - \sum\_i E\_{ij}^\top\delta\mathbf c\_i\big)$。这里没有任何近似：结果严格等于完整系统的 Gauss-Newton 步。代价却大不相同。一个典型的网络照片重建有 $m = 1000$ 台相机、$n = 200\,000$ 个点，共 $606\,000$ 个未知量；稠密求解毫无希望，而 Schur 补只留下一个 $6000\times6000$ 的系统，外加 20 万个 $3\times3$ 矩阵的求逆。摄影测量从光束法平差诞生之初就使用这种约化，之后每个 BA 求解器的核心都是它（Triggs 等人 2000，Lourakis 与 Argyros 2009）。
 
-Levenberg-Marquardt 在消元之前把第 02 篇的阻尼 $\lambda\,\mathrm{diag}$ 加到 $B$ 和 $C$ 的对角线上，并不改变结构。还有一个细节：我们从 $S$ 中删去相机 1 的 6 个未知量，从而固定相机 1。这固定了 7 个规范自由度中的 6 个；第 3.7 节解释为什么第七个，即尺度，不会造成问题。下面是完整的光束法平差器：
+**Levenberg-Marquardt**（第 02 篇第 4.2 节）让这个 Gauss-Newton 步变得安全：它求解 $\big(J^\top J + \lambda\,\mathrm{diag}(J^\top J)\big)\boldsymbol\delta = -J^\top\mathbf r$；若代价下降，就接受这一步并减小 $\lambda$（我们除以 3），否则拒绝这一步并增大 $\lambda$（我们乘以 4）。$\lambda$ 小时得到极小点附近快速的 Gauss-Newton 步，$\lambda$ 大时得到远离极小点时沿缩放梯度方向的短步。在 BA 中，阻尼在消元之前加到 $B$ 和 $C$ 的对角线上，因此并不改变结构。还有一个细节：我们从 $S$ 中删去相机 1 的 6 个未知量，从而固定相机 1。这固定了 7 个规范自由度中的 6 个；第 3.7 节解释为什么第七个，即尺度，不会造成问题。下面是完整的光束法平差器：
 
 ```python
 def robust_weight(s, kernel, delta):
@@ -626,11 +626,11 @@ expected rms at the optimum: sigma * sqrt(dof / L) = 0.6289 px
 rms with the true cameras and points: 0.7070 px
 ```
 
-（为便于阅读，耦合块以稠密形式存储；当 $\vert\mathcal O\vert \ll mn$ 时，真正的求解器只存非零的 $E\_{ij}$。）我们从真实场景出发，把每台相机旋转约 2°，把每个相机中心和每个点移动约 15 cm，此时 RMS 重投影误差为 47 像素。两次迭代后降到 0.63 像素，六次之后代价不再变化。
+（为便于阅读，耦合块以稠密形式存储；当 $\vert\mathcal O\vert \ll mn$ 时，真正的求解器只存非零的 $E\_{ij}$。）我们从真实场景出发，把每台相机绕每个轴随机旋转约 2°（总旋转角 2.0° 到 6.6°），把每个相机中心和每个点在每个坐标上随机移动约 15 cm（三维 RMS 为 26 cm），此时 RMS 重投影误差为 47 像素。两次迭代后降到 0.63 像素，六次之后代价不再变化。
 
 0.6283 像素是正确答案吗？在最小二乘问题的最优点，残差失去了模型用来拟合噪声的那些自由度：$\mathbb E\,\lVert\mathbf r\rVert^2 = \sigma^2(2L - p)$，其中有效参数个数 $p = 6m + 3n - 7 = 401$。我们的 RMS 是每个观测的残差长度 $\sqrt{\lVert\mathbf r\rVert^2/L}$，所以期望值为 $\sigma\sqrt{(2L - p)/L} = 0.6289$ 像素，实测 0.6283 像素。没有拟合任何自由度的真实场景给出 $\sigma\sqrt2 = 0.707$ 像素；最优点*低于*真值，这是估计器正确收敛的标志，而不是过拟合出了问题。
 
-{% include blog_figure.liquid path="assets/img/blog/3d-vision/05-ba.svg" caption="贯穿全文例子的光束法平差。左：每次 LM 迭代 $k$ 的 RMS 重投影误差（紫色，左轴）：46.81、2.38、0.63 像素，之后平稳在期望值 0.629 像素（点线）。阻尼 $\lambda$（橙色，右轴）每次除以 3，因为每一步都被接受。中、右：用相似变换把估计（紫）对齐到真值（灰）后的俯视图（$x$ 对 $z$）；红线把每个估计点连到它的真实位置。$k=0$ 时相机中心和点的 RMS 三维误差分别为 0.26 和 0.25；BA 之后为 0.0047 和 0.0043，即在 10 m 的场景中只有 2 到 5 mm。" %}
+{% include blog_figure.liquid path="assets/img/blog/3d-vision/05-ba.svg" caption="贯穿全文例子的光束法平差。左：每次 LM 迭代 $k$ 的 RMS 重投影误差（紫色，左轴）：46.81、2.38、0.63 像素，之后平稳在期望值 0.629 像素（点线）。阻尼 $\lambda$（橙色，右轴）每次除以 3，因为每一步都被接受。中、右：用相似变换把估计（紫）对齐到真值（灰）后的俯视图（$x$ 对 $z$）；红线把每个估计点连到它的真实位置。$k=0$ 时相机中心和点的 RMS 三维误差分别为 0.26 和 0.25；BA 之后为 0.0047 和 0.0043，即在约 9 m 宽的场景中只有约 4 到 5 mm。" %}
 
 ### 3.6 结果有多准？
 
@@ -669,7 +669,7 @@ after BA: centre RMSE 0.0047, point RMSE 0.0043
 
 在下面的小组件中自己试试。它在浏览器里对一个更小的场景（6 台相机、42 个点）运行同样的算法。
 
-{% include widget.liquid name="3d-vision-bundle-adjustment" height="760" caption="一次一步的 Levenberg-Marquardt 光束法平差：正文的算法（第 3.3 节的雅可比、固定相机 1 的 Schur 补、回代、Marquardt 阻尼），作用于 6 台相机和 42 个点。3D 视图中灰色为真值，蓝色（相机）和紫色（点）为去掉自由尺度后的估计；红线是点的误差。拖动可旋转视角。图像中显示所选相机的观测（圆点）、当前预测（紫色叉）以及两者之间的残差。试着加大初始误差，然后打开外点，比较 L2、Huber 和 Cauchy 核：有 15% 外点时，L2 收敛到一个残差很大的错误答案，而 Cauchy 能恢复场景。图表中的虚线是最优点处的期望 RMS $\sigma\sqrt{(2L-p)/L}$。" %}
+{% include widget.liquid name="3d-vision-bundle-adjustment" height="760" caption="一次一步的 Levenberg-Marquardt 光束法平差：正文的算法（第 3.3 节的雅可比、固定相机 1 的 Schur 补、回代、Marquardt 阻尼），作用于 6 台相机和 42 个点。3D 视图中灰色为真值，蓝色（相机）和紫色（点）为去掉自由尺度后的估计；红线是点的误差。拖动可旋转视角。图像中显示所选相机的观测（圆点）、当前预测（紫色叉）以及两者之间的残差。试着加大初始误差，然后打开外点，比较 L2、Huber 和 Cauchy 核。有 15% 外点时，L2 收敛到一个错误答案，内点残差达数个像素；Huber 能接近真实场景。Cauchy 不是凸的：从默认初值出发，它可能卡住，让部分点留着很大的残差；但把初始误差降到 ×0.3 后，它在三者中恢复场景最好。图表中的虚线是最优点处的期望 RMS $\sigma\sqrt{(2L-p)/L}$。" %}
 
 ### 3.7 规范自由度
 
@@ -709,8 +709,8 @@ eigenvalues of J^T J: 7 smallest all below 5e-09, then 2359, 5140, ..., largest 
 
 秩为 $408 - 7 = 401$，第七个和第八个特征值之间相差 11 个数量级以上。朴素的 Gauss-Newton 会试图对一个奇异矩阵求逆。标准的解决办法有四种：
 
-1. **固定参数。** 固定一台相机（6 个自由度），再固定一个数来确定尺度，例如两个相机中心之间的距离，或第二台相机的一个坐标。COLMAP 固定第一台相机的位姿和第二台相机位置的一个坐标。
-2. **交给阻尼处理。** LM 的 $\lambda\,\mathrm{diag}$ 使系统可逆，它产生的步长在平坦方向上没有分量，因为这些方向不会降低代价。我们的求解器固定相机 1，把尺度交给阻尼处理。
+1. **固定参数。** 固定一台相机（6 个自由度），再固定一个数来确定尺度，例如两个相机中心之间的距离，或第二台相机的一个坐标。例如，COLMAP 的全局 BA 固定一张图像的位姿，以及第二张图像平移向量的一个坐标。
+2. **交给阻尼处理。** LM 的阻尼使系统可逆。梯度 $J^\top\mathbf r$ 在平坦方向上没有分量（沿这些方向移动不会改变任何残差），所以使用 Levenberg 的 $\lambda I$ 时步长在这些方向上也没有分量；使用 Marquardt 的 $\lambda\,\mathrm{diag}$ 时，步长可能沿它们略有漂移，但这无害，因为代价在那里不变。我们的求解器固定相机 1，把尺度交给阻尼处理。
 3. **最小约束或内约束。** 加入恰好消除规范自由度的约束，例如固定点的质心和平均距离，或者用伪逆求解。摄影测量学称之为自由网平差（free-network adjustment）。
 4. **先验。** GPS 位置、IMU 的重力方向或已知基线用真实信息固定部分或全部规范自由度。
 
@@ -913,13 +913,13 @@ BA True : 826 points, order [0, 4, 3, 5, 7, 8, 10, 6]..., centre error at camera
 
 误差在重建本身定义的坐标系中度量：相机 0 位于其真实位姿，尺度由相机 0 到相机 4 的初始基线确定。不做 BA 时，每次注册都继承了它所依据的那些点的误差，而那些点又继承了三角化它们的相机的误差。误差层层累积：走过 20 m 后，最后一台相机偏差 1.2 m。每张图像之后都做 BA 时，所有观测共同约束所有参数，最后一台相机的偏差为 4.4 cm，好 27 倍。
 
-{% include blog_figure.liquid path="assets/img/blog/3d-vision/05-incremental.svg" localized="true" caption="走廊场景上的玩具版增量式 SfM（每隔 0.7 m 一台相机共 30 台，900 个点位于 4 到 12 m 外，噪声 1 像素）。左：相机中心的俯视图（$z$ 轴被拉伸约 10 倍）；重建以相机 0 为锚点，并以到相机 4 的初始基线确定尺度。不做 BA（橙色）时，旋转误差使轨迹弯曲，尺度误差使它伸长：最后一台相机偏差 1.20 m。每张图像后都做 BA（紫色）时，它始终贴着真值（黑色）。右上：每台相机的中心误差，对数坐标（相机 29：1.202 m 对 0.044 m）。右下：局部尺度，即相邻相机之间估计距离与真实距离之比；不做 BA 时到末端漂移到 1.09（单步最高 1.19），做 BA 时始终在 1 的 1% 以内。" %}
+{% include blog_figure.liquid path="assets/img/blog/3d-vision/05-incremental.svg" localized="true" caption="走廊场景上的玩具版增量式 SfM（每隔 0.7 m 一台相机共 30 台，900 个点位于 4 到 12 m 外，噪声 1 像素）。左：相机中心的俯视图（$z$ 轴被拉伸约 10 倍）；重建以相机 0 为锚点，并以到相机 4 的初始基线确定尺度。不做 BA（橙色）时，旋转误差使轨迹弯曲，尺度误差使它伸长：最后一台相机偏差 1.20 m。每张图像后都做 BA（紫色）时，它始终贴着真值（黑色）。右上：每台相机的中心误差，对数坐标（相机 29：1.202 m 对 0.044 m）。右下：局部尺度，即相邻相机之间估计距离与真实距离之比；不做 BA 时向上漂移，最后一步为 1.16（最高 1.19）；做 BA 时始终在 1 附近约 1% 以内。" %}
 
 ### 4.3 COLMAP 做得更好的地方，以及每一步为何重要
 
 我们的玩具展示了骨架。让 COLMAP 在真实照片集上稳健运行的那些细节值得了解，因为重建失败时，它们也正是你要调的旋钮。
 
-**选择初始图像对。** 第一对图像确定了坐标系和尺度，并为其余一切打下基础，所以必须可靠。它需要大量通过验证的匹配，*并且*基线要宽。如果一对图像的匹配用单应矩阵解释与用本质矩阵解释差不多好，那就是一个糟糕的选择：要么是纯旋转（没有基线，没有深度，第 04 篇），要么是近似平面的场景，此时本质矩阵确定得很差。我们走廊场景的第一个版本把所有点都放在 8 m 外一个 2 m 厚的薄层里；那时图像对 (0, 4) 的线性八点法估计在平移方向上偏差 65°，重建失败。把点分布到 4 到 12 m 之后问题就解决了。COLMAP 偏好位于场景图稠密连通部分、通过验证的匹配多的图像对，它的两视图几何步骤会比较单应矩阵与本质矩阵的内点，以标记平面和纯旋转的图像对。
+**选择初始图像对。** 第一对图像确定了坐标系和尺度，并为其余一切打下基础，所以必须可靠。它需要大量通过验证的匹配，*并且*基线要宽。如果一对图像的匹配用单应矩阵解释与用本质矩阵解释差不多好，那就是一个糟糕的选择：要么是纯旋转（没有基线，没有深度，第 04 篇），要么是近似平面的场景，此时本质矩阵确定得很差。我们走廊场景的第一个版本把所有点都放在 8 m 外一个 2 m 厚的薄层里；那时图像对 (0, 4) 的线性八点法估计在平移方向上偏差约 50°（在这种场景的 20 个随机版本上中位数为 52°，而点分布在 4 到 12 m 时只有 0.4°），重建失败。把点分布到 4 到 12 m 之后问题就解决了。COLMAP 偏好位于场景图稠密连通部分、通过验证的匹配多的图像对，它的两视图几何步骤会比较单应矩阵与本质矩阵的内点，以标记平面和纯旋转的图像对。
 
 **选择下一个最佳视图（next best view）。** 用很少或扎堆的点来注册一张图像，得到的位姿约束很弱，而早期的错误以后很难纠正。COLMAP 对候选图像打分时，不只看可见三维点的数量，还用一个多分辨率网格看它们在图像中分布得是否均匀；分布在整幅图像上的点能更好地约束位姿。
 
@@ -949,11 +949,11 @@ $$
 \min_{R_1,\dots,R_m \in SO(3)} \sum_{(i,j)\in\mathcal E} \lVert R_j - R_{ij}R_i\rVert_F^2 .
 $$
 
-**谱方法求解。** 由于旋转是正交的，$\lVert R\_j - R\_{ij}R\_i\rVert\_F^2 = 6 - 2\,\mathrm{tr}(R\_j^\top R\_{ij} R\_i)$，所以最小化代价等价于最大化 $\sum \mathrm{tr}(R\_j^\top R\_{ij}R\_i)$。把未知量堆成 $3m\times3$ 矩阵 $Q = (R\_1; R\_2; \dots; R\_m)$，把测量放进一个对称的 $3m\times3m$ 矩阵 $G$，其块 $(j, i)$ 为 $R\_{ij}$、块 $(i, j)$ 为 $R\_{ij}^\top$。则目标函数为 $\mathrm{tr}(Q^\top G Q)$（差一个因子 2）。现在做松弛：只保留所有旋转都满足的约束 $Q^\top Q = mI$，忽略其余约束。在这个约束下，$\mathrm{tr}(Q^\top GQ)$ 的最大值由 $G$ 的**前三个特征向量**张成（Rayleigh 商，一次处理三维）。最后用 SVD 把特征向量矩阵的每个 $3\times3$ 块投影到最近的旋转。当测量相互一致时，$G$（除缺失的边外）恰好等于秩为 3 的矩阵 $QQ^\top$，松弛是精确的。Moulon 等人（2013）用这类特征值求解器求全局旋转；我们把每个块行按其边数归一化。
+**谱方法求解。** 由于旋转是正交的，$\lVert R\_j - R\_{ij}R\_i\rVert\_F^2 = 6 - 2\,\mathrm{tr}(R\_j^\top R\_{ij} R\_i)$，所以最小化代价等价于最大化 $\sum \mathrm{tr}(R\_j^\top R\_{ij}R\_i)$。把未知量堆成 $3m\times3$ 矩阵 $Q = (R\_1; R\_2; \dots; R\_m)$，把测量放进一个对称的 $3m\times3m$ 矩阵 $G$，其块 $(j, i)$ 为 $R\_{ij}$、块 $(i, j)$ 为 $R\_{ij}^\top$。则目标函数为 $\mathrm{tr}(Q^\top G Q)$（差一个因子 2）。现在做松弛：只保留所有旋转都满足的约束 $Q^\top Q = mI$，忽略其余约束。在这个约束下，$\mathrm{tr}(Q^\top GQ)$ 的最大值由 $G$ 的**前三个特征向量**张成（Rayleigh 商，一次处理三维）。最后用 SVD 把特征向量矩阵的每个 $3\times3$ 块投影到最近的旋转。为什么可行：测量无噪声时，$GQ$ 的第 $j$ 个块行为 $\sum\_i R\_jR\_i^\top R\_i = d\_j R\_j$，其中 $d\_j$ 是相机 $j$ 上的边数。像代码那样把每个块行除以 $d\_j$ 之后，$Q$ 的三列恰好是特征值为 1 的特征向量，而对连通的视图图，1 是最大的可能特征值，所以松弛能精确恢复旋转（差一个全局旋转）。这类线性松弛先丢掉正交约束、最后再投影到 $SO(3)$，是全局 SfM 的经典初始化方法（Martinec 和 Pajdla，CVPR 2007）。
 
 **用 IRLS 获得鲁棒性。** 一个错误的相对旋转，例如来自重复的立面，可能偏差 90°。谱方法是一种最小二乘方法，会把这个误差摊给所有相机。和 BA 一样，进行迭代：求解，度量每条边的残差角，降低残差大的边的权重（尺度为 5° 的 Cauchy 权重），再求解。Chatterjee 与 Govindu（2013）让这种做法（先求 $L\_1$ 解，再做 IRLS）在大规模问题中流行起来；Hartley 等人（2013）是理论方面的参考文献。
 
-我们模拟一个视图图：40 台相机位于贯穿全文的例子周围的一个圆上，每台与 45° 以内的邻居相连（200 条边），相对旋转带 1.5° 噪声，其中 8% 被替换为错误的旋转（在真实流程中它们来自第 04 篇的本质矩阵分解；模拟它们能让运行更快）。
+我们模拟一个视图图：40 台相机位于贯穿全文的例子周围的一个圆上，每台与 45° 以内的邻居相连（200 条边），相对旋转在每个轴上带 1.5° 噪声（典型误差约 2°），其中 8% 被替换为错误的旋转（在真实流程中它们来自第 04 篇的本质矩阵分解；模拟它们能让运行更快）。
 
 ```python
 def rot_angle(R):
@@ -1033,7 +1033,7 @@ spectral L2      median 4.48 deg, max 10.05 deg
 spectral + IRLS  median 0.90 deg, max 1.78 deg
 ```
 
-沿生成树串联旋转（增量式方法隐含的做法）的好坏取决于它碰巧用到的边：树中一条错误的边会让其后的所有相机偏差 57°。谱 $L\_2$ 解用到了所有边，所以没有相机错得离谱，但 15 条错误的边把 4.5° 的误差摊到了各处。十轮重加权把它们隔离出来，误差中位数降到 0.9°：每台相机平均 10 个测量，结果比任何单个 1.5° 的测量都更准确。
+沿生成树串联旋转（增量式方法隐含的做法）的好坏取决于它碰巧用到的边：树中一条错误的边会让其后的所有相机偏差 57°。谱 $L\_2$ 解用到了所有边，所以没有相机错得离谱，但 15 条错误的边把 4.5° 的误差摊到了各处。十轮重加权把它们隔离出来，误差中位数降到 0.9°：每台相机平均 10 个测量，结果比任何单个测量（各约 2° 误差）都更准确。
 
 {% include blog_figure.liquid path="assets/img/blog/3d-vision/05-rotation-averaging.svg" localized="true" caption="40 台相机、200 个相对旋转（其中 15 个错误）上的旋转平均。左：去掉全局旋转规范后每台相机的旋转误差，对数坐标。生成树：中位数 5.1°，最大 57°；谱 $L\_2$：中位数 4.5°，最大 10°；谱方法加 IRLS：中位数 0.90°，最大 1.8°。右：IRLS 之后各边的残差。正确的图像对（紫）都低于 5.4°，错误的（红）都高于 32.6°，所以 Cauchy 权重（虚线，右轴）能把它们干净地分开。" %}
 
@@ -1104,7 +1104,7 @@ print("%d observations, %d function evaluations; after a similarity alignment: c
 
 {% include blog_figure.liquid path="assets/img/blog/3d-vision/05-global-positioning.svg" caption="从随机初值开始的全局定位：求解器经过 $n\_{\mathrm{eval}}$ 次函数求值后，相机中心（三角形，按其在圆上的编号着色）和点（灰色）的俯视图（$x$ 对 $z$），每个子图使用自己的比例（尺度是规范自由度）。标题给出 $\tilde e$，即相似对齐到真值后相机中心误差的中位数，圆半径为 5 m。开始时（随机，$\tilde e=5.07$）以及 3、8、15 次求值之后，相机仍是一团乱麻，但颜色开始有了顺序；25 次之后圆环已经成形（$\tilde e=1.27$）；收敛时（51 次求值）圆及其顺序都被恢复，$\tilde e=0.06$。" %}
 
-GLOMAP 报告其精度与 COLMAP 的增量式建图器相当或更好，而速度快几个数量级。从 COLMAP 4.0 起，它作为 `global_mapper` 命令成为 COLMAP 的一部分（截至 2026 年 11 月）。COLMAP 文档指出，它依赖良好的焦距先验，对外点的鲁棒性可能不如增量式建图器。
+GLOMAP 报告其精度与 COLMAP 的增量式建图器相当或更好，而速度快几个数量级。截至 2026 年 11 月，COLMAP 本身已以 `global_mapper` 命令提供它，COLMAP 文档建议先在数据库的副本上运行 `view_graph_calibrator`。和所有全局方法一样，它依赖鲁棒平均（第 5.1 节），所以对困难的图像集合，增量式建图器仍是更稳妥的选择。
 
 ### 5.5 该用哪一种
 
@@ -1139,22 +1139,22 @@ def drift_scale(poses):
 
 for use_ba in (False, True):
     ratio = drift_scale(runs[use_ba][0])
-    print("BA %-5s: local scale at steps 1, 15, 28: %s" % (use_ba, ratio[[0, 14, 27]].round(3)))
+    print("BA %-5s: local scale at steps 1, 15, 29: %s" % (use_ba, ratio[[0, 14, 28]].round(3)))
 ```
 
 ```text
 scale   0.1: rms 0.628297 px
 scale   1.0: rms 0.628297 px
 scale  37.0: rms 0.628297 px
-BA False: local scale at steps 1, 15, 28: [1.009 1.028 1.094]
-BA True : local scale at steps 1, 15, 28: [0.999 1.    1.   ]
+BA False: local scale at steps 1, 15, 29: [1.009 1.028 1.159]
+BA True : local scale at steps 1, 15, 29: [0.999 1.    0.994]
 ```
 
-对一个小 10 倍和大 37 倍的场景，RMS 在六位数字上完全相同。因此 COLMAP 模型的单位是任意的，NeRF 和 3DGS 的代码在训练前会按相机中心的分布范围对场景做归一化。
+对一个小 10 倍和大 37 倍的场景，RMS 在六位数字上完全相同。因此 COLMAP 模型的单位是任意的，NeRF 和 3DGS 的代码通常在训练前按相机中心的分布范围对场景做归一化。
 
 ### 6.2 尺度漂移
 
-在一次全局优化中，尺度只是一个数。在顺序过程中，它在每一步都被重新估计：每个新三角化的点和每台新注册的相机都带着计算它们时所用点的尺度，以及一点误差。这些误差做随机游走。代码的后半部分在走廊重建中度量**局部尺度**，即相邻相机之间估计距离与真实距离之比：不做 BA 时，它在走廊末端达到 1.09（如增量式图所示，单步甚至达到 1.19），所以地图的远端大了 9%；每张图像之后都做 BA 时，它保持在 1.00。单目视觉里程计和 SLAM 也受同样的**尺度漂移（scale drift）**之苦，正因如此，[第 06 篇]({{ '/blog/2026/3d-vision-06-visual-slam/' | relative_url }})中的回环在相似变换（$\mathrm{Sim}(3)$）而不是刚体运动上进行优化。
+在一次全局优化中，尺度只是一个数。在顺序过程中，它在每一步都被重新估计：每个新三角化的点和每台新注册的相机都带着计算它们时所用点的尺度，以及一点误差。这些误差做随机游走。代码的后半部分在走廊重建中度量**局部尺度**，即相邻相机之间估计距离与真实距离之比：不做 BA 时，它在最后一步升到 1.16（如增量式图所示，最高达 1.19），所以地图远端的距离大了 10% 到 20%；每张图像之后都做 BA 时，它保持在 1 附近约 1% 以内（最后一步为 0.994）。单目视觉里程计和 SLAM 也受同样的**尺度漂移（scale drift）**之苦，正因如此，[第 06 篇]({{ '/blog/2026/3d-vision-06-visual-slam/' | relative_url }})中的回环在相似变换（$\mathrm{Sim}(3)$）而不是刚体运动上进行优化。
 
 ### 6.3 获得公制尺度
 
@@ -1181,7 +1181,7 @@ BA True : local scale at steps 1, 15, 28: [0.999 1.    1.   ]
 
 - 第 3.6 节的光束法平差小组件：观察 LM 收敛，然后用外点把它弄坏，再用鲁棒核函数修好。
 - 主页上的 [Gaussian World 演示]({{ '/' | relative_url }}#lab)用的正是本文所估计的那种相机位姿来渲染三维高斯。
-- 绕着一个物体拍 30 到 50 张照片，在上面运行 COLMAP。比较 `colmap mapper` 和 `colmap global_mapper`（COLMAP 4.0 或更新版本），并在日志中查看注册顺序和重投影误差。
+- 绕着一个物体拍 30 到 50 张照片，在上面运行 COLMAP。比较 `colmap mapper` 和 `colmap global_mapper`（需要包含 `global_mapper` 的较新版 COLMAP），并在日志中查看注册顺序和重投影误差。
 
 ## 代表性论文
 
@@ -1200,7 +1200,7 @@ BA True : local scale at steps 1, 15, 28: [0.999 1.    1.   ]
 | Multicore bundle adjustment (Wu, Agarwal, Curless, Seitz) | CVPR | 2011 | [DOI](https://doi.org/10.1109/CVPR.2011.5995552) | 多核 CPU 和 GPU 上的 BA |
 | Rotation averaging (Hartley, Trumpf, Dai, Li) | IJCV | 2013 | [DOI](https://doi.org/10.1007/s11263-012-0601-0) | 单旋转与多旋转平均的理论 |
 | Efficient and robust large-scale rotation averaging (Chatterjee, Govindu) | ICCV | 2013 | [CVF](https://openaccess.thecvf.com/content_iccv_2013/html/Chatterjee_Efficient_and_Robust_2013_ICCV_paper.html) | 先 $L\_1$ 再 IRLS，对错误图像对鲁棒 |
-| Global fusion of relative motions for robust, accurate and scalable structure from motion (Moulon, Monasse, Marlet) | ICCV | 2013 | [CVF](https://openaccess.thecvf.com/content_iccv_2013/html/Moulon_Global_Fusion_of_2013_ICCV_paper.html) | 用谱方法求旋转的全局 SfM（OpenMVG） |
+| Global fusion of relative motions for robust, accurate and scalable structure from motion (Moulon, Monasse, Marlet) | ICCV | 2013 | [CVF](https://openaccess.thecvf.com/content_iccv_2013/html/Moulon_Global_Fusion_of_2013_ICCV_paper.html) | 鲁棒的全局 SfM：先求旋转，再由三视图组求平移；OpenMVG 全局流程的基础 |
 | Towards linear-time incremental structure from motion (Wu) | 3DV | 2013 | [DOI](https://doi.org/10.1109/3DV.2013.25) | 让增量式 SfM 接近 O(n)（VisualSFM） |
 | Robust global translations with 1DSfM (Wilson, Snavely) | ECCV | 2014 | [项目页](https://research.cs.cornell.edu/1dsfm) | 去除错误的平移方向 |
 | Robust camera location estimation by convex programming (Özyeşil, Singer) | CVPR | 2015 | [CVF](https://openaccess.thecvf.com/content_cvpr_2015/html/Ozyesil_Robust_Camera_Location_2015_CVPR_paper.html) | LUD：鲁棒的凸平移平均，平行刚性 |
@@ -1211,6 +1211,8 @@ BA True : local scale at steps 1, 15, 28: [0.999 1.    1.   ]
 | VGGSfM: visual geometry grounded deep structure from motion (Wang, Karaev, Rupprecht, Novotny) | CVPR | 2024 | [CVF](https://openaccess.thecvf.com/content/CVPR2024/html/Wang_VGGSfM_Visual_Geometry_Grounded_Deep_Structure_From_Motion_CVPR_2024_paper.html) | 带可微 BA 的完全可微 SfM |
 | Global structure-from-motion revisited (Pan, Baráth, Pollefeys, Schönberger) | ECCV | 2024 | [arXiv](https://arxiv.org/abs/2407.20219) | GLOMAP：相机与点的联合全局定位 |
 | VGGT: visual geometry grounded transformer (Wang et al.) | CVPR | 2025 | [arXiv](https://arxiv.org/abs/2503.11651) | 前馈预测相机、深度和点；之后可选 BA |
+
+状态（截至 2026 年 11 月）：表中所有论文都已在所列会议或期刊发表，包括较新的 VGGSfM（CVPR 2024）、GLOMAP（ECCV 2024）和 VGGT（CVPR 2025）。
 
 ## 学习资源
 
@@ -1227,7 +1229,7 @@ BA True : local scale at steps 1, 15, 28: [0.999 1.    1.   ]
 
    <details markdown="1"><summary>提示</summary>
 
-   对用 `look_at` 构造的相机，复用 `p3p` 和 `project(K, R, t, X_true[sel])`。当两个实根合并（四次多项式与零相切）时解的个数发生变化；这发生在相机穿过过这三点的"危险圆柱面"时，此时问题也变得病态。
+   对用 `look_at` 构造的相机，复用 `p3p` 和 `project(K, R, t, X_true[sel])`。当两个实根合并（四次多项式与零相切）时解的个数发生变化；若合并的两个根之一是真实位姿，说明相机正在穿过过这三点的"危险圆柱面"，此时问题也变得病态。（两个虚假解也可能在别处合并。）
    </details>
 
 2. **手算 Schur 补。** 对一台相机和两个点，把 $H$ 写成 $12\times12$ 的分块矩阵，并用数值验证 Schur 补步等于对完整系统做 `np.linalg.solve(H, -g)`。

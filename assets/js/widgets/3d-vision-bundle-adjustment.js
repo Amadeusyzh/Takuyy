@@ -118,7 +118,7 @@
   function lookAt(C, T) {
     var z = [T[0] - C[0], T[1] - C[1], T[2] - C[2]], L = Math.hypot(z[0], z[1], z[2]);
     z = [z[0] / L, z[1] / L, z[2] / L];
-    var x = [-z[2], 0, z[0]]; // z x (0, -1, 0)
+    var x = [z[2], 0, -z[0]]; // z x (0, -1, 0), as np.cross(z, [0, -1, 0]) in the post
     L = Math.hypot(x[0], x[1], x[2]); x = [x[0] / L, x[1] / L, x[2] / L];
     var y = [z[1] * x[2] - z[2] * x[1], z[2] * x[0] - z[0] * x[2], z[0] * x[1] - z[1] * x[0]];
     var R = [x[0], x[1], x[2], y[0], y[1], y[2], z[0], z[1], z[2]];
@@ -188,7 +188,7 @@
     var S = { sigma: 0.5, outl: 0, init: 1, kernel: "l2", camSel: 2 };
     var obs = [], est = null, hist = [], lam = 1e-3, k = 0, rejected = 0, running = false, converged = false;
     var noiseSeed = 11, initSeed = 3;
-    var yaw = -0.5, pitch = 0.55, drag = null;
+    var yaw = -0.2, pitch = 0.55, drag = null;
 
     // ---------- controls ----------
     var bar = document.createElement("div");
@@ -479,7 +479,7 @@
     // ---------- drawing ----------
     function view3() {
       var cy = Math.cos(yaw), sy = Math.sin(yaw), cp = Math.cos(pitch), sp = Math.sin(pitch);
-      var dist = 12, sc = Math.min(SW, SH) * 1.6;
+      var dist = 12, sc = Math.min(SW, SH) * 1.3;
       return function (p) { // world (y down) -> screen
         var x = p[0], y = -p[1] - 0.5, z = p[2];
         var x1 = cy * x + sy * z, z1 = -sy * x + cy * z;

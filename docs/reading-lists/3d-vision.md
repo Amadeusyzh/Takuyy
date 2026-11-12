@@ -156,11 +156,11 @@
 | --- | --- | --- | --- | --- |
 | Rotation averaging (Hartley, Trumpf, Dai, Li) | IJCV | 2013 | https://doi.org/10.1007/s11263-012-0601-0 | 旋转平均的理论教程：弦距离/测地距离、L1/L2、收敛性 |
 | Efficient and robust large-scale rotation averaging (Chatterjee, Govindu) | ICCV | 2013 | https://openaccess.thecvf.com/content_iccv_2013/html/Chatterjee_Efficient_and_Robust_2013_ICCV_paper.html | L1 初始化 + IRLS，对错误图像对鲁棒；期刊版 TPAMI 2018 "Robust relative rotation averaging" |
-| Global fusion of relative motions for robust, accurate and scalable structure from motion (Moulon, Monasse, Marlet) | ICCV | 2013 | https://openaccess.thecvf.com/content_iccv_2013/html/Moulon_Global_Fusion_of_2013_ICCV_paper.html | 稀疏特征值求全局旋转、L∞ 求平移（OpenMVG） |
+| Global fusion of relative motions for robust, accurate and scalable structure from motion (Moulon, Monasse, Marlet) | ICCV | 2013 | https://openaccess.thecvf.com/content_iccv_2013/html/Moulon_Global_Fusion_of_2013_ICCV_paper.html | 鲁棒的全局 SfM：先求旋转，再由三视图组求平移；OpenMVG 全局流程的基础 |
 | Robust global translations with 1DSfM (Wilson, Snavely) | ECCV | 2014 | https://research.cs.cornell.edu/1dsfm | 投影到一维去除错误的平移方向；1DSfM 数据集 |
 | Robust camera location estimation by convex programming (Özyeşil, Singer) | CVPR | 2015 | https://openaccess.thecvf.com/content_cvpr_2015/html/Ozyesil_Robust_Camera_Location_2015_CVPR_paper.html | LUD：凸规划平移平均；平行刚性理论 |
 | Baseline desensitizing in translation averaging (Zhuang, Cheong, Lee) | CVPR | 2018 | https://arxiv.org/abs/1901.00643 | BATA：双线性、基于角度、对基线长度不敏感 |
-| Global structure-from-motion revisited (Pan, Baráth, Pollefeys, Schönberger) | ECCV | 2024 | https://arxiv.org/abs/2407.20219 | 已发表；GLOMAP：跳过平移平均，相机与点联合全局定位，可从随机初值收敛；COLMAP 4.0 起作为 `global_mapper` 并入 COLMAP |
+| Global structure-from-motion revisited (Pan, Baráth, Pollefeys, Schönberger) | ECCV | 2024 | https://arxiv.org/abs/2407.20219 | 已发表；GLOMAP：跳过平移平均，相机与点联合全局定位，可从随机初值收敛；截至 2026 年 11 月，COLMAP 本身已以 `global_mapper` 命令提供 |
 
 ### 前馈方法（截至 2026 年 11 月）
 
