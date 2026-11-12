@@ -2,6 +2,9 @@
 // For every variants/<name>.js and every browser configuration: the renderer string, the time each WebGL call
 // blocked the page's main thread, long tasks, the largest event-loop stall, the time until the first frame is
 // shown, and the stats line after 15 s. Output: one JSON object per run on stdout and in report/results.json.
+// Added for the SDF fix (ops/winrun-fix): a trail of the stats line (when the compile ends, when the first
+// image is shown), the number of images presented to the canvas, an orbit drag of about 4 s with the stalls
+// and long tasks during it, and the time to reach AA 16/16 in the Steps and Slice views.
 // Usage: node measure.js [variant ...]   (default: all variants)
 const { chromium } = require('playwright');
 const http = require('http'), fs = require('fs'), path = require('path');
@@ -31,10 +34,10 @@ function withTimeout(p, ms, fallback) {
 }
 
 const INSTRUMENT = () => {
-  window.__m = { calls: [], longtasks: [], maxLag: 0, lags: [], t0: performance.now() };
+  window.__m = { calls: [], longtasks: [], maxLag: 0, lags: [], t0: performance.now(), presents: 0, draws: 0, rows: [] };
   const P = WebGL2RenderingContext.prototype;
   for (const name of ['compileShader', 'linkProgram', 'getShaderParameter', 'getProgramParameter', 'useProgram', 'drawArrays',
-    'clientWaitSync', 'getActiveUniform', 'getUniformLocation', 'getError', 'readPixels', 'finish', 'texImage2D']) {
+    'clientWaitSync', 'getActiveUniform', 'getUniformLocation', 'getError', 'readPixels', 'finish', 'texImage2D', 'flush', 'fenceSync']) {
     const orig = P[name];
     if (!orig) continue;
     P[name] = function () {
@@ -45,6 +48,14 @@ const INSTRUMENT = () => {
       return r;
     };
   }
+  const da = P.drawArrays;
+  P.drawArrays = function () {
+    window.__m.draws++;
+    if (!this.getParameter(this.FRAMEBUFFER_BINDING)) window.__m.presents++;
+    return da.apply(this, arguments);
+  };
+  const sc = P.scissor;
+  P.scissor = function (x, y, w, h) { if (window.__m.rows.length < 300) window.__m.rows.push(h); return sc.apply(this, arguments); };
   try {
     new PerformanceObserver((l) => { for (const e of l.getEntries()) window.__m.longtasks.push({ at: Math.round(e.startTime), ms: Math.round(e.duration) }); })
       .observe({ type: 'longtask', buffered: true });
@@ -58,6 +69,32 @@ const INSTRUMENT = () => {
   }, 50);
 };
 
+const stats = (page) => withTimeout(page.evaluate(() => ((document.querySelector('.lab-stats') || {}).textContent || '').replace(/\s+/g, ' ')), 30000, 'evaluate timed out');
+const snap = (page) => withTimeout(page.evaluate(() => {
+  const m = window.__m;
+  return { t: Math.round(performance.now()), presents: m.presents, draws: m.draws, maxLag: Math.round(m.maxLag), nCalls: m.calls.length, nLong: m.longtasks.length, nLags: m.lags.length };
+}), 30000, null);
+const since = (page, s0) => withTimeout(page.evaluate((s0) => {
+  const m = window.__m;
+  return {
+    presents: m.presents - s0.presents, draws: m.draws - s0.draws,
+    blockingCalls: m.calls.slice(s0.nCalls, s0.nCalls + 20),
+    longtasks: m.longtasks.slice(s0.nLong).filter((l) => l.ms > 100).slice(0, 25),
+    lags: m.lags.slice(s0.nLags, s0.nLags + 25),
+    maxLag: Math.round(Math.max.apply(null, [0].concat(m.lags.slice(s0.nLags).map((l) => l.ms)))),
+  };
+}, s0), 30000, null);
+
+async function waitAA(page, ms, re) {
+  const t0 = Date.now();
+  while (Date.now() - t0 < ms) {
+    const s = await stats(page);
+    if (/AA 16\/16/.test(s) && (!re || re.test(s))) return { ms: Date.now() - t0, stats: s.slice(0, 160) };
+    await new Promise((r) => setTimeout(r, 200));
+  }
+  return { ms: null, stats: (await stats(page)).slice(0, 160) };
+}
+
 server.listen(0, async () => {
   const port = server.address().port;
   const results = [];
@@ -66,7 +103,9 @@ server.listen(0, async () => {
       const rec = { variant: v, config: cfg.name };
       let browser;
       try {
-        browser = await chromium.launch({ channel: process.env.CHANNEL || 'chrome', headless: true, args: cfg.args });
+        browser = await chromium.launch(process.env.LOCAL_SWIFTSHADER
+          ? { args: ['--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader'] } // local check of this script
+          : { channel: process.env.CHANNEL || 'chrome', headless: true, args: cfg.args });
         const page = await browser.newPage({ viewport: { width: 1000, height: 760 } });
         const errs = [];
         page.on('pageerror', (e) => errs.push(String(e).slice(0, 200)));
@@ -78,31 +117,71 @@ server.listen(0, async () => {
           const c = document.createElement('canvas'), g = c.getContext('webgl2');
           if (!g) return 'no webgl2';
           const e = g.getExtension('WEBGL_debug_renderer_info');
-          return (e ? g.getParameter(e.UNMASKED_RENDERER_WEBGL) : g.getParameter(g.RENDERER)) + (g.getExtension('KHR_parallel_shader_compile') ? ' | KHR_parallel_shader_compile' : '');
+          const x = ['KHR_parallel_shader_compile', 'EXT_disjoint_timer_query_webgl2'].filter((n) => g.getSupportedExtensions().indexOf(n) >= 0);
+          return (e ? g.getParameter(e.UNMASKED_RENDERER_WEBGL) : g.getParameter(g.RENDERER)) + ' | ' + x.join(' ');
         }), 60000, 'evaluate timed out');
         // wait for the first frame: the stats line shows a frame rate or the AA counter
         let first = null, polls = 0, stuck = 0;
+        const trail = [];
         while (Date.now() - tNav < 180000) {
           const a = Date.now();
           const s = await withTimeout(page.evaluate(() => (document.querySelector('.lab-stats') || {}).textContent || ''), 30000, null);
           const took = Date.now() - a;
           if (took > stuck) stuck = took;
           polls++;
-          if (s && /(\d+(\.\d+)?\s*fps|AA \d+)/.test(s)) { first = { ms: Date.now() - tNav, stats: s.replace(/\s+/g, ' ').slice(0, 160) }; break; }
+          const ss = s ? s.replace(/\s+/g, ' ').slice(0, 160) : s;
+          if (!trail.length || trail[trail.length - 1][1] !== ss) trail.push([Date.now() - tNav, ss]);
+          if (s && /(\d+(\.\d+)?\s*fps|AA \d+)/.test(s)) { first = { ms: Date.now() - tNav, stats: ss }; break; }
           await new Promise((r) => setTimeout(r, 250));
         }
         rec.firstFrame = first;
         rec.longestEvaluateWait = stuck;
-        await new Promise((r) => setTimeout(r, 15000));
-        rec.after15s = await withTimeout(page.evaluate(() => (document.querySelector('.lab-stats') || {}).textContent || ''), 30000, 'evaluate timed out');
+        const tEnd = Date.now() + 15000;
+        while (Date.now() < tEnd) {
+          const s = await stats(page);
+          if (!trail.length || trail[trail.length - 1][1] !== s.slice(0, 160)) trail.push([Date.now() - tNav, s.slice(0, 160)]);
+          await new Promise((r) => setTimeout(r, 500));
+        }
+        rec.trail = trail.slice(0, 40);
+        rec.after15s = await stats(page);
         const m = await withTimeout(page.evaluate(() => window.__m), 30000, null);
         if (m) {
           rec.blockingCalls = m.calls.slice(0, 30);
           rec.longtasks = m.longtasks.filter((l) => l.ms > 100).slice(0, 30);
           rec.maxLag = Math.round(m.maxLag);
+          rec.presents = m.presents;
+          rec.draws = m.draws;
+          rec.bandRows = m.rows.slice(0, 80);
+        }
+        await withTimeout(page.screenshot({ path: path.join(OUT, `${cfg.name}-${v}.png`) }), 30000, null);
+        // orbit drag across the canvas: 80 moves, 50 ms apart
+        const box = await withTimeout(page.locator('canvas').boundingBox(), 30000, null);
+        if (box) {
+          const s0 = await snap(page);
+          const td = Date.now();
+          const cx = box.x + box.width / 2, cy = box.y + box.height / 2;
+          await withTimeout(page.mouse.move(cx, cy), 30000, null);
+          await withTimeout(page.mouse.down(), 30000, null);
+          for (let i = 1; i <= 80; i++) {
+            await withTimeout(page.mouse.move(cx + 220 * Math.sin(i / 80 * Math.PI * 2), cy + 40 * Math.sin(i / 20 * Math.PI)), 30000, null);
+            await new Promise((r) => setTimeout(r, 50));
+          }
+          await withTimeout(page.mouse.up(), 30000, null);
+          const dragMs = Date.now() - td;
+          const d = await since(page, s0);
+          rec.drag = Object.assign({ ms: dragMs, statsAfter: await stats(page) }, d || {});
+          rec.drag.settle = await waitAA(page, 60000);
+        }
+        // the other views, from the settled state
+        rec.views = {};
+        for (const [name, sel, re] of [['steps', '[data-view="1"]', /Steps/], ['slice', '[data-view="2"]', /Slice/], ['carved', '[data-preset="1"]', /8 shapes/]]) {
+          const s0 = await snap(page);
+          await withTimeout(page.click(sel, { timeout: 30000 }), 40000, null);
+          const aa = await waitAA(page, 90000, re);
+          rec.views[name] = Object.assign({ aa }, (await since(page, s0)) || {});
         }
         rec.errors = errs.slice(0, 10);
-        await withTimeout(page.screenshot({ path: path.join(OUT, `${cfg.name}-${v}.png`) }), 30000, null);
+        await withTimeout(page.screenshot({ path: path.join(OUT, `${cfg.name}-${v}-end.png`) }), 30000, null);
       } catch (e) {
         rec.error = String(e).slice(0, 300);
       }
