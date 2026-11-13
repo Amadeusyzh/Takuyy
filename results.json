@@ -1,0 +1,7093 @@
+[
+ {
+  "variant": "a-new",
+  "config": "default",
+  "renderer": "ANGLE (Microsoft, Microsoft Basic Render Driver (0x0000008C) Direct3D11 vs_5_0 ps_5_0, D3D11) | KHR_parallel_shader_compile EXT_disjoint_timer_query_webgl2",
+  "firstFrame": {
+   "ms": 3374,
+   "stats": "7 shapes · k = 0.45 · Shaded · 288×162 · 3.2 fps"
+  },
+  "longestEvaluateWait": 11,
+  "trail": [
+   [
+    1635,
+    ""
+   ],
+   [
+    1739,
+    "compiling shaders…"
+   ],
+   [
+    2659,
+    "7 shapes · k = 0.45 · Shaded · 288×162 · …"
+   ],
+   [
+    3374,
+    "7 shapes · k = 0.45 · Shaded · 288×162 · 3.2 fps"
+   ],
+   [
+    3689,
+    "7 shapes · k = 0.45 · Shaded · 288×162 · 3.1 fps"
+   ],
+   [
+    4296,
+    "7 shapes · k = 0.45 · Shaded · 288×162 · 3.0 fps"
+   ],
+   [
+    4910,
+    "7 shapes · k = 0.45 · Shaded · 288×162 · 3.1 fps"
+   ],
+   [
+    5211,
+    "7 shapes · k = 0.45 · Shaded · 288×162 · 3.2 fps"
+   ],
+   [
+    5824,
+    "7 shapes · k = 0.45 · Shaded · 288×162 · 3.3 fps"
+   ],
+   [
+    6127,
+    "7 shapes · k = 0.45 · Shaded · 288×162 · 3.4 fps"
+   ],
+   [
+    6739,
+    "7 shapes · k = 0.45 · Shaded · 288×162 · 3.5 fps"
+   ],
+   [
+    7647,
+    "7 shapes · k = 0.45 · Shaded · 288×162 · AA 16/16"
+   ]
+  ],
+  "after15s": "7 shapes · k = 0.45 · Shaded · 288×162 · AA 16/16",
+  "blockingCalls": [],
+  "longtasks": [],
+  "lags": [
+   {
+    "at": 63,
+    "ms": 1467
+   }
+  ],
+  "maxLag": 1467,
+  "presents": 16,
+  "draws": 178,
+  "bandRows": [
+   1,
+   1,
+   1,
+   1,
+   10,
+   12,
+   8,
+   16,
+   18,
+   21,
+   18,
+   14,
+   14,
+   16,
+   10,
+   5,
+   12,
+   8,
+   18,
+   20,
+   21,
+   20,
+   20,
+   18,
+   14,
+   11,
+   8,
+   8,
+   12,
+   16,
+   21,
+   21,
+   21,
+   18,
+   16,
+   14,
+   7,
+   8,
+   8,
+   8,
+   12,
+   14,
+   16,
+   18,
+   16,
+   14,
+   12,
+   14,
+   12,
+   10,
+   8,
+   14,
+   21,
+   21,
+   18,
+   16,
+   14,
+   12,
+   14,
+   14
+  ],
+  "firstFences": [
+   [
+    2525,
+    32,
+    1
+   ],
+   [
+    2557,
+    5,
+    1
+   ],
+   [
+    2573,
+    4,
+    1
+   ],
+   [
+    2589,
+    4,
+    1
+   ],
+   [
+    2606,
+    23,
+    2880
+   ],
+   [
+    2637,
+    38,
+    3456
+   ],
+   [
+    2686,
+    15,
+    2304
+   ],
+   [
+    2703,
+    25,
+    4608
+   ],
+   [
+    2736,
+    23,
+    5184
+   ],
+   [
+    2768,
+    31,
+    6048
+   ],
+   [
+    2800,
+    32,
+    5184
+   ],
+   [
+    2833,
+    27,
+    4032
+   ],
+   [
+    2865,
+    24,
+    4032
+   ],
+   [
+    2897,
+    39,
+    4608
+   ],
+   [
+    2945,
+    10,
+    2880
+   ],
+   [
+    2972,
+    5,
+    1440
+   ],
+   [
+    2993,
+    43,
+    3456
+   ],
+   [
+    3041,
+    14,
+    2304
+   ],
+   [
+    3057,
+    25,
+    5184
+   ],
+   [
+    3090,
+    26,
+    5760
+   ],
+   [
+    3122,
+    29,
+    6048
+   ],
+   [
+    3156,
+    28,
+    5760
+   ],
+   [
+    3187,
+    31,
+    5760
+   ],
+   [
+    3219,
+    33,
+    5184
+   ],
+   [
+    3252,
+    26,
+    4032
+   ],
+   [
+    3284,
+    11,
+    3168
+   ],
+   [
+    3300,
+    41,
+    2304
+   ],
+   [
+    3349,
+    18,
+    2304
+   ],
+   [
+    3381,
+    20,
+    3456
+   ],
+   [
+    3414,
+    20,
+    4608
+   ],
+   [
+    3446,
+    26,
+    6048
+   ],
+   [
+    3479,
+    27,
+    6048
+   ],
+   [
+    3511,
+    31,
+    6048
+   ],
+   [
+    3543,
+    32,
+    5184
+   ],
+   [
+    3575,
+    32,
+    4608
+   ],
+   [
+    3607,
+    23,
+    4032
+   ],
+   [
+    3640,
+    8,
+    2016
+   ],
+   [
+    3664,
+    25,
+    2304
+   ],
+   [
+    3696,
+    26,
+    2304
+   ],
+   [
+    3728,
+    20,
+    2304
+   ]
+  ],
+  "maxRafGap": 375,
+  "rafGaps": [
+   [
+    1195,
+    375
+   ]
+  ],
+  "compileOrder": {
+   "statusAt": 1647,
+   "firstLinkAt": 1663,
+   "firstCompletionQueryAt": 1664,
+   "firstLinkStatusAt": 2509,
+   "framesStatusToLink": 2,
+   "framesStatusToFirstQuery": 2
+  },
+  "start": {
+   "presents": 16,
+   "draws": 178,
+   "blockingCalls": [],
+   "longtasks": [],
+   "lags": [],
+   "maxLag": 0,
+   "fences": {
+    "n": 161,
+    "max": 43,
+    "p50": 26,
+    "p90": 32,
+    "top": [
+     [
+      2993,
+      43,
+      3456
+     ],
+     [
+      3300,
+      41,
+      2304
+     ],
+     [
+      2897,
+      39,
+      4608
+     ],
+     [
+      2637,
+      38,
+      3456
+     ],
+     [
+      5172,
+      35,
+      6048
+     ],
+     [
+      3219,
+      33,
+      5184
+     ]
+    ]
+   },
+   "rafGapsOver40": 1,
+   "rafGapsOver100": 1,
+   "maxRafGap": 375,
+   "rafTop": [
+    [
+     1195,
+     375
+    ]
+   ],
+   "ctx": []
+  },
+  "drag": {
+   "ms": 5399,
+   "statsAfter": "7 shapes · k = 0.45 · Shaded · 288×162 · 3.5 fps",
+   "presents": 18,
+   "draws": 189,
+   "blockingCalls": [],
+   "longtasks": [],
+   "lags": [],
+   "maxLag": 0,
+   "fences": {
+    "n": 170,
+    "max": 50,
+    "p50": 27,
+    "p90": 32,
+    "top": [
+     [
+      18722,
+      50,
+      6048
+     ],
+     [
+      18979,
+      39,
+      5184
+     ],
+     [
+      20218,
+      37,
+      5760
+     ],
+     [
+      23027,
+      37,
+      5184
+     ],
+     [
+      23321,
+      37,
+      5760
+     ],
+     [
+      22461,
+      36,
+      5184
+     ]
+    ]
+   },
+   "rafGapsOver40": 0,
+   "rafGapsOver100": 0,
+   "maxRafGap": 0,
+   "rafTop": [],
+   "ctx": [],
+   "settle": {
+    "ms": 4885,
+    "stats": "7 shapes · k = 0.45 · Shaded · 288×162 · AA 16/16"
+   }
+  },
+  "views": {
+   "steps": {
+    "aa": {
+     "ms": 1678,
+     "stats": "7 shapes · k = 0.45 · Steps · 288×162 · AA 16/16"
+    },
+    "presents": 16,
+    "draws": 69,
+    "blockingCalls": [],
+    "longtasks": [],
+    "lags": [],
+    "maxLag": 0,
+    "fences": {
+     "n": 53,
+     "max": 32,
+     "p50": 19,
+     "p90": 26,
+     "top": [
+      [
+       29208,
+       32,
+       16416
+      ],
+      [
+       29397,
+       29,
+       19296
+      ],
+      [
+       30335,
+       29,
+       19872
+      ],
+      [
+       30168,
+       28,
+       20736
+      ],
+      [
+       29080,
+       26,
+       19296
+      ],
+      [
+       30261,
+       26,
+       18720
+      ]
+     ]
+    },
+    "rafGapsOver40": 0,
+    "rafGapsOver100": 0,
+    "maxRafGap": 0,
+    "rafTop": [],
+    "ctx": []
+   },
+   "slice": {
+    "aa": {
+     "ms": 4456,
+     "stats": "7 shapes · k = 0.45 · Slice · 288×162 · AA 16/16"
+    },
+    "presents": 16,
+    "draws": 157,
+    "blockingCalls": [],
+    "longtasks": [],
+    "lags": [],
+    "maxLag": 0,
+    "fences": {
+     "n": 141,
+     "max": 53,
+     "p50": 27,
+     "p90": 31,
+     "top": [
+      [
+       30747,
+       53,
+       17856
+      ],
+      [
+       31182,
+       36,
+       5760
+      ],
+      [
+       32578,
+       36,
+       5184
+      ],
+      [
+       33957,
+       34,
+       6048
+      ],
+      [
+       34435,
+       33,
+       6048
+      ],
+      [
+       31472,
+       32,
+       5184
+      ]
+     ]
+    },
+    "rafGapsOver40": 0,
+    "rafGapsOver100": 0,
+    "maxRafGap": 0,
+    "rafTop": [],
+    "ctx": []
+   },
+   "carved": {
+    "aa": {
+     "ms": 5675,
+     "stats": "8 shapes · k = 0.08 · Slice · 288×162 · AA 16/16"
+    },
+    "presents": 16,
+    "draws": 197,
+    "blockingCalls": [],
+    "longtasks": [],
+    "lags": [],
+    "maxLag": 0,
+    "fences": {
+     "n": 181,
+     "max": 38,
+     "p50": 28,
+     "p90": 32,
+     "top": [
+      [
+       37923,
+       38,
+       4608
+      ],
+      [
+       37480,
+       36,
+       5184
+      ],
+      [
+       39738,
+       36,
+       4608
+      ],
+      [
+       40629,
+       35,
+       4608
+      ],
+      [
+       35369,
+       33,
+       5184
+      ],
+      [
+       36016,
+       33,
+       5760
+      ]
+     ]
+    },
+    "rafGapsOver40": 0,
+    "rafGapsOver100": 0,
+    "maxRafGap": 0,
+    "rafTop": [],
+    "ctx": []
+   }
+  },
+  "stress": {
+   "shapes": 16,
+   "maxSteps": "256",
+   "shaded": {
+    "aa": {
+     "ms": 15347,
+     "stats": "16 shapes · k = 0.45 · Shaded · 288×162 · AA 16/16"
+    },
+    "presents": 20,
+    "draws": 402,
+    "blockingCalls": [],
+    "longtasks": [],
+    "lags": [],
+    "maxLag": 0,
+    "fences": {
+     "n": 382,
+     "max": 56,
+     "p50": 38,
+     "p90": 47,
+     "top": [
+      [
+       43773,
+       56,
+       2304
+      ],
+      [
+       44673,
+       56,
+       2304
+      ],
+      [
+       43708,
+       55,
+       2304
+      ],
+      [
+       53922,
+       54,
+       2304
+      ],
+      [
+       54872,
+       54,
+       2304
+      ],
+      [
+       45607,
+       53,
+       2304
+      ]
+     ]
+    },
+    "rafGapsOver40": 0,
+    "rafGapsOver100": 0,
+    "maxRafGap": 0,
+    "rafTop": [],
+    "ctx": []
+   },
+   "steps": {
+    "aa": {
+     "ms": 3687,
+     "stats": "16 shapes · k = 0.45 · Steps · 288×162 · AA 16/16"
+    },
+    "presents": 16,
+    "draws": 137,
+    "blockingCalls": [],
+    "longtasks": [],
+    "lags": [],
+    "maxLag": 0,
+    "fences": {
+     "n": 121,
+     "max": 42,
+     "p50": 21,
+     "p90": 32,
+     "top": [
+      [
+       58679,
+       42,
+       6048
+      ],
+      [
+       60717,
+       41,
+       5760
+      ],
+      [
+       59116,
+       37,
+       6048
+      ],
+      [
+       61084,
+       37,
+       6048
+      ],
+      [
+       58450,
+       36,
+       6048
+      ],
+      [
+       59368,
+       36,
+       5760
+      ]
+     ]
+    },
+    "rafGapsOver40": 0,
+    "rafGapsOver100": 0,
+    "maxRafGap": 0,
+    "rafTop": [],
+    "ctx": []
+   },
+   "drag": {
+    "ms": 2950,
+    "presents": 13,
+    "draws": 110,
+    "blockingCalls": [],
+    "longtasks": [],
+    "lags": [],
+    "maxLag": 0,
+    "fences": {
+     "n": 96,
+     "max": 40,
+     "p50": 23,
+     "p90": 32,
+     "top": [
+      [
+       63291,
+       40,
+       5760
+      ],
+      [
+       63869,
+       38,
+       4608
+      ],
+      [
+       61693,
+       37,
+       5184
+      ],
+      [
+       61916,
+       37,
+       6048
+      ],
+      [
+       63024,
+       37,
+       5760
+      ],
+      [
+       62586,
+       35,
+       4608
+      ]
+     ]
+    },
+    "rafGapsOver40": 0,
+    "rafGapsOver100": 0,
+    "maxRafGap": 0,
+    "rafTop": [],
+    "ctx": [],
+    "settle": {
+     "ms": 3681,
+     "stats": "16 shapes · k = 0.45 · Steps · 288×162 · AA 16/16"
+    }
+   }
+  },
+  "lose": {
+   "first": "lost",
+   "lostText": {
+    "ms": 1,
+    "stats": "the WebGL context was lost; waiting for the browser to restore it…"
+   },
+   "restoredAA": {
+    "ms": 3889,
+    "stats": "16 shapes · k = 0.45 · Steps · 288×162 · AA 16/16"
+   },
+   "afterRestore": {
+    "presents": 16,
+    "draws": 139,
+    "blockingCalls": [],
+    "longtasks": [],
+    "lags": [],
+    "maxLag": 0,
+    "fences": {
+     "n": 122,
+     "max": 41,
+     "p50": 22,
+     "p90": 32,
+     "top": [
+      [
+       71850,
+       41,
+       6048
+      ],
+      [
+       72079,
+       41,
+       6048
+      ],
+      [
+       69228,
+       38,
+       6048
+      ],
+      [
+       69886,
+       38,
+       6048
+      ],
+      [
+       71617,
+       38,
+       5760
+      ],
+      [
+       68971,
+       37,
+       6048
+      ]
+     ]
+    },
+    "rafGapsOver40": 0,
+    "rafGapsOver100": 0,
+    "maxRafGap": 0,
+    "rafTop": [],
+    "ctx": [
+     [
+      "webglcontextlost",
+      68288
+     ],
+     [
+      "webglcontextrestored",
+      68794
+     ]
+    ]
+   },
+   "pausedText": {
+    "ms": 3,
+    "stats": "the WebGL context was lost twice within a minute, so rendering is paused · tap the picture to resume"
+   },
+   "drawsIn1500msPaused": 0,
+   "resumedAA": {
+    "ms": 3778,
+    "stats": "16 shapes · k = 0.45 · Steps · 288×162 · AA 16/16"
+   },
+   "afterResume": {
+    "presents": 16,
+    "draws": 138,
+    "blockingCalls": [],
+    "longtasks": [],
+    "lags": [],
+    "maxLag": 0,
+    "fences": {
+     "n": 121,
+     "max": 43,
+     "p50": 23,
+     "p90": 32,
+     "top": [
+      [
+       77032,
+       43,
+       5184
+      ],
+      [
+       76128,
+       39,
+       6048
+      ],
+      [
+       76541,
+       37,
+       6048
+      ],
+      [
+       76769,
+       37,
+       6048
+      ],
+      [
+       79141,
+       36,
+       6048
+      ],
+      [
+       75873,
+       35,
+       6048
+      ]
+     ]
+    },
+    "rafGapsOver40": 0,
+    "rafGapsOver100": 0,
+    "maxRafGap": 0,
+    "rafTop": [],
+    "ctx": [
+     [
+      "webglcontextlost",
+      68288
+     ],
+     [
+      "webglcontextrestored",
+      68794
+     ],
+     [
+      "webglcontextlost",
+      72684
+     ],
+     [
+      "webglcontextrestored",
+      73190
+     ]
+    ]
+   }
+  },
+  "errors": [
+   "Failed to load resource: the server responded with a status of 404 (Not Found)"
+  ],
+  "totalMs": 79651,
+  "probeCompile": {
+   "tappedWhileCompiling": true,
+   "whileCompiling": "probe: 21 steps, hit at t = 11.65",
+   "afterFirstFrame": "probe: 21 steps, hit at t = 11.65",
+   "same": true
+  }
+ },
+ {
+  "variant": "b-dep",
+  "config": "default",
+  "renderer": "ANGLE (Microsoft, Microsoft Basic Render Driver (0x0000008C) Direct3D11 vs_5_0 ps_5_0, D3D11) | KHR_parallel_shader_compile EXT_disjoint_timer_query_webgl2",
+  "firstFrame": {
+   "ms": 1711,
+   "stats": "7 shapes · k = 0.45 · Shaded · 288×162 · 4.0 fps"
+  },
+  "longestEvaluateWait": 26,
+  "trail": [
+   [
+    177,
+    ""
+   ],
+   [
+    279,
+    "compiling shaders…"
+   ],
+   [
+    1297,
+    "7 shapes · k = 0.45 · Shaded · 288×162 · …"
+   ],
+   [
+    1711,
+    "7 shapes · k = 0.45 · Shaded · 288×162 · 4.0 fps"
+   ],
+   [
+    2020,
+    "7 shapes · k = 0.45 · Shaded · 288×162 · 3.9 fps"
+   ],
+   [
+    2945,
+    "7 shapes · k = 0.45 · Shaded · 288×162 · 4.0 fps"
+   ],
+   [
+    3263,
+    "7 shapes · k = 0.45 · Shaded · 288×162 · 3.9 fps"
+   ],
+   [
+    3566,
+    "7 shapes · k = 0.45 · Shaded · 288×162 · 3.8 fps"
+   ],
+   [
+    5074,
+    "7 shapes · k = 0.45 · Shaded · 288×162 · 3.9 fps"
+   ],
+   [
+    5377,
+    "7 shapes · k = 0.45 · Shaded · 288×162 · AA 16/16"
+   ]
+  ],
+  "after15s": "7 shapes · k = 0.45 · Shaded · 288×162 · AA 16/16",
+  "blockingCalls": [],
+  "longtasks": [],
+  "lags": [],
+  "maxLag": 62,
+  "presents": 16,
+  "draws": 147,
+  "bandRows": [
+   1,
+   1,
+   21,
+   21,
+   21,
+   21,
+   21,
+   21,
+   21,
+   15,
+   28,
+   21,
+   21,
+   21,
+   21,
+   21,
+   21,
+   8,
+   21,
+   21,
+   21,
+   21,
+   21,
+   21,
+   21,
+   15,
+   21,
+   21,
+   21,
+   21,
+   21,
+   21,
+   21,
+   15,
+   21,
+   21,
+   21,
+   21,
+   21,
+   21,
+   21,
+   15,
+   30,
+   21,
+   21,
+   21,
+   21,
+   21,
+   21,
+   6,
+   21,
+   21,
+   21,
+   21,
+   21,
+   21,
+   21,
+   15,
+   21,
+   21
+  ],
+  "firstFences": [
+   [
+    1153,
+    31,
+    1
+   ],
+   [
+    1185,
+    3,
+    1
+   ],
+   [
+    1200,
+    30,
+    6048
+   ],
+   [
+    1235,
+    30,
+    6048
+   ],
+   [
+    1265,
+    26,
+    6048
+   ],
+   [
+    1297,
+    28,
+    6048
+   ],
+   [
+    1329,
+    29,
+    6048
+   ],
+   [
+    1361,
+    33,
+    6048
+   ],
+   [
+    1394,
+    30,
+    6048
+   ],
+   [
+    1427,
+    9,
+    4320
+   ],
+   [
+    1451,
+    28,
+    8064
+   ],
+   [
+    1484,
+    28,
+    6048
+   ],
+   [
+    1516,
+    29,
+    6048
+   ],
+   [
+    1548,
+    28,
+    6048
+   ],
+   [
+    1581,
+    28,
+    6048
+   ],
+   [
+    1613,
+    32,
+    6048
+   ],
+   [
+    1645,
+    32,
+    6048
+   ],
+   [
+    1677,
+    9,
+    2304
+   ],
+   [
+    1702,
+    47,
+    6048
+   ],
+   [
+    1751,
+    25,
+    6048
+   ],
+   [
+    1783,
+    26,
+    6048
+   ],
+   [
+    1815,
+    27,
+    6048
+   ],
+   [
+    1848,
+    32,
+    6048
+   ],
+   [
+    1880,
+    32,
+    6048
+   ],
+   [
+    1912,
+    32,
+    6048
+   ],
+   [
+    1944,
+    11,
+    4320
+   ],
+   [
+    1972,
+    25,
+    6048
+   ],
+   [
+    2003,
+    26,
+    6048
+   ],
+   [
+    2036,
+    27,
+    6048
+   ],
+   [
+    2068,
+    23,
+    6048
+   ],
+   [
+    2100,
+    28,
+    6048
+   ],
+   [
+    2133,
+    25,
+    6048
+   ],
+   [
+    2165,
+    28,
+    6048
+   ],
+   [
+    2197,
+    13,
+    4320
+   ],
+   [
+    2226,
+    22,
+    6048
+   ],
+   [
+    2258,
+    26,
+    6048
+   ],
+   [
+    2290,
+    23,
+    6048
+   ],
+   [
+    2322,
+    24,
+    6048
+   ],
+   [
+    2354,
+    29,
+    6048
+   ],
+   [
+    2386,
+    31,
+    6048
+   ]
+  ],
+  "maxRafGap": 75,
+  "rafGaps": [
+   [
+    79,
+    50
+   ],
+   [
+    160,
+    75
+   ],
+   [
+    3085,
+    51
+   ]
+  ],
+  "compileOrder": {
+   "statusAt": 239,
+   "firstLinkAt": 238,
+   "firstCompletionQueryAt": 239,
+   "firstLinkStatusAt": 1136,
+   "framesStatusToLink": 0,
+   "framesStatusToFirstQuery": 0
+  },
+  "start": {
+   "presents": 16,
+   "draws": 147,
+   "blockingCalls": [],
+   "longtasks": [],
+   "lags": [],
+   "maxLag": 0,
+   "fences": {
+    "n": 130,
+    "max": 47,
+    "p50": 28,
+    "p90": 32,
+    "top": [
+     [
+      1702,
+      47,
+      6048
+     ],
+     [
+      4031,
+      41,
+      6048
+     ],
+     [
+      3224,
+      39,
+      6048
+     ],
+     [
+      2914,
+      38,
+      6048
+     ],
+     [
+      5311,
+      38,
+      6048
+     ],
+     [
+      4288,
+      36,
+      6048
+     ]
+    ]
+   },
+   "rafGapsOver40": 3,
+   "rafGapsOver100": 0,
+   "maxRafGap": 75,
+   "rafTop": [
+    [
+     160,
+     75
+    ],
+    [
+     3085,
+     51
+    ],
+    [
+     79,
+     50
+    ]
+   ],
+   "ctx": []
+  },
+  "drag": {
+   "ms": 5429,
+   "statsAfter": "7 shapes · k = 0.45 · Shaded · 288×162 · 3.9 fps",
+   "presents": 20,
+   "draws": 187,
+   "blockingCalls": [],
+   "longtasks": [],
+   "lags": [],
+   "maxLag": 0,
+   "fences": {
+    "n": 166,
+    "max": 52,
+    "p50": 27,
+    "p90": 32,
+    "top": [
+     [
+      17064,
+      52,
+      7200
+     ],
+     [
+      17129,
+      47,
+      6048
+     ],
+     [
+      19664,
+      40,
+      6048
+     ],
+     [
+      19367,
+      39,
+      6048
+     ],
+     [
+      17807,
+      38,
+      6048
+     ],
+     [
+      19933,
+      38,
+      6048
+     ]
+    ]
+   },
+   "rafGapsOver40": 0,
+   "rafGapsOver100": 0,
+   "maxRafGap": 0,
+   "rafTop": [],
+   "ctx": [],
+   "settle": {
+    "ms": 4261,
+    "stats": "7 shapes · k = 0.45 · Shaded · 288×162 · AA 16/16"
+   }
+  },
+  "views": {
+   "steps": {
+    "aa": {
+     "ms": 2133,
+     "stats": "7 shapes · k = 0.45 · Steps · 288×162 · AA 16/16"
+    },
+    "presents": 16,
+    "draws": 92,
+    "blockingCalls": [],
+    "longtasks": [],
+    "lags": [],
+    "maxLag": 0,
+    "fences": {
+     "n": 76,
+     "max": 30,
+     "p50": 14,
+     "p90": 23,
+     "top": [
+      [
+       26822,
+       30,
+       15264
+      ],
+      [
+       27080,
+       29,
+       17280
+      ],
+      [
+       27858,
+       28,
+       12960
+      ],
+      [
+       28343,
+       25,
+       15264
+      ],
+      [
+       28685,
+       25,
+       13248
+      ],
+      [
+       28248,
+       24,
+       11520
+      ]
+     ]
+    },
+    "rafGapsOver40": 0,
+    "rafGapsOver100": 0,
+    "maxRafGap": 0,
+    "rafTop": [],
+    "ctx": []
+   },
+   "slice": {
+    "aa": {
+     "ms": 4109,
+     "stats": "7 shapes · k = 0.45 · Slice · 288×162 · AA 16/16"
+    },
+    "presents": 16,
+    "draws": 144,
+    "blockingCalls": [],
+    "longtasks": [],
+    "lags": [],
+    "maxLag": 0,
+    "fences": {
+     "n": 128,
+     "max": 38,
+     "p50": 28,
+     "p90": 32,
+     "top": [
+      [
+       30428,
+       38,
+       6048
+      ],
+      [
+       30380,
+       37,
+       6048
+      ],
+      [
+       31449,
+       37,
+       6048
+      ],
+      [
+       32698,
+       35,
+       6048
+      ],
+      [
+       29154,
+       33,
+       6048
+      ],
+      [
+       31962,
+       33,
+       6048
+      ]
+     ]
+    },
+    "rafGapsOver40": 0,
+    "rafGapsOver100": 0,
+    "maxRafGap": 0,
+    "rafTop": [],
+    "ctx": []
+   },
+   "carved": {
+    "aa": {
+     "ms": 4273,
+     "stats": "8 shapes · k = 0.08 · Slice · 288×162 · AA 16/16"
+    },
+    "presents": 16,
+    "draws": 144,
+    "blockingCalls": [],
+    "longtasks": [],
+    "lags": [],
+    "maxLag": 0,
+    "fences": {
+     "n": 128,
+     "max": 42,
+     "p50": 31,
+     "p90": 36,
+     "top": [
+      [
+       35936,
+       42,
+       6048
+      ],
+      [
+       35134,
+       41,
+       6048
+      ],
+      [
+       34085,
+       40,
+       6048
+      ],
+      [
+       37276,
+       40,
+       6048
+      ],
+      [
+       33549,
+       37,
+       6048
+      ],
+      [
+       35273,
+       37,
+       6048
+      ]
+     ]
+    },
+    "rafGapsOver40": 0,
+    "rafGapsOver100": 0,
+    "maxRafGap": 0,
+    "rafTop": [],
+    "ctx": []
+   }
+  },
+  "stress": {
+   "shapes": 16,
+   "maxSteps": "256",
+   "shaded": {
+    "aa": {
+     "ms": 7529,
+     "stats": "16 shapes · k = 0.45 · Shaded · 288×162 · AA 16/16"
+    },
+    "presents": 21,
+    "draws": 189,
+    "blockingCalls": [],
+    "longtasks": [],
+    "lags": [],
+    "maxLag": 0,
+    "fences": {
+     "n": 168,
+     "max": 74,
+     "p50": 52,
+     "p90": 62,
+     "top": [
+      [
+       44012,
+       74,
+       6048
+      ],
+      [
+       41262,
+       73,
+       6048
+      ],
+      [
+       45377,
+       73,
+       6048
+      ],
+      [
+       41729,
+       69,
+       6048
+      ],
+      [
+       45860,
+       69,
+       6048
+      ],
+      [
+       39912,
+       68,
+       6048
+      ]
+     ]
+    },
+    "rafGapsOver40": 0,
+    "rafGapsOver100": 0,
+    "maxRafGap": 0,
+    "rafTop": [],
+    "ctx": []
+   },
+   "steps": {
+    "aa": {
+     "ms": 3871,
+     "stats": "16 shapes · k = 0.45 · Steps · 288×162 · AA 16/16"
+    },
+    "presents": 16,
+    "draws": 140,
+    "blockingCalls": [],
+    "longtasks": [],
+    "lags": [],
+    "maxLag": 0,
+    "fences": {
+     "n": 124,
+     "max": 42,
+     "p50": 19,
+     "p90": 32,
+     "top": [
+      [
+       48984,
+       42,
+       6048
+      ],
+      [
+       49917,
+       42,
+       6048
+      ],
+      [
+       47335,
+       41,
+       6048
+      ],
+      [
+       47794,
+       39,
+       6048
+      ],
+      [
+       47572,
+       38,
+       6048
+      ],
+      [
+       49679,
+       38,
+       6048
+      ]
+     ]
+    },
+    "rafGapsOver40": 0,
+    "rafGapsOver100": 0,
+    "maxRafGap": 0,
+    "rafTop": [],
+    "ctx": []
+   },
+   "drag": {
+    "ms": 2856,
+    "presents": 11,
+    "draws": 106,
+    "blockingCalls": [],
+    "longtasks": [],
+    "lags": [],
+    "maxLag": 0,
+    "fences": {
+     "n": 94,
+     "max": 42,
+     "p50": 19,
+     "p90": 32,
+     "top": [
+      [
+       51261,
+       42,
+       6048
+      ],
+      [
+       51989,
+       41,
+       6048
+      ],
+      [
+       52241,
+       41,
+       6048
+      ],
+      [
+       50785,
+       38,
+       6048
+      ],
+      [
+       50559,
+       37,
+       6048
+      ],
+      [
+       51024,
+       37,
+       6048
+      ]
+     ]
+    },
+    "rafGapsOver40": 0,
+    "rafGapsOver100": 0,
+    "maxRafGap": 0,
+    "rafTop": [],
+    "ctx": [],
+    "settle": {
+     "ms": 3857,
+     "stats": "16 shapes · k = 0.45 · Steps · 288×162 · AA 16/16"
+    }
+   }
+  },
+  "lose": {
+   "first": "lost",
+   "lostText": {
+    "ms": 2,
+    "stats": "the WebGL context was lost; waiting for the browser to restore it…"
+   },
+   "restoredAA": {
+    "ms": 3888,
+    "stats": "16 shapes · k = 0.45 · Steps · 288×162 · AA 16/16"
+   },
+   "afterRestore": {
+    "presents": 16,
+    "draws": 137,
+    "blockingCalls": [],
+    "longtasks": [],
+    "lags": [],
+    "maxLag": 0,
+    "fences": {
+     "n": 120,
+     "max": 45,
+     "p50": 22,
+     "p90": 35,
+     "top": [
+      [
+       59643,
+       45,
+       6048
+      ],
+      [
+       61469,
+       42,
+       6048
+      ],
+      [
+       58084,
+       38,
+       6048
+      ],
+      [
+       57853,
+       37,
+       8928
+      ],
+      [
+       58273,
+       37,
+       6048
+      ],
+      [
+       58506,
+       37,
+       6048
+      ]
+     ]
+    },
+    "rafGapsOver40": 0,
+    "rafGapsOver100": 0,
+    "maxRafGap": 0,
+    "rafTop": [],
+    "ctx": [
+     [
+      "webglcontextlost",
+      57223
+     ],
+     [
+      "webglcontextrestored",
+      57730
+     ]
+    ]
+   },
+   "pausedText": {
+    "ms": 3,
+    "stats": "the WebGL context was lost twice within a minute, so rendering is paused · tap the picture to resume"
+   },
+   "drawsIn1500msPaused": 0,
+   "resumedAA": {
+    "ms": 3854,
+    "stats": "16 shapes · k = 0.45 · Steps · 288×162 · AA 16/16"
+   },
+   "afterResume": {
+    "presents": 16,
+    "draws": 141,
+    "blockingCalls": [],
+    "longtasks": [],
+    "lags": [],
+    "maxLag": 0,
+    "fences": {
+     "n": 124,
+     "max": 40,
+     "p50": 21,
+     "p90": 32,
+     "top": [
+      [
+       67020,
+       40,
+       6048
+      ],
+      [
+       65620,
+       39,
+       6048
+      ],
+      [
+       65173,
+       38,
+       6048
+      ],
+      [
+       65401,
+       38,
+       6048
+      ],
+      [
+       66289,
+       37,
+       6048
+      ],
+      [
+       64760,
+       36,
+       7200
+      ]
+     ]
+    },
+    "rafGapsOver40": 0,
+    "rafGapsOver100": 0,
+    "maxRafGap": 0,
+    "rafTop": [],
+    "ctx": [
+     [
+      "webglcontextlost",
+      57223
+     ],
+     [
+      "webglcontextrestored",
+      57730
+     ],
+     [
+      "webglcontextlost",
+      61620
+     ],
+     [
+      "webglcontextrestored",
+      62126
+     ]
+    ]
+   }
+  },
+  "errors": [
+   "Failed to load resource: the server responded with a status of 404 (Not Found)"
+  ],
+  "totalMs": 68640,
+  "probeCompile": {
+   "tappedWhileCompiling": true,
+   "whileCompiling": "probe: 3 steps, hit at t = 5.65",
+   "afterFirstFrame": "probe: 21 steps, hit at t = 11.65",
+   "same": false
+  }
+ },
+ {
+  "variant": "c-new",
+  "config": "default",
+  "renderer": "ANGLE (Microsoft, Microsoft Basic Render Driver (0x0000008C) Direct3D11 vs_5_0 ps_5_0, D3D11) | KHR_parallel_shader_compile EXT_disjoint_timer_query_webgl2",
+  "firstFrame": {
+   "ms": 1878,
+   "stats": "7 shapes · k = 0.45 · Shaded · 288×162 · 3.5 fps"
+  },
+  "longestEvaluateWait": 65,
+  "trail": [
+   [
+    239,
+    "compiling shaders…"
+   ],
+   [
+    1267,
+    "7 shapes · k = 0.45 · Shaded · 288×162 · …"
+   ],
+   [
+    1878,
+    "7 shapes · k = 0.45 · Shaded · 288×162 · 3.5 fps"
+   ],
+   [
+    2190,
+    "7 shapes · k = 0.45 · Shaded · 288×162 · 3.4 fps"
+   ],
+   [
+    4340,
+    "7 shapes · k = 0.45 · Shaded · 288×162 · 3.5 fps"
+   ],
+   [
+    6156,
+    "7 shapes · k = 0.45 · Shaded · 288×162 · AA 16/16"
+   ]
+  ],
+  "after15s": "7 shapes · k = 0.45 · Shaded · 288×162 · AA 16/16",
+  "blockingCalls": [],
+  "longtasks": [],
+  "lags": [],
+  "maxLag": 86,
+  "presents": 16,
+  "draws": 172,
+  "bandRows": [
+   1,
+   1,
+   1,
+   1,
+   10,
+   12,
+   20,
+   21,
+   21,
+   21,
+   18,
+   16,
+   14,
+   9,
+   12,
+   16,
+   18,
+   20,
+   21,
+   21,
+   21,
+   18,
+   15,
+   16,
+   10,
+   14,
+   16,
+   16,
+   16,
+   16,
+   20,
+   18,
+   14,
+   6,
+   10,
+   14,
+   16,
+   16,
+   16,
+   16,
+   18,
+   18,
+   18,
+   18,
+   2,
+   14,
+   21,
+   21,
+   21,
+   20,
+   20,
+   18,
+   14,
+   12,
+   1,
+   21,
+   21,
+   21,
+   21,
+   20
+  ],
+  "firstFences": [
+   [
+    1141,
+    35,
+    1
+   ],
+   [
+    1188,
+    4,
+    1
+   ],
+   [
+    1205,
+    4,
+    1
+   ],
+   [
+    1221,
+    4,
+    1
+   ],
+   [
+    1238,
+    25,
+    2880
+   ],
+   [
+    1270,
+    19,
+    3456
+   ],
+   [
+    1302,
+    19,
+    5760
+   ],
+   [
+    1334,
+    27,
+    6048
+   ],
+   [
+    1366,
+    27,
+    6048
+   ],
+   [
+    1398,
+    31,
+    6048
+   ],
+   [
+    1430,
+    32,
+    5184
+   ],
+   [
+    1462,
+    32,
+    4608
+   ],
+   [
+    1494,
+    25,
+    4032
+   ],
+   [
+    1528,
+    8,
+    2592
+   ],
+   [
+    1552,
+    21,
+    3456
+   ],
+   [
+    1584,
+    24,
+    4608
+   ],
+   [
+    1617,
+    25,
+    5184
+   ],
+   [
+    1649,
+    24,
+    5760
+   ],
+   [
+    1682,
+    27,
+    6048
+   ],
+   [
+    1714,
+    28,
+    6048
+   ],
+   [
+    1746,
+    31,
+    6048
+   ],
+   [
+    1778,
+    30,
+    5184
+   ],
+   [
+    1810,
+    9,
+    4320
+   ],
+   [
+    1835,
+    44,
+    4608
+   ],
+   [
+    1883,
+    20,
+    2880
+   ],
+   [
+    1916,
+    25,
+    4032
+   ],
+   [
+    1948,
+    29,
+    4608
+   ],
+   [
+    1980,
+    28,
+    4608
+   ],
+   [
+    2013,
+    29,
+    4608
+   ],
+   [
+    2045,
+    25,
+    4608
+   ],
+   [
+    2077,
+    32,
+    5760
+   ],
+   [
+    2109,
+    32,
+    5184
+   ],
+   [
+    2141,
+    16,
+    4032
+   ],
+   [
+    2157,
+    6,
+    1728
+   ],
+   [
+    2179,
+    23,
+    2880
+   ],
+   [
+    2210,
+    24,
+    4032
+   ],
+   [
+    2243,
+    28,
+    4608
+   ],
+   [
+    2275,
+    28,
+    4608
+   ],
+   [
+    2307,
+    27,
+    4608
+   ],
+   [
+    2339,
+    25,
+    4608
+   ]
+  ],
+  "maxRafGap": 49,
+  "rafGaps": [
+   [
+    101,
+    49
+   ],
+   [
+    178,
+    48
+   ]
+  ],
+  "compileOrder": {
+   "statusAt": 226,
+   "firstLinkAt": 235,
+   "firstCompletionQueryAt": 235,
+   "firstLinkStatusAt": 1124,
+   "framesStatusToLink": 2,
+   "framesStatusToFirstQuery": 2
+  },
+  "start": {
+   "presents": 16,
+   "draws": 172,
+   "blockingCalls": [],
+   "longtasks": [],
+   "lags": [],
+   "maxLag": 0,
+   "fences": {
+    "n": 155,
+    "max": 44,
+    "p50": 26,
+    "p90": 32,
+    "top": [
+     [
+      1835,
+      44,
+      4608
+     ],
+     [
+      3570,
+      37,
+      6048
+     ],
+     [
+      1141,
+      35,
+      1
+     ],
+     [
+      3828,
+      33,
+      5184
+     ],
+     [
+      1430,
+      32,
+      5184
+     ],
+     [
+      1462,
+      32,
+      4608
+     ]
+    ]
+   },
+   "rafGapsOver40": 2,
+   "rafGapsOver100": 0,
+   "maxRafGap": 49,
+   "rafTop": [
+    [
+     101,
+     49
+    ],
+    [
+     178,
+     48
+    ]
+   ],
+   "ctx": []
+  },
+  "drag": {
+   "ms": 5380,
+   "statsAfter": "7 shapes · k = 0.45 · Shaded · 288×162 · 3.6 fps",
+   "presents": 18,
+   "draws": 190,
+   "blockingCalls": [],
+   "longtasks": [],
+   "lags": [],
+   "maxLag": 0,
+   "fences": {
+    "n": 171,
+    "max": 53,
+    "p50": 27,
+    "p90": 32,
+    "top": [
+     [
+      17214,
+      53,
+      6048
+     ],
+     [
+      17279,
+      43,
+      2880
+     ],
+     [
+      18398,
+      38,
+      4608
+     ],
+     [
+      20109,
+      38,
+      5184
+     ],
+     [
+      18719,
+      37,
+      5760
+     ],
+     [
+      19283,
+      37,
+      5184
+     ]
+    ]
+   },
+   "rafGapsOver40": 0,
+   "rafGapsOver100": 0,
+   "maxRafGap": 0,
+   "rafTop": [],
+   "ctx": [],
+   "settle": {
+    "ms": 4667,
+    "stats": "7 shapes · k = 0.45 · Shaded · 288×162 · AA 16/16"
+   }
+  },
+  "views": {
+   "steps": {
+    "aa": {
+     "ms": 1640,
+     "stats": "7 shapes · k = 0.45 · Steps · 288×162 · AA 16/16"
+    },
+    "presents": 16,
+    "draws": 71,
+    "blockingCalls": [],
+    "longtasks": [],
+    "lags": [],
+    "maxLag": 0,
+    "fences": {
+     "n": 55,
+     "max": 31,
+     "p50": 19,
+     "p90": 27,
+     "top": [
+      [
+       27905,
+       31,
+       21600
+      ],
+      [
+       28253,
+       29,
+       20736
+      ],
+      [
+       28588,
+       29,
+       12384
+      ],
+      [
+       28480,
+       28,
+       14976
+      ],
+      [
+       28761,
+       28,
+       19008
+      ],
+      [
+       28180,
+       27,
+       19584
+      ]
+     ]
+    },
+    "rafGapsOver40": 0,
+    "rafGapsOver100": 0,
+    "maxRafGap": 0,
+    "rafTop": [],
+    "ctx": []
+   },
+   "slice": {
+    "aa": {
+     "ms": 4467,
+     "stats": "7 shapes · k = 0.45 · Slice · 288×162 · AA 16/16"
+    },
+    "presents": 16,
+    "draws": 158,
+    "blockingCalls": [],
+    "longtasks": [],
+    "lags": [],
+    "maxLag": 0,
+    "fences": {
+     "n": 142,
+     "max": 53,
+     "p50": 26,
+     "p90": 32,
+     "top": [
+      [
+       28972,
+       53,
+       17568
+      ],
+      [
+       31128,
+       41,
+       6048
+      ],
+      [
+       33340,
+       38,
+       4608
+      ],
+      [
+       32240,
+       37,
+       5760
+      ],
+      [
+       30269,
+       36,
+       5760
+      ],
+      [
+       29694,
+       34,
+       4608
+      ]
+     ]
+    },
+    "rafGapsOver40": 0,
+    "rafGapsOver100": 0,
+    "maxRafGap": 0,
+    "rafTop": [],
+    "ctx": []
+   },
+   "carved": {
+    "aa": {
+     "ms": 5465,
+     "stats": "8 shapes · k = 0.08 · Slice · 288×162 · AA 16/16"
+    },
+    "presents": 16,
+    "draws": 186,
+    "blockingCalls": [],
+    "longtasks": [],
+    "lags": [],
+    "maxLag": 0,
+    "fences": {
+     "n": 170,
+     "max": 40,
+     "p50": 27,
+     "p90": 32,
+     "top": [
+      [
+       34984,
+       40,
+       5184
+      ],
+      [
+       35778,
+       39,
+       4032
+      ],
+      [
+       34061,
+       37,
+       3456
+      ],
+      [
+       36082,
+       37,
+       4608
+      ],
+      [
+       33669,
+       36,
+       4608
+      ],
+      [
+       34390,
+       36,
+       4608
+      ]
+     ]
+    },
+    "rafGapsOver40": 0,
+    "rafGapsOver100": 0,
+    "maxRafGap": 0,
+    "rafTop": [],
+    "ctx": []
+   }
+  },
+  "stress": {
+   "shapes": 16,
+   "maxSteps": "256",
+   "shaded": {
+    "aa": {
+     "ms": 15541,
+     "stats": "16 shapes · k = 0.45 · Shaded · 288×162 · AA 16/16"
+    },
+    "presents": 20,
+    "draws": 405,
+    "blockingCalls": [],
+    "longtasks": [],
+    "lags": [],
+    "maxLag": 0,
+    "fences": {
+     "n": 385,
+     "max": 62,
+     "p50": 39,
+     "p90": 47,
+     "top": [
+      [
+       46475,
+       62,
+       2304
+      ],
+      [
+       53013,
+       62,
+       2304
+      ],
+      [
+       41820,
+       57,
+       2304
+      ],
+      [
+       49210,
+       55,
+       2304
+      ],
+      [
+       55751,
+       55,
+       2304
+      ],
+      [
+       42772,
+       54,
+       2304
+      ]
+     ]
+    },
+    "rafGapsOver40": 0,
+    "rafGapsOver100": 0,
+    "maxRafGap": 0,
+    "rafTop": [],
+    "ctx": []
+   },
+   "steps": {
+    "aa": {
+     "ms": 3548,
+     "stats": "16 shapes · k = 0.45 · Steps · 288×162 · AA 16/16"
+    },
+    "presents": 16,
+    "draws": 132,
+    "blockingCalls": [],
+    "longtasks": [],
+    "lags": [],
+    "maxLag": 0,
+    "fences": {
+     "n": 116,
+     "max": 40,
+     "p50": 21,
+     "p90": 32,
+     "top": [
+      [
+       59062,
+       40,
+       5760
+      ],
+      [
+       58204,
+       38,
+       6048
+      ],
+      [
+       56468,
+       37,
+       6048
+      ],
+      [
+       58458,
+       37,
+       5760
+      ],
+      [
+       56235,
+       36,
+       6048
+      ],
+      [
+       57804,
+       36,
+       5760
+      ]
+     ]
+    },
+    "rafGapsOver40": 0,
+    "rafGapsOver100": 0,
+    "maxRafGap": 0,
+    "rafTop": [],
+    "ctx": []
+   },
+   "drag": {
+    "ms": 2970,
+    "presents": 14,
+    "draws": 113,
+    "blockingCalls": [],
+    "longtasks": [],
+    "lags": [],
+    "maxLag": 0,
+    "fences": {
+     "n": 98,
+     "max": 41,
+     "p50": 23,
+     "p90": 32,
+     "top": [
+      [
+       60742,
+       41,
+       6048
+      ],
+      [
+       60374,
+       40,
+       6048
+      ],
+      [
+       62478,
+       38,
+       5760
+      ],
+      [
+       60133,
+       36,
+       6048
+      ],
+      [
+       61848,
+       35,
+       4608
+      ],
+      [
+       60538,
+       33,
+       6048
+      ]
+     ]
+    },
+    "rafGapsOver40": 0,
+    "rafGapsOver100": 0,
+    "maxRafGap": 0,
+    "rafTop": [],
+    "ctx": [],
+    "settle": {
+     "ms": 3473,
+     "stats": "16 shapes · k = 0.45 · Steps · 288×162 · AA 16/16"
+    }
+   }
+  },
+  "lose": {
+   "first": "lost",
+   "lostText": {
+    "ms": 1,
+    "stats": "the WebGL context was lost; waiting for the browser to restore it…"
+   },
+   "restoredAA": {
+    "ms": 3664,
+    "stats": "16 shapes · k = 0.45 · Steps · 288×162 · AA 16/16"
+   },
+   "afterRestore": {
+    "presents": 16,
+    "draws": 136,
+    "blockingCalls": [],
+    "longtasks": [],
+    "lags": [],
+    "maxLag": 0,
+    "fences": {
+     "n": 119,
+     "max": 38,
+     "p50": 21,
+     "p90": 32,
+     "top": [
+      [
+       70156,
+       38,
+       6048
+      ],
+      [
+       67851,
+       37,
+       6048
+      ],
+      [
+       68719,
+       37,
+       5184
+      ],
+      [
+       66847,
+       36,
+       6048
+      ],
+      [
+       67085,
+       35,
+       6048
+      ],
+      [
+       67472,
+       35,
+       6048
+      ]
+     ]
+    },
+    "rafGapsOver40": 0,
+    "rafGapsOver100": 0,
+    "maxRafGap": 0,
+    "rafTop": [],
+    "ctx": [
+     [
+      "webglcontextlost",
+      66166
+     ],
+     [
+      "webglcontextrestored",
+      66673
+     ]
+    ]
+   },
+   "pausedText": {
+    "ms": 4,
+    "stats": "the WebGL context was lost twice within a minute, so rendering is paused · tap the picture to resume"
+   },
+   "drawsIn1500msPaused": 0,
+   "resumedAA": {
+    "ms": 3996,
+    "stats": "16 shapes · k = 0.45 · Steps · 288×162 · AA 16/16"
+   },
+   "afterResume": {
+    "presents": 16,
+    "draws": 145,
+    "blockingCalls": [],
+    "longtasks": [],
+    "lags": [],
+    "maxLag": 0,
+    "fences": {
+     "n": 128,
+     "max": 43,
+     "p50": 21,
+     "p90": 37,
+     "top": [
+      [
+       76089,
+       43,
+       4032
+      ],
+      [
+       77197,
+       43,
+       5760
+      ],
+      [
+       74304,
+       42,
+       5760
+      ],
+      [
+       74951,
+       41,
+       6048
+      ],
+      [
+       75657,
+       41,
+       6048
+      ],
+      [
+       76533,
+       40,
+       5184
+      ]
+     ]
+    },
+    "rafGapsOver40": 0,
+    "rafGapsOver100": 0,
+    "maxRafGap": 0,
+    "rafTop": [],
+    "ctx": [
+     [
+      "webglcontextlost",
+      66166
+     ],
+     [
+      "webglcontextrestored",
+      66673
+     ],
+     [
+      "webglcontextlost",
+      70338
+     ],
+     [
+      "webglcontextrestored",
+      70843
+     ]
+    ]
+   }
+  },
+  "errors": [
+   "Failed to load resource: the server responded with a status of 404 (Not Found)"
+  ],
+  "totalMs": 77504,
+  "probeCompile": {
+   "tappedWhileCompiling": true,
+   "whileCompiling": "probe: 21 steps, hit at t = 11.65",
+   "afterFirstFrame": "probe: 21 steps, hit at t = 11.65",
+   "same": true
+  }
+ },
+ {
+  "variant": "b-dep",
+  "config": "d3d11",
+  "renderer": "ANGLE (Microsoft, Microsoft Basic Render Driver (0x0000008C) Direct3D11 vs_5_0 ps_5_0, D3D11) | KHR_parallel_shader_compile EXT_disjoint_timer_query_webgl2",
+  "firstFrame": {
+   "ms": 1834,
+   "stats": "7 shapes · k = 0.45 · Shaded · 288×162 · 3.9 fps"
+  },
+  "longestEvaluateWait": 3,
+  "trail": [
+   [
+    288,
+    "compiling shaders…"
+   ],
+   [
+    1416,
+    "7 shapes · k = 0.45 · Shaded · 288×162 · …"
+   ],
+   [
+    1834,
+    "7 shapes · k = 0.45 · Shaded · 288×162 · 3.9 fps"
+   ],
+   [
+    2488,
+    "7 shapes · k = 0.45 · Shaded · 288×162 · 3.8 fps"
+   ],
+   [
+    2790,
+    "7 shapes · k = 0.45 · Shaded · 288×162 · 3.7 fps"
+   ],
+   [
+    3092,
+    "7 shapes · k = 0.45 · Shaded · 288×162 · 3.8 fps"
+   ],
+   [
+    4331,
+    "7 shapes · k = 0.45 · Shaded · 288×162 · 3.7 fps"
+   ],
+   [
+    4632,
+    "7 shapes · k = 0.45 · Shaded · 288×162 · 3.8 fps"
+   ],
+   [
+    5562,
+    "7 shapes · k = 0.45 · Shaded · 288×162 · AA 16/16"
+   ]
+  ],
+  "after15s": "7 shapes · k = 0.45 · Shaded · 288×162 · AA 16/16",
+  "blockingCalls": [],
+  "longtasks": [],
+  "lags": [],
+  "maxLag": 55,
+  "presents": 16,
+  "draws": 147,
+  "bandRows": [
+   1,
+   1,
+   21,
+   21,
+   21,
+   21,
+   21,
+   21,
+   21,
+   15,
+   26,
+   21,
+   21,
+   21,
+   21,
+   21,
+   21,
+   10,
+   21,
+   21,
+   21,
+   21,
+   21,
+   21,
+   21,
+   15,
+   21,
+   21,
+   21,
+   21,
+   21,
+   21,
+   21,
+   15,
+   30,
+   21,
+   21,
+   21,
+   21,
+   21,
+   21,
+   6,
+   21,
+   21,
+   21,
+   21,
+   21,
+   21,
+   21,
+   15,
+   30,
+   21,
+   21,
+   21,
+   21,
+   21,
+   21,
+   6,
+   21,
+   21
+  ],
+  "firstFences": [
+   [
+    1264,
+    32,
+    1
+   ],
+   [
+    1296,
+    3,
+    1
+   ],
+   [
+    1312,
+    30,
+    6048
+   ],
+   [
+    1349,
+    28,
+    6048
+   ],
+   [
+    1382,
+    32,
+    6048
+   ],
+   [
+    1414,
+    31,
+    6048
+   ],
+   [
+    1446,
+    32,
+    6048
+   ],
+   [
+    1478,
+    32,
+    6048
+   ],
+   [
+    1510,
+    30,
+    6048
+   ],
+   [
+    1544,
+    10,
+    4320
+   ],
+   [
+    1570,
+    26,
+    7488
+   ],
+   [
+    1602,
+    30,
+    6048
+   ],
+   [
+    1635,
+    28,
+    6048
+   ],
+   [
+    1667,
+    27,
+    6048
+   ],
+   [
+    1699,
+    27,
+    6048
+   ],
+   [
+    1732,
+    29,
+    6048
+   ],
+   [
+    1764,
+    31,
+    6048
+   ],
+   [
+    1796,
+    10,
+    2880
+   ],
+   [
+    1822,
+    48,
+    6048
+   ],
+   [
+    1870,
+    25,
+    6048
+   ],
+   [
+    1902,
+    26,
+    6048
+   ],
+   [
+    1934,
+    28,
+    6048
+   ],
+   [
+    1967,
+    33,
+    6048
+   ],
+   [
+    1999,
+    32,
+    6048
+   ],
+   [
+    2031,
+    43,
+    6048
+   ],
+   [
+    2080,
+    13,
+    4320
+   ],
+   [
+    2109,
+    28,
+    6048
+   ],
+   [
+    2141,
+    30,
+    6048
+   ],
+   [
+    2174,
+    27,
+    6048
+   ],
+   [
+    2206,
+    32,
+    6048
+   ],
+   [
+    2239,
+    30,
+    6048
+   ],
+   [
+    2285,
+    32,
+    6048
+   ],
+   [
+    2319,
+    38,
+    6048
+   ],
+   [
+    2367,
+    10,
+    4320
+   ],
+   [
+    2393,
+    31,
+    8640
+   ],
+   [
+    2424,
+    31,
+    6048
+   ],
+   [
+    2457,
+    29,
+    6048
+   ],
+   [
+    2512,
+    29,
+    6048
+   ],
+   [
+    2553,
+    30,
+    6048
+   ],
+   [
+    2586,
+    36,
+    6048
+   ]
+  ],
+  "maxRafGap": 66,
+  "rafGaps": [
+   [
+    103,
+    48
+   ],
+   [
+    167,
+    66
+   ]
+  ],
+  "compileOrder": {
+   "statusAt": 240,
+   "firstLinkAt": 239,
+   "firstCompletionQueryAt": 240,
+   "firstLinkStatusAt": 1248,
+   "framesStatusToLink": 0,
+   "framesStatusToFirstQuery": 0
+  },
+  "start": {
+   "presents": 16,
+   "draws": 147,
+   "blockingCalls": [],
+   "longtasks": [],
+   "lags": [],
+   "maxLag": 0,
+   "fences": {
+    "n": 130,
+    "max": 48,
+    "p50": 28,
+    "p90": 32,
+    "top": [
+     [
+      1822,
+      48,
+      6048
+     ],
+     [
+      2031,
+      43,
+      6048
+     ],
+     [
+      4209,
+      40,
+      6048
+     ],
+     [
+      2319,
+      38,
+      6048
+     ],
+     [
+      3653,
+      38,
+      6048
+     ],
+     [
+      3100,
+      37,
+      6048
+     ]
+    ]
+   },
+   "rafGapsOver40": 0,
+   "rafGapsOver100": 0,
+   "maxRafGap": 0,
+   "rafTop": [],
+   "ctx": []
+  },
+  "drag": {
+   "ms": 5433,
+   "statsAfter": "7 shapes · k = 0.45 · Shaded · 288×162 · 3.9 fps",
+   "presents": 21,
+   "draws": 190,
+   "blockingCalls": [],
+   "longtasks": [],
+   "lags": [],
+   "maxLag": 0,
+   "fences": {
+    "n": 168,
+    "max": 48,
+    "p50": 27,
+    "p90": 32,
+    "top": [
+     [
+      17230,
+      48,
+      6048
+     ],
+     [
+      17279,
+      42,
+      6048
+     ],
+     [
+      18205,
+      38,
+      6048
+     ],
+     [
+      21785,
+      38,
+      6048
+     ],
+     [
+      19223,
+      37,
+      6048
+     ],
+     [
+      21736,
+      37,
+      6048
+     ]
+    ]
+   },
+   "rafGapsOver40": 0,
+   "rafGapsOver100": 0,
+   "maxRafGap": 0,
+   "rafTop": [],
+   "ctx": [],
+   "settle": {
+    "ms": 4081,
+    "stats": "7 shapes · k = 0.45 · Shaded · 288×162 · AA 16/16"
+   }
+  },
+  "views": {
+   "steps": {
+    "aa": {
+     "ms": 1872,
+     "stats": "7 shapes · k = 0.45 · Steps · 288×162 · AA 16/16"
+    },
+    "presents": 16,
+    "draws": 84,
+    "blockingCalls": [],
+    "longtasks": [],
+    "lags": [],
+    "maxLag": 0,
+    "fences": {
+     "n": 68,
+     "max": 30,
+     "p50": 15,
+     "p90": 24,
+     "top": [
+      [
+       26971,
+       30,
+       15552
+      ],
+      [
+       27539,
+       30,
+       15552
+      ],
+      [
+       27641,
+       28,
+       14976
+      ],
+      [
+       27316,
+       27,
+       22464
+      ],
+      [
+       27197,
+       26,
+       12096
+      ],
+      [
+       27428,
+       26,
+       16992
+      ]
+     ]
+    },
+    "rafGapsOver40": 0,
+    "rafGapsOver100": 0,
+    "maxRafGap": 0,
+    "rafTop": [],
+    "ctx": []
+   },
+   "slice": {
+    "aa": {
+     "ms": 4097,
+     "stats": "7 shapes · k = 0.45 · Slice · 288×162 · AA 16/16"
+    },
+    "presents": 16,
+    "draws": 144,
+    "blockingCalls": [],
+    "longtasks": [],
+    "lags": [],
+    "maxLag": 0,
+    "fences": {
+     "n": 128,
+     "max": 38,
+     "p50": 28,
+     "p90": 32,
+     "top": [
+      [
+       29651,
+       38,
+       6048
+      ],
+      [
+       30921,
+       37,
+       6048
+      ],
+      [
+       31954,
+       37,
+       6048
+      ],
+      [
+       29918,
+       33,
+       6048
+      ],
+      [
+       31402,
+       33,
+       6048
+      ],
+      [
+       31660,
+       33,
+       6048
+      ]
+     ]
+    },
+    "rafGapsOver40": 0,
+    "rafGapsOver100": 0,
+    "maxRafGap": 0,
+    "rafTop": [],
+    "ctx": []
+   },
+   "carved": {
+    "aa": {
+     "ms": 4478,
+     "stats": "8 shapes · k = 0.08 · Slice · 288×162 · AA 16/16"
+    },
+    "presents": 16,
+    "draws": 144,
+    "blockingCalls": [],
+    "longtasks": [],
+    "lags": [],
+    "maxLag": 0,
+    "fences": {
+     "n": 128,
+     "max": 42,
+     "p50": 31,
+     "p90": 37,
+     "top": [
+      [
+       34104,
+       42,
+       6048
+      ],
+      [
+       34937,
+       41,
+       6048
+      ],
+      [
+       35209,
+       41,
+       6048
+      ],
+      [
+       33273,
+       40,
+       6048
+      ],
+      [
+       36059,
+       40,
+       6048
+      ],
+      [
+       35495,
+       39,
+       6048
+      ]
+     ]
+    },
+    "rafGapsOver40": 0,
+    "rafGapsOver100": 0,
+    "maxRafGap": 0,
+    "rafTop": [],
+    "ctx": []
+   }
+  },
+  "stress": {
+   "shapes": 16,
+   "maxSteps": "256",
+   "shaded": {
+    "aa": {
+     "ms": 7531,
+     "stats": "16 shapes · k = 0.45 · Shaded · 288×162 · AA 16/16"
+    },
+    "presents": 21,
+    "draws": 189,
+    "blockingCalls": [],
+    "longtasks": [],
+    "lags": [],
+    "maxLag": 0,
+    "fences": {
+     "n": 168,
+     "max": 71,
+     "p50": 50,
+     "p90": 63,
+     "top": [
+      [
+       41218,
+       71,
+       6048
+      ],
+      [
+       43434,
+       70,
+       6048
+      ],
+      [
+       43914,
+       70,
+       6048
+      ],
+      [
+       44831,
+       69,
+       6048
+      ],
+      [
+       40288,
+       68,
+       6048
+      ],
+      [
+       39393,
+       67,
+       6048
+      ]
+     ]
+    },
+    "rafGapsOver40": 0,
+    "rafGapsOver100": 0,
+    "maxRafGap": 0,
+    "rafTop": [],
+    "ctx": []
+   },
+   "steps": {
+    "aa": {
+     "ms": 3654,
+     "stats": "16 shapes · k = 0.45 · Steps · 288×162 · AA 16/16"
+    },
+    "presents": 16,
+    "draws": 134,
+    "blockingCalls": [],
+    "longtasks": [],
+    "lags": [],
+    "maxLag": 0,
+    "fences": {
+     "n": 118,
+     "max": 38,
+     "p50": 21,
+     "p90": 32,
+     "top": [
+      [
+       47968,
+       38,
+       6048
+      ],
+      [
+       48017,
+       38,
+       6048
+      ],
+      [
+       48675,
+       38,
+       6048
+      ],
+      [
+       50036,
+       38,
+       6048
+      ],
+      [
+       46856,
+       37,
+       6048
+      ],
+      [
+       47311,
+       37,
+       6048
+      ]
+     ]
+    },
+    "rafGapsOver40": 0,
+    "rafGapsOver100": 0,
+    "maxRafGap": 0,
+    "rafTop": [],
+    "ctx": []
+   },
+   "drag": {
+    "ms": 2852,
+    "presents": 11,
+    "draws": 101,
+    "blockingCalls": [],
+    "longtasks": [],
+    "lags": [],
+    "maxLag": 0,
+    "fences": {
+     "n": 89,
+     "max": 44,
+     "p50": 21,
+     "p90": 35,
+     "top": [
+      [
+       51316,
+       44,
+       6048
+      ],
+      [
+       51081,
+       41,
+       6048
+      ],
+      [
+       50819,
+       37,
+       6048
+      ],
+      [
+       51787,
+       37,
+       6048
+      ],
+      [
+       52254,
+       37,
+       6048
+      ],
+      [
+       50579,
+       36,
+       6048
+      ]
+     ]
+    },
+    "rafGapsOver40": 0,
+    "rafGapsOver100": 0,
+    "maxRafGap": 0,
+    "rafTop": [],
+    "ctx": [],
+    "settle": {
+     "ms": 3884,
+     "stats": "16 shapes · k = 0.45 · Steps · 288×162 · AA 16/16"
+    }
+   }
+  },
+  "lose": {
+   "first": "lost",
+   "lostText": {
+    "ms": 0,
+    "stats": "the WebGL context was lost; waiting for the browser to restore it…"
+   },
+   "restoredAA": {
+    "ms": 3902,
+    "stats": "16 shapes · k = 0.45 · Steps · 288×162 · AA 16/16"
+   },
+   "afterRestore": {
+    "presents": 16,
+    "draws": 138,
+    "blockingCalls": [],
+    "longtasks": [],
+    "lags": [],
+    "maxLag": 0,
+    "fences": {
+     "n": 121,
+     "max": 43,
+     "p50": 21,
+     "p90": 33,
+     "top": [
+      [
+       60118,
+       43,
+       6048
+      ],
+      [
+       57861,
+       42,
+       6048
+      ],
+      [
+       58295,
+       40,
+       6048
+      ],
+      [
+       59885,
+       39,
+       6048
+      ],
+      [
+       61003,
+       39,
+       6048
+      ],
+      [
+       59375,
+       38,
+       6048
+      ]
+     ]
+    },
+    "rafGapsOver40": 0,
+    "rafGapsOver100": 0,
+    "maxRafGap": 0,
+    "rafTop": [],
+    "ctx": [
+     [
+      "webglcontextlost",
+      57013
+     ],
+     [
+      "webglcontextrestored",
+      57519
+     ]
+    ]
+   },
+   "pausedText": {
+    "ms": 4,
+    "stats": "the WebGL context was lost twice within a minute, so rendering is paused · tap the picture to resume"
+   },
+   "drawsIn1500msPaused": 0,
+   "resumedAA": {
+    "ms": 3910,
+    "stats": "16 shapes · k = 0.45 · Steps · 288×162 · AA 16/16"
+   },
+   "afterResume": {
+    "presents": 16,
+    "draws": 136,
+    "blockingCalls": [],
+    "longtasks": [],
+    "lags": [],
+    "maxLag": 0,
+    "fences": {
+     "n": 119,
+     "max": 41,
+     "p50": 21,
+     "p90": 32,
+     "top": [
+      [
+       64986,
+       41,
+       6048
+      ],
+      [
+       65223,
+       41,
+       6048
+      ],
+      [
+       67208,
+       41,
+       6048
+      ],
+      [
+       64805,
+       39,
+       6048
+      ],
+      [
+       64565,
+       38,
+       6912
+      ],
+      [
+       64727,
+       37,
+       6048
+      ]
+     ]
+    },
+    "rafGapsOver40": 0,
+    "rafGapsOver100": 0,
+    "maxRafGap": 0,
+    "rafTop": [],
+    "ctx": [
+     [
+      "webglcontextlost",
+      57013
+     ],
+     [
+      "webglcontextrestored",
+      57519
+     ],
+     [
+      "webglcontextlost",
+      61423
+     ],
+     [
+      "webglcontextrestored",
+      61928
+     ]
+    ]
+   }
+  },
+  "errors": [
+   "Failed to load resource: the server responded with a status of 404 (Not Found)"
+  ],
+  "totalMs": 68493,
+  "probeCompile": {
+   "tappedWhileCompiling": true,
+   "whileCompiling": "probe: 3 steps, hit at t = 5.65",
+   "afterFirstFrame": "probe: 21 steps, hit at t = 11.65",
+   "same": false
+  }
+ },
+ {
+  "variant": "a-new",
+  "config": "d3d11",
+  "renderer": "ANGLE (Microsoft, Microsoft Basic Render Driver (0x0000008C) Direct3D11 vs_5_0 ps_5_0, D3D11) | KHR_parallel_shader_compile EXT_disjoint_timer_query_webgl2",
+  "firstFrame": {
+   "ms": 1857,
+   "stats": "7 shapes · k = 0.45 · Shaded · 288×162 · 3.6 fps"
+  },
+  "longestEvaluateWait": 58,
+  "trail": [
+   [
+    219,
+    "compiling shaders…"
+   ],
+   [
+    1238,
+    "7 shapes · k = 0.45 · Shaded · 288×162 · …"
+   ],
+   [
+    1857,
+    "7 shapes · k = 0.45 · Shaded · 288×162 · 3.6 fps"
+   ],
+   [
+    2170,
+    "7 shapes · k = 0.45 · Shaded · 288×162 · 3.5 fps"
+   ],
+   [
+    2473,
+    "7 shapes · k = 0.45 · Shaded · 288×162 · 3.4 fps"
+   ],
+   [
+    3982,
+    "7 shapes · k = 0.45 · Shaded · 288×162 · 3.5 fps"
+   ],
+   [
+    4284,
+    "7 shapes · k = 0.45 · Shaded · 288×162 · 3.6 fps"
+   ],
+   [
+    4585,
+    "7 shapes · k = 0.45 · Shaded · 288×162 · 3.5 fps"
+   ],
+   [
+    6103,
+    "7 shapes · k = 0.45 · Shaded · 288×162 · AA 16/16"
+   ]
+  ],
+  "after15s": "7 shapes · k = 0.45 · Shaded · 288×162 · AA 16/16",
+  "blockingCalls": [],
+  "longtasks": [],
+  "lags": [],
+  "maxLag": 80,
+  "presents": 16,
+  "draws": 169,
+  "bandRows": [
+   1,
+   1,
+   1,
+   1,
+   10,
+   16,
+   21,
+   21,
+   20,
+   21,
+   21,
+   18,
+   14,
+   16,
+   21,
+   21,
+   21,
+   21,
+   21,
+   21,
+   18,
+   2,
+   21,
+   10,
+   12,
+   18,
+   20,
+   21,
+   18,
+   16,
+   14,
+   12,
+   10,
+   10,
+   14,
+   18,
+   21,
+   21,
+   20,
+   18,
+   14,
+   10,
+   6,
+   10,
+   14,
+   20,
+   21,
+   21,
+   20,
+   21,
+   16,
+   12,
+   7,
+   14,
+   21,
+   21,
+   21,
+   21,
+   21,
+   18
+  ],
+  "firstFences": [
+   [
+    1143,
+    32,
+    1
+   ],
+   [
+    1175,
+    4,
+    1
+   ],
+   [
+    1190,
+    5,
+    1
+   ],
+   [
+    1207,
+    5,
+    1
+   ],
+   [
+    1223,
+    19,
+    2880
+   ],
+   [
+    1256,
+    23,
+    4608
+   ],
+   [
+    1288,
+    25,
+    6048
+   ],
+   [
+    1320,
+    29,
+    6048
+   ],
+   [
+    1352,
+    27,
+    5760
+   ],
+   [
+    1384,
+    26,
+    6048
+   ],
+   [
+    1416,
+    31,
+    6048
+   ],
+   [
+    1448,
+    27,
+    5184
+   ],
+   [
+    1482,
+    8,
+    4032
+   ],
+   [
+    1506,
+    18,
+    4608
+   ],
+   [
+    1538,
+    27,
+    6048
+   ],
+   [
+    1570,
+    25,
+    6048
+   ],
+   [
+    1603,
+    26,
+    6048
+   ],
+   [
+    1635,
+    28,
+    6048
+   ],
+   [
+    1667,
+    29,
+    6048
+   ],
+   [
+    1699,
+    31,
+    6048
+   ],
+   [
+    1731,
+    15,
+    5184
+   ],
+   [
+    1761,
+    6,
+    576
+   ],
+   [
+    1783,
+    48,
+    6048
+   ],
+   [
+    1831,
+    22,
+    2880
+   ],
+   [
+    1864,
+    20,
+    3456
+   ],
+   [
+    1896,
+    27,
+    5184
+   ],
+   [
+    1928,
+    26,
+    5760
+   ],
+   [
+    1960,
+    32,
+    6048
+   ],
+   [
+    1992,
+    32,
+    5184
+   ],
+   [
+    2025,
+    32,
+    4608
+   ],
+   [
+    2057,
+    30,
+    4032
+   ],
+   [
+    2089,
+    9,
+    3456
+   ],
+   [
+    2114,
+    27,
+    2880
+   ],
+   [
+    2147,
+    20,
+    2880
+   ],
+   [
+    2179,
+    22,
+    4032
+   ],
+   [
+    2212,
+    24,
+    5184
+   ],
+   [
+    2244,
+    26,
+    6048
+   ],
+   [
+    2286,
+    28,
+    6048
+   ],
+   [
+    2328,
+    36,
+    5760
+   ],
+   [
+    2364,
+    32,
+    5184
+   ]
+  ],
+  "maxRafGap": 96,
+  "rafGaps": [
+   [
+    21,
+    96
+   ],
+   [
+    160,
+    49
+   ]
+  ],
+  "compileOrder": {
+   "statusAt": 209,
+   "firstLinkAt": 215,
+   "firstCompletionQueryAt": 215,
+   "firstLinkStatusAt": 1126,
+   "framesStatusToLink": 2,
+   "framesStatusToFirstQuery": 2
+  },
+  "start": {
+   "presents": 16,
+   "draws": 169,
+   "blockingCalls": [],
+   "longtasks": [],
+   "lags": [],
+   "maxLag": 0,
+   "fences": {
+    "n": 152,
+    "max": 48,
+    "p50": 26,
+    "p90": 32,
+    "top": [
+     [
+      1783,
+      48,
+      6048
+     ],
+     [
+      4936,
+      37,
+      5184
+     ],
+     [
+      2328,
+      36,
+      5760
+     ],
+     [
+      2396,
+      34,
+      4032
+     ],
+     [
+      2675,
+      34,
+      6048
+     ],
+     [
+      2723,
+      33,
+      4608
+     ]
+    ]
+   },
+   "rafGapsOver40": 1,
+   "rafGapsOver100": 0,
+   "maxRafGap": 49,
+   "rafTop": [
+    [
+     160,
+     49
+    ]
+   ],
+   "ctx": []
+  },
+  "drag": {
+   "ms": 5400,
+   "statsAfter": "7 shapes · k = 0.45 · Shaded · 288×162 · 3.5 fps",
+   "presents": 18,
+   "draws": 190,
+   "blockingCalls": [],
+   "longtasks": [],
+   "lags": [],
+   "maxLag": 0,
+   "fences": {
+    "n": 171,
+    "max": 49,
+    "p50": 27,
+    "p90": 32,
+    "top": [
+     [
+      17202,
+      49,
+      6048
+     ],
+     [
+      17253,
+      39,
+      2880
+     ],
+     [
+      21196,
+      38,
+      5760
+     ],
+     [
+      22338,
+      37,
+      5760
+     ],
+     [
+      19783,
+      36,
+      5184
+     ],
+     [
+      17428,
+      32,
+      5760
+     ]
+    ]
+   },
+   "rafGapsOver40": 0,
+   "rafGapsOver100": 0,
+   "maxRafGap": 0,
+   "rafTop": [],
+   "ctx": [],
+   "settle": {
+    "ms": 4668,
+    "stats": "7 shapes · k = 0.45 · Shaded · 288×162 · AA 16/16"
+   }
+  },
+  "views": {
+   "steps": {
+    "aa": {
+     "ms": 1684,
+     "stats": "7 shapes · k = 0.45 · Steps · 288×162 · AA 16/16"
+    },
+    "presents": 16,
+    "draws": 72,
+    "blockingCalls": [],
+    "longtasks": [],
+    "lags": [],
+    "maxLag": 0,
+    "fences": {
+     "n": 57,
+     "max": 28,
+     "p50": 18,
+     "p90": 24,
+     "top": [
+      [
+       28290,
+       28,
+       22176
+      ],
+      [
+       28104,
+       27,
+       19872
+      ],
+      [
+       27478,
+       25,
+       13824
+      ],
+      [
+       27867,
+       24,
+       11232
+      ],
+      [
+       28382,
+       24,
+       17280
+      ],
+      [
+       28629,
+       24,
+       11808
+      ]
+     ]
+    },
+    "rafGapsOver40": 0,
+    "rafGapsOver100": 0,
+    "maxRafGap": 0,
+    "rafTop": [],
+    "ctx": []
+   },
+   "slice": {
+    "aa": {
+     "ms": 4665,
+     "stats": "7 shapes · k = 0.45 · Slice · 288×162 · AA 16/16"
+    },
+    "presents": 16,
+    "draws": 164,
+    "blockingCalls": [],
+    "longtasks": [],
+    "lags": [],
+    "maxLag": 0,
+    "fences": {
+     "n": 148,
+     "max": 55,
+     "p50": 27,
+     "p90": 32,
+     "top": [
+      [
+       29028,
+       55,
+       17280
+      ],
+      [
+       31733,
+       40,
+       5184
+      ],
+      [
+       33206,
+       37,
+       5184
+      ],
+      [
+       31146,
+       36,
+       5760
+      ],
+      [
+       32798,
+       33,
+       4608
+      ],
+      [
+       29125,
+       32,
+       6048
+      ]
+     ]
+    },
+    "rafGapsOver40": 0,
+    "rafGapsOver100": 0,
+    "maxRafGap": 0,
+    "rafTop": [],
+    "ctx": []
+   },
+   "carved": {
+    "aa": {
+     "ms": 5464,
+     "stats": "8 shapes · k = 0.08 · Slice · 288×162 · AA 16/16"
+    },
+    "presents": 16,
+    "draws": 192,
+    "blockingCalls": [],
+    "longtasks": [],
+    "lags": [],
+    "maxLag": 0,
+    "fences": {
+     "n": 176,
+     "max": 36,
+     "p50": 28,
+     "p90": 32,
+     "top": [
+      [
+       34287,
+       36,
+       4608
+      ],
+      [
+       35587,
+       36,
+       4608
+      ],
+      [
+       35732,
+       36,
+       4032
+      ],
+      [
+       38755,
+       36,
+       4032
+      ],
+      [
+       36086,
+       35,
+       4608
+      ],
+      [
+       34736,
+       33,
+       2304
+      ]
+     ]
+    },
+    "rafGapsOver40": 0,
+    "rafGapsOver100": 0,
+    "maxRafGap": 0,
+    "rafTop": [],
+    "ctx": []
+   }
+  },
+  "stress": {
+   "shapes": 16,
+   "maxSteps": "256",
+   "shaded": {
+    "aa": {
+     "ms": 14934,
+     "stats": "16 shapes · k = 0.45 · Shaded · 288×162 · AA 16/16"
+    },
+    "presents": 20,
+    "draws": 403,
+    "blockingCalls": [],
+    "longtasks": [],
+    "lags": [],
+    "maxLag": 0,
+    "fences": {
+     "n": 383,
+     "max": 58,
+     "p50": 38,
+     "p90": 48,
+     "top": [
+      [
+       42658,
+       58,
+       2304
+      ],
+      [
+       48154,
+       56,
+       2304
+      ],
+      [
+       48218,
+       55,
+       2304
+      ],
+      [
+       47272,
+       54,
+       2304
+      ],
+      [
+       50988,
+       54,
+       2304
+      ],
+      [
+       52814,
+       54,
+       2304
+      ]
+     ]
+    },
+    "rafGapsOver40": 0,
+    "rafGapsOver100": 0,
+    "maxRafGap": 0,
+    "rafTop": [],
+    "ctx": []
+   },
+   "steps": {
+    "aa": {
+     "ms": 3646,
+     "stats": "16 shapes · k = 0.45 · Steps · 288×162 · AA 16/16"
+    },
+    "presents": 16,
+    "draws": 134,
+    "blockingCalls": [],
+    "longtasks": [],
+    "lags": [],
+    "maxLag": 0,
+    "fences": {
+     "n": 118,
+     "max": 37,
+     "p50": 21,
+     "p90": 32,
+     "top": [
+      [
+       56374,
+       37,
+       6048
+      ],
+      [
+       57063,
+       37,
+       6048
+      ],
+      [
+       58539,
+       37,
+       4608
+      ],
+      [
+       58987,
+       37,
+       6048
+      ],
+      [
+       56806,
+       36,
+       5760
+      ],
+      [
+       57692,
+       36,
+       6048
+      ]
+     ]
+    },
+    "rafGapsOver40": 0,
+    "rafGapsOver100": 0,
+    "maxRafGap": 0,
+    "rafTop": [],
+    "ctx": []
+   },
+   "drag": {
+    "ms": 2922,
+    "presents": 13,
+    "draws": 111,
+    "blockingCalls": [],
+    "longtasks": [],
+    "lags": [],
+    "maxLag": 0,
+    "fences": {
+     "n": 97,
+     "max": 41,
+     "p50": 22,
+     "p90": 32,
+     "top": [
+      [
+       59539,
+       41,
+       5760
+      ],
+      [
+       61276,
+       38,
+       5184
+      ],
+      [
+       62115,
+       38,
+       5760
+      ],
+      [
+       59747,
+       37,
+       5184
+      ],
+      [
+       61030,
+       37,
+       4608
+      ],
+      [
+       61519,
+       37,
+       5760
+      ]
+     ]
+    },
+    "rafGapsOver40": 0,
+    "rafGapsOver100": 0,
+    "maxRafGap": 0,
+    "rafTop": [],
+    "ctx": [],
+    "settle": {
+     "ms": 3522,
+     "stats": "16 shapes · k = 0.45 · Steps · 288×162 · AA 16/16"
+    }
+   }
+  },
+  "lose": {
+   "first": "lost",
+   "lostText": {
+    "ms": 1,
+    "stats": "the WebGL context was lost; waiting for the browser to restore it…"
+   },
+   "restoredAA": {
+    "ms": 3756,
+    "stats": "16 shapes · k = 0.45 · Steps · 288×162 · AA 16/16"
+   },
+   "afterRestore": {
+    "presents": 16,
+    "draws": 138,
+    "blockingCalls": [],
+    "longtasks": [],
+    "lags": [],
+    "maxLag": 0,
+    "fences": {
+     "n": 121,
+     "max": 46,
+     "p50": 22,
+     "p90": 32,
+     "top": [
+      [
+       67340,
+       46,
+       6048
+      ],
+      [
+       70098,
+       44,
+       6048
+      ],
+      [
+       68354,
+       41,
+       6048
+      ],
+      [
+       68603,
+       40,
+       5184
+      ],
+      [
+       66781,
+       39,
+       6048
+      ],
+      [
+       69668,
+       38,
+       6048
+      ]
+     ]
+    },
+    "rafGapsOver40": 0,
+    "rafGapsOver100": 0,
+    "maxRafGap": 0,
+    "rafTop": [],
+    "ctx": [
+     [
+      "webglcontextlost",
+      65934
+     ],
+     [
+      "webglcontextrestored",
+      66440
+     ]
+    ]
+   },
+   "pausedText": {
+    "ms": 4,
+    "stats": "the WebGL context was lost twice within a minute, so rendering is paused · tap the picture to resume"
+   },
+   "drawsIn1500msPaused": 0,
+   "resumedAA": {
+    "ms": 3870,
+    "stats": "16 shapes · k = 0.45 · Steps · 288×162 · AA 16/16"
+   },
+   "afterResume": {
+    "presents": 16,
+    "draws": 144,
+    "blockingCalls": [],
+    "longtasks": [],
+    "lags": [],
+    "maxLag": 0,
+    "fences": {
+     "n": 127,
+     "max": 43,
+     "p50": 22,
+     "p90": 32,
+     "top": [
+      [
+       74111,
+       43,
+       6048
+      ],
+      [
+       73641,
+       40,
+       6048
+      ],
+      [
+       76757,
+       40,
+       5760
+      ],
+      [
+       73386,
+       38,
+       6048
+      ],
+      [
+       73841,
+       37,
+       6048
+      ],
+      [
+       75382,
+       37,
+       6048
+      ]
+     ]
+    },
+    "rafGapsOver40": 0,
+    "rafGapsOver100": 0,
+    "maxRafGap": 0,
+    "rafTop": [],
+    "ctx": [
+     [
+      "webglcontextlost",
+      65934
+     ],
+     [
+      "webglcontextrestored",
+      66440
+     ],
+     [
+      "webglcontextlost",
+      70197
+     ],
+     [
+      "webglcontextrestored",
+      70702
+     ]
+    ]
+   }
+  },
+  "errors": [
+   "Failed to load resource: the server responded with a status of 404 (Not Found)"
+  ],
+  "totalMs": 77227,
+  "probeCompile": {
+   "tappedWhileCompiling": true,
+   "whileCompiling": "probe: 21 steps, hit at t = 11.65",
+   "afterFirstFrame": "probe: 21 steps, hit at t = 11.65",
+   "same": true
+  }
+ },
+ {
+  "variant": "a-new",
+  "config": "warp",
+  "renderer": "ANGLE (Microsoft, Microsoft Basic Render Driver (0x0000008C) Direct3D11 vs_5_0 ps_5_0, D3D11) | KHR_parallel_shader_compile EXT_disjoint_timer_query_webgl2",
+  "firstFrame": {
+   "ms": 2467,
+   "stats": "7 shapes · k = 0.45 · Shaded · 288×162 · 2.8 fps"
+  },
+  "longestEvaluateWait": 11,
+  "trail": [
+   [
+    732,
+    ""
+   ],
+   [
+    833,
+    "compiling shaders…"
+   ],
+   [
+    1849,
+    "7 shapes · k = 0.45 · Shaded · 288×162 · …"
+   ],
+   [
+    2467,
+    "7 shapes · k = 0.45 · Shaded · 288×162 · 2.8 fps"
+   ],
+   [
+    3689,
+    "7 shapes · k = 0.45 · Shaded · 288×162 · 2.9 fps"
+   ],
+   [
+    3990,
+    "7 shapes · k = 0.45 · Shaded · 288×162 · 3.0 fps"
+   ],
+   [
+    4292,
+    "7 shapes · k = 0.45 · Shaded · 288×162 · 3.1 fps"
+   ],
+   [
+    4895,
+    "7 shapes · k = 0.45 · Shaded · 288×162 · 3.3 fps"
+   ],
+   [
+    5205,
+    "7 shapes · k = 0.45 · Shaded · 288×162 · 3.4 fps"
+   ],
+   [
+    6432,
+    "7 shapes · k = 0.45 · Shaded · 288×162 · 3.5 fps"
+   ],
+   [
+    6734,
+    "7 shapes · k = 0.45 · Shaded · 288×162 · AA 16/16"
+   ]
+  ],
+  "after15s": "7 shapes · k = 0.45 · Shaded · 288×162 · AA 16/16",
+  "blockingCalls": [],
+  "longtasks": [],
+  "lags": [],
+  "maxLag": 13,
+  "presents": 16,
+  "draws": 176,
+  "bandRows": [
+   1,
+   1,
+   1,
+   1,
+   10,
+   14,
+   8,
+   10,
+   16,
+   21,
+   20,
+   20,
+   18,
+   14,
+   11,
+   14,
+   8,
+   18,
+   20,
+   21,
+   21,
+   18,
+   14,
+   12,
+   10,
+   6,
+   8,
+   8,
+   10,
+   10,
+   16,
+   20,
+   16,
+   18,
+   16,
+   12,
+   12,
+   10,
+   6,
+   8,
+   10,
+   14,
+   21,
+   20,
+   21,
+   20,
+   21,
+   18,
+   9,
+   10,
+   18,
+   21,
+   21,
+   21,
+   18,
+   18,
+   14,
+   12,
+   9,
+   18
+  ],
+  "firstFences": [
+   [
+    1665,
+    41,
+    1
+   ],
+   [
+    1712,
+    4,
+    1
+   ],
+   [
+    1728,
+    3,
+    1
+   ],
+   [
+    1744,
+    4,
+    1
+   ],
+   [
+    1761,
+    20,
+    2880
+   ],
+   [
+    1793,
+    40,
+    4032
+   ],
+   [
+    1841,
+    20,
+    2304
+   ],
+   [
+    1874,
+    18,
+    2880
+   ],
+   [
+    1905,
+    19,
+    4608
+   ],
+   [
+    1938,
+    27,
+    6048
+   ],
+   [
+    1970,
+    27,
+    5760
+   ],
+   [
+    2002,
+    30,
+    5760
+   ],
+   [
+    2034,
+    32,
+    5184
+   ],
+   [
+    2066,
+    29,
+    4032
+   ],
+   [
+    2099,
+    9,
+    3168
+   ],
+   [
+    2123,
+    48,
+    4032
+   ],
+   [
+    2172,
+    13,
+    2304
+   ],
+   [
+    2201,
+    25,
+    5184
+   ],
+   [
+    2234,
+    25,
+    5760
+   ],
+   [
+    2266,
+    23,
+    6048
+   ],
+   [
+    2299,
+    32,
+    6048
+   ],
+   [
+    2331,
+    33,
+    5184
+   ],
+   [
+    2364,
+    29,
+    4032
+   ],
+   [
+    2396,
+    29,
+    3456
+   ],
+   [
+    2429,
+    7,
+    2880
+   ],
+   [
+    2452,
+    7,
+    1728
+   ],
+   [
+    2475,
+    41,
+    2304
+   ],
+   [
+    2523,
+    21,
+    2304
+   ],
+   [
+    2555,
+    28,
+    2880
+   ],
+   [
+    2588,
+    18,
+    2880
+   ],
+   [
+    2620,
+    22,
+    4608
+   ],
+   [
+    2653,
+    33,
+    5760
+   ],
+   [
+    2686,
+    25,
+    4608
+   ],
+   [
+    2718,
+    33,
+    5184
+   ],
+   [
+    2751,
+    32,
+    4608
+   ],
+   [
+    2783,
+    26,
+    3456
+   ],
+   [
+    2815,
+    31,
+    3456
+   ],
+   [
+    2848,
+    7,
+    2880
+   ],
+   [
+    2871,
+    7,
+    1728
+   ],
+   [
+    2893,
+    21,
+    2304
+   ]
+  ],
+  "maxRafGap": 33,
+  "rafGaps": [],
+  "compileOrder": {
+   "statusAt": 779,
+   "firstLinkAt": 785,
+   "firstCompletionQueryAt": 786,
+   "firstLinkStatusAt": 1647,
+   "framesStatusToLink": 2,
+   "framesStatusToFirstQuery": 2
+  },
+  "start": {
+   "presents": 16,
+   "draws": 176,
+   "blockingCalls": [],
+   "longtasks": [],
+   "lags": [],
+   "maxLag": 0,
+   "fences": {
+    "n": 159,
+    "max": 48,
+    "p50": 26,
+    "p90": 32,
+    "top": [
+     [
+      2123,
+      48,
+      4032
+     ],
+     [
+      1665,
+      41,
+      1
+     ],
+     [
+      2475,
+      41,
+      2304
+     ],
+     [
+      1793,
+      40,
+      4032
+     ],
+     [
+      5902,
+      37,
+      5760
+     ],
+     [
+      2331,
+      33,
+      5184
+     ]
+    ]
+   },
+   "rafGapsOver40": 0,
+   "rafGapsOver100": 0,
+   "maxRafGap": 0,
+   "rafTop": [],
+   "ctx": []
+  },
+  "drag": {
+   "ms": 5376,
+   "statsAfter": "7 shapes · k = 0.45 · Shaded · 288×162 · 3.6 fps",
+   "presents": 18,
+   "draws": 190,
+   "blockingCalls": [],
+   "longtasks": [],
+   "lags": [],
+   "maxLag": 0,
+   "fences": {
+    "n": 171,
+    "max": 49,
+    "p50": 26,
+    "p90": 32,
+    "top": [
+     [
+      17820,
+      49,
+      6048
+     ],
+     [
+      19243,
+      37,
+      6048
+     ],
+     [
+      20684,
+      36,
+      5184
+     ],
+     [
+      18961,
+      35,
+      5184
+     ],
+     [
+      22043,
+      34,
+      5760
+     ],
+     [
+      18030,
+      32,
+      6048
+     ]
+    ]
+   },
+   "rafGapsOver40": 0,
+   "rafGapsOver100": 0,
+   "maxRafGap": 0,
+   "rafTop": [],
+   "ctx": [],
+   "settle": {
+    "ms": 4645,
+    "stats": "7 shapes · k = 0.45 · Shaded · 288×162 · AA 16/16"
+   }
+  },
+  "views": {
+   "steps": {
+    "aa": {
+     "ms": 1679,
+     "stats": "7 shapes · k = 0.45 · Steps · 288×162 · AA 16/16"
+    },
+    "presents": 16,
+    "draws": 68,
+    "blockingCalls": [],
+    "longtasks": [],
+    "lags": [],
+    "maxLag": 0,
+    "fences": {
+     "n": 52,
+     "max": 28,
+     "p50": 19,
+     "p90": 25,
+     "top": [
+      [
+       28553,
+       28,
+       19296
+      ],
+      [
+       28071,
+       27,
+       14976
+      ],
+      [
+       28491,
+       26,
+       8928
+      ],
+      [
+       29352,
+       26,
+       20736
+      ],
+      [
+       28457,
+       25,
+       19008
+      ],
+      [
+       28747,
+       25,
+       19296
+      ]
+     ]
+    },
+    "rafGapsOver40": 0,
+    "rafGapsOver100": 0,
+    "maxRafGap": 0,
+    "rafTop": [],
+    "ctx": []
+   },
+   "slice": {
+    "aa": {
+     "ms": 4674,
+     "stats": "7 shapes · k = 0.45 · Slice · 288×162 · AA 16/16"
+    },
+    "presents": 16,
+    "draws": 164,
+    "blockingCalls": [],
+    "longtasks": [],
+    "lags": [],
+    "maxLag": 0,
+    "fences": {
+     "n": 148,
+     "max": 52,
+     "p50": 27,
+     "p90": 32,
+     "top": [
+      [
+       29591,
+       52,
+       15840
+      ],
+      [
+       31213,
+       37,
+       5184
+      ],
+      [
+       30941,
+       33,
+       5760
+      ],
+      [
+       29720,
+       32,
+       5760
+      ],
+      [
+       29752,
+       32,
+       5184
+      ],
+      [
+       29784,
+       32,
+       4032
+      ]
+     ]
+    },
+    "rafGapsOver40": 0,
+    "rafGapsOver100": 0,
+    "maxRafGap": 0,
+    "rafTop": [],
+    "ctx": []
+   },
+   "carved": {
+    "aa": {
+     "ms": 5493,
+     "stats": "8 shapes · k = 0.08 · Slice · 288×162 · AA 16/16"
+    },
+    "presents": 16,
+    "draws": 188,
+    "blockingCalls": [],
+    "longtasks": [],
+    "lags": [],
+    "maxLag": 0,
+    "fences": {
+     "n": 172,
+     "max": 38,
+     "p50": 28,
+     "p90": 32,
+     "top": [
+      [
+       34779,
+       38,
+       4608
+      ],
+      [
+       34493,
+       37,
+       5184
+      ],
+      [
+       36122,
+       37,
+       5184
+      ],
+      [
+       37769,
+       36,
+       5184
+      ],
+      [
+       34860,
+       33,
+       2880
+      ],
+      [
+       35505,
+       33,
+       5760
+      ]
+     ]
+    },
+    "rafGapsOver40": 0,
+    "rafGapsOver100": 0,
+    "maxRafGap": 0,
+    "rafTop": [],
+    "ctx": []
+   }
+  },
+  "stress": {
+   "shapes": 16,
+   "maxSteps": "256",
+   "shaded": {
+    "aa": {
+     "ms": 15159,
+     "stats": "16 shapes · k = 0.45 · Shaded · 288×162 · AA 16/16"
+    },
+    "presents": 20,
+    "draws": 405,
+    "blockingCalls": [],
+    "longtasks": [],
+    "lags": [],
+    "maxLag": 0,
+    "fences": {
+     "n": 385,
+     "max": 59,
+     "p50": 38,
+     "p90": 48,
+     "top": [
+      [
+       43231,
+       59,
+       2304
+      ],
+      [
+       49786,
+       58,
+       2304
+      ],
+      [
+       47979,
+       57,
+       2304
+      ],
+      [
+       45949,
+       54,
+       2304
+      ],
+      [
+       46111,
+       54,
+       2304
+      ],
+      [
+       48930,
+       54,
+       2304
+      ]
+     ]
+    },
+    "rafGapsOver40": 0,
+    "rafGapsOver100": 0,
+    "maxRafGap": 0,
+    "rafTop": [],
+    "ctx": []
+   },
+   "steps": {
+    "aa": {
+     "ms": 3665,
+     "stats": "16 shapes · k = 0.45 · Steps · 288×162 · AA 16/16"
+    },
+    "presents": 16,
+    "draws": 138,
+    "blockingCalls": [],
+    "longtasks": [],
+    "lags": [],
+    "maxLag": 0,
+    "fences": {
+     "n": 122,
+     "max": 40,
+     "p50": 21,
+     "p90": 32,
+     "top": [
+      [
+       56939,
+       40,
+       6048
+      ],
+      [
+       57430,
+       40,
+       6048
+      ],
+      [
+       59621,
+       40,
+       6048
+      ],
+      [
+       58911,
+       38,
+       5184
+      ],
+      [
+       56686,
+       37,
+       6048
+      ],
+      [
+       57183,
+       37,
+       6048
+      ]
+     ]
+    },
+    "rafGapsOver40": 0,
+    "rafGapsOver100": 0,
+    "maxRafGap": 0,
+    "rafTop": [],
+    "ctx": []
+   },
+   "drag": {
+    "ms": 2849,
+    "presents": 12,
+    "draws": 105,
+    "blockingCalls": [],
+    "longtasks": [],
+    "lags": [],
+    "maxLag": 0,
+    "fences": {
+     "n": 92,
+     "max": 38,
+     "p50": 21,
+     "p90": 32,
+     "top": [
+      [
+       62025,
+       38,
+       6048
+      ],
+      [
+       61331,
+       37,
+       6048
+      ],
+      [
+       61581,
+       37,
+       6048
+      ],
+      [
+       61786,
+       36,
+       5184
+      ],
+      [
+       62509,
+       36,
+       5760
+      ],
+      [
+       62971,
+       33,
+       5184
+      ]
+     ]
+    },
+    "rafGapsOver40": 0,
+    "rafGapsOver100": 0,
+    "maxRafGap": 0,
+    "rafTop": [],
+    "ctx": [],
+    "settle": {
+     "ms": 3334,
+     "stats": "16 shapes · k = 0.45 · Steps · 288×162 · AA 16/16"
+    }
+   }
+  },
+  "lose": {
+   "first": "lost",
+   "lostText": {
+    "ms": 1,
+    "stats": "the WebGL context was lost; waiting for the browser to restore it…"
+   },
+   "restoredAA": {
+    "ms": 3701,
+    "stats": "16 shapes · k = 0.45 · Steps · 288×162 · AA 16/16"
+   },
+   "afterRestore": {
+    "presents": 16,
+    "draws": 138,
+    "blockingCalls": [],
+    "longtasks": [],
+    "lags": [],
+    "maxLag": 0,
+    "fences": {
+     "n": 120,
+     "max": 37,
+     "p50": 22,
+     "p90": 32,
+     "top": [
+      [
+       70403,
+       37,
+       4032
+      ],
+      [
+       70655,
+       37,
+       5184
+      ],
+      [
+       67191,
+       36,
+       6048
+      ],
+      [
+       67451,
+       36,
+       6048
+      ],
+      [
+       69892,
+       36,
+       6048
+      ],
+      [
+       70354,
+       36,
+       6048
+      ]
+     ]
+    },
+    "rafGapsOver40": 0,
+    "rafGapsOver100": 0,
+    "maxRafGap": 0,
+    "rafTop": [],
+    "ctx": [
+     [
+      "webglcontextlost",
+      66510
+     ],
+     [
+      "webglcontextrestored",
+      67016
+     ]
+    ]
+   },
+   "pausedText": {
+    "ms": 4,
+    "stats": "the WebGL context was lost twice within a minute, so rendering is paused · tap the picture to resume"
+   },
+   "drawsIn1500msPaused": 0,
+   "resumedAA": {
+    "ms": 3727,
+    "stats": "16 shapes · k = 0.45 · Steps · 288×162 · AA 16/16"
+   },
+   "afterResume": {
+    "presents": 16,
+    "draws": 138,
+    "blockingCalls": [],
+    "longtasks": [],
+    "lags": [],
+    "maxLag": 0,
+    "fences": {
+     "n": 122,
+     "max": 38,
+     "p50": 22,
+     "p90": 32,
+     "top": [
+      [
+       76483,
+       38,
+       6048
+      ],
+      [
+       76705,
+       38,
+       6048
+      ],
+      [
+       75419,
+       37,
+       6048
+      ],
+      [
+       77140,
+       37,
+       6048
+      ],
+      [
+       74803,
+       36,
+       6048
+      ],
+      [
+       75673,
+       36,
+       5760
+      ]
+     ]
+    },
+    "rafGapsOver40": 0,
+    "rafGapsOver100": 0,
+    "maxRafGap": 0,
+    "rafTop": [],
+    "ctx": [
+     [
+      "webglcontextlost",
+      66510
+     ],
+     [
+      "webglcontextrestored",
+      67016
+     ],
+     [
+      "webglcontextlost",
+      70718
+     ],
+     [
+      "webglcontextrestored",
+      71223
+     ]
+    ]
+   }
+  },
+  "errors": [
+   "Failed to load resource: the server responded with a status of 404 (Not Found)"
+  ],
+  "totalMs": 77607,
+  "probeCompile": {
+   "tappedWhileCompiling": true,
+   "whileCompiling": "probe: 21 steps, hit at t = 11.65",
+   "afterFirstFrame": "probe: 21 steps, hit at t = 11.65",
+   "same": true
+  }
+ },
+ {
+  "variant": "b-dep",
+  "config": "warp",
+  "renderer": "ANGLE (Microsoft, Microsoft Basic Render Driver (0x0000008C) Direct3D11 vs_5_0 ps_5_0, D3D11) | KHR_parallel_shader_compile EXT_disjoint_timer_query_webgl2",
+  "firstFrame": {
+   "ms": 1868,
+   "stats": "7 shapes · k = 0.45 · Shaded · 288×162 · 3.6 fps"
+  },
+  "longestEvaluateWait": 78,
+  "trail": [
+   [
+    279,
+    "compiling shaders…"
+   ],
+   [
+    1408,
+    "7 shapes · k = 0.45 · Shaded · 288×162 · …"
+   ],
+   [
+    1868,
+    "7 shapes · k = 0.45 · Shaded · 288×162 · 3.6 fps"
+   ],
+   [
+    3405,
+    "7 shapes · k = 0.45 · Shaded · 288×162 · 3.7 fps"
+   ],
+   [
+    4017,
+    "7 shapes · k = 0.45 · Shaded · 288×162 · 3.8 fps"
+   ],
+   [
+    5826,
+    "7 shapes · k = 0.45 · Shaded · 288×162 · AA 16/16"
+   ]
+  ],
+  "after15s": "7 shapes · k = 0.45 · Shaded · 288×162 · AA 16/16",
+  "blockingCalls": [],
+  "longtasks": [],
+  "lags": [],
+  "maxLag": 32,
+  "presents": 16,
+  "draws": 147,
+  "bandRows": [
+   1,
+   1,
+   21,
+   21,
+   21,
+   21,
+   21,
+   21,
+   21,
+   15,
+   30,
+   21,
+   21,
+   21,
+   21,
+   21,
+   21,
+   6,
+   21,
+   21,
+   21,
+   21,
+   21,
+   21,
+   21,
+   15,
+   21,
+   21,
+   21,
+   21,
+   21,
+   21,
+   21,
+   15,
+   21,
+   21,
+   21,
+   21,
+   21,
+   21,
+   21,
+   15,
+   30,
+   21,
+   21,
+   21,
+   21,
+   21,
+   21,
+   6,
+   21,
+   21,
+   21,
+   21,
+   21,
+   21,
+   21,
+   15,
+   30,
+   21
+  ],
+  "firstFences": [
+   [
+    1261,
+    39,
+    1
+   ],
+   [
+    1309,
+    5,
+    1
+   ],
+   [
+    1325,
+    31,
+    6048
+   ],
+   [
+    1364,
+    26,
+    6048
+   ],
+   [
+    1396,
+    26,
+    6048
+   ],
+   [
+    1428,
+    27,
+    6048
+   ],
+   [
+    1460,
+    29,
+    6048
+   ],
+   [
+    1493,
+    31,
+    6048
+   ],
+   [
+    1525,
+    32,
+    6048
+   ],
+   [
+    1559,
+    9,
+    4320
+   ],
+   [
+    1583,
+    26,
+    8640
+   ],
+   [
+    1625,
+    26,
+    6048
+   ],
+   [
+    1658,
+    29,
+    6048
+   ],
+   [
+    1690,
+    29,
+    6048
+   ],
+   [
+    1735,
+    32,
+    6048
+   ],
+   [
+    1767,
+    32,
+    6048
+   ],
+   [
+    1800,
+    32,
+    6048
+   ],
+   [
+    1832,
+    7,
+    1728
+   ],
+   [
+    1855,
+    46,
+    6048
+   ],
+   [
+    1903,
+    22,
+    6048
+   ],
+   [
+    1935,
+    31,
+    6048
+   ],
+   [
+    1982,
+    28,
+    6048
+   ],
+   [
+    2014,
+    32,
+    6048
+   ],
+   [
+    2046,
+    33,
+    6048
+   ],
+   [
+    2079,
+    41,
+    6048
+   ],
+   [
+    2127,
+    12,
+    4320
+   ],
+   [
+    2156,
+    27,
+    6048
+   ],
+   [
+    2189,
+    26,
+    6048
+   ],
+   [
+    2221,
+    26,
+    6048
+   ],
+   [
+    2263,
+    29,
+    6048
+   ],
+   [
+    2309,
+    30,
+    6048
+   ],
+   [
+    2355,
+    32,
+    6048
+   ],
+   [
+    2402,
+    32,
+    6048
+   ],
+   [
+    2434,
+    12,
+    4320
+   ],
+   [
+    2462,
+    27,
+    6048
+   ],
+   [
+    2495,
+    24,
+    6048
+   ],
+   [
+    2527,
+    27,
+    6048
+   ],
+   [
+    2560,
+    27,
+    6048
+   ],
+   [
+    2591,
+    29,
+    6048
+   ],
+   [
+    2623,
+    31,
+    6048
+   ]
+  ],
+  "maxRafGap": 65,
+  "rafGaps": [
+   [
+    183,
+    65
+   ]
+  ],
+  "compileOrder": {
+   "statusAt": 247,
+   "firstLinkAt": 247,
+   "firstCompletionQueryAt": 247,
+   "firstLinkStatusAt": 1244,
+   "framesStatusToLink": 0,
+   "framesStatusToFirstQuery": 0
+  },
+  "start": {
+   "presents": 16,
+   "draws": 147,
+   "blockingCalls": [],
+   "longtasks": [],
+   "lags": [],
+   "maxLag": 0,
+   "fences": {
+    "n": 130,
+    "max": 46,
+    "p50": 28,
+    "p90": 32,
+    "top": [
+     [
+      1855,
+      46,
+      6048
+     ],
+     [
+      4425,
+      43,
+      6048
+     ],
+     [
+      2079,
+      41,
+      6048
+     ],
+     [
+      5524,
+      40,
+      6048
+     ],
+     [
+      1261,
+      39,
+      1
+     ],
+     [
+      2883,
+      37,
+      6048
+     ]
+    ]
+   },
+   "rafGapsOver40": 1,
+   "rafGapsOver100": 0,
+   "maxRafGap": 65,
+   "rafTop": [
+    [
+     183,
+     65
+    ]
+   ],
+   "ctx": []
+  },
+  "drag": {
+   "ms": 7011,
+   "statsAfter": "7 shapes · k = 0.45 · Shaded · 288×162 · 3.8 fps",
+   "presents": 26,
+   "draws": 238,
+   "blockingCalls": [],
+   "longtasks": [],
+   "lags": [],
+   "maxLag": 0,
+   "fences": {
+    "n": 211,
+    "max": 55,
+    "p50": 28,
+    "p90": 32,
+    "top": [
+     [
+      17246,
+      55,
+      6048
+     ],
+     [
+      17310,
+      48,
+      6048
+     ],
+     [
+      22484,
+      43,
+      6048
+     ],
+     [
+      20638,
+      42,
+      6048
+     ],
+     [
+      19819,
+      40,
+      6048
+     ],
+     [
+      21462,
+      40,
+      6048
+     ]
+    ]
+   },
+   "rafGapsOver40": 0,
+   "rafGapsOver100": 0,
+   "maxRafGap": 0,
+   "rafTop": [],
+   "ctx": [],
+   "settle": {
+    "ms": 4362,
+    "stats": "7 shapes · k = 0.45 · Shaded · 288×162 · AA 16/16"
+   }
+  },
+  "views": {
+   "steps": {
+    "aa": {
+     "ms": 2070,
+     "stats": "7 shapes · k = 0.45 · Steps · 288×162 · AA 16/16"
+    },
+    "presents": 16,
+    "draws": 88,
+    "blockingCalls": [],
+    "longtasks": [],
+    "lags": [],
+    "maxLag": 0,
+    "fences": {
+     "n": 72,
+     "max": 30,
+     "p50": 14,
+     "p90": 23,
+     "top": [
+      [
+       29340,
+       30,
+       14976
+      ],
+      [
+       28838,
+       29,
+       16128
+      ],
+      [
+       29965,
+       29,
+       16416
+      ],
+      [
+       30360,
+       29,
+       15552
+      ],
+      [
+       29452,
+       26,
+       12672
+      ],
+      [
+       29570,
+       24,
+       19008
+      ]
+     ]
+    },
+    "rafGapsOver40": 0,
+    "rafGapsOver100": 0,
+    "maxRafGap": 0,
+    "rafTop": [],
+    "ctx": []
+   },
+   "slice": {
+    "aa": {
+     "ms": 4179,
+     "stats": "7 shapes · k = 0.45 · Slice · 288×162 · AA 16/16"
+    },
+    "presents": 16,
+    "draws": 144,
+    "blockingCalls": [],
+    "longtasks": [],
+    "lags": [],
+    "maxLag": 0,
+    "fences": {
+     "n": 128,
+     "max": 39,
+     "p50": 29,
+     "p90": 32,
+     "top": [
+      [
+       32521,
+       39,
+       6048
+      ],
+      [
+       33830,
+       38,
+       6048
+      ],
+      [
+       34612,
+       38,
+       6048
+      ],
+      [
+       34872,
+       38,
+       6048
+      ],
+      [
+       34094,
+       37,
+       6048
+      ],
+      [
+       30960,
+       36,
+       6048
+      ]
+     ]
+    },
+    "rafGapsOver40": 0,
+    "rafGapsOver100": 0,
+    "maxRafGap": 0,
+    "rafTop": [],
+    "ctx": []
+   },
+   "carved": {
+    "aa": {
+     "ms": 4646,
+     "stats": "8 shapes · k = 0.08 · Slice · 288×162 · AA 16/16"
+    },
+    "presents": 16,
+    "draws": 144,
+    "blockingCalls": [],
+    "longtasks": [],
+    "lags": [],
+    "maxLag": 0,
+    "fences": {
+     "n": 128,
+     "max": 46,
+     "p50": 32,
+     "p90": 38,
+     "top": [
+      [
+       38331,
+       46,
+       6048
+      ],
+      [
+       36913,
+       43,
+       6048
+      ],
+      [
+       36628,
+       42,
+       6048
+      ],
+      [
+       37496,
+       41,
+       6048
+      ],
+      [
+       36336,
+       40,
+       6048
+      ],
+      [
+       37771,
+       40,
+       6048
+      ]
+     ]
+    },
+    "rafGapsOver40": 0,
+    "rafGapsOver100": 0,
+    "maxRafGap": 0,
+    "rafTop": [],
+    "ctx": []
+   }
+  },
+  "stress": {
+   "shapes": 16,
+   "maxSteps": "256",
+   "shaded": {
+    "aa": {
+     "ms": 7709,
+     "stats": "16 shapes · k = 0.45 · Shaded · 288×162 · AA 16/16"
+    },
+    "presents": 21,
+    "draws": 189,
+    "blockingCalls": [],
+    "longtasks": [],
+    "lags": [],
+    "maxLag": 0,
+    "fences": {
+     "n": 168,
+     "max": 76,
+     "p50": 54,
+     "p90": 65,
+     "top": [
+      [
+       43723,
+       76,
+       6048
+      ],
+      [
+       46119,
+       76,
+       6048
+      ],
+      [
+       41836,
+       75,
+       6048
+      ],
+      [
+       45637,
+       75,
+       6048
+      ],
+      [
+       42804,
+       74,
+       6048
+      ],
+      [
+       44206,
+       74,
+       6048
+      ]
+     ]
+    },
+    "rafGapsOver40": 0,
+    "rafGapsOver100": 0,
+    "maxRafGap": 0,
+    "rafTop": [],
+    "ctx": []
+   },
+   "steps": {
+    "aa": {
+     "ms": 3939,
+     "stats": "16 shapes · k = 0.45 · Steps · 288×162 · AA 16/16"
+    },
+    "presents": 16,
+    "draws": 142,
+    "blockingCalls": [],
+    "longtasks": [],
+    "lags": [],
+    "maxLag": 0,
+    "fences": {
+     "n": 126,
+     "max": 43,
+     "p50": 22,
+     "p90": 35,
+     "top": [
+      [
+       50020,
+       43,
+       6048
+      ],
+      [
+       50521,
+       43,
+       6048
+      ],
+      [
+       52187,
+       42,
+       6048
+      ],
+      [
+       49294,
+       41,
+       6048
+      ],
+      [
+       49781,
+       41,
+       6048
+      ],
+      [
+       51696,
+       40,
+       6048
+      ]
+     ]
+    },
+    "rafGapsOver40": 0,
+    "rafGapsOver100": 0,
+    "maxRafGap": 0,
+    "rafTop": [],
+    "ctx": []
+   },
+   "drag": {
+    "ms": 3230,
+    "presents": 13,
+    "draws": 117,
+    "blockingCalls": [],
+    "longtasks": [],
+    "lags": [],
+    "maxLag": 0,
+    "fences": {
+     "n": 103,
+     "max": 41,
+     "p50": 21,
+     "p90": 37,
+     "top": [
+      [
+       53472,
+       41,
+       6048
+      ],
+      [
+       55813,
+       41,
+       6048
+      ],
+      [
+       54426,
+       40,
+       6048
+      ],
+      [
+       54649,
+       40,
+       6048
+      ],
+      [
+       55586,
+       39,
+       6048
+      ],
+      [
+       53702,
+       38,
+       6048
+      ]
+     ]
+    },
+    "rafGapsOver40": 0,
+    "rafGapsOver100": 0,
+    "maxRafGap": 0,
+    "rafTop": [],
+    "ctx": [],
+    "settle": {
+     "ms": 3955,
+     "stats": "16 shapes · k = 0.45 · Steps · 288×162 · AA 16/16"
+    }
+   }
+  },
+  "lose": {
+   "first": "lost",
+   "lostText": {
+    "ms": 1,
+    "stats": "the WebGL context was lost; waiting for the browser to restore it…"
+   },
+   "restoredAA": {
+    "ms": 4104,
+    "stats": "16 shapes · k = 0.45 · Steps · 288×162 · AA 16/16"
+   },
+   "afterRestore": {
+    "presents": 16,
+    "draws": 141,
+    "blockingCalls": [],
+    "longtasks": [],
+    "lags": [],
+    "maxLag": 0,
+    "fences": {
+     "n": 124,
+     "max": 44,
+     "p50": 21,
+     "p90": 36,
+     "top": [
+      [
+       61902,
+       44,
+       6048
+      ],
+      [
+       62624,
+       44,
+       6048
+      ],
+      [
+       63797,
+       43,
+       6048
+      ],
+      [
+       61162,
+       41,
+       6048
+      ],
+      [
+       61000,
+       40,
+       7488
+      ],
+      [
+       63337,
+       40,
+       6048
+      ]
+     ]
+    },
+    "rafGapsOver40": 0,
+    "rafGapsOver100": 0,
+    "maxRafGap": 0,
+    "rafTop": [],
+    "ctx": [
+     [
+      "webglcontextlost",
+      60366
+     ],
+     [
+      "webglcontextrestored",
+      60872
+     ]
+    ]
+   },
+   "pausedText": {
+    "ms": 3,
+    "stats": "the WebGL context was lost twice within a minute, so rendering is paused · tap the picture to resume"
+   },
+   "drawsIn1500msPaused": 0,
+   "resumedAA": {
+    "ms": 3881,
+    "stats": "16 shapes · k = 0.45 · Steps · 288×162 · AA 16/16"
+   },
+   "afterResume": {
+    "presents": 16,
+    "draws": 137,
+    "blockingCalls": [],
+    "longtasks": [],
+    "lags": [],
+    "maxLag": 0,
+    "fences": {
+     "n": 120,
+     "max": 45,
+     "p50": 21,
+     "p90": 33,
+     "top": [
+      [
+       68120,
+       45,
+       9792
+      ],
+      [
+       68775,
+       44,
+       6048
+      ],
+      [
+       70586,
+       39,
+       6048
+      ],
+      [
+       68351,
+       37,
+       6048
+      ],
+      [
+       70823,
+       37,
+       6048
+      ],
+      [
+       71050,
+       37,
+       6048
+      ]
+     ]
+    },
+    "rafGapsOver40": 0,
+    "rafGapsOver100": 0,
+    "maxRafGap": 0,
+    "rafTop": [],
+    "ctx": [
+     [
+      "webglcontextlost",
+      60366
+     ],
+     [
+      "webglcontextrestored",
+      60872
+     ],
+     [
+      "webglcontextlost",
+      64977
+     ],
+     [
+      "webglcontextrestored",
+      65482
+     ]
+    ]
+   }
+  },
+  "errors": [
+   "Failed to load resource: the server responded with a status of 404 (Not Found)"
+  ],
+  "totalMs": 72016,
+  "probeCompile": {
+   "tappedWhileCompiling": true,
+   "whileCompiling": "probe: 3 steps, hit at t = 5.65",
+   "afterFirstFrame": "probe: 21 steps, hit at t = 11.65",
+   "same": false
+  }
+ },
+ {
+  "variant": "d-rows",
+  "config": "warp",
+  "renderer": "ANGLE (Microsoft, Microsoft Basic Render Driver (0x0000008C) Direct3D11 vs_5_0 ps_5_0, D3D11) | KHR_parallel_shader_compile EXT_disjoint_timer_query_webgl2",
+  "firstFrame": {
+   "ms": 1913,
+   "stats": "7 shapes · k = 0.45 · Shaded · 288×162 · 3.3 fps"
+  },
+  "longestEvaluateWait": 35,
+  "trail": [
+   [
+    183,
+    ""
+   ],
+   [
+    285,
+    "compiling shaders…"
+   ],
+   [
+    1304,
+    "7 shapes · k = 0.45 · Shaded · 288×162 · …"
+   ],
+   [
+    1913,
+    "7 shapes · k = 0.45 · Shaded · 288×162 · 3.3 fps"
+   ],
+   [
+    2217,
+    "7 shapes · k = 0.45 · Shaded · 288×162 · 3.2 fps"
+   ],
+   [
+    3423,
+    "7 shapes · k = 0.45 · Shaded · 288×162 · 3.1 fps"
+   ],
+   [
+    3725,
+    "7 shapes · k = 0.45 · Shaded · 288×162 · 3.2 fps"
+   ],
+   [
+    4027,
+    "7 shapes · k = 0.45 · Shaded · 288×162 · 3.3 fps"
+   ],
+   [
+    4934,
+    "7 shapes · k = 0.45 · Shaded · 288×162 · 3.4 fps"
+   ],
+   [
+    5236,
+    "7 shapes · k = 0.45 · Shaded · 288×162 · 3.3 fps"
+   ],
+   [
+    5539,
+    "7 shapes · k = 0.45 · Shaded · 288×162 · 3.4 fps"
+   ],
+   [
+    6144,
+    "7 shapes · k = 0.45 · Shaded · 288×162 · AA 16/16"
+   ]
+  ],
+  "after15s": "7 shapes · k = 0.45 · Shaded · 288×162 · AA 16/16",
+  "blockingCalls": [],
+  "longtasks": [],
+  "lags": [],
+  "maxLag": 66,
+  "presents": 16,
+  "draws": 175,
+  "bandRows": [
+   1,
+   1,
+   1,
+   1,
+   10,
+   10,
+   21,
+   21,
+   21,
+   21,
+   20,
+   18,
+   14,
+   6,
+   10,
+   14,
+   18,
+   20,
+   21,
+   21,
+   20,
+   16,
+   14,
+   8,
+   14,
+   8,
+   16,
+   21,
+   21,
+   18,
+   18,
+   18,
+   14,
+   10,
+   4,
+   8,
+   10,
+   10,
+   18,
+   20,
+   20,
+   20,
+   20,
+   18,
+   12,
+   6,
+   10,
+   10,
+   20,
+   21,
+   21,
+   20,
+   21,
+   16,
+   16,
+   7,
+   10,
+   16,
+   21,
+   20
+  ],
+  "firstFences": [
+   [
+    1168,
+    28,
+    1
+   ],
+   [
+    1199,
+    3,
+    1
+   ],
+   [
+    1216,
+    4,
+    1
+   ],
+   [
+    1232,
+    4,
+    1
+   ],
+   [
+    1249,
+    28,
+    2880
+   ],
+   [
+    1281,
+    13,
+    2880
+   ],
+   [
+    1310,
+    27,
+    6048
+   ],
+   [
+    1343,
+    26,
+    6048
+   ],
+   [
+    1375,
+    24,
+    6048
+   ],
+   [
+    1407,
+    28,
+    6048
+   ],
+   [
+    1439,
+    29,
+    5760
+   ],
+   [
+    1471,
+    32,
+    5184
+   ],
+   [
+    1504,
+    14,
+    4032
+   ],
+   [
+    1535,
+    7,
+    1728
+   ],
+   [
+    1551,
+    20,
+    2880
+   ],
+   [
+    1583,
+    22,
+    4032
+   ],
+   [
+    1616,
+    24,
+    5184
+   ],
+   [
+    1648,
+    19,
+    5760
+   ],
+   [
+    1680,
+    23,
+    6048
+   ],
+   [
+    1712,
+    29,
+    6048
+   ],
+   [
+    1744,
+    31,
+    5760
+   ],
+   [
+    1776,
+    30,
+    4608
+   ],
+   [
+    1808,
+    21,
+    4032
+   ],
+   [
+    1840,
+    6,
+    2304
+   ],
+   [
+    1862,
+    42,
+    4032
+   ],
+   [
+    1911,
+    15,
+    2304
+   ],
+   [
+    1941,
+    20,
+    4608
+   ],
+   [
+    1974,
+    27,
+    6048
+   ],
+   [
+    2006,
+    31,
+    6048
+   ],
+   [
+    2037,
+    26,
+    5184
+   ],
+   [
+    2070,
+    28,
+    5184
+   ],
+   [
+    2102,
+    31,
+    5184
+   ],
+   [
+    2134,
+    32,
+    4032
+   ],
+   [
+    2166,
+    19,
+    2880
+   ],
+   [
+    2185,
+    4,
+    1152
+   ],
+   [
+    2206,
+    21,
+    2304
+   ],
+   [
+    2238,
+    24,
+    2880
+   ],
+   [
+    2270,
+    16,
+    2880
+   ],
+   [
+    2286,
+    23,
+    5184
+   ],
+   [
+    2319,
+    26,
+    5760
+   ]
+  ],
+  "maxRafGap": 66,
+  "rafGaps": [
+   [
+    170,
+    66
+   ]
+  ],
+  "compileOrder": {
+   "statusAt": 246,
+   "firstLinkAt": 253,
+   "firstCompletionQueryAt": 254,
+   "firstLinkStatusAt": 1151,
+   "framesStatusToLink": 2,
+   "framesStatusToFirstQuery": 2
+  },
+  "start": {
+   "presents": 16,
+   "draws": 175,
+   "blockingCalls": [],
+   "longtasks": [],
+   "lags": [],
+   "maxLag": 0,
+   "fences": {
+    "n": 158,
+    "max": 42,
+    "p50": 26,
+    "p90": 32,
+    "top": [
+     [
+      1862,
+      42,
+      4032
+     ],
+     [
+      4810,
+      38,
+      6048
+     ],
+     [
+      3094,
+      37,
+      4608
+     ],
+     [
+      2472,
+      36,
+      5184
+     ],
+     [
+      4238,
+      35,
+      4608
+     ],
+     [
+      1471,
+      32,
+      5184
+     ]
+    ]
+   },
+   "rafGapsOver40": 1,
+   "rafGapsOver100": 0,
+   "maxRafGap": 66,
+   "rafTop": [
+    [
+     170,
+     66
+    ]
+   ],
+   "ctx": []
+  },
+  "rows": {
+   "settle": {
+    "ms": 14743,
+    "stats": "16 shapes · k = 0.45 · Shaded · 288×162 · AA 16/16"
+   },
+   "WH": "288x162",
+   "sweep": [
+    {
+     "rows": "auto",
+     "aaMs": 14725,
+     "n": 330,
+     "p50": 40,
+     "p90": 48,
+     "max": 56,
+     "maxRafGap": 0,
+     "rafGapsOver40": 0
+    },
+    {
+     "rows": 4,
+     "aaMs": 19602,
+     "n": 640,
+     "p50": 22,
+     "p90": 26,
+     "max": 32,
+     "maxRafGap": 0,
+     "rafGapsOver40": 0
+    },
+    {
+     "rows": 8,
+     "aaMs": 14949,
+     "n": 320,
+     "p50": 40,
+     "p90": 48,
+     "max": 61,
+     "maxRafGap": 0,
+     "rafGapsOver40": 0
+    },
+    {
+     "rows": 12,
+     "aaMs": 10323,
+     "n": 208,
+     "p50": 42,
+     "p90": 52,
+     "max": 63,
+     "maxRafGap": 0,
+     "rafGapsOver40": 0
+    },
+    {
+     "rows": 16,
+     "aaMs": 8486,
+     "n": 160,
+     "p50": 47,
+     "p90": 58,
+     "max": 75,
+     "maxRafGap": 0,
+     "rafGapsOver40": 0
+    },
+    {
+     "rows": 21,
+     "aaMs": 7107,
+     "n": 112,
+     "p50": 54,
+     "p90": 63,
+     "max": 73,
+     "maxRafGap": 0,
+     "rafGapsOver40": 0
+    }
+   ]
+  },
+  "errors": [
+   "Failed to load resource: the server responded with a status of 404 (Not Found)"
+  ],
+  "totalMs": 109850
+ }
+]
