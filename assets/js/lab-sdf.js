@@ -156,9 +156,12 @@
   var HEAT_MAX = 48; // the heat map saturates at this many steps
   var LDIR = norm([-0.45, 0.78, 0.5]);
   var BATCH_MS = 12; // GPU time per animation frame (one band of rows, one draw call)
-  var MAX_BANDS = 8; // but a frame is never split into more bands than this
+  var MAX_BANDS = 8; // but a frame is not split into more bands than this...
+  var FINE_BANDS = 32; // ...except at the lowest resolution, when its bands are slow (see band()),
+  var MIN_ROWS = 8; // and then not into bands thinner than this
   var FRAME_MS = 24; // the resolution is chosen so that a whole frame costs about this much GPU time
   var INIT_PX = 1e5; // pixels of the first frame, drawn before anything has been measured
+  var LAT_N = 3; // one-pixel draws that time the round trip of a fence before the first frame
 
   // ------------------------------------------------------------------ small vector helpers
   function norm(v) {
@@ -475,9 +478,11 @@
     "    if (den > 1e-6) {",
     "      float sc = (b * ee - dd) / den, tc = clamp((ee - b * dd) / den, 0.0, pl);",
     "      sc = dot(uProbeO + pd * tc - ro, rd);",
-    "      if (sc > 0.0 && sc < tS + 0.01) {",
+    // not where the line passes within 5 cm of the eye (after a zoom along the probe ray the eye lies on the
+    // line, and every pixel's closest approach would be the eye itself), and at most about 0.02 rad wide
+    "      if (sc > 0.05 && sc < tS + 0.01) {",
     "        float dist = length(ro + rd * sc - (uProbeO + pd * tc));",
-    "        float wl = 0.006 + pixR * sc * 1.5;",
+    "        float wl = min(0.006 + pixR * sc * 1.5, 0.02 * sc);",
     "        col = mix(col, vec3(1.0, 0.92, 0.55), (1.0 - smoothstep(wl * 0.5, wl * 1.5, dist)) * 0.9);",
     "      }",
     "    }",
@@ -496,9 +501,13 @@
     "          col = mix(col, sc, 0.05 + 0.45 * rim);",
     "        }",
     "      }",
-    "      float rdot = 0.022 + pixR * max(-bb, 0.0) * 2.0;",
+    // A step dot is drawn only in front of the eye, at most about 0.03 rad across, and never for the first
+    // step point: that one is the eye at the time of the tap (the probe line marks it), so after the camera
+    // moves a little it lies just behind or just in front of the eye and its dot would cover the picture.
+    "      float tq = -bb;",
+    "      float rdot = min(0.022 + pixR * max(tq, 0.0) * 2.0, 0.03 * max(tq, 0.0));",
     "      float c3 = dot(oc, oc) - rdot * rdot, disc3 = bb * bb - c3;",
-    "      if (disc3 > 0.0 && -bb < tS + 0.02) col = mix(col, (i == uProbeN - 1 && uProbeHit == 1) ? vec3(1.0, 0.35, 0.55) : vec3(1.0, 0.92, 0.55), 0.95);",
+    "      if (i > 0 && tq > 0.05 && c3 > 0.0 && disc3 > 0.0 && tq < tS + 0.02) col = mix(col, (i == uProbeN - 1 && uProbeHit == 1) ? vec3(1.0, 0.35, 0.55) : vec3(1.0, 0.92, 0.55), 0.95);",
     "    }",
     "  }",
     "  outColor = vec4(col, 1.0);",
@@ -516,7 +525,8 @@
   // compileShader and linkProgram return at once, but the calls that report the outcome (LINK_STATUS,
   // the uniform queries) make the page wait until the driver has finished. They are made only once
   // COMPLETION_STATUS_KHR says the driver is done (KHR_parallel_shader_compile, where the driver compiles
-  // in the background), or, without that extension, after the status line has been painted.
+  // in the background), or, without that extension, after the status line has been painted (at once on
+  // SwiftShader, which compiles in milliseconds).
   function shader(type, src) {
     var s = gl.createShader(type);
     gl.shaderSource(s, src);
@@ -715,8 +725,10 @@
     var u = cross(r, f);
     basis = { pos: pos, f: f, r: r, u: u };
   }
+  // the ray through a point of the canvas, for the camera as it is now: input can come before a frame has
+  // refreshed the basis (while the shaders compile, after a lost context, between the frames of a slow GPU)
   function rayAt(clientX, clientY) {
-    if (!basis) updateBasis();
+    updateBasis();
     var rect = canvas.getBoundingClientRect();
     var x = (clientX - rect.left) / rect.width, y = (clientY - rect.top) / rect.height;
     var aspect = rect.width / rect.height;
@@ -775,6 +787,9 @@
     H = h;
     accN = 0;
     row = 0;
+    firstPx = 0;
+    // the probe's pixel-size stopping test follows the frame it is drawn in
+    if (probe && probe.h !== H) traceProbe(probe.o, probe.d, H);
   }
 
   function uploadScene(u) {
@@ -794,13 +809,19 @@
   }
 
   // ------------------------------------------------------------------ probe
-  var probe = null; // { pts, o, e, steps, status, t }
+  var probe = null; // { pts, o, d, e, steps, status, t, h }
   function runProbe(clientX, clientY) {
     var ray = rayAt(clientX, clientY);
+    // the pixel size of the frame that will show the probe (there may not be a frame yet: a tap while the
+    // shaders compile, or after a lost context); traceProbe runs again if the frame size changes
+    var cw = canvas.clientWidth, ch = canvas.clientHeight;
+    traceProbe(ray.o, ray.d, dim(ch, scale || firstScale(cw, ch)));
+  }
+  function traceProbe(o, d, h) {
     var rec = [];
-    var res = traceCPU(ray.o, ray.d, tanHalf / Math.max(H, 1), rec, st.maxSteps, st.relax ? 1.6 : 1);
+    var res = traceCPU(o, d, tanHalf / h, rec, st.maxSteps, st.relax ? 1.6 : 1);
     var tEnd = res.status === 0 ? Math.min(res.t, 14) : res.t;
-    probe = { pts: rec, o: ray.o, e: add(ray.o, mul(ray.d, tEnd)), steps: res.steps, status: res.status, t: res.t, clip: st.view === 2 };
+    probe = { pts: rec, o: o, d: d, e: add(o, mul(d, tEnd)), steps: res.steps, status: res.status, t: res.t, h: h, clip: st.view === 2 };
   }
 
   // ------------------------------------------------------------------ UI
@@ -1078,17 +1099,20 @@
   // ------------------------------------------------------------------ frame loop
   // A frame (one AA sample) is drawn into the accumulation texture as horizontal bands, one band per
   // animation frame, each one scissored draw call of about BATCH_MS of GPU time (and at most MAX_BANDS
-  // bands per frame). A fence after each band says when the GPU has finished it; the next band waits for
-  // it (one band in flight), and the time it took, less the round trip of an empty fence, is the measured
-  // cost. The canvas only ever shows complete frames. From the cost per pixel the resolution is set so
-  // that a whole frame costs about FRAME_MS: the first frame is small (INIT_PX pixels), and a frame whose
-  // first bands show it to be far too expensive is dropped at once. The cost of a frame is proportional to
-  // its pixel count, so a frame that is too slow by a factor r is fixed by scaling both sides by sqrt(1 / r).
+  // bands per frame, except at the lowest resolution: see band()). A fence after each band says when the
+  // GPU has finished it; the next band waits for it (one band in flight), and the time it took, less the
+  // round trip of a fence (timed on one-pixel draws before the first frame), is the measured cost. The
+  // canvas only ever shows complete frames. From the cost per pixel the resolution is set so that a whole
+  // frame costs about FRAME_MS: the first frame is small (INIT_PX pixels); a frame that has cost more than
+  // three times that is dropped at once, even before it is complete, and otherwise the resolution is lowered
+  // only after two slow frames in a row. The cost of a frame is proportional to its pixel count, so a frame
+  // that is too slow by a factor r is fixed by scaling both sides by sqrt(1 / r).
   var maxScale = Math.min(window.devicePixelRatio || 1, 1.5);
-  var scale = 0, ups = 0, lastDown = 0, calibrating = true, software = false, safeMode = false;
-  var batchPx = 0, latMs = 4, sampleMs = 0, samplePx = 0;
+  var scale = 0, ups = 0, lastDown = -Infinity, slowFrames = 0, calibrating = true;
+  var software = false, quickCompile = false, safeMode = false;
+  var batchPx = 0, firstPx = 0, latMs = 4, latN = 0, sampleMs = 0, samplePx = 0;
   var row = 0, warm = 0, needBlit = false, deferBlit = false;
-  var fence = null, fenceT0 = 0, fenceSeen = 0, fencePx = 0, fenceEnd = false, fenceKind = 0, fenceOk = false, pollTimer = 0;
+  var fence = null, fenceT0 = 0, fenceSeen = 0, fencePx = 0, fenceRow = 0, fenceEnd = false, fenceKind = 0, fenceOk = false, pollTimer = 0;
   var fps = 0, lastSampleT = 0;
   var halton = [];
   (function () {
@@ -1098,16 +1122,24 @@
 
   // never below about 220 pixels across, so a small phone canvas stays legible
   function minScale() { return clamp(220 / Math.max(canvas.clientWidth, 1), 0.3, 0.6); }
+  // the resolution cannot be lowered any further: rescale only lowers it by more than 13 %, so a scale up to
+  // minScale() / 0.87 is as low as it gets
+  function atMin() { return scale <= (minScale() / 0.87) * 1.0001; }
+  // a dimension of the frame for a canvas dimension of v CSS pixels at scale s
+  function dim(v, s) { return Math.max(16, Math.round(v * s)); }
 
   // before anything is measured: a small first frame and small bands (after a lost context, or on a
   // software renderer, the first frame is at the lowest resolution)
   function resetCost() {
     scale = 0;
     batchPx = software || safeMode ? 1500 : 12000;
-    latMs = 4;
+    firstPx = 0;
+    latMs = 4; // until the warm-up draws have timed it
+    latN = 0;
     ups = 0;
+    slowFrames = 0;
     calibrating = !software && !safeMode;
-    warm = 2;
+    warm = 1 + LAT_N;
     fps = 0;
     lastSampleT = 0;
   }
@@ -1148,9 +1180,10 @@
   }
 
   // The first draw calls with a new program make some drivers build the pipeline (Metal, Vulkan, the
-  // software renderers), once per blend state: they are made on a single pixel and not timed. The second
-  // warm-up draw times the round trip of a fence.
+  // software renderers), once per blend state: they are made on a single pixel and not timed. The next
+  // LAT_N warm-up draws, also on a single pixel and one per animation frame, time the round trip of a fence.
   function warmUp() {
+    var build = warm > LAT_N;
     gl.bindFramebuffer(gl.FRAMEBUFFER, accFb);
     gl.viewport(0, 0, W, H);
     gl.useProgram(P.p);
@@ -1159,7 +1192,7 @@
     gl.enable(gl.SCISSOR_TEST);
     gl.scissor(0, 0, 1, 1);
     gl.drawArrays(gl.TRIANGLES, 0, 3);
-    if (warm === 2) {
+    if (build) {
       gl.enable(gl.BLEND);
       gl.blendFunc(gl.CONSTANT_ALPHA, gl.ONE_MINUS_CONSTANT_ALPHA);
       gl.blendColor(0, 0, 0, 0.5);
@@ -1168,7 +1201,7 @@
     }
     gl.disable(gl.SCISSOR_TEST);
     gl.bindVertexArray(null);
-    submit(0, false, warm === 2 ? 1 : 2);
+    submit(0, false, build ? 1 : 2, -1);
     warm--;
   }
 
@@ -1183,10 +1216,25 @@
       setUniforms(accN);
       sampleMs = 0;
       samplePx = 0;
+      // the bottom band is sized from the bottom band of the last frame, not from the top band just drawn
+      if (firstPx) batchPx = firstPx;
     }
-    // where a fixed cost per draw (compositing on a software renderer) dominates the measured time,
-    // smaller bands would not be faster, only more numerous: hence the lower bound H / MAX_BANDS
-    var rows = Math.min(H - row, Math.max(1, Math.ceil(H / MAX_BANDS), Math.floor(batchPx / W)));
+    // The band that takes BATCH_MS has `rows` rows. Where a fixed cost per draw (compositing on a software
+    // renderer) dominates the measured time, smaller bands would not be faster, only more numerous: hence the
+    // lower bound H / MAX_BANDS. At the lowest resolution, though, nothing else can shorten a band, and one of
+    // H / MAX_BANDS rows can take far longer (heavy settings on a weak or a software renderer, where a long draw
+    // also holds up the browser's own drawing): there a band that would take more than three times BATCH_MS is
+    // cut to about twice BATCH_MS, down to H / FINE_BANDS rows but not below MIN_ROWS. (Thin bands cost more per
+    // pixel on a software renderer: on SwiftShader with 4 threads, bands of 4 rows cost 1.7 to 2 times as much
+    // per pixel as bands of 16 rows or more, bands of 2 rows about 3 times, bands of 8 rows 10 to 17 % more.)
+    var rows = Math.max(1, Math.floor(batchPx / W)), least = Math.ceil(H / MAX_BANDS);
+    if (rows < least) {
+      rows = 3 * rows < least && atMin() ? Math.min(least, Math.max(2 * rows, Math.ceil(H / FINE_BANDS), MIN_ROWS)) : least;
+    }
+    // the rows left in the frame are spread evenly over the bands still needed (no thin last band)
+    var left = H - row;
+    rows = rows >= left ? left : Math.ceil(left / Math.ceil(left / rows));
+    var from = row;
     gl.enable(gl.SCISSOR_TEST);
     gl.scissor(0, row, W, rows);
     if (accN === 0) gl.disable(gl.BLEND);
@@ -1213,7 +1261,7 @@
       }
       lastSampleT = now;
     }
-    submit(rows * W, end, 3);
+    submit(rows * W, end, 3, from);
   }
 
   // the accumulated image to the canvas, which takes the size of the image first
@@ -1235,11 +1283,13 @@
     gl.bindVertexArray(null);
   }
 
-  function submit(px, end, kind) {
+  // kind: 1 warm-up (pipeline build), 2 warm-up (round trip), 3 a band starting at row `from`
+  function submit(px, end, kind, from) {
     fence = gl.fenceSync(gl.SYNC_GPU_COMMANDS_COMPLETE, 0);
     gl.flush();
     fenceT0 = fenceSeen = performance.now();
     fencePx = px;
+    fenceRow = from;
     fenceEnd = end;
     fenceKind = kind;
     fenceOk = true;
@@ -1283,38 +1333,50 @@
   // frame the scale is checked. Returns true when the scale changed.
   function measured(ms, now) {
     if (fenceKind === 1) return false; // building the pipeline: measures nothing
-    // The round trip of a one-pixel draw (1-3 ms on a GPU) is not part of a band's cost. Only up to 4 ms
-    // of it is subtracted: a software renderer's compositing adds a varying cost to every fence, and
-    // subtracting all of it can make a band look free. For the same reason bands grow at most twofold.
+    // The round trip of a fence is not part of a band's cost: a few ms on most GPUs, but more where the
+    // browser learns late that the GPU has finished, or where the GPU process is busy. It is timed on the
+    // one-pixel warm-up draws, and the smallest time seen (those, and every band since) is subtracted: a
+    // round trip that happened to be slow would make the bands look cheaper than they are. For the same
+    // reason bands grow at most twofold.
     if (fenceKind === 2) {
-      latMs = Math.min(ms, 4);
+      latMs = latN++ ? Math.min(latMs, ms) : ms;
       return false;
     }
     latMs = Math.min(latMs, ms);
     var gpu = Math.max(ms - latMs, 0.25), c = gpu / fencePx;
     batchPx = clamp(BATCH_MS / c, W, Math.max(batchPx, fencePx) * 2);
+    if (fenceRow === 0) firstPx = batchPx;
     sampleMs += gpu;
     samplePx += fencePx;
     c = sampleMs / samplePx; // the frame so far: rows differ a lot in cost (sky, shapes, floor)
-    if (fenceEnd || c * W * H > 3 * FRAME_MS) return rescale(c, now); // far too expensive: drop the frame
+    // far too expensive: the frame has already cost three times FRAME_MS (what it has cost, not what its
+    // first bands extrapolate to: one late band is not taken for a frame three times too expensive)
+    var far = sampleMs > 3 * FRAME_MS;
+    if (fenceEnd || far) return rescale(c, now, fenceEnd, far);
     return false;
   }
 
-  // the scale at which a frame costs FRAME_MS, from the cost per pixel c (ms): lowered at once, raised
-  // only by a clear margin, at most six times, and not within 3 s of lowering it
-  function rescale(c, now) {
+  // The scale at which a frame costs FRAME_MS, from the cost per pixel c (ms). It is lowered at once for a
+  // frame that costs more than three times FRAME_MS, and otherwise only when two frames in a row are slow:
+  // one slow frame can be a hiccup of the GPU process or a GPU that is still clocking up. It is raised only
+  // by a clear margin, at most six times, and not within 3 s of lowering it. end: the frame is complete.
+  function rescale(c, now, end, far) {
     var cw = canvas.clientWidth, ch = canvas.clientHeight;
     if (cw < 2 || ch < 2) return false;
     var lo = minScale();
     var want = clamp(Math.sqrt(FRAME_MS / (c * cw * ch)), lo, Math.max(lo, maxScale));
     var first = calibrating;
     calibrating = false;
-    if (want < scale * 0.87 && scale > lo) {
+    var slow = want < scale * 0.87 && scale > lo;
+    if (slow && (far || slowFrames > 0)) {
       scale = want;
       lastDown = now;
+      slowFrames = 0;
       touch();
       return true;
     }
+    if (!end) return false; // the frame goes on
+    slowFrames = slow ? 1 : 0;
     if (want > scale * 1.15 && scale < maxScale && ups < 6 && (first || now - lastDown > 3000)) {
       scale = want;
       ups++;
@@ -1342,7 +1404,7 @@
     var cw = canvas.clientWidth, ch = canvas.clientHeight;
     if (cw < 2 || ch < 2) return false;
     if (!scale) scale = firstScale(cw, ch);
-    var w = Math.max(16, Math.round(cw * scale)), h = Math.max(16, Math.round(ch * scale));
+    var w = dim(cw, scale), h = dim(ch, scale);
     if (w !== W || h !== H) allocate(w, h);
     // a change starts the frame again, except that a first frame under way is finished first, so that
     // continuous input on a slow GPU still shows images (one frame late)
@@ -1373,7 +1435,10 @@
       return;
     }
     if (frame(now) || fence) kick();
-    else lastSampleT = 0;
+    else {
+      lastSampleT = 0;
+      slowFrames = 0; // a slow frame before a pause does not count with one after it (a GPU clocking up)
+    }
   }
   function kick() {
     if (!raf && ready && !lost && !paused && visible && !document.hidden) raf = requestAnimationFrame(tick);
@@ -1394,31 +1459,42 @@
     var g = ++gen;
     ready = false;
     if (gl.isContextLost()) return; // the restore handler boots again
-    status(L.compiling);
+    status(L.compiling); // also shown while the first draw builds the pipeline (see warmUp)
     parExt = gl.getExtension("KHR_parallel_shader_compile");
-    if (parExt) {
+    if (!parExt && quickCompile) {
+      // SwiftShader compiles in a few milliseconds (its code generation runs at the first draw): at once, in
+      // the task that created the context, rather than behind whatever the GPU process takes up meanwhile;
+      // the first draw waits until the status line is on screen
       beginGL();
+      if (finish(g)) afterPaint(function () { if (g === gen && !lost && !gl.isContextLost()) startFrames(); });
+      return;
+    }
+    // The compile is issued, and the first query that can wait for it is made (COMPLETION_STATUS_KHR, or
+    // LINK_STATUS without the extension), once the status line is on screen.
+    afterPaint(function () {
+      if (g !== gen || lost || gl.isContextLost()) return;
+      beginGL();
+      if (!parExt) {
+        if (finish(g)) startFrames();
+        return;
+      }
       (function wait() {
         if (g !== gen || lost || gl.isContextLost()) return;
         if (!compiled()) {
           requestAnimationFrame(wait);
           return;
         }
-        finish(g);
+        if (finish(g)) startFrames();
       })();
-    } else {
-      // the compile will block the page: it is issued once the status line is on screen
-      requestAnimationFrame(function () {
-        requestAnimationFrame(function () {
-          setTimeout(function () {
-            if (g !== gen || lost || gl.isContextLost()) return;
-            beginGL();
-            finish(g);
-          }, 0);
-        });
-      });
-    }
+    });
   }
+  // runs fn once what the page shows now is on screen: after two animation frames, in a task of its own
+  function afterPaint(fn) {
+    requestAnimationFrame(function () {
+      requestAnimationFrame(function () { setTimeout(fn, 0); });
+    });
+  }
+  // the outcome of the compile; true when the programs are ready
   function finish(g) {
     var ok;
     try {
@@ -1426,11 +1502,14 @@
     } catch (err) {
       fail();
       if (window.console) console.warn(err);
-      return;
+      return false;
     }
-    if (!ok || g !== gen || lost) return; // lost meanwhile: the restore handler starts again
+    return ok && g === gen && !lost; // lost meanwhile: the restore handler starts again
+  }
+  // the frame loop, from the warm-up draws on
+  function startFrames() {
     ready = true;
-    warm = 2;
+    warm = 1 + LAT_N;
     touch();
   }
   function resume() {
@@ -1439,8 +1518,8 @@
     if (gl && !lost) boot();
   }
 
-  // software renderers (no usable GPU) start at the lowest resolution
-  function isSoftware() {
+  // the renderer's name, unmasked where the browser masks it
+  function rendererName() {
     var r = "";
     try {
       r = String(gl.getParameter(gl.RENDERER) || "");
@@ -1451,7 +1530,7 @@
     } catch (e) {
       r = "";
     }
-    return /swiftshader|llvmpipe|softpipe|basic render|software/i.test(r);
+    return r;
   }
 
   document.addEventListener("visibilitychange", function () {
@@ -1480,6 +1559,10 @@
     accN = 0;
     row = 0;
     needBlit = deferBlit = false;
+    // the next frame, once the context is back, is at the lowest resolution (and a probe placed meanwhile is
+    // traced for that frame)
+    safeMode = true;
+    resetCost();
     var now = performance.now();
     losses = losses.filter(function (t) { return now - t < 60000; });
     losses.push(now);
@@ -1487,8 +1570,6 @@
   });
   canvas.addEventListener("webglcontextrestored", function () {
     lost = false;
-    safeMode = true;
-    resetCost();
     lastDown = performance.now();
     if (losses.length >= 2) {
       paused = true;
@@ -1522,7 +1603,9 @@
       fail();
       return;
     }
-    software = isSoftware();
+    var rn = rendererName();
+    software = /swiftshader|llvmpipe|softpipe|basic render|software/i.test(rn); // no usable GPU: the lowest resolution from the start
+    quickCompile = /swiftshader/i.test(rn);
     statsEl.style.whiteSpace = "pre-line";
     loadPreset(0);
     refreshUI();
