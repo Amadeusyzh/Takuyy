@@ -478,9 +478,11 @@
     "    if (den > 1e-6) {",
     "      float sc = (b * ee - dd) / den, tc = clamp((ee - b * dd) / den, 0.0, pl);",
     "      sc = dot(uProbeO + pd * tc - ro, rd);",
-    "      if (sc > 0.0 && sc < tS + 0.01) {",
+    // not where the line passes within 5 cm of the eye (after a zoom along the probe ray the eye lies on the
+    // line, and every pixel's closest approach would be the eye itself), and at most about 0.02 rad wide
+    "      if (sc > 0.05 && sc < tS + 0.01) {",
     "        float dist = length(ro + rd * sc - (uProbeO + pd * tc));",
-    "        float wl = 0.006 + pixR * sc * 1.5;",
+    "        float wl = min(0.006 + pixR * sc * 1.5, 0.02 * sc);",
     "        col = mix(col, vec3(1.0, 0.92, 0.55), (1.0 - smoothstep(wl * 0.5, wl * 1.5, dist)) * 0.9);",
     "      }",
     "    }",
@@ -499,11 +501,13 @@
     "          col = mix(col, sc, 0.05 + 0.45 * rim);",
     "        }",
     "      }",
-    "      float rdot = 0.022 + pixR * max(-bb, 0.0) * 2.0;",
-    // a dot whose sphere holds the eye is not drawn: the first step point is the eye itself until the camera
-    // moves, and its dot would cover the whole picture
+    // A step dot is drawn only in front of the eye, at most about 0.03 rad across, and never for the first
+    // step point: that one is the eye at the time of the tap (the probe line marks it), so after the camera
+    // moves a little it lies just behind or just in front of the eye and its dot would cover the picture.
+    "      float tq = -bb;",
+    "      float rdot = min(0.022 + pixR * max(tq, 0.0) * 2.0, 0.03 * max(tq, 0.0));",
     "      float c3 = dot(oc, oc) - rdot * rdot, disc3 = bb * bb - c3;",
-    "      if (c3 > 0.0 && disc3 > 0.0 && -bb < tS + 0.02) col = mix(col, (i == uProbeN - 1 && uProbeHit == 1) ? vec3(1.0, 0.35, 0.55) : vec3(1.0, 0.92, 0.55), 0.95);",
+    "      if (i > 0 && tq > 0.05 && c3 > 0.0 && disc3 > 0.0 && tq < tS + 0.02) col = mix(col, (i == uProbeN - 1 && uProbeHit == 1) ? vec3(1.0, 0.35, 0.55) : vec3(1.0, 0.92, 0.55), 0.95);",
     "    }",
     "  }",
     "  outColor = vec4(col, 1.0);",
@@ -784,6 +788,8 @@
     accN = 0;
     row = 0;
     firstPx = 0;
+    // the probe's pixel-size stopping test follows the frame it is drawn in
+    if (probe && probe.h !== H) traceProbe(probe.o, probe.d, H);
   }
 
   function uploadScene(u) {
@@ -803,17 +809,19 @@
   }
 
   // ------------------------------------------------------------------ probe
-  var probe = null; // { pts, o, e, steps, status, t }
+  var probe = null; // { pts, o, d, e, steps, status, t, h }
   function runProbe(clientX, clientY) {
     var ray = rayAt(clientX, clientY);
-    var rec = [];
     // the pixel size of the frame that will show the probe (there may not be a frame yet: a tap while the
-    // shaders compile, or after a lost context)
+    // shaders compile, or after a lost context); traceProbe runs again if the frame size changes
     var cw = canvas.clientWidth, ch = canvas.clientHeight;
-    var h = dim(ch, scale || firstScale(cw, ch));
-    var res = traceCPU(ray.o, ray.d, tanHalf / h, rec, st.maxSteps, st.relax ? 1.6 : 1);
+    traceProbe(ray.o, ray.d, dim(ch, scale || firstScale(cw, ch)));
+  }
+  function traceProbe(o, d, h) {
+    var rec = [];
+    var res = traceCPU(o, d, tanHalf / h, rec, st.maxSteps, st.relax ? 1.6 : 1);
     var tEnd = res.status === 0 ? Math.min(res.t, 14) : res.t;
-    probe = { pts: rec, o: ray.o, e: add(ray.o, mul(ray.d, tEnd)), steps: res.steps, status: res.status, t: res.t, clip: st.view === 2 };
+    probe = { pts: rec, o: o, d: d, e: add(o, mul(d, tEnd)), steps: res.steps, status: res.status, t: res.t, h: h, clip: st.view === 2 };
   }
 
   // ------------------------------------------------------------------ UI
@@ -1114,7 +1122,9 @@
 
   // never below about 220 pixels across, so a small phone canvas stays legible
   function minScale() { return clamp(220 / Math.max(canvas.clientWidth, 1), 0.3, 0.6); }
-  function atMin() { return scale <= minScale() * 1.0001; }
+  // the resolution cannot be lowered any further: rescale only lowers it by more than 13 %, so a scale up to
+  // minScale() / 0.87 is as low as it gets
+  function atMin() { return scale <= (minScale() / 0.87) * 1.0001; }
   // a dimension of the frame for a canvas dimension of v CSS pixels at scale s
   function dim(v, s) { return Math.max(16, Math.round(v * s)); }
 
@@ -1213,15 +1223,17 @@
     // renderer) dominates the measured time, smaller bands would not be faster, only more numerous: hence the
     // lower bound H / MAX_BANDS. At the lowest resolution, though, nothing else can shorten a band, and one of
     // H / MAX_BANDS rows can take far longer (heavy settings on a weak or a software renderer, where a long draw
-    // also holds up the browser's own drawing): there a band that would take more than twice BATCH_MS is cut
-    // to about twice BATCH_MS, down to H / FINE_BANDS rows but not below MIN_ROWS. (Thin bands cost more per
+    // also holds up the browser's own drawing): there a band that would take more than three times BATCH_MS is
+    // cut to about twice BATCH_MS, down to H / FINE_BANDS rows but not below MIN_ROWS. (Thin bands cost more per
     // pixel on a software renderer: on SwiftShader with 4 threads, bands of 4 rows cost 1.7 to 2 times as much
     // per pixel as bands of 16 rows or more, bands of 2 rows about 3 times, bands of 8 rows 10 to 17 % more.)
     var rows = Math.max(1, Math.floor(batchPx / W)), least = Math.ceil(H / MAX_BANDS);
     if (rows < least) {
-      rows = 2 * rows < least && atMin() ? Math.min(least, Math.max(2 * rows, Math.ceil(H / FINE_BANDS), MIN_ROWS)) : least;
+      rows = 3 * rows < least && atMin() ? Math.min(least, Math.max(2 * rows, Math.ceil(H / FINE_BANDS), MIN_ROWS)) : least;
     }
-    rows = Math.min(H - row, rows);
+    // the rows left in the frame are spread evenly over the bands still needed (no thin last band)
+    var left = H - row;
+    rows = rows >= left ? left : Math.ceil(left / Math.ceil(left / rows));
     var from = row;
     gl.enable(gl.SCISSOR_TEST);
     gl.scissor(0, row, W, rows);
