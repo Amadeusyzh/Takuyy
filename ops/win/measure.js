@@ -12,6 +12,13 @@
 //  - a lost-context phase: WEBGL_lose_context lose + restore, then a second loss within a minute (paused),
 //    then a tap to resume;
 //  - a per-config plan of variants (PLAN below), so the first browser of the job is not always the same variant.
+// ops/winrun-repair1 (repair round 1 of the SDF fix: a-new / c-new = the repaired lab-sdf.js, b-dep = the deployed
+// one, d-rows = the repaired one with the band height forced from the page) adds:
+//  - animation-frame gaps over 40 ms (not 100), so that the gaps that bands of 25-100 ms cause can be seen;
+//  - compileOrder: animation frames between the moment "compiling" is written and the first linkProgram / the
+//    first COMPLETION_STATUS_KHR (or LINK_STATUS) query (0 = same task: the status cannot have been painted);
+//  - probeCompile: a Probe tap while the shaders compile vs the same tap after the first frame (fresh page);
+//  - for d-rows on WARP: band (fence) times at 16 shapes and max steps with the bands forced to 4..21 rows.
 // Usage: node measure.js
 const { chromium } = require('playwright');
 const http = require('http'), fs = require('fs'), path = require('path');
@@ -24,9 +31,9 @@ const ALL_CONFIGS = [
   { name: 'warp', args: ['--use-angle=d3d11-warp', '--ignore-gpu-blocklist'] },
 ];
 const PLAN = {
-  default: ['a-fix', 'b-orig', 'c-fix', 'd-nosw', 'e-big'],
-  d3d11: ['a-fix', 'b-orig', 'd-nosw', 'e-big'],
-  warp: ['a-fix', 'b-orig', 'e-big'],
+  default: ['a-new', 'b-dep', 'c-new'],
+  d3d11: ['b-dep', 'a-new'],
+  warp: ['a-new', 'b-dep', 'd-rows'],
 };
 const CONFIGS = process.env.CONFIGS ? ALL_CONFIGS.filter((c) => process.env.CONFIGS.split(',').includes(c.name)) : ALL_CONFIGS;
 const ONLY = process.env.VARIANTS ? process.env.VARIANTS.split(',') : null;
@@ -51,6 +58,21 @@ const INSTRUMENT = () => {
   const m = window.__m = { calls: [], longtasks: [], maxLag: 0, lags: [], t0: performance.now(), presents: 0, draws: 0, rows: [],
     fences: [], rafGaps: [], maxRafGap: 0, ctx: [] };
   const P = WebGL2RenderingContext.prototype;
+  const cs = m.cs = { link: 0, query: 0, linkStatus: 0, status: 0, raf: [] };
+  const lp0 = P.linkProgram, gpp0 = P.getProgramParameter;
+  P.linkProgram = function () { if (!cs.link) cs.link = performance.now(); return lp0.apply(this, arguments); };
+  P.getProgramParameter = function (p, pname) {
+    if (pname === 0x91B1 && !cs.query) cs.query = performance.now();
+    if (pname === this.LINK_STATUS && !cs.linkStatus) cs.linkStatus = performance.now();
+    return gpp0.apply(this, arguments);
+  };
+  const watch = () => {
+    const el = document.querySelector('#lab-sdf .lab-stats');
+    if (!el) { setTimeout(watch, 2); return; }
+    new MutationObserver(() => { if (!cs.status && /compil/.test(el.textContent)) cs.status = performance.now(); })
+      .observe(el, { childList: true, characterData: true, subtree: true });
+  };
+  document.addEventListener('DOMContentLoaded', watch);
   for (const name of ['compileShader', 'linkProgram', 'getShaderParameter', 'getProgramParameter', 'useProgram', 'drawArrays',
     'clientWaitSync', 'getActiveUniform', 'getUniformLocation', 'getError', 'readPixels', 'finish', 'texImage2D', 'flush', 'fenceSync']) {
     const orig = P[name];
@@ -106,9 +128,10 @@ const INSTRUMENT = () => {
     if (lastRaf) {
       const g = t - lastRaf;
       if (g > m.maxRafGap) m.maxRafGap = g;
-      if (g > 100 && m.rafGaps.length < 500) m.rafGaps.push([Math.round(lastRaf), Math.round(g)]);
+      if (g > 40 && m.rafGaps.length < 3000) m.rafGaps.push([Math.round(lastRaf), Math.round(g)]);
     }
     lastRaf = t;
+    if (cs.raf.length < 2000) cs.raf.push(performance.now());
     requestAnimationFrame(rl);
   };
   requestAnimationFrame(rl);
@@ -134,7 +157,7 @@ const since = (page, s0) => withTimeout(page.evaluate((s0) => {
     maxLag: Math.round(Math.max.apply(null, [0].concat(m.lags.slice(s0.nLags).map((l) => l.ms)))),
     fences: { n: ms.length, max: ms.length ? ms[ms.length - 1] : null, p50: ms.length ? ms[ms.length >> 1] : null,
       p90: ms.length ? ms[Math.floor(ms.length * 0.9)] : null, top: top },
-    rafGapsOver100: raf.length, maxRafGap: Math.max.apply(null, [0].concat(raf.map((g) => g[1]))), rafTop: raf.slice().sort((a, b) => b[1] - a[1]).slice(0, 6),
+    rafGapsOver40: raf.length, rafGapsOver100: raf.filter((g) => g[1] > 100).length, maxRafGap: Math.max.apply(null, [0].concat(raf.map((g) => g[1]))), rafTop: raf.slice().sort((a, b) => b[1] - a[1]).slice(0, 6),
     ctx: m.ctx.slice(),
   };
 }, s0), 30000, null);
@@ -156,6 +179,75 @@ async function waitText(page, ms, re) {
     await sleep(100);
   }
   return { ms: null, stats: (await stats(page)).slice(0, 200) };
+}
+
+// a Probe tap while the shaders compile, then the same tap after the first frame (a fresh browser and page)
+async function probeCompile(port, v, cfg) {
+  const out = {};
+  let browser;
+  try {
+    browser = await chromium.launch(process.env.LOCAL_SWIFTSHADER
+      ? { args: ['--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader'] }
+      : { channel: process.env.CHANNEL || 'chrome', headless: true, args: cfg.args });
+    const page = await browser.newPage({ viewport: { width: 1000, height: 760 } });
+    await page.goto(`http://127.0.0.1:${port}/harness.html?v=${v}`, { waitUntil: 'domcontentloaded', timeout: 60000 });
+    const t0 = Date.now();
+    let seen = false;
+    while (Date.now() - t0 < 60000) {
+      const s = await stats(page);
+      if (/compil/.test(s)) { seen = true; break; }
+      if (/fps|AA/.test(s)) break;
+      await sleep(10);
+    }
+    const box = await withTimeout(page.locator('canvas').boundingBox(), 30000, null);
+    await withTimeout(page.click('[data-tool="probe"]', { timeout: 30000 }), 40000, null);
+    await withTimeout(page.mouse.click(box.x + box.width * 0.62, box.y + box.height * 0.4), 30000, null);
+    out.tappedWhileCompiling = seen && /compil/.test(await stats(page));
+    out.whileCompiling = ((await waitAA(page, 90000)).stats.match(/probe:[^·]*$/) || [''])[0].trim();
+    await withTimeout(page.mouse.click(box.x + box.width * 0.62, box.y + box.height * 0.4), 30000, null);
+    await sleep(300);
+    out.afterFirstFrame = ((await waitAA(page, 90000)).stats.match(/probe:[^·]*$/) || [''])[0].trim();
+    out.same = out.whileCompiling === out.afterFirstFrame;
+  } catch (e) {
+    out.error = String(e).slice(0, 200);
+  }
+  if (browser) await withTimeout(browser.close(), 30000, null);
+  return out;
+}
+
+// d-rows: 16 shapes, max steps, then the bands forced to R rows (window.__forceRows): fence times of full bands
+async function rowsSweep(page, box) {
+  const res = {};
+  await withTimeout(page.click('[data-tool="add"]', { timeout: 30000 }), 40000, null);
+  let n = 0;
+  for (let i = 0; i < 14 && n < 16; i++) {
+    const x = box.x + box.width * (0.12 + 0.76 * ((i * 0.37) % 1)), y = box.y + box.height * (0.72 + 0.2 * ((i * 0.53) % 1));
+    await withTimeout(page.mouse.click(x, y), 30000, null);
+    await sleep(150);
+    const mm = (await stats(page)).match(/(\d+) shapes/);
+    n = mm ? +mm[1] : n;
+  }
+  await withTimeout(page.$eval('[data-input="steps"]', (el) => { el.value = el.max; el.dispatchEvent(new Event('input', { bubbles: true })); }), 30000, null);
+  await withTimeout(page.click('[data-tool="move"]', { timeout: 30000 }), 40000, null);
+  res.settle = await waitAA(page, 120000, /16 shapes/);
+  res.WH = await page.evaluate(() => window.__sdfT.WH().join('x'));
+  res.sweep = [];
+  for (const R of [0, 4, 8, 12, 16, 21]) {
+    const s0 = await snap(page);
+    const t0 = await page.evaluate((R) => { window.__forceRows = R; window.__sdfT.st.k += 0.001; window.__sdfT.touch(); return performance.now(); }, R);
+    await sleep(200);
+    const aa = await waitAA(page, 120000);
+    const r = await page.evaluate(([t0, R]) => {
+      const W = window.__sdfT.WH()[0];
+      const f = window.__m.fences.filter((x) => x[0] > t0 && x[2] > 16 && (!R || x[2] === R * W));
+      const ms = f.map((x) => x[1]).sort((a, b) => a - b);
+      const raf = window.__m.rafGaps.filter((g) => g[0] > t0);
+      return { n: f.length, p50: ms[ms.length >> 1], p90: ms[Math.floor(ms.length * 0.9)], max: ms[ms.length - 1],
+        maxRafGap: Math.max.apply(null, [0].concat(raf.map((g) => g[1]))), rafGapsOver40: raf.length };
+    }, [t0, R]);
+    res.sweep.push(Object.assign({ rows: R || 'auto', aaMs: aa.ms }, r));
+  }
+  return res;
 }
 
 server.listen(0, async () => {
@@ -223,10 +315,20 @@ server.listen(0, async () => {
           rec.firstFences = m.fences.slice(0, 40); // [t0 page ms, ms until seen signalled, scissored pixels]
           rec.maxRafGap = Math.round(m.maxRafGap);
           rec.rafGaps = m.rafGaps.slice(0, 30);
+          const c = m.cs, between = (a, b) => (a && b ? c.raf.filter((r) => r > a && r < b).length : null);
+          rec.compileOrder = { statusAt: Math.round(c.status), firstLinkAt: Math.round(c.link), firstCompletionQueryAt: Math.round(c.query),
+            firstLinkStatusAt: Math.round(c.linkStatus), framesStatusToLink: between(c.status, c.link),
+            framesStatusToFirstQuery: between(c.status, c.query || c.linkStatus) };
         }
         rec.start = await since(page, s00);
         await withTimeout(page.screenshot({ path: path.join(OUT, `${cfg.name}-${v}.png`) }), 30000, null);
         const box = await withTimeout(page.locator('canvas').boundingBox(), 30000, null);
+        if (v === 'd-rows') {
+          rec.rows = await rowsSweep(page, box);
+          rec.errors = errs.slice(0, 12);
+          rec.totalMs = Date.now() - tNav;
+          throw { done: true };
+        }
         // orbit drag across the canvas: 80 moves, 50 ms apart
         if (box) {
           const s0 = await snap(page);
@@ -327,8 +429,11 @@ server.listen(0, async () => {
         }
         rec.errors = errs.slice(0, 12);
         rec.totalMs = Date.now() - tNav;
+        if (browser) await withTimeout(browser.close(), 30000, null);
+        browser = null;
+        rec.probeCompile = await probeCompile(port, v, cfg);
       } catch (e) {
-        rec.error = String(e).slice(0, 300);
+        if (!e || !e.done) rec.error = String(e).slice(0, 300);
       }
       if (browser) await withTimeout(browser.close(), 30000, null);
       console.log(JSON.stringify(rec));

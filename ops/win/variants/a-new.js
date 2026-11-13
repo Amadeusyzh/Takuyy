@@ -16,6 +16,14 @@
 // the scene and draws the distance field as contours. "Probe" traces one ray on the CPU with
 // exactly the same algorithm and draws its empty-space spheres in 3D.
 // While nothing changes, 16 jittered frames are averaged for anti-aliasing and then the loop stops.
+//
+// Keeping the page responsive. The cost of this shader varies a thousandfold between a desktop GPU and
+// a software renderer, and a long compile or a long draw call stalls the whole browser, not only this
+// canvas. So the shader is compiled in the background where the browser can do it
+// (KHR_parallel_shader_compile) and is written so that compilers do not inline it into a huge program;
+// every frame is drawn as horizontal bands, one band (one scissored draw call) per animation frame, each
+// sized from the measured GPU time; the resolution is chosen from the same measurement; and a lost WebGL
+// context is rebuilt when the browser restores it.
 (function () {
   "use strict";
 
@@ -46,6 +54,9 @@
       probeMiss: "probe: {s} steps, no hit",
       probeOut: "probe: ran out of steps ({s})",
       lo: "0", hi: "{m} steps", over: "white: out of steps",
+      compiling: "compiling shaders\u2026",
+      lost: "the WebGL context was lost; waiting for the browser to restore it\u2026",
+      paused: "the WebGL context was lost twice within a minute, so rendering is paused \u00b7 tap the picture to resume",
       caption: "Every pixel sends a ray into a signed distance field f. The value of f at a point is the radius of a ball that contains no surface, so the ray can always advance by f, until f drops below the size of a pixel at that distance (sphere tracing, Hart 1996). The shapes are combined with the polynomial smooth minimum smin_k, where k is the width of the blend; Carve uses the matching smooth maximum max_k(f, \u2212g), and carving shapes are drawn as faint ghosts. Normals are the gradient of f from four samples, soft shadows measure how closely the shadow ray grazes other shapes (min k\u00b7f/t), and ambient occlusion compares f with the distance along the normal at five points. Steps colours each pixel by its number of iterations: rays that skim silhouettes or run along the floor cost the most, and over-relaxation (Keinert et al. 2014) cuts the count. Slice cuts the scene with a plane and draws f as contour lines, orange outside and blue inside. Probe ray draws the empty-space spheres of a single ray; orbit to see them from the side.",
       more: "Background:",
       l08: "SDFs and sphere tracing (Geometry processing, section 8)",
@@ -71,6 +82,9 @@
       probeMiss: "\u63a2\u6d4b\uff1a{s} \u6b65\uff0c\u672a\u547d\u4e2d",
       probeOut: "\u63a2\u6d4b\uff1a\u6b65\u6570\u7528\u5c3d\uff08{s}\uff09",
       lo: "0", hi: "{m} \u6b65", over: "\u767d\u8272\uff1a\u6b65\u6570\u7528\u5c3d",
+      compiling: "\u6b63\u5728\u7f16\u8bd1\u7740\u8272\u5668\u2026",
+      lost: "WebGL \u4e0a\u4e0b\u6587\u5df2\u4e22\u5931\uff0c\u6b63\u5728\u7b49\u5f85\u6d4f\u89c8\u5668\u6062\u590d\u2026",
+      paused: "WebGL \u4e0a\u4e0b\u6587\u5728\u4e00\u5206\u949f\u5185\u4e22\u5931\u4e86\u4e24\u6b21\uff0c\u6e32\u67d3\u5df2\u6682\u505c \u00b7 \u70b9\u51fb\u753b\u9762\u7ee7\u7eed",
       caption: "\u6bcf\u4e2a\u50cf\u7d20\u5411\u6709\u7b26\u53f7\u8ddd\u79bb\u573a\uff08signed distance field\uff09f \u53d1\u51fa\u4e00\u6761\u5149\u7ebf\u3002f \u5728\u67d0\u70b9\u7684\u503c\u662f\u4e00\u4e2a\u4e0d\u542b\u4efb\u4f55\u8868\u9762\u7684\u7403\u7684\u534a\u5f84\uff0c\u6240\u4ee5\u5149\u7ebf\u603b\u53ef\u4ee5\u5b89\u5168\u5730\u524d\u8fdb f\uff0c\u76f4\u5230 f \u5c0f\u4e8e\u8be5\u8ddd\u79bb\u5904\u4e00\u4e2a\u50cf\u7d20\u7684\u5927\u5c0f\u4e3a\u6b62\uff08\u7403\u9762\u8ffd\u8e2a\uff0csphere tracing\uff0cHart 1996\uff09\u3002\u5f62\u72b6\u4e4b\u95f4\u7528\u591a\u9879\u5f0f\u5e73\u6ed1\u6700\u5c0f\u503c smin_k \u7ec4\u5408\uff0ck \u662f\u878d\u5408\u533a\u7684\u5bbd\u5ea6\uff1b\u201c\u96d5\u523b\u201d\u4f7f\u7528\u5bf9\u5e94\u7684\u5e73\u6ed1\u6700\u5927\u503c max_k(f, \u2212g)\uff0c\u96d5\u523b\u7528\u7684\u5f62\u72b6\u4ee5\u6de1\u6de1\u7684\u865a\u5f71\u663e\u793a\u3002\u6cd5\u7ebf\u662f f \u7684\u68af\u5ea6\uff0c\u7531\u56db\u6b21\u91c7\u6837\u5f97\u5230\uff1b\u8f6f\u9634\u5f71\u8861\u91cf\u9634\u5f71\u5149\u7ebf\u4e0e\u5176\u4ed6\u5f62\u72b6\u64e6\u80a9\u800c\u8fc7\u7684\u8ddd\u79bb\uff08min k\u00b7f/t\uff09\uff1b\u73af\u5883\u5149\u906e\u853d\uff08AO\uff09\u5728\u6cd5\u7ebf\u65b9\u5411\u7684\u4e94\u4e2a\u70b9\u4e0a\u6bd4\u8f83 f \u4e0e\u6cbf\u6cd5\u7ebf\u7684\u8ddd\u79bb\u3002\u201c\u6b65\u6570\u201d\u6309\u8fed\u4ee3\u6b21\u6570\u7ed9\u6bcf\u4e2a\u50cf\u7d20\u7740\u8272\uff1a\u63a0\u8fc7\u8f6e\u5ed3\u6216\u6cbf\u5730\u9762\u884c\u8fdb\u7684\u5149\u7ebf\u6700\u6602\u8d35\uff0c\u8d85\u677e\u5f1b\uff08Keinert \u7b49\uff0c2014\uff09\u53ef\u4ee5\u51cf\u5c11\u6b65\u6570\u3002\u201c\u5207\u7247\u201d\u7528\u4e00\u4e2a\u5e73\u9762\u5207\u5f00\u573a\u666f\uff0c\u628a f \u753b\u6210\u7b49\u503c\u7ebf\uff0c\u5916\u90e8\u4e3a\u6a59\u8272\u3001\u5185\u90e8\u4e3a\u84dd\u8272\u3002\u201c\u63a2\u6d4b\u5149\u7ebf\u201d\u753b\u51fa\u4e00\u6761\u5149\u7ebf\u7684\u6240\u6709\u7a7a\u7403\uff1b\u73af\u7ed5\u89c6\u89d2\u5373\u53ef\u4ece\u4fa7\u9762\u89c2\u5bdf\u5b83\u4eec\u3002",
       more: "\u80cc\u666f\u77e5\u8bc6\uff1a",
       l08: "SDF \u4e0e\u7403\u9762\u8ffd\u8e2a\uff08\u51e0\u4f55\u5904\u7406\uff0c\u7b2c 8 \u8282\uff09",
@@ -96,6 +110,9 @@
       probeMiss: "\u30d7\u30ed\u30fc\u30d6\uff1a{s} \u30b9\u30c6\u30c3\u30d7\u3001\u30d2\u30c3\u30c8\u306a\u3057",
       probeOut: "\u30d7\u30ed\u30fc\u30d6\uff1a\u30b9\u30c6\u30c3\u30d7\u6570\u306e\u4e0a\u9650\u306b\u5230\u9054\uff08{s}\uff09",
       lo: "0", hi: "{m} \u30b9\u30c6\u30c3\u30d7", over: "\u767d\uff1a\u4e0a\u9650\u306b\u5230\u9054",
+      compiling: "\u30b7\u30a7\u30fc\u30c0\u30fc\u3092\u30b3\u30f3\u30d1\u30a4\u30eb\u4e2d\u2026",
+      lost: "WebGL \u30b3\u30f3\u30c6\u30ad\u30b9\u30c8\u304c\u5931\u308f\u308c\u307e\u3057\u305f\u3002\u30d6\u30e9\u30a6\u30b6\u30fc\u306b\u3088\u308b\u5fa9\u5143\u3092\u5f85\u3063\u3066\u3044\u307e\u3059\u2026",
+      paused: "WebGL \u30b3\u30f3\u30c6\u30ad\u30b9\u30c8\u304c 1 \u5206\u4ee5\u5185\u306b 2 \u56de\u5931\u308f\u308c\u305f\u305f\u3081\u3001\u63cf\u753b\u3092\u4e00\u6642\u505c\u6b62\u3057\u307e\u3057\u305f \u00b7 \u753b\u50cf\u3092\u30bf\u30c3\u30d7\u3059\u308b\u3068\u518d\u958b\u3057\u307e\u3059",
       caption: "\u5404\u30d4\u30af\u30bb\u30eb\u306f\u7b26\u53f7\u4ed8\u304d\u8ddd\u96e2\u5834\uff08signed distance field\uff09f \u306e\u4e2d\u306b\u30ec\u30a4\u3092\u98db\u3070\u3057\u307e\u3059\u3002\u3042\u308b\u70b9\u3067\u306e f \u306e\u5024\u306f\u3001\u8868\u9762\u3092\u542b\u307e\u306a\u3044\u7403\u306e\u534a\u5f84\u3067\u3059\u3002\u305d\u306e\u305f\u3081\u30ec\u30a4\u306f\u5e38\u306b f \u3060\u3051\u5b89\u5168\u306b\u9032\u3081\u308b\u3053\u3068\u304c\u3067\u304d\u3001f \u304c\u305d\u306e\u8ddd\u96e2\u3067\u306e 1 \u30d4\u30af\u30bb\u30eb\u306e\u5927\u304d\u3055\u3092\u4e0b\u56de\u308b\u307e\u3067\u7e70\u308a\u8fd4\u3057\u307e\u3059\uff08\u30b9\u30d5\u30a3\u30a2\u30c8\u30ec\u30fc\u30b7\u30f3\u30b0\u3001sphere tracing\u3001Hart 1996\uff09\u3002\u5f62\u72b6\u3069\u3046\u3057\u306f\u591a\u9805\u5f0f\u306e\u30b9\u30e0\u30fc\u30ba\u6700\u5c0f\u5024 smin_k \u3067\u7d44\u307f\u5408\u308f\u3055\u308c\u3001k \u306f\u30d6\u30ec\u30f3\u30c9\u9818\u57df\u306e\u5e45\u3067\u3059\u3002\u300c\u524a\u308b\u300d\u306f\u5bfe\u5fdc\u3059\u308b\u30b9\u30e0\u30fc\u30ba\u6700\u5927\u5024 max_k(f, \u2212g) \u3092\u4f7f\u3044\u3001\u524a\u308b\u5f62\u72b6\u306f\u8584\u3044\u30b4\u30fc\u30b9\u30c8\u3068\u3057\u3066\u63cf\u304b\u308c\u307e\u3059\u3002\u6cd5\u7dda\u306f 4 \u70b9\u306e\u30b5\u30f3\u30d7\u30eb\u304b\u3089\u6c42\u3081\u305f f \u306e\u52fe\u914d\u3067\u3059\u3002\u30bd\u30d5\u30c8\u30b7\u30e3\u30c9\u30a6\u306f\u30b7\u30e3\u30c9\u30a6\u30ec\u30a4\u304c\u4ed6\u306e\u5f62\u72b6\u306b\u3069\u308c\u3060\u3051\u8fd1\u3065\u3044\u305f\u304b\uff08min k\u00b7f/t\uff09\u3067\u3001\u30a2\u30f3\u30d3\u30a8\u30f3\u30c8\u30aa\u30af\u30eb\u30fc\u30b8\u30e7\u30f3\uff08AO\uff09\u306f\u6cd5\u7dda\u65b9\u5411\u306e 5 \u70b9\u3067 f \u3068\u6cd5\u7dda\u65b9\u5411\u306e\u8ddd\u96e2\u3092\u6bd4\u3079\u3066\u6c42\u3081\u307e\u3059\u3002\u300c\u30b9\u30c6\u30c3\u30d7\u6570\u300d\u306f\u5404\u30d4\u30af\u30bb\u30eb\u3092\u53cd\u5fa9\u56de\u6570\u3067\u8272\u5206\u3051\u3057\u307e\u3059\u3002\u8f2a\u90ed\u3092\u304b\u3059\u3081\u308b\u30ec\u30a4\u3084\u5e8a\u306b\u6cbf\u3063\u3066\u9032\u3080\u30ec\u30a4\u304c\u6700\u3082\u9ad8\u30b3\u30b9\u30c8\u3067\u3001\u904e\u7de9\u548c\uff08Keinert \u3089\u30012014\uff09\u3067\u56de\u6570\u3092\u6e1b\u3089\u305b\u307e\u3059\u3002\u300c\u30b9\u30e9\u30a4\u30b9\u300d\u306f\u5e73\u9762\u3067\u30b7\u30fc\u30f3\u3092\u5207\u308a\u3001f \u3092\u7b49\u9ad8\u7dda\u3068\u3057\u3066\u63cf\u304d\u307e\u3059\uff08\u5916\u5074\u304c\u30aa\u30ec\u30f3\u30b8\u3001\u5185\u5074\u304c\u9752\uff09\u3002\u300c\u30ec\u30a4\u3092\u8abf\u3079\u308b\u300d\u306f 1 \u672c\u306e\u30ec\u30a4\u306e\u7a7a\u306e\u7403\u3092\u3059\u3079\u3066\u63cf\u304d\u307e\u3059\u3002\u8996\u70b9\u3092\u56de\u3059\u3068\u6a2a\u304b\u3089\u89b3\u5bdf\u3067\u304d\u307e\u3059\u3002",
       more: "\u95a2\u9023\u8a18\u4e8b\uff1a",
       l08: "SDF \u3068\u30b9\u30d5\u30a3\u30a2\u30c8\u30ec\u30fc\u30b7\u30f3\u30b0\uff08\u30b8\u30aa\u30e1\u30c8\u30ea\u51e6\u7406\u3001\u7b2c 8 \u7bc0\uff09",
@@ -138,6 +155,13 @@
   var AA_FRAMES = 16;
   var HEAT_MAX = 48; // the heat map saturates at this many steps
   var LDIR = norm([-0.45, 0.78, 0.5]);
+  var BATCH_MS = 12; // GPU time per animation frame (one band of rows, one draw call)
+  var MAX_BANDS = 8; // but a frame is not split into more bands than this...
+  var FINE_BANDS = 32; // ...except at the lowest resolution, when its bands are slow (see band()),
+  var MIN_ROWS = 8; // and then not into bands thinner than this
+  var FRAME_MS = 24; // the resolution is chosen so that a whole frame costs about this much GPU time
+  var INIT_PX = 1e5; // pixels of the first frame, drawn before anything has been measured
+  var LAT_N = 3; // one-pixel draws that time the round trip of a fence before the first frame
 
   // ------------------------------------------------------------------ small vector helpers
   function norm(v) {
@@ -153,6 +177,14 @@
   function srgbToLin(c) { return Math.pow(c, 2.2); }
 
   // ------------------------------------------------------------------ shaders
+  // Compile cost. Shader compilers inline every function call, so each place that calls map() becomes a
+  // full copy of the primitive loop. On Windows, where Direct3D's compiler (FXC) compiles the translated
+  // shader, the first version of this shader held fifteen copies and took about 1.7 s to compile (Chrome
+  // on a Windows test machine); this one takes about 0.85 s. Here calcNormal is a loop with one map()
+  // call and is called from one place, the albedo comes out of the same loop as the hit point's distance,
+  // and the slice view samples the field in one loop: six copies, with the same arithmetic in the same
+  // order. Loops are bounded by uniforms, and the fixed-count loops start at ZERO, which is 0 at run time
+  // but unknown to the compiler, so that none is unrolled.
   var VS = "#version 300 es\nin vec2 aPos; void main() { gl_Position = vec4(aPos, 0.0, 1.0); }";
 
   var FS = [
@@ -186,6 +218,7 @@
     "out vec4 outColor;",
     "const vec3 LDIR = vec3(" + LDIR.map(function (x) { return x.toFixed(5); }).join(", ") + ");",
     "float gClip;",
+    "#define ZERO min(uN, 0)",
     "",
     "float sdPrim(int i, vec3 p) {",
     "  vec4 a = uA[i]; vec4 b = uB[i];",
@@ -200,8 +233,7 @@
     // distance to the shapes alone (no floor)
     "float mapObj(vec3 p) {",
     "  float d = 1e5; float k = max(uK, 1e-4);",
-    "  for (int i = 0; i < MAXP; i++) {",
-    "    if (i >= uN) break;",
+    "  for (int i = 0; i < uN; i++) {",
     "    vec4 a = uA[i];",
     "    bool carve = a.w > 7.5;",
     "    float lb = length(p - a.xyz) - uC[i].w;", // lower bound of this primitive's distance
@@ -214,10 +246,9 @@
     "}",
     "",
     // the same loop, carrying the blended albedo along with the distance
-    "vec3 objColor(vec3 p) {",
+    "float mapObjCol(vec3 p, out vec3 colOut) {",
     "  float d = 1e5; float k = max(uK, 1e-4); vec3 col = vec3(0.5);",
-    "  for (int i = 0; i < MAXP; i++) {",
-    "    if (i >= uN) break;",
+    "  for (int i = 0; i < uN; i++) {",
     "    vec4 a = uA[i];",
     "    bool carve = a.w > 7.5;",
     "    float lb = length(p - a.xyz) - uC[i].w;",
@@ -226,22 +257,27 @@
     "    if (!carve) { float h = clamp(0.5 + 0.5 * (di - d) / k, 0.0, 1.0); d = mix(di, d, h) - k * h * (1.0 - h); col = mix(uC[i].rgb, col, h); }",
     "    else { float h = clamp(0.5 + 0.5 * (di + d) / k, 0.0, 1.0); d = mix(-di, d, h) + k * h * (1.0 - h); col = mix(mix(col, uC[i].rgb, 0.65), col, h); }",
     "  }",
-    "  return col;",
+    "  colOut = col;",
+    "  return d;",
     "}",
     "",
     "float map(vec3 p) { return max(min(mapObj(p), p.y), p.y - gClip); }",
     "",
+    // tetrahedral taps s = (1,-1,-1), (-1,-1,1), (-1,1,-1), (1,1,1), summed in this order
     "vec3 calcNormal(vec3 p, float e) {",
-    "  const vec2 s = vec2(1.0, -1.0);",
-    "  return normalize(s.xyy * map(p + s.xyy * e) + s.yyx * map(p + s.yyx * e) + s.yxy * map(p + s.yxy * e) + s.xxx * map(p + s.xxx * e));",
+    "  vec3 n = vec3(0.0);",
+    "  for (int i = ZERO; i < 4; i++) {",
+    "    vec3 s = 2.0 * vec3((((i + 3) >> 1) & 1), ((i >> 1) & 1), (i & 1)) - 1.0;",
+    "    n += s * map(p + s * e);",
+    "  }",
+    "  return normalize(n);",
     "}",
     "",
     // sphere tracing with optional over-relaxation; status 1 hit, 0 escaped, -1 out of steps
     "float trace(vec3 ro, vec3 rd, float pixR, out int steps, out int status) {",
     "  float t = 0.0, omega = uOmega, prevF = 0.0, stepLen = 0.0;",
     "  steps = 0; status = -1;",
-    "  for (int i = 0; i < 512; i++) {",
-    "    if (i >= uMaxSteps) break;",
+    "  for (int i = 0; i < uMaxSteps; i++) {",
     "    steps++;",
     "    float f = map(ro + rd * t);",
     "    if (omega > 1.0 && abs(f) + prevF < stepLen) {", // the two spheres do not overlap: go back
@@ -256,7 +292,7 @@
     "",
     "float shadow(vec3 ro, vec3 rd) {",
     "  float res = 1.0, t = 0.015, ph = 1e10;",
-    "  for (int i = 0; i < 56; i++) {",
+    "  for (int i = ZERO; i < 56; i++) {",
     "    float h = map(ro + rd * t);",
     "    if (h < 0.0004) return 0.0;",
     "    if (uSoft == 1) {",
@@ -274,7 +310,7 @@
     "",
     "float calcAO(vec3 p, vec3 n) {",
     "  float occ = 0.0, sca = 1.0;",
-    "  for (int i = 0; i < 5; i++) {",
+    "  for (int i = ZERO; i < 5; i++) {",
     "    float h = 0.015 + 0.11 * float(i);",
     "    occ += (h - map(p + n * h)) * sca;",
     "    sca *= 0.85;",
@@ -316,7 +352,7 @@
     "  float b = dot(oc, rd), c = dot(oc, oc) - r * r, disc = b * b - c;",
     "  if (disc < 0.0) return -1.0;",
     "  float sq = sqrt(disc), t = max(-b - sq, 0.0), t1 = min(-b + sq, tEnd);",
-    "  for (int s = 0; s < 40; s++) {",
+    "  for (int s = ZERO; s < 40; s++) {",
     "    if (t > t1) return -1.0;",
     "    float f = sdPrim(i, ro + rd * t);",
     "    if (f < 0.002) return t;",
@@ -337,20 +373,24 @@
     "  bool hit = status == 1;",
     "  float tS = hit ? t : 1e5;",
     "  vec3 p = ro + rd * t;",
+    "  vec3 n = vec3(0.0, 1.0, 0.0);",
+    "  if (hit) n = calcNormal(p, max(0.0007, pixR * t));",
     "  vec3 col;",
     "  if (uView == 1) {",
     // iteration heat map, with a little shading so the shapes stay readable
     "    if (status == -1) col = vec3(1.0);",
     "    else {",
     "      col = heat(float(steps) / float(min(uMaxSteps, HEAT_MAX)));",
-    "      if (hit) { vec3 n = calcNormal(p, max(0.0007, pixR * t)); col *= 0.72 + 0.28 * clamp(dot(n, LDIR), 0.0, 1.0); }",
+    "      if (hit) col *= 0.72 + 0.28 * clamp(dot(n, LDIR), 0.0, 1.0);",
     "    }",
     "  } else {",
+    "    bool cap = false;",
+    "    float sh = 1.0;",
     "    if (hit) {",
-    "      vec3 n = calcNormal(p, max(0.0007, pixR * t));",
-    "      float dObj = mapObj(p);",
+    "      vec3 objAlb;",
+    "      float dObj = mapObjCol(p, objAlb);",
     "      bool floorHit = p.y < dObj;",
-    "      bool cap = uView == 2 && dObj < 0.0 && p.y - uSliceH > min(dObj, p.y) - 1e-4;",
+    "      cap = uView == 2 && dObj < 0.0 && p.y - uSliceH > min(dObj, p.y) - 1e-4;",
     "      vec3 alb; float spec;",
     "      if (floorHit) {",
     "        float w = pixR * t * 2.0 / max(abs(rd.y), 0.04);",
@@ -360,8 +400,8 @@
     "        float axis = 1.0 - smoothstep(0.0, 1.5, min(g2.x, g2.y));",
     "        alb = vec3(0.075, 0.08, 0.09) * (1.0 + 0.45 * line * exp(-0.005 * t * t)) + vec3(0.03) * axis;",
     "        spec = 0.15;",
-    "      } else { alb = objColor(p); spec = 1.0; }",
-    "      float sh = shadow(p + n * 0.002, LDIR);",
+    "      } else { alb = objAlb; spec = 1.0; }",
+    "      sh = shadow(p + n * 0.002, LDIR);",
     "      float ao = uAO == 1 ? calcAO(p, n) : 1.0;",
     "      float dif = clamp(dot(n, LDIR), 0.0, 1.0) * sh;",
     "      vec3 hv = normalize(LDIR - rd);",
@@ -386,34 +426,44 @@
     "      }",
     "      col = mix(col, background(rd), max(1.0 - exp(-0.0012 * t * t), floorHit ? smoothstep(9.0, 26.0, t) : 0.0));",
     "      col = pow(aces(col), vec3(1.0 / 2.2));",
-    "      if (cap) {", // cut face of the slice: the inside distance field
-    "        float w = pixR * t * 2.0 / max(abs(rd.y), 0.04);",
-    "        col = fieldColor(mapObj(vec3(p.x, uSliceH, p.z)), w) * (0.7 + 0.3 * sh);",
-    "      }",
     "    } else {",
     "      col = pow(aces(background(rd) * 1.1), vec3(1.0 / 2.2));",
     "    }",
-    "    if (uView == 2) {", // the slice plane, outside the shapes, drawn over what lies beyond it
-    "      float tp = (uSliceH - ro.y) / rd.y;",
-    "      vec3 pp = ro + rd * tp;",
-    "      if (tp > 0.0 && tp < tS - 0.003 && abs(pp.x) < SLICE_R && abs(pp.z) < SLICE_R) {",
-    "        float w = pixR * tp * 2.0 / max(abs(rd.y), 0.04);",
-    "        vec3 fc = fieldColor(mapObj(pp), w);",
-    "        float edge = 1.0 - smoothstep(0.0, 1.5 * w + 0.004, SLICE_R - max(abs(pp.x), abs(pp.z)));",
-    "        col = mix(col, fc, 0.72);",
-    "        col = mix(col, vec3(0.9), edge);",
-    "      }",
+    // Slice view: the field inside the cut face (cap) and on the slice plane in front of the scene, the
+    // second drawn over the first; both samples come from one loop with a single mapObj() call
+    "    float tp = (uSliceH - ro.y) / rd.y;",
+    "    vec3 pp = ro + rd * tp;",
+    "    bool plane = uView == 2 && tp > 0.0 && tp < tS - 0.003 && abs(pp.x) < SLICE_R && abs(pp.z) < SLICE_R;",
+    "    float fCap = 0.0, fPlane = 0.0;",
+    "    for (int i = ZERO; i < 2; i++) {",
+    "      if (i == 0 ? !cap : !plane) continue;",
+    "      float f = mapObj(i == 0 ? vec3(p.x, uSliceH, p.z) : pp);",
+    "      if (i == 0) fCap = f; else fPlane = f;",
+    "    }",
+    "    if (cap) {",
+    "      float w = pixR * t * 2.0 / max(abs(rd.y), 0.04);",
+    "      col = fieldColor(fCap, w) * (0.7 + 0.3 * sh);",
+    "    }",
+    "    if (plane) {",
+    "      float w = pixR * tp * 2.0 / max(abs(rd.y), 0.04);",
+    "      vec3 fc = fieldColor(fPlane, w);",
+    "      float edge = 1.0 - smoothstep(0.0, 1.5 * w + 0.004, SLICE_R - max(abs(pp.x), abs(pp.z)));",
+    "      col = mix(col, fc, 0.72);",
+    "      col = mix(col, vec3(0.9), edge);",
     "    }",
     "  }",
     // ghosts of the carving shapes (and a brighter one for the selected shape)
-    "  for (int i = 0; i < MAXP; i++) {",
-    "    if (i >= uN) break;",
+    "  for (int i = 0; i < uN; i++) {",
     "    if (uA[i].w < 7.5 && i != uSel) continue;",
     "    float tg = traceOne(i, ro, rd, min(tS, TMAX) - 0.004);",
     "    if (tg > 0.0) {",
     "      vec3 pg = ro + rd * tg;",
-    "      const vec2 s = vec2(1.0, -1.0); float e = 0.002;",
-    "      vec3 ng = normalize(s.xyy * sdPrim(i, pg + s.xyy * e) + s.yyx * sdPrim(i, pg + s.yyx * e) + s.yxy * sdPrim(i, pg + s.yxy * e) + s.xxx * sdPrim(i, pg + s.xxx * e));",
+    "      vec3 ng = vec3(0.0);",
+    "      for (int j = ZERO; j < 4; j++) {",
+    "        vec3 s = 2.0 * vec3((((j + 3) >> 1) & 1), ((j >> 1) & 1), (j & 1)) - 1.0;",
+    "        ng += s * sdPrim(i, pg + s * 0.002);",
+    "      }",
+    "      ng = normalize(ng);",
     "      float rim = pow(1.0 - abs(dot(ng, rd)), 2.0);",
     "      float a = (i == uSel ? 0.16 + 0.5 * rim : 0.05 + 0.22 * rim);",
     "      vec3 gc = i == uSel ? vec3(0.55, 0.80, 1.0) : mix(vec3(0.85), pow(uC[i].rgb, vec3(1.0 / 2.2)), 0.5);",
@@ -434,8 +484,7 @@
     "        col = mix(col, vec3(1.0, 0.92, 0.55), (1.0 - smoothstep(wl * 0.5, wl * 1.5, dist)) * 0.9);",
     "      }",
     "    }",
-    "    for (int i = 0; i < NPROBE; i++) {",
-    "      if (i >= uProbeN) break;",
+    "    for (int i = 0; i < uProbeN; i++) {",
     "      vec4 s = uProbe[i];",
     "      vec3 oc = ro - s.xyz;",
     "      float bb = dot(oc, rd);",
@@ -451,8 +500,10 @@
     "        }",
     "      }",
     "      float rdot = 0.022 + pixR * max(-bb, 0.0) * 2.0;",
+    // a dot whose sphere holds the eye is not drawn: the first step point is the eye itself until the camera
+    // moves, and its dot would cover the whole picture
     "      float c3 = dot(oc, oc) - rdot * rdot, disc3 = bb * bb - c3;",
-    "      if (disc3 > 0.0 && -bb < tS + 0.02) col = mix(col, (i == uProbeN - 1 && uProbeHit == 1) ? vec3(1.0, 0.35, 0.55) : vec3(1.0, 0.92, 0.55), 0.95);",
+    "      if (c3 > 0.0 && disc3 > 0.0 && -bb < tS + 0.02) col = mix(col, (i == uProbeN - 1 && uProbeHit == 1) ? vec3(1.0, 0.35, 0.55) : vec3(1.0, 0.92, 0.55), 0.95);",
     "    }",
     "  }",
     "  outColor = vec4(col, 1.0);",
@@ -467,25 +518,36 @@
     "void main() { outColor = vec4(texelFetch(uTex, ivec2(gl_FragCoord.xy), 0).rgb, 1.0); }"
   ].join("\n");
 
-  function compile(type, src) {
+  // compileShader and linkProgram return at once, but the calls that report the outcome (LINK_STATUS,
+  // the uniform queries) make the page wait until the driver has finished. They are made only once
+  // COMPLETION_STATUS_KHR says the driver is done (KHR_parallel_shader_compile, where the driver compiles
+  // in the background), or, without that extension, after the status line has been painted (at once on
+  // SwiftShader, which compiles in milliseconds).
+  function shader(type, src) {
     var s = gl.createShader(type);
     gl.shaderSource(s, src);
     gl.compileShader(s);
-    if (!gl.getShaderParameter(s, gl.COMPILE_STATUS) && !gl.isContextLost()) throw new Error(gl.getShaderInfoLog(s));
     return s;
   }
-  function program(vs, fs) {
-    var p = gl.createProgram();
-    gl.attachShader(p, compile(gl.VERTEX_SHADER, vs));
-    gl.attachShader(p, compile(gl.FRAGMENT_SHADER, fs));
+  function startProgram(vs, fs) {
+    var p = gl.createProgram(), v = shader(gl.VERTEX_SHADER, vs), f = shader(gl.FRAGMENT_SHADER, fs);
+    gl.attachShader(p, v);
+    gl.attachShader(p, f);
     gl.bindAttribLocation(p, 0, "aPos");
     gl.linkProgram(p);
-    if (!gl.getProgramParameter(p, gl.LINK_STATUS) && !gl.isContextLost()) throw new Error(gl.getProgramInfoLog(p));
+    return { p: p, v: v, f: f };
+  }
+  function finishProgram(o) {
+    var p = o.p;
+    if (!gl.getProgramParameter(p, gl.LINK_STATUS)) {
+      if (gl.isContextLost()) return null;
+      throw new Error(gl.getShaderInfoLog(o.f) || gl.getShaderInfoLog(o.v) || gl.getProgramInfoLog(p));
+    }
     var u = {};
     var n = gl.getProgramParameter(p, gl.ACTIVE_UNIFORMS) || 0;
     for (var i = 0; i < n; i++) {
       var info = gl.getActiveUniform(p, i);
-      u[info.name.replace(/\[0\]$/, "")] = gl.getUniformLocation(p, info.name);
+      if (info) u[info.name.replace(/\[0\]$/, "")] = gl.getUniformLocation(p, info.name);
     }
     return { p: p, u: u };
   }
@@ -659,7 +721,10 @@
     var u = cross(r, f);
     basis = { pos: pos, f: f, r: r, u: u };
   }
+  // the ray through a point of the canvas, for the camera as it is now: input can come before a frame has
+  // refreshed the basis (while the shaders compile, after a lost context, between the frames of a slow GPU)
   function rayAt(clientX, clientY) {
+    updateBasis();
     var rect = canvas.getBoundingClientRect();
     var x = (clientX - rect.left) / rect.width, y = (clientY - rect.top) / rect.height;
     var aspect = rect.width / rect.height;
@@ -668,13 +733,25 @@
   }
 
   // ------------------------------------------------------------------ GL resources
-  var P, PB, vao, accTex = null, accFb = null, W = 0, H = 0;
+  var P = null, PB = null, vao = null, accTex = null, accFb = null, W = 0, H = 0;
+  var pend = null, parExt = null;
   var uniformsA = new Float32Array(MAXP * 4), uniformsB = new Float32Array(MAXP * 4), uniformsC = new Float32Array(MAXP * 4), uniformsR = new Float32Array(MAXP * 9);
   var probeArr = new Float32Array(NPROBE * 4);
 
-  function initGL() {
-    P = program(VS, FS);
-    PB = program(VS, FS_BLIT);
+  // the compile of both programs is issued here; nothing waits for the driver
+  function beginGL() {
+    pend = [startProgram(VS, FS), startProgram(VS, FS_BLIT)];
+  }
+  function compiled() {
+    if (!parExt) return true;
+    return gl.getProgramParameter(pend[0].p, parExt.COMPLETION_STATUS_KHR) && gl.getProgramParameter(pend[1].p, parExt.COMPLETION_STATUS_KHR);
+  }
+  // once compiled: the outcome, the uniform locations and the full-screen triangle
+  function finishGL() {
+    P = finishProgram(pend[0]);
+    PB = finishProgram(pend[1]);
+    pend = null;
+    if (!P || !PB) return false;
     vao = gl.createVertexArray();
     gl.bindVertexArray(vao);
     var buf = gl.createBuffer();
@@ -683,8 +760,10 @@
     gl.enableVertexAttribArray(0);
     gl.vertexAttribPointer(0, 2, gl.FLOAT, false, 0, 0);
     gl.bindVertexArray(null);
+    return true;
   }
 
+  // the accumulation target; the canvas itself takes the new size when the first frame at that size is shown
   function allocate(w, h) {
     if (accTex) gl.deleteTexture(accTex);
     if (accFb) gl.deleteFramebuffer(accFb);
@@ -702,10 +781,14 @@
     gl.bindTexture(gl.TEXTURE_2D, null);
     W = w;
     H = h;
+    accN = 0;
+    row = 0;
+    firstPx = 0;
   }
 
   function uploadScene(u) {
-    for (var i = 0; i < ordered.length; i++) {
+    var n = Math.min(ordered.length, MAXP);
+    for (var i = 0; i < n; i++) {
       var pr = ordered[i];
       uniformsA.set([pr.pos[0], pr.pos[1], pr.pos[2], pr.type + 8 * pr.op], i * 4);
       uniformsB.set(pr.B, i * 4);
@@ -716,7 +799,7 @@
     gl.uniform4fv(u.uB, uniformsB);
     gl.uniform4fv(u.uC, uniformsC);
     gl.uniformMatrix3fv(u.uR, false, uniformsR);
-    gl.uniform1i(u.uN, prims.length);
+    gl.uniform1i(u.uN, n);
   }
 
   // ------------------------------------------------------------------ probe
@@ -724,7 +807,11 @@
   function runProbe(clientX, clientY) {
     var ray = rayAt(clientX, clientY);
     var rec = [];
-    var res = traceCPU(ray.o, ray.d, tanHalf / Math.max(H, 1), rec, st.maxSteps, st.relax ? 1.6 : 1);
+    // the pixel size of the frame that will show the probe (there may not be a frame yet: a tap while the
+    // shaders compile, or after a lost context)
+    var cw = canvas.clientWidth, ch = canvas.clientHeight;
+    var h = dim(ch, scale || firstScale(cw, ch));
+    var res = traceCPU(ray.o, ray.d, tanHalf / h, rec, st.maxSteps, st.relax ? 1.6 : 1);
     var tEnd = res.status === 0 ? Math.min(res.t, 14) : res.t;
     probe = { pts: rec, o: ray.o, e: add(ray.o, mul(ray.d, tEnd)), steps: res.steps, status: res.status, t: res.t, clip: st.view === 2 };
   }
@@ -743,10 +830,10 @@
   var inSize = q('[data-input="size"]'), inHeight = q('[data-input="height"]');
   var dirty = true, accN = 0, flashMsg = "", flashUntil = 0;
 
+  // something changed: the accumulation starts again with the next frame
   function touch() {
     reorder();
     dirty = true;
-    accN = 0;
     kick();
   }
 
@@ -898,6 +985,10 @@
 
   canvas.addEventListener("pointerdown", function (e) {
     if (e.button !== undefined && e.button > 0) return;
+    if (paused) {
+      resume();
+      return;
+    }
     try { canvas.setPointerCapture(e.pointerId); } catch (err) { /* ignore */ }
     pointers[e.pointerId] = { x: e.clientX, y: e.clientY };
     hint.style.opacity = "0";
@@ -998,116 +1089,294 @@
   }, { passive: false });
 
   // ------------------------------------------------------------------ frame loop
+  // A frame (one AA sample) is drawn into the accumulation texture as horizontal bands, one band per
+  // animation frame, each one scissored draw call of about BATCH_MS of GPU time (and at most MAX_BANDS
+  // bands per frame, except at the lowest resolution: see band()). A fence after each band says when the
+  // GPU has finished it; the next band waits for it (one band in flight), and the time it took, less the
+  // round trip of a fence (timed on one-pixel draws before the first frame), is the measured cost. The
+  // canvas only ever shows complete frames. From the cost per pixel the resolution is set so that a whole
+  // frame costs about FRAME_MS: the first frame is small (INIT_PX pixels); a frame that has cost more than
+  // three times that is dropped at once, even before it is complete, and otherwise the resolution is lowered
+  // only after two slow frames in a row. The cost of a frame is proportional to its pixel count, so a frame
+  // that is too slow by a factor r is fixed by scaling both sides by sqrt(1 / r).
   var maxScale = Math.min(window.devicePixelRatio || 1, 1.5);
-  var scale = Math.min(maxScale, 1);
-  var frameTimes = [], lastT = 0, fps = 0, upgrades = 0, lastDown = 0;
+  var scale = 0, ups = 0, lastDown = -Infinity, slowFrames = 0, calibrating = true;
+  var software = false, quickCompile = false, safeMode = false;
+  var batchPx = 0, firstPx = 0, latMs = 4, latN = 0, sampleMs = 0, samplePx = 0;
+  var row = 0, warm = 0, needBlit = false, deferBlit = false;
+  var fence = null, fenceT0 = 0, fenceSeen = 0, fencePx = 0, fenceRow = 0, fenceEnd = false, fenceKind = 0, fenceOk = false, pollTimer = 0;
+  var fps = 0, lastSampleT = 0;
   var halton = [];
   (function () {
     function h(i, b) { var f = 1, r = 0; while (i > 0) { f /= b; r += f * (i % b); i = Math.floor(i / b); } return r; }
     for (var i = 0; i < AA_FRAMES; i++) halton.push([h(i + 1, 2) - 0.5, h(i + 1, 3) - 0.5]);
   })();
 
-  // Resolution scaling: the cost of a frame is proportional to the pixel count, so a frame that is
-  // too slow by a factor r is fixed by scaling both sides by about sqrt(1 / r).
-  function adapt(dt, now) {
-    frameTimes.push(dt);
-    var n = frameTimes.length;
-    if (n < 12 && !(n >= 3 && dt > 0.15)) return;
-    var avg = frameTimes.reduce(function (x, y) { return x + y; }, 0) / n;
-    frameTimes = [];
-    // never below about 220 pixels across, so a small phone canvas stays legible
-    var minScale = clamp(220 / Math.max(canvas.clientWidth, 1), 0.3, 0.6);
-    if (avg > 0.034 && scale > minScale) {
-      scale = Math.max(minScale, scale * clamp(Math.sqrt(0.025 / avg), 0.5, 0.85));
-      lastDown = now;
-      touch();
-    } else if (avg < 0.019 && scale < maxScale && upgrades < 4 && now - lastDown > 4000) {
-      scale = Math.min(maxScale, scale * 1.15);
-      upgrades++;
-      touch();
-    }
+  // never below about 220 pixels across, so a small phone canvas stays legible
+  function minScale() { return clamp(220 / Math.max(canvas.clientWidth, 1), 0.3, 0.6); }
+  function atMin() { return scale <= minScale() * 1.0001; }
+  // a dimension of the frame for a canvas dimension of v CSS pixels at scale s
+  function dim(v, s) { return Math.max(16, Math.round(v * s)); }
+
+  // before anything is measured: a small first frame and small bands (after a lost context, or on a
+  // software renderer, the first frame is at the lowest resolution)
+  function resetCost() {
+    scale = 0;
+    batchPx = software || safeMode ? 1500 : 12000;
+    firstPx = 0;
+    latMs = 4; // until the warm-up draws have timed it
+    latN = 0;
+    ups = 0;
+    slowFrames = 0;
+    calibrating = !software && !safeMode;
+    warm = 1 + LAT_N;
+    fps = 0;
+    lastSampleT = 0;
+  }
+  function firstScale(cw, ch) {
+    var lo = minScale();
+    if (software || safeMode) return lo;
+    return clamp(Math.sqrt(INIT_PX / (cw * ch)), lo, Math.max(lo, Math.min(maxScale, 1)));
   }
 
-  function render(now) {
-    var dt = lastT ? (now - lastT) / 1000 : 0;
-    lastT = now;
-    var cw = canvas.clientWidth, ch = canvas.clientHeight;
-    if (cw < 2 || ch < 2) return false;
-    var w = Math.max(16, Math.round(cw * scale)), h = Math.max(16, Math.round(ch * scale));
-    if (canvas.width !== w || canvas.height !== h) {
-      canvas.width = w;
-      canvas.height = h;
+  function setUniforms(k) {
+    var u = P.u;
+    uploadScene(u);
+    gl.uniform1f(u.uK, Math.max(st.k, 1e-4));
+    gl.uniform3fv(u.uCamPos, basis.pos);
+    gl.uniform3fv(u.uCamR, basis.r);
+    gl.uniform3fv(u.uCamU, basis.u);
+    gl.uniform3fv(u.uCamF, basis.f);
+    gl.uniform1f(u.uTanHalf, tanHalf);
+    gl.uniform2f(u.uRes, W, H);
+    var j = k === 0 ? [0, 0] : halton[k];
+    gl.uniform2f(u.uJitter, j[0], j[1]);
+    gl.uniform1i(u.uView, st.view);
+    gl.uniform1i(u.uMaxSteps, st.maxSteps);
+    gl.uniform1f(u.uOmega, st.relax ? 1.6 : 1.0);
+    gl.uniform1i(u.uSoft, st.soft ? 1 : 0);
+    gl.uniform1i(u.uAO, st.ao ? 1 : 0);
+    gl.uniform1f(u.uSliceH, st.sliceH);
+    gl.uniform1i(u.uSel, sel >= 0 ? ordered.indexOf(prims[sel]) : -1);
+    var np = probe ? probe.pts.length : 0;
+    if (probe) {
+      for (var i = 0; i < np; i++) probeArr.set(probe.pts[i], i * 4);
+      gl.uniform4fv(u.uProbe, probeArr);
+      gl.uniform3fv(u.uProbeO, probe.o);
+      gl.uniform3fv(u.uProbeE, probe.e);
+      gl.uniform1i(u.uProbeHit, probe.status === 1 ? 1 : 0);
     }
-    if (w !== W || h !== H) {
-      allocate(w, h);
-      accN = 0;
-    }
-    if (dirty) accN = 0;
-    var interacting = dirty;
-    dirty = false;
-    updateBasis();
+    gl.uniform1i(u.uProbeN, np);
+  }
 
-    if (accN < AA_FRAMES) {
-      var u = P.u;
-      gl.bindFramebuffer(gl.FRAMEBUFFER, accFb);
-      gl.viewport(0, 0, W, H);
-      gl.useProgram(P.p);
-      gl.bindVertexArray(vao);
-      uploadScene(u);
-      gl.uniform1f(u.uK, Math.max(st.k, 1e-4));
-      gl.uniform3fv(u.uCamPos, basis.pos);
-      gl.uniform3fv(u.uCamR, basis.r);
-      gl.uniform3fv(u.uCamU, basis.u);
-      gl.uniform3fv(u.uCamF, basis.f);
-      gl.uniform1f(u.uTanHalf, tanHalf);
-      gl.uniform2f(u.uRes, W, H);
-      var j = accN === 0 ? [0, 0] : halton[accN];
-      gl.uniform2f(u.uJitter, j[0], j[1]);
-      gl.uniform1i(u.uView, st.view);
-      gl.uniform1i(u.uMaxSteps, st.maxSteps);
-      gl.uniform1f(u.uOmega, st.relax ? 1.6 : 1.0);
-      gl.uniform1i(u.uSoft, st.soft ? 1 : 0);
-      gl.uniform1i(u.uAO, st.ao ? 1 : 0);
-      gl.uniform1f(u.uSliceH, st.sliceH);
-      gl.uniform1i(u.uSel, sel >= 0 ? ordered.indexOf(prims[sel]) : -1);
-      var np = probe ? probe.pts.length : 0;
-      if (probe) {
-        for (var i = 0; i < np; i++) probeArr.set(probe.pts[i], i * 4);
-        gl.uniform4fv(u.uProbe, probeArr);
-        gl.uniform3fv(u.uProbeO, probe.o);
-        gl.uniform3fv(u.uProbeE, probe.e);
-        gl.uniform1i(u.uProbeHit, probe.status === 1 ? 1 : 0);
-      }
-      gl.uniform1i(u.uProbeN, np);
-      if (accN === 0) gl.disable(gl.BLEND);
-      else {
-        gl.enable(gl.BLEND);
-        gl.blendFunc(gl.CONSTANT_ALPHA, gl.ONE_MINUS_CONSTANT_ALPHA);
-        gl.blendColor(0, 0, 0, 1 / (accN + 1));
-      }
+  // The first draw calls with a new program make some drivers build the pipeline (Metal, Vulkan, the
+  // software renderers), once per blend state: they are made on a single pixel and not timed. The next
+  // LAT_N warm-up draws, also on a single pixel and one per animation frame, time the round trip of a fence.
+  function warmUp() {
+    var build = warm > LAT_N;
+    gl.bindFramebuffer(gl.FRAMEBUFFER, accFb);
+    gl.viewport(0, 0, W, H);
+    gl.useProgram(P.p);
+    gl.bindVertexArray(vao);
+    setUniforms(0);
+    gl.enable(gl.SCISSOR_TEST);
+    gl.scissor(0, 0, 1, 1);
+    gl.drawArrays(gl.TRIANGLES, 0, 3);
+    if (build) {
+      gl.enable(gl.BLEND);
+      gl.blendFunc(gl.CONSTANT_ALPHA, gl.ONE_MINUS_CONSTANT_ALPHA);
+      gl.blendColor(0, 0, 0, 0.5);
       gl.drawArrays(gl.TRIANGLES, 0, 3);
       gl.disable(gl.BLEND);
-      accN++;
-
-      gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-      gl.viewport(0, 0, W, H);
-      gl.useProgram(PB.p);
-      gl.activeTexture(gl.TEXTURE0);
-      gl.bindTexture(gl.TEXTURE_2D, accTex);
-      gl.uniform1i(PB.u.uTex, 0);
-      gl.drawArrays(gl.TRIANGLES, 0, 3);
-      gl.bindTexture(gl.TEXTURE_2D, null);
-      gl.bindVertexArray(null);
-      fence = gl.fenceSync(gl.SYNC_GPU_COMMANDS_COMPLETE, 0);
-      gl.flush();
-
-      if (dt > 0) {
-        fps = fps ? fps * 0.85 + (1 / dt) * 0.15 : 1 / dt;
-        adapt(dt, now);
-      }
     }
+    gl.disable(gl.SCISSOR_TEST);
+    gl.bindVertexArray(null);
+    submit(0, false, build ? 1 : 2, -1);
+    warm--;
+  }
+
+  // one band of the current frame: rows [row, row + rows), blended into the accumulation with weight
+  // 1 / (accN + 1); the frame's uniforms are set at its first band and stay for the others
+  function band(now) {
+    gl.bindFramebuffer(gl.FRAMEBUFFER, accFb);
+    gl.viewport(0, 0, W, H);
+    gl.useProgram(P.p);
+    gl.bindVertexArray(vao);
+    if (row === 0) {
+      setUniforms(accN);
+      sampleMs = 0;
+      samplePx = 0;
+      // the bottom band is sized from the bottom band of the last frame, not from the top band just drawn
+      if (firstPx) batchPx = firstPx;
+    }
+    // The band that takes BATCH_MS has `rows` rows. Where a fixed cost per draw (compositing on a software
+    // renderer) dominates the measured time, smaller bands would not be faster, only more numerous: hence the
+    // lower bound H / MAX_BANDS. At the lowest resolution, though, nothing else can shorten a band, and one of
+    // H / MAX_BANDS rows can take far longer (heavy settings on a weak or a software renderer, where a long draw
+    // also holds up the browser's own drawing): there a band that would take more than twice BATCH_MS is cut
+    // to about twice BATCH_MS, down to H / FINE_BANDS rows but not below MIN_ROWS. (Thin bands cost more per
+    // pixel on a software renderer: on SwiftShader with 4 threads, bands of 4 rows cost 1.7 to 2 times as much
+    // per pixel as bands of 16 rows or more, bands of 2 rows about 3 times, bands of 8 rows 10 to 17 % more.)
+    var rows = Math.max(1, Math.floor(batchPx / W)), least = Math.ceil(H / MAX_BANDS);
+    if (rows < least) {
+      rows = 2 * rows < least && atMin() ? Math.min(least, Math.max(2 * rows, Math.ceil(H / FINE_BANDS), MIN_ROWS)) : least;
+    }
+    rows = Math.min(H - row, rows);
+    var from = row;
+    gl.enable(gl.SCISSOR_TEST);
+    gl.scissor(0, row, W, rows);
+    if (accN === 0) gl.disable(gl.BLEND);
+    else {
+      gl.enable(gl.BLEND);
+      gl.blendFunc(gl.CONSTANT_ALPHA, gl.ONE_MINUS_CONSTANT_ALPHA);
+      gl.blendColor(0, 0, 0, 1 / (accN + 1));
+    }
+    gl.drawArrays(gl.TRIANGLES, 0, 3);
+    gl.disable(gl.BLEND);
+    gl.disable(gl.SCISSOR_TEST);
+    gl.bindVertexArray(null);
+    row += rows;
+    var end = row >= H;
+    if (end) {
+      row = 0;
+      accN++;
+      // the first frame is shown only if the measurement keeps its resolution
+      if (calibrating) deferBlit = true;
+      else blit();
+      if (lastSampleT) {
+        var dt = (now - lastSampleT) / 1000;
+        if (dt > 0) fps = fps ? fps * 0.85 + (1 / dt) * 0.15 : 1 / dt;
+      }
+      lastSampleT = now;
+    }
+    submit(rows * W, end, 3, from);
+  }
+
+  // the accumulated image to the canvas, which takes the size of the image first
+  function blit() {
+    needBlit = false;
+    if (canvas.width !== W || canvas.height !== H) {
+      canvas.width = W;
+      canvas.height = H;
+    }
+    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+    gl.viewport(0, 0, W, H);
+    gl.useProgram(PB.p);
+    gl.bindVertexArray(vao);
+    gl.activeTexture(gl.TEXTURE0);
+    gl.bindTexture(gl.TEXTURE_2D, accTex);
+    gl.uniform1i(PB.u.uTex, 0);
+    gl.drawArrays(gl.TRIANGLES, 0, 3);
+    gl.bindTexture(gl.TEXTURE_2D, null);
+    gl.bindVertexArray(null);
+  }
+
+  // kind: 1 warm-up (pipeline build), 2 warm-up (round trip), 3 a band starting at row `from`
+  function submit(px, end, kind, from) {
+    fence = gl.fenceSync(gl.SYNC_GPU_COMMANDS_COMPLETE, 0);
+    gl.flush();
+    fenceT0 = fenceSeen = performance.now();
+    fencePx = px;
+    fenceRow = from;
+    fenceEnd = end;
+    fenceKind = kind;
+    fenceOk = true;
+    if (pollTimer) clearTimeout(pollTimer);
+    pollTimer = setTimeout(poll, 1);
+  }
+  // Between animation frames the fence is checked every few milliseconds, so that the GPU time of a band
+  // is known to a few milliseconds, not to the next animation frame.
+  function poll() {
+    pollTimer = 0;
+    if (!fence || lost) return;
+    if (fenceDone()) kick();
+    else if (performance.now() - fenceT0 < 400) pollTimer = setTimeout(poll, 2);
+  }
+  function fenceDone() {
+    if (!fence) return true;
+    var s = gl.clientWaitSync(fence, 0, 0), now = performance.now();
+    if (s === gl.TIMEOUT_EXPIRED) {
+      fenceSeen = now;
+      return false;
+    }
+    gl.deleteSync(fence);
+    fence = null;
+    if (pollTimer) {
+      clearTimeout(pollTimer);
+      pollTimer = 0;
+    }
+    // finished between the last check that found it running and now; when the page was busy and the
+    // checks were far apart, the earlier end of that interval is used
+    var ms = Math.min(now, fenceSeen + 4) - fenceT0;
+    var changed = fenceOk && s !== gl.WAIT_FAILED && measured(ms, now);
+    if (deferBlit && fenceEnd) {
+      deferBlit = false;
+      calibrating = false;
+      if (!changed) needBlit = true;
+    }
+    return true;
+  }
+
+  // A band took ms from submission to its fence: the next band is sized from it, and at the end of a
+  // frame the scale is checked. Returns true when the scale changed.
+  function measured(ms, now) {
+    if (fenceKind === 1) return false; // building the pipeline: measures nothing
+    // The round trip of a fence is not part of a band's cost: a few ms on most GPUs, but more where the
+    // browser learns late that the GPU has finished, or where the GPU process is busy. It is timed on the
+    // one-pixel warm-up draws, and the smallest time seen (those, and every band since) is subtracted: a
+    // round trip that happened to be slow would make the bands look cheaper than they are. For the same
+    // reason bands grow at most twofold.
+    if (fenceKind === 2) {
+      latMs = latN++ ? Math.min(latMs, ms) : ms;
+      return false;
+    }
+    latMs = Math.min(latMs, ms);
+    var gpu = Math.max(ms - latMs, 0.25), c = gpu / fencePx;
+    batchPx = clamp(BATCH_MS / c, W, Math.max(batchPx, fencePx) * 2);
+    if (fenceRow === 0) firstPx = batchPx;
+    sampleMs += gpu;
+    samplePx += fencePx;
+    c = sampleMs / samplePx; // the frame so far: rows differ a lot in cost (sky, shapes, floor)
+    // far too expensive: the frame has already cost three times FRAME_MS (what it has cost, not what its
+    // first bands extrapolate to: one late band is not taken for a frame three times too expensive)
+    var far = sampleMs > 3 * FRAME_MS;
+    if (fenceEnd || far) return rescale(c, now, fenceEnd, far);
+    return false;
+  }
+
+  // The scale at which a frame costs FRAME_MS, from the cost per pixel c (ms). It is lowered at once for a
+  // frame that costs more than three times FRAME_MS, and otherwise only when two frames in a row are slow:
+  // one slow frame can be a hiccup of the GPU process or a GPU that is still clocking up. It is raised only
+  // by a clear margin, at most six times, and not within 3 s of lowering it. end: the frame is complete.
+  function rescale(c, now, end, far) {
+    var cw = canvas.clientWidth, ch = canvas.clientHeight;
+    if (cw < 2 || ch < 2) return false;
+    var lo = minScale();
+    var want = clamp(Math.sqrt(FRAME_MS / (c * cw * ch)), lo, Math.max(lo, maxScale));
+    var first = calibrating;
+    calibrating = false;
+    var slow = want < scale * 0.87 && scale > lo;
+    if (slow && (far || slowFrames > 0)) {
+      scale = want;
+      lastDown = now;
+      slowFrames = 0;
+      touch();
+      return true;
+    }
+    if (!end) return false; // the frame goes on
+    slowFrames = slow ? 1 : 0;
+    if (want > scale * 1.15 && scale < maxScale && ups < 6 && (first || now - lastDown > 3000)) {
+      scale = want;
+      ups++;
+      touch();
+      return true;
+    }
+    return false;
+  }
+
+  function showStats(now) {
     var viewName = L["v" + st.view];
-    var tail = accN < AA_FRAMES || interacting ? (fps ? (fps < 10 ? fps.toFixed(1) : Math.round(fps)) + " fps" : "\u2026") : fmt(L.aa, { a: accN });
+    var tail = accN < AA_FRAMES ? (fps ? (fps < 10 ? fps.toFixed(1) : Math.round(fps)) + " fps" : "\u2026") : fmt(L.aa, { a: accN });
     var line = fmt(L.stats, { n: prims.length, k: st.k.toFixed(2), view: viewName, res: W + "\u00d7" + H, fps: tail });
     if (probe) {
       var pl = probe.status === 1 ? fmt(L.probe, { s: probe.steps, t: probe.t.toFixed(2) }) : probe.status === 0 ? fmt(L.probeMiss, { s: probe.steps }) : fmt(L.probeOut, { s: probe.steps });
@@ -1116,66 +1385,233 @@
     if (flashMsg && now < flashUntil) line += "\n" + flashMsg;
     else if (flashMsg) { flashMsg = ""; }
     statsEl.textContent = line;
-    return accN < AA_FRAMES || (flashMsg !== "");
   }
 
-  var visible = false, raf = 0, started = false, tried = false;
-  // At most one frame in flight: a fence tells when the GPU has finished the previous frame, so
-  // slow GPUs do not queue up work, and the time between renders measures the real frame cost.
-  var fence = null;
+  // one animation frame of work; returns true while there is more to do
+  function frame(now) {
+    var cw = canvas.clientWidth, ch = canvas.clientHeight;
+    if (cw < 2 || ch < 2) return false;
+    if (!scale) scale = firstScale(cw, ch);
+    var w = dim(cw, scale), h = dim(ch, scale);
+    if (w !== W || h !== H) allocate(w, h);
+    // a change starts the frame again, except that a first frame under way is finished first, so that
+    // continuous input on a slow GPU still shows images (one frame late)
+    if (dirty && (row === 0 || accN > 0)) {
+      dirty = false;
+      accN = 0;
+      row = 0;
+    }
+    updateBasis();
+    if (warm) {
+      warmUp();
+      return true;
+    }
+    if (needBlit && row === 0 && accN > 0) blit();
+    needBlit = false;
+    if (accN < AA_FRAMES) band(now);
+    showStats(now);
+    return accN < AA_FRAMES || flashMsg !== "";
+  }
+
+  var visible = false, raf = 0, tried = false;
+  var ready = false, lost = false, paused = false, gen = 0, losses = [];
   function tick(now) {
     raf = 0;
-    if (gl.isContextLost()) return;
-    if (fence) {
-      if (gl.clientWaitSync(fence, 0, 0) === gl.TIMEOUT_EXPIRED) {
-        if (visible && !document.hidden) raf = requestAnimationFrame(tick);
-        return;
-      }
-      gl.deleteSync(fence);
-      fence = null;
+    if (!ready || lost || paused || gl.isContextLost()) return;
+    if (fence && !fenceDone()) {
+      kick();
+      return;
     }
-    var more = render(now);
-    if (more && visible && !document.hidden) raf = requestAnimationFrame(tick);
-    else lastT = 0;
+    if (frame(now) || fence) kick();
+    else {
+      lastSampleT = 0;
+      slowFrames = 0; // a slow frame before a pause does not count with one after it (a GPU clocking up)
+    }
   }
   function kick() {
-    if (started && !raf && visible && !document.hidden) raf = requestAnimationFrame(tick);
+    if (!raf && ready && !lost && !paused && visible && !document.hidden) raf = requestAnimationFrame(tick);
   }
-  document.addEventListener("visibilitychange", function () { if (!document.hidden) touch(); });
-  canvas.addEventListener("webglcontextlost", function (e) { e.preventDefault(); });
-  if (window.ResizeObserver) new ResizeObserver(function () { touch(); }).observe(canvas);
+  // back on screen: an unfinished accumulation goes on, a finished image is shown again (one cheap draw)
+  function revisit() {
+    if (accN > 0 && row === 0) needBlit = true;
+    lastSampleT = 0;
+    kick();
+  }
+  function status(msg) {
+    statsEl.textContent = msg;
+  }
+
+  // Creates the programs and the GL objects, at the start and after a lost context has been restored,
+  // without making the page wait while the driver compiles.
+  function boot() {
+    var g = ++gen;
+    ready = false;
+    if (gl.isContextLost()) return; // the restore handler boots again
+    status(L.compiling); // also shown while the first draw builds the pipeline (see warmUp)
+    parExt = gl.getExtension("KHR_parallel_shader_compile");
+    if (!parExt && quickCompile) {
+      // SwiftShader compiles in a few milliseconds (its code generation runs at the first draw): at once, in
+      // the task that created the context, rather than behind whatever the GPU process takes up meanwhile;
+      // the first draw waits until the status line is on screen
+      beginGL();
+      if (finish(g)) afterPaint(function () { if (g === gen && !lost && !gl.isContextLost()) startFrames(); });
+      return;
+    }
+    // The compile is issued, and the first query that can wait for it is made (COMPLETION_STATUS_KHR, or
+    // LINK_STATUS without the extension), once the status line is on screen.
+    afterPaint(function () {
+      if (g !== gen || lost || gl.isContextLost()) return;
+      beginGL();
+      if (!parExt) {
+        if (finish(g)) startFrames();
+        return;
+      }
+      (function wait() {
+        if (g !== gen || lost || gl.isContextLost()) return;
+        if (!compiled()) {
+          requestAnimationFrame(wait);
+          return;
+        }
+        if (finish(g)) startFrames();
+      })();
+    });
+  }
+  // runs fn once what the page shows now is on screen: after two animation frames, in a task of its own
+  function afterPaint(fn) {
+    requestAnimationFrame(function () {
+      requestAnimationFrame(function () { setTimeout(fn, 0); });
+    });
+  }
+  // the outcome of the compile; true when the programs are ready
+  function finish(g) {
+    var ok;
+    try {
+      ok = finishGL();
+    } catch (err) {
+      fail();
+      if (window.console) console.warn(err);
+      return false;
+    }
+    return ok && g === gen && !lost; // lost meanwhile: the restore handler starts again
+  }
+  // the frame loop, from the warm-up draws on
+  function startFrames() {
+    ready = true;
+    warm = 1 + LAT_N;
+    touch();
+  }
+  function resume() {
+    paused = false;
+    losses = [];
+    if (gl && !lost) boot();
+  }
+
+  // the renderer's name, unmasked where the browser masks it
+  function rendererName() {
+    var r = "";
+    try {
+      r = String(gl.getParameter(gl.RENDERER) || "");
+      if (/^webkit webgl$/i.test(r)) {
+        var dbg = gl.getExtension("WEBGL_debug_renderer_info");
+        if (dbg) r = String(gl.getParameter(dbg.UNMASKED_RENDERER_WEBGL) || "");
+      }
+    } catch (e) {
+      r = "";
+    }
+    return r;
+  }
+
+  document.addEventListener("visibilitychange", function () {
+    if (document.hidden) {
+      fenceOk = false;
+      lastSampleT = 0;
+    } else revisit();
+  });
+  // A lost context (a GPU reset, a driver update, the browser reclaiming memory) is restored by the
+  // browser if the page asks for it; everything is then created again, starting from the lowest
+  // resolution. After two losses within a minute rendering pauses until the picture is tapped.
+  canvas.addEventListener("webglcontextlost", function (e) {
+    e.preventDefault();
+    lost = true;
+    ready = false;
+    gen++;
+    if (raf) cancelAnimationFrame(raf);
+    raf = 0;
+    if (pollTimer) clearTimeout(pollTimer);
+    pollTimer = 0;
+    fence = null;
+    P = PB = null;
+    vao = accTex = accFb = null;
+    pend = null;
+    W = H = 0;
+    accN = 0;
+    row = 0;
+    needBlit = deferBlit = false;
+    // the next frame, once the context is back, is at the lowest resolution (and a probe placed meanwhile is
+    // traced for that frame)
+    safeMode = true;
+    resetCost();
+    var now = performance.now();
+    losses = losses.filter(function (t) { return now - t < 60000; });
+    losses.push(now);
+    status(L.lost);
+  });
+  canvas.addEventListener("webglcontextrestored", function () {
+    lost = false;
+    lastDown = performance.now();
+    if (losses.length >= 2) {
+      paused = true;
+      status(L.paused);
+      return;
+    }
+    boot();
+  });
+  var seenW = 0, seenH = 0;
+  if (window.ResizeObserver) {
+    new ResizeObserver(function () {
+      var cw = canvas.clientWidth, ch = canvas.clientHeight;
+      if (cw < 2 || ch < 2) return; // hidden
+      if (cw === seenW && ch === seenH) {
+        revisit();
+        return;
+      }
+      seenW = cw;
+      seenH = ch;
+      touch();
+    }).observe(canvas);
+  }
 
   function start() {
-    started = true;
     try {
       gl = canvas.getContext("webgl2", { antialias: false, alpha: false, depth: false, stencil: false, preserveDrawingBuffer: false });
     } catch (e) {
       gl = null;
     }
     if (!gl) {
-      started = false;
       fail();
       return;
     }
-    try {
-      initGL();
-    } catch (err) {
-      fail();
-      started = false;
-      if (window.console) console.warn(err);
-      return;
-    }
+    var rn = rendererName();
+    software = /swiftshader|llvmpipe|softpipe|basic render|software/i.test(rn); // no usable GPU: the lowest resolution from the start
+    quickCompile = /swiftshader/i.test(rn);
     statsEl.style.whiteSpace = "pre-line";
     loadPreset(0);
     refreshUI();
-    touch();
+    updateBasis();
+    resetCost();
+    boot();
   }
 
   if ("IntersectionObserver" in window) {
-    new IntersectionObserver(function (e) {
-      visible = e[0].isIntersecting;
-      if (visible && !tried) { tried = true; start(); }
-      else if (visible) touch();
+    new IntersectionObserver(function (entries) {
+      visible = entries[entries.length - 1].isIntersecting; // the latest change
+      if (!visible) {
+        fenceOk = false;
+        lastSampleT = 0;
+      } else if (!tried) {
+        tried = true;
+        start();
+      } else revisit();
     }).observe(canvas);
   } else {
     visible = true;
