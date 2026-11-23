@@ -1,0 +1,55 @@
+# Opens the home-page Lab on mobile-like browsers (WebKit with an iPhone profile on macOS and Linux, Chromium
+# with an Android profile) and records stalls, blocking WebGL calls, the stats line over time and errors per
+# tab. No AI and no API key involved. Triggered by pushes to ops/mobile or ops/mobilerun-<name>; the page URL
+# is in ops/mobile/url.txt (default: the live site). Results go to report/<branch>-<job>.
+name: Mobile check
+
+on:
+  push:
+    branches: ["ops/mobile", "ops/mobilerun-*"]
+
+permissions:
+  contents: write
+
+jobs:
+  mobile:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { os: macos-14, browser: webkit, device: "iPhone 15", name: mac-webkit }
+          - { os: ubuntu-latest, browser: webkit, device: "iPhone 15", name: linux-webkit }
+          - { os: ubuntu-latest, browser: chromium, device: "Pixel 7", name: linux-chromium }
+          - { os: macos-14, browser: chromium, device: "Pixel 7", name: mac-chromium }
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Install Playwright
+        shell: bash
+        run: |
+          cd ops/mobile && npm init -y >/dev/null && npm install --silent playwright@1.49.1
+          if [ "$RUNNER_OS" = "Linux" ]; then npx playwright install --with-deps ${{ matrix.browser }} >/dev/null; else npx playwright install ${{ matrix.browser }} >/dev/null; fi
+      - name: Measure
+        shell: bash
+        env:
+          REPORT_DIR: ${{ runner.temp }}/rep
+        run: |
+          cd ops/mobile
+          URL=$(cat url.txt 2>/dev/null || echo https://amadeusyzh.github.io/Takuyy/) node measure.js ${{ matrix.browser }} "${{ matrix.device }}" 2>&1 | tee "$RUNNER_TEMP/measure.txt" || true
+      - name: Publish report
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          REP="$RUNNER_TEMP/rep"; mkdir -p "$REP"; cp "$RUNNER_TEMP/measure.txt" "$REP/" || true
+          cd "$REP" && git init -q && git add -A \
+            && git -c user.name=yangzehua -c user.email=yangzehua@akane.waseda.jp commit -q -m "mobile report" \
+            && git -c http.extraheader="AUTHORIZATION: basic $(printf 'x-access-token:%s' "$GH_TOKEN" | base64 | tr -d '\n')" \
+                 push -q -f "https://github.com/$GITHUB_REPOSITORY" "HEAD:refs/heads/report/${GITHUB_REF_NAME#ops/}-${{ matrix.name }}"
+          echo "report pushed"
