@@ -314,13 +314,13 @@ def fig_frames(lang):
             if k == 1 and key != "world":
                 aa = np.radians(np.linspace(P0[key][0], yaw[key], 30))
                 ax.plot(-np.sin(aa) * d, np.cos(aa) * d, np.full_like(aa, z), color=cols[key], lw=1.8, ls=":")
-        for key, dx, dz in (("world", 0, 0.45), ("tag", 0, -0.4), ("body", 0.35, -0.3), ("head", 0, 0.32 if k else 0.2)):
+        for key, dx, dz in (("world", 0, 0.36), ("tag", 0, -0.4), ("body", 0.35, -0.3), ("head", -0.15 if k else 0, 0.42 if k else 0.2)):
             c = cen[key]
             ax.text(c[0] + dx, c[1], c[2] + dz, names[key], color=cols[key], fontsize=13, ha="center", weight="bold")
         ax.set_xlim(-1.5, 1.4); ax.set_ylim(-0.5, 2.4); ax.set_zlim(0.95, 2.1)
         ax.set_box_aspect((2.9, 2.9, 1.15), zoom=1.35)
         ax.view_init(elev=42, azim=-98)
-        ax.set_title(title, fontsize=14, y=0.98)
+        ax.set_title(title, fontsize=14, y=1.04)
     fig.text(0.5, 0.04, L(lang, "dashed: central 41\u00b0 of the view (Android XR guideline); dotted arcs: how each panel moved; ring: 1 m",
                           "虚线：视野中央 41\u00b0（Android XR 指南）；点线弧：各面板的移动；圆环：1 m",
                           "破線：視野中央の 41\u00b0（Android XR ガイドライン）；点線の弧：各パネルの動き；円：1 m"), ha="center", fontsize=12, color=C["dark"])
