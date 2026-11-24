@@ -585,6 +585,9 @@
       if (gl.isContextLost()) return null;
       throw new Error(gl.getShaderInfoLog(o.f) || gl.getShaderInfoLog(o.v) || gl.getProgramInfoLog(p));
     }
+    // the shaders go with the program once it is linked
+    gl.deleteShader(o.v);
+    gl.deleteShader(o.f);
     var u = {};
     var n = gl.getProgramParameter(p, gl.ACTIVE_UNIFORMS) || 0;
     for (var i = 0; i < n; i++) {
@@ -780,10 +783,11 @@
   // compiled variants by key ({ o: compile under way, P: program, t0, painted }), the key of P, the key of pend
   var progs = {}, curKey = "", pendKey = "";
   // iPhones and iPads start with the light variant, and go on to the full one only if the light one showed its
-  // first picture within LITE_MS; a variant still compiling after STUCK_MS sends them back to the light ones
+  // first picture within LITE_MS; a variant still compiling after STUCK_MS sends them back to the light ones,
+  // and one not ready after INTERIM_MS is drawn in its light version meanwhile
   var appleMobile = /iP(hone|ad|od)/.test(navigator.userAgent) || (/Macintosh/.test(navigator.userAgent) && navigator.maxTouchPoints > 1);
   var liteMode = false, liteT0 = 0, liteJudged = false;
-  var LITE_MS = 5000, STUCK_MS = 15000;
+  var LITE_MS = 5000, STUCK_MS = 15000, INTERIM_MS = 1500;
   var uniformsA = new Float32Array(MAXP * 4), uniformsB = new Float32Array(MAXP * 4), uniformsC = new Float32Array(MAXP * 4), uniformsR = new Float32Array(MAXP * 9);
   var probeArr = new Float32Array(NPROBE * 4);
 
@@ -1461,9 +1465,9 @@
   }
   // Switches to the variant the picture needs. One that is not compiled yet is compiled in the background
   // (COMPLETION_STATUS_KHR) while the current one goes on drawing; without the extension the compile is
-  // waited for once the status line has been painted. On an iPhone or iPad the light version of the same
-  // variant is compiled alongside and drawn meanwhile, since it is ready much sooner. Returns true while a
-  // variant is being compiled.
+  // waited for once the status line has been painted. On an iPhone or iPad, if the variant is not ready
+  // within INTERIM_MS, the light version of it is compiled as well and drawn meanwhile, since it is ready
+  // much sooner. Returns true while a variant is being compiled.
   function variants(now) {
     var k = wantKey();
     if (k === curKey) {
@@ -1482,7 +1486,7 @@
         liteMode = true; // too slow here: light variants only
         return true;
       }
-      if (curKey !== "l" + k && readyVariant("l" + k, now)) useVariant("l" + k);
+      if (now - progs[k].t0 > INTERIM_MS && curKey !== "l" + k && readyVariant("l" + k, now)) useVariant("l" + k);
     }
     return true;
   }
@@ -1508,6 +1512,21 @@
   function useVariant(k) {
     P = progs[k].P;
     curKey = k;
+    // An iPhone or iPad keeps only the programs it may still draw with: every compiled program holds GPU
+    // memory in the GPU process that all canvases of the page share.
+    if (appleMobile) {
+      var keep = wantKey();
+      for (var key in progs) {
+        if (key === k || key === keep || key === "l" + keep) continue;
+        var c = progs[key];
+        if (c.o) {
+          gl.deleteShader(c.o.v);
+          gl.deleteShader(c.o.f);
+        }
+        gl.deleteProgram(c.P ? c.P.p : c.o.p);
+        delete progs[key];
+      }
+    }
     warm = 1 + LAT_N; // the new program builds its pipeline on one pixel first
     dirty = true;
   }
