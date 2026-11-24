@@ -17,10 +17,10 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - { os: macos-15, test: sdf }
-          - { os: macos-15, test: lab }
-          - { os: macos-26, test: sdf }
-          - { os: macos-26, test: lab }
+          - { os: macos-26, test: "page:perf.html", runner: sim, name: m26-sim-perf }
+          - { os: macos-15, test: "page:perf.html", runner: sim, name: m15-sim-perf }
+          - { os: macos-26, test: "page:perf.html", runner: webkit, name: m26-webkit-perf }
+          - { os: macos-15, test: "page:perf.html", runner: webkit, name: m15-webkit-perf }
     runs-on: ${{ matrix.os }}
     timeout-minutes: 40
     steps:
@@ -28,8 +28,17 @@ jobs:
         with:
           persist-credentials: false
       - name: Run in the simulator
+        if: matrix.runner == 'sim'
         shell: bash
-        run: bash ops/ios/run.sh ${{ matrix.test }} "$RUNNER_TEMP/rep"
+        run: bash ops/ios/run.sh "${{ matrix.test }}" "$RUNNER_TEMP/rep"
+      - name: Run in Playwright WebKit
+        if: matrix.runner == 'webkit'
+        shell: bash
+        run: |
+          mkdir -p "$RUNNER_TEMP/rep"; cd ops/ios && npm init -y > /dev/null && npm install --silent playwright@latest && npx playwright install webkit > /dev/null
+          P="pages/${{ matrix.test }}"; P="pages/${P#pages/page:}"
+          sed -i.bak 's/var TIMEOUT = 45000;/var TIMEOUT = 150000;/' "$P"
+          node wk.js "$P" 2>&1 | tee "$RUNNER_TEMP/rep/webkit.txt" || true
       - name: Publish report
         if: always()
         shell: bash
@@ -40,5 +49,5 @@ jobs:
           cd "$REP" && git init -q && git add -A \
             && git -c user.name=ops-bot -c user.email=ops-bot@users.noreply.github.com commit -q -m "ios simulator report" \
             && git -c http.extraheader="AUTHORIZATION: basic $(printf 'x-access-token:%s' "$GH_TOKEN" | base64 | tr -d '\n')" \
-                 push -q -f "https://github.com/$GITHUB_REPOSITORY" "HEAD:refs/heads/report/${GITHUB_REF_NAME#ops/}-${{ matrix.os }}-${{ matrix.test }}"
+                 push -q -f "https://github.com/$GITHUB_REPOSITORY" "HEAD:refs/heads/report/${GITHUB_REF_NAME#ops/}-${{ matrix.name }}"
           echo "report pushed"

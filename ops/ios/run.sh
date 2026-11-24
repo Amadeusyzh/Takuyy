@@ -8,25 +8,25 @@ SITE=https://amadeusyzh.github.io/Takuyy
 PORT=8123
 xcodebuild -version > "$OUT/xcode.txt" 2>&1; xcrun simctl list runtimes > "$OUT/runtimes.txt" 2>&1
 cp "$HERE"/hooks.js "$HERE"/auto-*.js "$WWW/"
-if [ "$TEST" = sdf ]; then
-  curl -fsSL "$SITE/labtest/sdf.html?r=$RANDOM" -o "$WWW/page.html"
-  python3 - "$WWW/page.html" <<'PY'
+if [ "$TEST" = sdf ] || [ "${TEST#page:}" != "$TEST" ]; then
+  if [ "$TEST" = sdf ]; then curl -fsSL "$SITE/labtest/sdf.html?r=$RANDOM" -o "$WWW/page.html"; else cp "$HERE/pages/${TEST#page:}" "$WWW/page.html"; fi
+  python3 - "$WWW/page.html" <<'PY2'
 import sys
 p = sys.argv[1]; s = open(p, encoding="utf-8").read()
 s = s.replace("var TIMEOUT = 45000;", "var TIMEOUT = 150000;")
 s = s.replace("<head>", '<head>\n<script src="/hooks.js"></script>', 1)
 s = s.replace("</body>", '<script src="/auto-sdf.js"></script>\n</body>', 1)
 open(p, "w", encoding="utf-8").write(s)
-PY
+PY2
 else
   curl -fsSL "$SITE/?r=$RANDOM" -o "$WWW/page.html"
-  python3 - "$WWW/page.html" "$SITE/" <<'PY'
+  python3 - "$WWW/page.html" "$SITE/" <<'PY2'
 import sys
 p, base = sys.argv[1], sys.argv[2]; s = open(p, encoding="utf-8").read()
 i = s.index("<head>") + len("<head>")
 s = s[:i] + '\n<base href="%s">\n<script src="http://localhost:8123/hooks.js"></script>\n<script src="http://localhost:8123/auto-lab.js"></script>\n' % base + s[i:]
 open(p, "w", encoding="utf-8").write(s)
-PY
+PY2
 fi
 UDID=$(xcrun simctl list devices available -j | python3 -c '
 import json, sys
