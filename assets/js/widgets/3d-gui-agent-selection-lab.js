@@ -24,7 +24,7 @@
       sim: "Simulated: ray jitter 0.35\u00b0 + 0.6\u00b0 kick on confirm; gaze error ~1\u00b0; dwell 450 ms; touch reach 0.65 m, 1 cm finger noise, depth misjudgment; toy arm model.",
       idle: "Pick a technique and press Start.",
       trial: "trial", hits: "hits", errors: "errors", tp: "throughput", load: "arm load", ce: "CE",
-      reach: "out of reach: step closer", stepped: "stepped closer", midas: "Midas touch!", miss: "miss", depth: "depth misjudged",
+      reach: "out of reach: step closer", stepped: "stepped closer", midas: "Midas touch!", miss: "miss", depth: "depth misjudged", timeout: "too slow (10 s)",
       done: "Block done. Try another technique and compare.",
       time: "time per target [s]", err: "errors", summary: "Your blocks", errRate: "error rate"
     },
@@ -37,7 +37,7 @@
       sim: "\u6a21\u62df\uff1a\u5c04\u7ebf\u6296\u52a8 0.35\u00b0 + \u786e\u8ba4\u65f6 0.6\u00b0 \u504f\u79fb\uff1b\u6ce8\u89c6\u8bef\u5dee\u7ea6 1\u00b0\uff1b\u9a7b\u7559 450 ms\uff1b\u89e6\u63a7\u53ef\u53ca 0.65 m\u3001\u624b\u6307\u566a\u58f0 1 cm\u3001\u6df1\u5ea6\u8bef\u5224\uff1b\u7b80\u5316\u624b\u81c2\u6a21\u578b\u3002",
       idle: "\u9009\u62e9\u4e00\u79cd\u6280\u672f\uff0c\u7136\u540e\u6309\u201c\u5f00\u59cb\u201d\u3002",
       trial: "\u8bd5\u6b21", hits: "\u547d\u4e2d", errors: "\u9519\u8bef", tp: "\u541e\u5410\u91cf", load: "\u624b\u81c2\u8d1f\u8377", ce: "CE",
-      reach: "\u591f\u4e0d\u5230\uff1a\u8d70\u8fd1\u4e00\u4e9b", stepped: "\u5df2\u8d70\u8fd1", midas: "\u70b9\u77f3\u6210\u91d1\uff01", miss: "\u672a\u547d\u4e2d", depth: "\u6df1\u5ea6\u8bef\u5224",
+      reach: "\u591f\u4e0d\u5230\uff1a\u8d70\u8fd1\u4e00\u4e9b", stepped: "\u5df2\u8d70\u8fd1", midas: "\u70b9\u77f3\u6210\u91d1\uff01", miss: "\u672a\u547d\u4e2d", depth: "\u6df1\u5ea6\u8bef\u5224", timeout: "\u8d85\u65f6\uff0810 s\uff09",
       done: "\u672c\u7ec4\u5b8c\u6210\u3002\u6362\u4e00\u79cd\u6280\u672f\u6bd4\u8f83\u4e00\u4e0b\u3002",
       time: "\u5404\u76ee\u6807\u7528\u65f6 [s]", err: "\u9519\u8bef", summary: "\u4f60\u7684\u5404\u7ec4\u7ed3\u679c", errRate: "\u9519\u8bef\u7387"
     },
@@ -50,7 +50,7 @@
       sim: "\u30b7\u30df\u30e5\u30ec\u30fc\u30b7\u30e7\u30f3\uff1a\u30ec\u30a4\u306e\u63fa\u308c 0.35\u00b0 + \u78ba\u5b9a\u6642 0.6\u00b0 \u306e\u305a\u308c\uff1b\u8996\u7dda\u8aa4\u5dee \u7d04 1\u00b0\uff1b\u30c9\u30a6\u30a7\u30eb 450 ms\uff1b\u30bf\u30c3\u30c1\u306e\u5c4a\u304f\u7bc4\u56f2 0.65 m\u3001\u6307\u5148\u30ce\u30a4\u30ba 1 cm\u3001\u5965\u884c\u304d\u306e\u8aa4\u5224\u65ad\uff1b\u7c21\u6613\u8155\u30e2\u30c7\u30eb\u3002",
       idle: "\u624b\u6cd5\u3092\u9078\u3093\u3067\u300c\u958b\u59cb\u300d\u3092\u62bc\u3057\u3066\u304f\u3060\u3055\u3044\u3002",
       trial: "\u8a66\u884c", hits: "\u6210\u529f", errors: "\u30a8\u30e9\u30fc", tp: "\u30b9\u30eb\u30fc\u30d7\u30c3\u30c8", load: "\u8155\u306e\u8ca0\u8377", ce: "CE",
-      reach: "\u5c4a\u304b\u306a\u3044\uff1a\u8fd1\u3065\u304f", stepped: "\u8fd1\u3065\u3044\u305f", midas: "\u30df\u30c0\u30b9\u30bf\u30c3\u30c1\uff01", miss: "\u5916\u308c", depth: "\u5965\u884c\u304d\u3092\u8aa4\u5224\u65ad",
+      reach: "\u5c4a\u304b\u306a\u3044\uff1a\u8fd1\u3065\u304f", stepped: "\u8fd1\u3065\u3044\u305f", midas: "\u30df\u30c0\u30b9\u30bf\u30c3\u30c1\uff01", miss: "\u5916\u308c", depth: "\u5965\u884c\u304d\u3092\u8aa4\u5224\u65ad", timeout: "\u6642\u9593\u5207\u308c\uff0810 s\uff09",
       done: "\u30d6\u30ed\u30c3\u30af\u7d42\u4e86\u3002\u5225\u306e\u624b\u6cd5\u3067\u6bd4\u3079\u3066\u307f\u307e\u3057\u3087\u3046\u3002",
       time: "\u30bf\u30fc\u30b2\u30c3\u30c8\u3054\u3068\u306e\u6642\u9593 [s]", err: "\u30a8\u30e9\u30fc", summary: "\u3042\u306a\u305f\u306e\u30d6\u30ed\u30c3\u30af", errRate: "\u30a8\u30e9\u30fc\u7387"
     }
@@ -296,6 +296,7 @@
         }
         var c = cursor();
         curLoad = armLoad(c);
+        if (state === "running" && (now - tStart) / 1000 + extraTime > 10) finishTrial(false, T.timeout, -1);
         if (state === "running") {
           ce += 100 * dt / endurance(curLoad);
           loadSum += curLoad * dt; loadT += dt;
@@ -410,7 +411,7 @@
       var g = chart.getContext("2d");
       g.setTransform(dpr, 0, 0, dpr, 0, 0);
       g.fillStyle = "#fff"; g.fillRect(0, 0, W, CH);
-      var left = 34, right = 8, top = 18, bottom = 38, n = BUTTONS.length;
+      var left = 34, right = 16, top = 18, bottom = 38, n = BUTTONS.length;
       var pw = W - left - right, ph = CH - top - bottom, bw = pw / n;
       var mt = [], er = [], ct = [];
       for (var k = 0; k < n; k++) { mt.push(0); er.push(0); ct.push(0); }
@@ -456,6 +457,8 @@
     canvas.addEventListener("pointerleave", function (ev) { if (ev.pointerType === "mouse") aimPx = null; });
     startBtn.addEventListener("click", start);
 
+    // test hook: screen position of the current target (used by automated checks only)
+    root.labTarget = function () { if (state !== "running") return null; var b = BUTTONS[seq[ti]]; var q = proj([b.x, b.y, b.z]); var r = canvas.getBoundingClientRect(); return [q[0] + r.left, q[1] + r.top]; };
     refreshButtons(); setHelp();
     stats.textContent = T.idle;
     if ("IntersectionObserver" in window) new IntersectionObserver(function (es) { visible = es[0].isIntersecting; }).observe(root);
