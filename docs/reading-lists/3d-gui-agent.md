@@ -350,3 +350,31 @@
 - LaViola et al., *3D User Interfaces: Theory and Practice*, 2nd ed.（第 7–9 章）
 - I. S. MacKenzie, *Human-Computer Interaction: An Empirical Research Perspective*（Fitts 定律、吞吐量与文本输入方法论）
 - 四个平台的设计指南（见 3.3），以及 W3C XAUR 与 [XR Access](https://xraccess.org/)
+
+## 第 1 篇：研究愿景（`3d-gui-agent-01-research-vision`）
+
+本篇是专栏的入口：给出 3D GUI 智能体的定义、范围（包括与不包括什么）、动机（操作代价、普及障碍、无障碍）、从二维迁移与失效之处、自主程度谱系（讲解 -> 指出位置 -> 逐步指导 -> 重排布局 -> 提议后执行 -> 代为执行）以及开放问题。证据均来自第 2–4 篇，详细条目见上面各节；这里只列出支撑核心论点的少数工作。状态截至 2026-11-24。
+
+| 论文 | 出处 | 年份 | 链接 | 一句话说明（支撑的论点） |
+| --- | --- | --- | --- | --- |
+| ★ 3D User Interfaces: Theory and Practice, 2nd ed.（LaViola, Kruijff, McMahan, Bowman, Poupyrev） | 书，Addison-Wesley | 2017 | [出版社](https://www.informit.com/store/3d-user-interfaces-theory-and-practice-9780134034478) | 3D 交互任务分类：智能体动作词汇的来源 |
+| ★ AppAgent（C. Zhang et al.） | CHI | 2025 | [arXiv:2312.13771](https://arxiv.org/abs/2312.13771) | 元素级动作空间（2.2% -> 48.9%）：可迁移到 3D 的配方 |
+| AndroidWorld（Rawles et al.） | ICLR | 2025 | [arXiv:2405.14573](https://arxiv.org/abs/2405.14573) | 参数化任务 + 程序化成功检查 |
+| OSWorld（Xie et al.） | NeurIPS D&B | 2024 | [arXiv:2404.07972](https://arxiv.org/abs/2404.07972) | 基于执行的评测；从 12% 到超过人类基线 |
+| ★ Look Before You Leap（Orienter, S. Li et al.） | FSE（PACMSE） | 2026 | [DOI](https://doi.org/10.1145/3808134) | VR 帧中 GUI 元素定位（IoU 0.75 下 F1 44.10%）；arXiv 标题已使用 “Spatial Intelligent Agent” |
+| ★ DuoZone（Qian et al.） | IEEE TVCG | 2026 | [arXiv:2511.15676](https://arxiv.org/abs/2511.15676) | 语言驱动的窗口布局 + 确认后执行：“提议后执行”模式的证据 |
+| Revisiting put-that-there via LLMs（Bovo et al.） | ISMAR Adjunct | 2025 | [arXiv:2511.02378](https://arxiv.org/abs/2511.02378) | 语音 + 指向 -> 窗口动作（尚无用户研究） |
+| NavAI（Qin, DiGiovanni） | ASE Workshops | 2025 | [arXiv:2601.03251](https://arxiv.org/abs/2601.03251) | 语言 + VR 截图的闭环，但只做移动 |
+| SIAgent（Z. Wang, Gu, Lu） | IEEE TVCG | 2026 | [arXiv:2603.00522](https://arxiv.org/abs/2603.00522) | 智能体根据眼手意图执行 VR 操作（无语言） |
+| ★ VRSight（Killough et al.） | UIST | 2025 | [DOI](https://doi.org/10.1145/3746059.3747641) | 盲人与低视力用户菜单任务完成率 11%：描述不等于操作 |
+| GazePointAR（J. Lee et al.） | CHI | 2024 | [arXiv:2404.08213](https://arxiv.org/abs/2404.08213) | 注视与指向消解指示代词（只回答，不操作） |
+| Guided Reality（Zhao et al.） | UIST | 2025 | [arXiv:2508.03547](https://arxiv.org/abs/2508.03547) | 空间引导的视觉词汇（物理任务，不在范围内） |
+| VRCopilot（L. Zhang et al.） | UIST | 2024 | [DOI](https://doi.org/10.1145/3654777.3676451) | 完全自动降低主体感 |
+| "What Can I Do for You"（T. Zhang et al.） | arXiv 预印本 | 2026 | [arXiv:2609.13727](https://arxiv.org/abs/2609.13727) | VR 游戏中自主代玩降低负荷，也降低乐趣 |
+| "Do I Just Tap My Headset?"（Khurana et al.） | IMWUT | 2023 | [DOI](https://doi.org/10.1145/3631451) | 新手错误多来自不知道操作顺序 |
+| Selection-based Text Entry in VR（Speicher et al.） | CHI | 2018 | [DOI](https://doi.org/10.1145/3173574.3174221) | VR 键盘 5.3–15.4 wpm |
+| Bumpy Ride?（Sasalovici et al.） | CHI | 2025 | [DOI](https://doi.org/10.1145/3706598.3714077) | 头显选择错误率：静止 8.8–23.5%，行驶 20.4–36.0% |
+| How do People Type on Mobile Devices?（Palin et al.） | MobileHCI | 2019 | [DOI](https://doi.org/10.1145/3338286.3340120) | 手机 36.2 wpm，未更正错误 2.3% |
+| Text Entry for XR Trove（Bhatia et al.） | CHI | 2025 | [DOI](https://doi.org/10.1145/3706598.3713382) | 137 种 XR 输入技术平均 20.36 wpm |
+
+**厂商来源（产品，不是论文）**：[Introducing Galaxy XR](https://blog.google/products/android/samsung-galaxy-xr)（Google，2025-10）；[Introducing Meta XR Operator](https://developers.meta.com/horizon/blog/meta-xr-operator-close-the-build-test-verify-loop-for-vr/)（Meta，2026-08-18）；[About visionOS 27 updates](https://support.apple.com/en-us/149067)（Apple）。

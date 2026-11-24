@@ -66,10 +66,10 @@ def blank(ax):
 # ------------------------------------------------------------------ 1. the loop, 2D vs 3D
 def fig_loop():
     for lang in LANGS:
-        fig, ax = plt.subplots(figsize=(15, 8.4))
+        fig, ax = plt.subplots(figsize=(9.6, 11.2))
         blank(ax)
-        ax.set_xlim(-0.6, 15.0)
-        ax.set_ylim(0, 8.4)
+        ax.set_xlim(0, 10)
+        ax.set_ylim(-0.3, 11.6)
         stages = [
             ("observe", L(lang, "Observe", "观察", "観察")),
             ("ground", L(lang, "Ground", "定位", "グラウンディング")),
@@ -77,18 +77,18 @@ def fig_loop():
             ("verify", L(lang, "Verify", "验证", "検証")),
         ]
         phone = {
-            "observe": L(lang, "screenshot + UI tree\nthe whole screen", "截图 + UI 树\n整个屏幕", "スクリーンショット + UI ツリー\n画面全体"),
+            "observe": L(lang, "screenshot + UI tree\nthe whole screen", "截图 + UI 树\n整个屏幕", "スクリーンショット\n+ UI ツリー、画面全体"),
             "ground": L(lang, "element -> pixel (x, y)", "元素 -> 像素 (x, y)", "要素 -> ピクセル (x, y)"),
             "act": L(lang, "tap, type, swipe", "点击、输入、滑动", "タップ、入力、スワイプ"),
             "verify": L(lang, "next screenshot;\nthe screen waits", "下一张截图；\n屏幕静止等待", "次のスクリーンショット；\n画面は待ってくれる"),
         }
         head = {
-            "observe": L(lang, "per-eye view + scene graph\nonly the field of view,\nchanges with every head turn",
-                         "单眼视图 + 场景图\n只有视野内的部分，\n随每次转头而变化",
-                         "片目の視界 + シーングラフ\n視野内だけ、\n頭を動かすたびに変わる"),
-            "ground": L(lang, "element -> object in 3D\nsmall, far, occluded\nor behind the user",
-                        "元素 -> 3D 中的物体\n可能很小、很远、被遮挡\n或在用户身后",
-                        "要素 -> 3D 空間の物体\n小さい、遠い、隠れている、\nまたはユーザーの背後"),
+            "observe": L(lang, "per-eye view + scene graph;\nonly the field of view,\nchanges with every head turn",
+                         "单眼视图 + 场景图；\n只有视野内的部分，\n随每次转头而变化",
+                         "片目の視界 + シーングラフ；\n視野内だけ、\n頭を動かすたびに変わる"),
+            "ground": L(lang, "element -> object in 3D;\nsmall, far, occluded\nor behind the user",
+                        "元素 -> 3D 中的物体；\n可能很小、很远、被遮挡\n或在用户身后",
+                        "要素 -> 3D 空間の物体；\n小さい、遠い、隠れている、\nまたはユーザーの背後"),
             "act": L(lang, "ray, pinch, grab,\n6-DoF pose, turn the head",
                      "射线、捏合、抓取、\n6 自由度位姿、转头",
                      "レイ、ピンチ、グラブ、\n6 自由度の姿勢、頭を回す"),
@@ -96,38 +96,38 @@ def fig_loop():
                         "内容可能已移动；\n用户在界面里等待",
                         "コンテンツが動いたかも；\nユーザーは中で待つ"),
         }
-        for cx, title, desc, col, note_col in ((3.3, L(lang, "Phone GUI agent", "手机 GUI 智能体", "スマートフォンの GUI エージェント"), phone, C["a"], "#333"),
-                                               (11.0, L(lang, "3D GUI agent (headset)", "3D GUI 智能体（头显）", "3D GUI エージェント（ヘッドセット）"), head, C["a"], ORANGE)):
-            ax.text(cx, 8.05, title, ha="center", va="center", fontsize=16, weight="bold", color=C["dark"])
-            dx, dy = (2.1, 1.45) if cx > 7 else (2.0, 1.45)
-            w, h = (3.3, 2.0) if cx > 7 else (3.1, 1.6)
-            pos = {"observe": (cx - dx, 4.3 + dy), "ground": (cx + dx, 4.3 + dy),
-                   "act": (cx + dx, 4.3 - dy), "verify": (cx - dx, 4.3 - dy)}
+        panels = ((8.45, L(lang, "Phone GUI agent", "手机 GUI 智能体", "スマートフォンの GUI エージェント"), phone, "#333", 1.55),
+                  (3.0, L(lang, "3D GUI agent (headset)", "3D GUI 智能体（头显）", "3D GUI エージェント（ヘッドセット）"), head, ORANGE, 2.05))
+        col = C["a"]
+        cx = 5.0
+        for cy, title, desc, note_col, h in panels:
+            ax.text(cx, cy + 0.5 + h + 0.38, title, ha="center", va="center", fontsize=16, weight="bold", color=C["dark"])
+            dx, dy, w = 2.45, 0.5 + h / 2, 4.0
+            pos = {"observe": (cx - dx, cy + dy), "ground": (cx + dx, cy + dy),
+                   "act": (cx + dx, cy - dy), "verify": (cx - dx, cy - dy)}
             for key, name in stages:
                 x, y = pos[key]
                 box(ax, x, y, w, h, "", tint(col, 0.10), col, lw=2)
-                ax.text(x, y + h / 2 - 0.3, name, ha="center", va="center", fontsize=13.5, weight="bold", color=col)
-                ax.text(x, y - 0.18, desc[key], ha="center", va="center", fontsize=10.5 if cx > 7 else 11.5,
-                        color=note_col, linespacing=1.25)
-            gx = cx - dx + w / 2
-            arrow(ax, (gx, 4.3 + dy), (cx + dx - w / 2, 4.3 + dy), color=tint(col, 0.7), lw=2.6, ms=18)
-            arrow(ax, (cx + dx, 4.3 + dy - h / 2), (cx + dx, 4.3 - dy + h / 2), color=tint(col, 0.7), lw=2.6, ms=18)
-            arrow(ax, (cx + dx - w / 2, 4.3 - dy), (gx, 4.3 - dy), color=tint(col, 0.7), lw=2.6, ms=18)
-            arrow(ax, (cx - dx, 4.3 - dy + h / 2), (cx - dx, 4.3 + dy - h / 2), color=tint(col, 0.7), lw=2.6, ms=18)
-            # ask channel in the middle
-            ax.add_patch(Circle((cx, 4.3), 0.45, fc="white", ec=RED, lw=2))
-            ax.text(cx, 4.3, L(lang, "ask /\nconfirm", "询问 /\n确认", "質問 /\n確認"), ha="center", va="center",
-                    fontsize=9.5, color=RED, linespacing=1.1)
-        ax.plot([7.15, 7.15], [0.9, 7.8], color="#bbb", lw=1.2, ls=":")
-        ax.text(7.15, 0.45, L(lang, "orange: what changes in 3D", "橙色：在 3D 中改变的部分", "オレンジ：3D で変わる点"),
-                ha="center", va="center", fontsize=12.5, color=ORANGE)
+                ax.text(x, y + h / 2 - 0.27, name, ha="center", va="center", fontsize=14, weight="bold", color=col)
+                ax.text(x, y - 0.17, desc[key], ha="center", va="center", fontsize=12.5, color=note_col, linespacing=1.25)
+            ac = tint(col, 0.7)
+            arrow(ax, (cx - dx + w / 2, cy + dy), (cx + dx - w / 2, cy + dy), color=ac, lw=2.6, ms=18)
+            arrow(ax, (cx + dx, cy + dy - h / 2), (cx + dx, cy - dy + h / 2), color=ac, lw=2.6, ms=18)
+            arrow(ax, (cx + dx - w / 2, cy - dy), (cx - dx + w / 2, cy - dy), color=ac, lw=2.6, ms=18)
+            arrow(ax, (cx - dx, cy - dy + h / 2), (cx - dx, cy + dy - h / 2), color=ac, lw=2.6, ms=18)
+            ax.add_patch(Circle((cx, cy), 0.45, fc="white", ec=RED, lw=2))
+            ax.text(cx, cy, L(lang, "ask /\nconfirm", "询问 /\n确认", "質問 /\n確認"), ha="center", va="center",
+                    fontsize=10, color=RED, linespacing=1.1)
+        ax.plot([0.3, 9.7], [6.3, 6.3], color="#bbb", lw=1.2, ls=":")
+        ax.text(cx, -0.05, L(lang, "orange: what changes in 3D", "橙色：在 3D 中改变的部分", "オレンジ：3D で変わる点"),
+                ha="center", va="center", fontsize=13, color=ORANGE)
         save(fig, OUT / f"01-loop-2d-vs-3d_{lang}.svg")
 
 
 # ------------------------------------------------------------------ 2. operating cost
 def fig_cost():
     for lang in LANGS:
-        fig, (a1, a2) = plt.subplots(1, 2, figsize=(14.5, 6.4), gridspec_kw={"width_ratios": [1, 1.05]})
+        fig, (a1, a2) = plt.subplots(2, 1, figsize=(9.6, 10.6))
         # (a) text entry, words per minute
         rows = [
             (L(lang, "phone, mean of\n37,370 typists", "手机，37,370 人\n的平均值", "スマートフォン、\n37,370 人の平均"), 36.2, GRAY, "Palin et al. 2019"),
@@ -138,13 +138,12 @@ def fig_cost():
         y = np.arange(len(rows))[::-1]
         for yi, (name, v, col, src) in zip(y, rows):
             a1.barh(yi, v, color=col, height=0.62)
-            a1.text(v + 0.6, yi + 0.08, f"{v:g}", va="center", fontsize=14, weight="bold")
-            a1.text(v + 0.6, yi - 0.24, src, va="center", fontsize=10.5, color="#555")
+            a1.text(v + 0.6, yi + 0.1, f"{v:g}", va="center", fontsize=15, weight="bold")
+            a1.text(v + 0.6, yi - 0.24, src, va="center", fontsize=12, color="#555")
         a1.axvline(36.2 / 2, color=C["dark"], ls="--", lw=1.4)
-        a1.text(36.2 / 2 + 0.4, len(rows) - 0.45, L(lang, "half of phone", "手机的一半", "スマホの半分"),
-                fontsize=11.5, color=C["dark"])
+        a1.text(36.2 / 2 + 0.4, len(rows) - 0.45, L(lang, "half of phone", "手机的一半", "スマホの半分"), fontsize=12.5, color=C["dark"])
         a1.set_yticks(y)
-        a1.set_yticklabels([r[0] for r in rows], fontsize=11.5)
+        a1.set_yticklabels([r[0] for r in rows], fontsize=13)
         a1.set_xlim(0, 50)
         a1.set_ylim(-0.6, len(rows) - 0.2)
         a1.set_xlabel(L(lang, "words per minute", "每分钟词数（wpm）", "1 分あたりの単語数（wpm）"))
@@ -161,24 +160,24 @@ def fig_cost():
         for k, (yi, (name, (lo, hi), col, src)) in enumerate(zip(y, rows)):
             if lo == hi:
                 a2.barh(yi, lo, color=col, height=0.62)
-                a2.text(hi + 0.8, yi + 0.08, f"{lo:g}%", va="center", fontsize=14, weight="bold")
+                a2.text(hi + 0.8, yi + 0.1, f"{lo:g}%", va="center", fontsize=15, weight="bold")
             elif k == 3:
                 a2.plot([lo, hi], [yi, yi], color=tint(col, 0.4), lw=3)
-                a2.scatter([lo, hi], [yi, yi], s=150, color=col, zorder=3, marker="D")
-                a2.text(lo, yi + 0.3, f"{lo:g}%", ha="center", fontsize=12.5, weight="bold")
-                a2.text(hi, yi + 0.3, f"{hi:g}%", ha="center", fontsize=12.5, weight="bold")
+                a2.scatter([lo, hi], [yi, yi], s=160, color=col, zorder=3, marker="D")
+                a2.text(lo, yi + 0.28, f"{lo:g}%", ha="center", fontsize=13.5, weight="bold")
+                a2.text(hi, yi + 0.28, f"{hi:g}%", ha="center", fontsize=13.5, weight="bold")
             else:
                 a2.barh(yi, hi - lo, left=lo, color=tint(col, 0.75), edgecolor=col, lw=1.6, height=0.62)
-                a2.text(hi + 0.8, yi + 0.08, f"{lo:g}-{hi:g}%", va="center", fontsize=13.5, weight="bold")
-            a2.text((hi + 0.8) if k != 3 else hi + 1.4, yi - 0.24, src, va="center", fontsize=10.5, color="#555")
+                a2.text(hi + 0.8, yi + 0.1, f"{lo:g}-{hi:g}%", va="center", fontsize=14.5, weight="bold")
+            a2.text((hi + 0.8) if k != 3 else hi + 1.4, yi - 0.24, src, va="center", fontsize=12, color="#555")
         a2.set_yticks(y)
-        a2.set_yticklabels([r[0] for r in rows], fontsize=11.5)
+        a2.set_yticklabels([r[0] for r in rows], fontsize=13)
         a2.set_xlim(0, 52)
         a2.set_ylim(-0.6, len(rows) - 0.2)
         a2.set_xlabel(L(lang, "error rate (%), range across techniques", "错误率（%），各技术的范围", "エラー率（%）、手法間の範囲"))
         a2.set_title(L(lang, "(b) selection errors", "(b) 选择错误", "(b) 選択エラー"), loc="left")
         a2.grid(axis="y", visible=False)
-        fig.tight_layout(w_pad=3)
+        fig.tight_layout(h_pad=2.5)
         save(fig, OUT / f"01-operating-cost_{lang}.svg")
 
 
@@ -341,10 +340,10 @@ def fig_access():
 # ------------------------------------------------------------------ 5. autonomy spectrum
 def fig_autonomy():
     for lang in LANGS:
-        fig, ax = plt.subplots(figsize=(16, 8.2))
+        fig, ax = plt.subplots(figsize=(10.6, 11.4))
         blank(ax)
-        ax.set_xlim(-0.2, 15.8)
-        ax.set_ylim(0, 8.2)
+        ax.set_xlim(0, 11)
+        ax.set_ylim(0, 11.8)
         modes = [
             L(lang, "Explain", "讲解", "説明する"),
             L(lang, "Show where", "指出位置", "場所を示す"),
@@ -355,55 +354,49 @@ def fig_autonomy():
         ]
         examples = [
             L(lang, "\"How do I turn\non Travel Mode?\"", "“怎样打开\n旅行模式？”", "「トラベルモードは\nどう有効にする？」"),
-            L(lang, "find the recentre\ncontrol", "找到重新居中\n的控件", "リセンターの\n操作を探す"),
-            L(lang, "learn the gesture\nthat moves a window", "学会移动窗口\n的手势", "ウィンドウを動かす\nジェスチャーを覚える"),
+            L(lang, "find the recentre control", "找到重新居中的控件", "リセンターの操作を探す"),
+            L(lang, "learn the gesture\nthat moves a window", "学会移动窗口的手势", "ウィンドウを動かす\nジェスチャーを覚える"),
             L(lang, "bring the music player\nfrom behind to the front", "把身后的音乐播放器\n拿到面前", "背後の音楽プレーヤーを\n前に持ってくる"),
-            L(lang, "arrange three windows\nfor writing a report", "为写报告排列\n三个窗口", "報告書を書くために\n3 つのウィンドウを配置"),
+            L(lang, "arrange three windows\nfor writing a report", "为写报告排列三个窗口", "報告書を書くために\n3 つのウィンドウを配置"),
             L(lang, "type a search query;\nchange a buried setting", "输入搜索词；\n修改深藏的设置", "検索語を入力；\n奥深い設定を変える"),
         ]
-        xs = np.linspace(1.55, 14.45, 6)
-        yl = 4.3
-        # gradient line
+        ys = np.linspace(10.0, 2.5, 6)
+        xl = 0.7
+        # vertical gradient line: user (top) -> agent (bottom)
         for k in range(200):
-            x0 = 0.9 + 14.0 * k / 200
-            ax.plot([x0, x0 + 14.0 / 200 + 0.01], [yl, yl], color=tint(C["a"], 0.25 + 0.75 * k / 200), lw=6,
+            y0 = 10.45 - 8.4 * k / 200
+            ax.plot([xl, xl], [y0, y0 - 8.4 / 200 - 0.01], color=tint(C["a"], 0.25 + 0.75 * k / 200), lw=6,
                     solid_capstyle="butt")
-        arrow(ax, (14.8, yl), (15.5, yl), color=C["a"], lw=3, ms=24)
-        for x, m, e in zip(xs, modes, examples):
-            ax.add_patch(Circle((x, yl), 0.22, fc="white", ec=C["a"], lw=2.5, zorder=3))
-            ax.text(x, yl + 0.75, m, ha="center", va="center", fontsize=14, weight="bold", color=C["dark"], linespacing=1.1)
-            box(ax, x, 6.55, 2.45, 1.15, e, fc=tint(C["c"], 0.10), ec=C["c"], fs=10.5, lw=1.4)
-            arrow(ax, (x, 5.95), (x, yl + 1.2), color=tint(C["c"], 0.7), lw=1.4, ms=10)
-        ax.text(0.15, 6.55, L(lang, "example", "示例", "例"), ha="left", va="center", fontsize=12.5, color=C["c"],
-                weight="bold", rotation=90)
-        # evidence boxes below
+        arrow(ax, (xl, 2.1), (xl, 1.55), color=C["a"], lw=3, ms=24)
+        ax.text(0.2, 11.15, L(lang, "the user acts;\nthe agent supplies knowledge", "用户操作；\n智能体提供知识",
+                              "ユーザーが操作し、\nエージェントは知識を補う"), ha="left", va="center", fontsize=12.5, color=C["dark"])
+        ax.text(0.2, 1.05, L(lang, "the agent acts; the user supervises", "智能体操作；用户监督",
+                             "エージェントが操作し、ユーザーは見守る"), ha="left", va="center", fontsize=12.5, color=C["dark"])
+        ax.text(4.75, 11.15, L(lang, "example", "示例", "例"), ha="center", fontsize=13, color=C["c"], weight="bold")
+        ax.text(8.95, 11.15, L(lang, "evidence", "证据", "根拠"), ha="center", fontsize=13, color="#b8860b", weight="bold")
+        for y, m, e in zip(ys, modes, examples):
+            ax.add_patch(Circle((xl, y), 0.2, fc="white", ec=C["a"], lw=2.5, zorder=3))
+            ax.text(1.1, y, m, ha="left", va="center", fontsize=14.5, weight="bold", color=C["dark"], linespacing=1.1)
+            box(ax, 4.75, y, 3.5, 1.08, e, fc=tint(C["c"], 0.10), ec=C["c"], fs=12.5, lw=1.4)
         ev = [
-            (2.9, L(lang, "Guided Reality, Sensible Agent,\nAgentHands: spatial guidance",
-                    "Guided Reality、Sensible Agent、\nAgentHands：空间引导",
-                    "Guided Reality、Sensible Agent、\nAgentHands：空間ガイダンス"), (1.55, 4.13)),
-            (8.0, L(lang, "VRCopilot: full automation lowered\nthe sense of agency; DuoZone: confirm,\nthen apply (76-90% of choices accepted)",
-                    "VRCopilot：完全自动降低了主体感；\nDuoZone：确认后执行\n（76-90% 的决定被接受）",
-                    "VRCopilot：完全自動化で主体感が低下；\nDuoZone：確認してから適用\n（判断の 76-90% が受け入れられた）"), (6.71, 11.87)),
-            (13.2, L(lang, "AI companions in VR games:\nautonomous play lowered workload\nbut also enjoyment (preprint)",
-                     "VR 游戏中的 AI 伙伴：自主代玩\n降低负荷，也降低了乐趣（预印本）",
-                     "VR ゲームの AI コンパニオン：\n自律プレイは負荷を下げたが\n楽しさも下げた（プレプリント）"), (13.16, 14.45)),
+            ((ys[0], ys[1]), L(lang, "Guided Reality,\nSensible Agent,\nAgentHands:\nspatial guidance",
+                               "Guided Reality、\nSensible Agent、\nAgentHands：\n空间引导",
+                               "Guided Reality、\nSensible Agent、\nAgentHands：\n空間ガイダンス")),
+            ((ys[3], ys[4]), L(lang, "VRCopilot: full\nautomation lowered\nagency. DuoZone:\nconfirm, then apply",
+                               "VRCopilot：完全自动\n降低了主体感。\nDuoZone：\n确认后执行",
+                               "VRCopilot：完全自動化\nで主体感が低下。\nDuoZone：\n確認してから適用")),
+            ((ys[5], ys[5]), L(lang, "AI companions in VR\ngames: autonomous\nplay lowered workload\nand enjoyment (preprint)",
+                               "VR 游戏中的 AI 伙伴：\n自主代玩降低负荷，\n也降低乐趣（预印本）",
+                               "VR ゲームの AI 仲間：\n自律プレイで負荷も\n楽しさも低下\n（プレプリント）")),
         ]
-        for cx, t, (xa, xb) in ev:
-            box(ax, cx, 2.45, 4.5 if cx != 8.0 else 5.1, 1.35, t, fc=tint(C["light"], 0.15), ec=C["light"], fs=10.5, lw=1.4)
-            ax.plot([xa, xb], [3.25, 3.25], color=C["light"], lw=3)
-        ax.text(0.15, 2.45, L(lang, "evidence", "证据", "根拠"), ha="left", va="center", fontsize=12.5, color="#b8860b",
-                weight="bold", rotation=90)
-        # who acts
-        ax.text(0.9, 1.15, L(lang, "the user acts; the agent supplies knowledge", "用户操作；智能体提供知识",
-                             "ユーザーが操作し、エージェントは知識を補う"), ha="left", fontsize=12, color=C["dark"])
-        ax.text(15.3, 1.15, L(lang, "the agent acts; the user supervises", "智能体操作；用户监督",
-                              "エージェントが操作し、ユーザーは見守る"), ha="right", fontsize=12, color=C["dark"])
-        # ask channel
-        ax.add_patch(FancyBboxPatch((0.9, 0.25), 14.4, 0.55, boxstyle="round,pad=0.02,rounding_size=0.15",
+        for (ya, yb), t in ev:
+            ax.plot([6.75, 6.9, 6.9, 6.75], [ya + 0.35, ya + 0.35, yb - 0.35, yb - 0.35], color=C["light"], lw=2.5)
+            box(ax, 8.95, (ya + yb) / 2, 3.6, 1.6 if ya != yb else 1.35, t, fc=tint(C["light"], 0.15), ec=C["light"], fs=11.5, lw=1.4)
+        ax.add_patch(FancyBboxPatch((0.2, 0.12), 10.6, 0.5, boxstyle="round,pad=0.02,rounding_size=0.15",
                                     fc="white", ec=RED, lw=1.6, ls="--"))
-        ax.text(8.1, 0.52, L(lang, "ask: available at every point (which window? overwrite? continue?)",
+        ax.text(5.5, 0.37, L(lang, "ask: available at every point (which window? overwrite? continue?)",
                              "询问：在每个位置都可用（哪个窗口？是否覆盖？是否继续？）",
-                             "質問：どの段階でも使える（どのウィンドウ？上書きする？続ける？）"),
+                             "質問：どの段階でも使える（どのウィンドウ？上書き？続ける？）"),
                 ha="center", va="center", fontsize=12, color=RED)
         save(fig, OUT / f"01-autonomy-spectrum_{lang}.svg")
 
@@ -411,39 +404,38 @@ def fig_autonomy():
 # ------------------------------------------------------------------ 6. column map
 def fig_map():
     for lang in LANGS:
-        fig, ax = plt.subplots(figsize=(13, 7))
+        fig, ax = plt.subplots(figsize=(10, 8.6))
         blank(ax)
-        ax.set_xlim(-0.2, 13.2)
-        ax.set_ylim(0, 7)
-        box(ax, 6.5, 3.6, 5.0, 1.55,
-            L(lang, "01  Research vision\nthe idea, its scope and motivation,\nthe open questions",
-              "01  研究愿景\n想法、范围与动机，\n开放问题",
-              "01  研究ビジョン\nアイデア、範囲と動機、\n未解決の問い"),
-            fc=tint(C["a"], 0.15), ec=C["a"], fs=13, lw=2.6)
+        ax.set_xlim(0, 10)
+        ax.set_ylim(0, 8.6)
         surveys = [
-            (2.0, 6.0, "02", L(lang, "GUI agents on 2D screens\nwhat agents can do on\nphones, desktops, the web",
-                                "二维屏幕上的 GUI 智能体\n智能体在手机、桌面、\n网页上能做什么",
-                                "2D 画面の GUI エージェント\nスマホ、デスクトップ、\nWeb で何ができるか"), C["z"]),
-            (6.5, 6.25, "03", L(lang, "Why 3D interfaces are hard\nmeasured operating costs,\nadoption, accessibility",
-                                 "为什么 3D 界面难以操作\n实测操作代价、\n普及与无障碍",
-                                 "3D UI はなぜ難しいか\n操作コストの実測、\n普及とアクセシビリティ"), C["b"]),
-            (11.0, 6.0, "04", L(lang, "Agents in XR and the gap\nclosest work, platforms,\ndatasets, what is missing",
-                                 "XR 中的智能体与空白\n最接近的工作、平台、\n数据集与缺口",
-                                 "XR のエージェントとギャップ\n最も近い研究、基盤、\nデータセット、欠けているもの"), C["c"]),
+            (2.55, 7.55, "02", L(lang, "GUI agents on 2D screens:\nwhat agents can do on\nphones, desktops, the web",
+                                  "二维屏幕上的 GUI 智能体：\n智能体在手机、桌面、\n网页上能做什么",
+                                  "2D 画面の GUI エージェント：\nスマホ、デスクトップ、\nWeb で何ができるか"), C["z"]),
+            (7.45, 7.55, "03", L(lang, "Why 3D interfaces are hard:\nmeasured operating costs,\nadoption, accessibility",
+                                  "为什么 3D 界面难以操作：\n实测操作代价、\n普及与无障碍",
+                                  "3D UI はなぜ難しいか：\n操作コストの実測、\n普及とアクセシビリティ"), C["b"]),
+            (5.0, 5.55, "04", L(lang, "Agents in XR and the gap:\nclosest work, platforms,\ndatasets, what is missing",
+                                 "XR 中的智能体与空白：\n最接近的工作、平台、\n数据集与缺口",
+                                 "XR のエージェントとギャップ：\n最も近い研究、基盤、\nデータセット、欠けているもの"), C["c"]),
         ]
+        box(ax, 5.0, 3.35, 6.2, 1.45,
+            L(lang, "01  Research vision: the idea, its scope\nand motivation, the open questions",
+              "01  研究愿景：想法、范围与动机，\n开放问题",
+              "01  研究ビジョン：アイデア、範囲と動機、\n未解決の問い"),
+            fc=tint(C["a"], 0.15), ec=C["a"], fs=14, lw=2.6)
         for x, y, n, t, col in surveys:
-            box(ax, x, y, 3.8, 1.35, f"{n}  {t}", fc=tint(col, 0.12), ec=col, fs=11.5, lw=2)
-            arrow(ax, (x, y - 0.7), (6.5 + (x - 6.5) * 0.35, 4.4), color=col, lw=2.2)
-        ax.text(1.0, 4.55, L(lang, "evidence: what transfers", "证据：哪些可迁移", "根拠：何が移せるか"), fontsize=11.5, color=C["z"])
-        ax.text(12.0, 4.55, L(lang, "evidence: the gap", "证据：空白", "根拠：ギャップ"), fontsize=11.5, color=C["c"], ha="right")
-        box(ax, 6.5, 1.0, 5.4, 1.1,
+            box(ax, x, y, 4.5, 1.5, f"{n}  {t}", fc=tint(col, 0.12), ec=col, fs=13, lw=2)
+        arrow(ax, (2.0, 6.8), (3.2, 4.1), color=C["z"], lw=2.4)
+        arrow(ax, (8.0, 6.8), (6.8, 4.1), color=C["b"], lw=2.4)
+        arrow(ax, (5.0, 4.8), (5.0, 4.1), color=C["c"], lw=2.4)
+        box(ax, 5.0, 0.85, 6.2, 1.0,
             L(lang, "05  Research plan (password-protected)", "05  研究计划（密码保护）", "05  研究計画（パスワード保護）"),
-            fc="#f1f1f1", ec=GRAY, fs=13, lw=2, ls="--")
-        arrow(ax, (6.5, 2.85), (6.5, 1.65), color=GRAY, lw=2.4)
-        # small lock icon
-        ax.add_patch(FancyBboxPatch((9.45, 0.75), 0.34, 0.3, boxstyle="round,pad=0.01,rounding_size=0.04", fc=GRAY, ec=GRAY))
+            fc="#f1f1f1", ec=GRAY, fs=14, lw=2, ls="--")
+        arrow(ax, (5.0, 2.6), (5.0, 1.4), color=GRAY, lw=2.4)
+        ax.add_patch(FancyBboxPatch((8.4, 0.62), 0.36, 0.32, boxstyle="round,pad=0.01,rounding_size=0.04", fc=GRAY, ec=GRAY))
         th = np.linspace(0, np.pi, 30)
-        ax.plot(9.62 + 0.12 * np.cos(th), 1.05 + 0.16 * np.sin(th), color=GRAY, lw=2.2)
+        ax.plot(8.58 + 0.13 * np.cos(th), 0.94 + 0.17 * np.sin(th), color=GRAY, lw=2.2)
         save(fig, OUT / f"01-column-map_{lang}.svg")
 
 

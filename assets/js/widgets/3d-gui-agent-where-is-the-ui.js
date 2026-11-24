@@ -18,10 +18,11 @@
         ["photos", "Show the last photo"], ["settings", "Turn on the passthrough setting"]],
       memory: "Memory", rearrange: "Rearrange", reset: "Reset", fov: "field of view",
       how: "Drag or swipe sideways on the map to turn the head (arrow keys also work).",
-      st: { view: "in view", occluded: "occluded", outside: "outside the view", behind: "behind you" },
+      st: { view: "in view", partial: "at the edge", occluded: "occluded", outside: "outside the view", behind: "behind you" },
       strip: "agent's view in this frame",
       left: "left", right: "right",
       can: "Can act from this frame: {w} is in view.",
+      part: "{w} is only partly in this frame, at the edge of the view. A small turn would bring it fully into view before acting.",
       occ: "{w} is in the wedge but hidden behind {o}. Turn or lean to see it, or move {o} first.",
       recall: "{w} is not in this frame, but the agent saw it before: about {a}\u00b0 to the {s}. It can turn there, or act on the remembered position and verify.",
       stale: "Memory says {w} is about {a}\u00b0 to the {s}, but it has moved since it was seen. Acting on that memory would miss: the agent must look again.",
@@ -35,10 +36,11 @@
         ["photos", "\u663e\u793a\u6700\u540e\u4e00\u5f20\u7167\u7247"], ["settings", "\u6253\u5f00\u900f\u89c6\uff08passthrough\uff09\u8bbe\u7f6e"]],
       memory: "\u8bb0\u5fc6", rearrange: "\u91cd\u65b0\u6446\u653e", reset: "\u91cd\u7f6e", fov: "\u89c6\u91ce",
       how: "\u5728\u5730\u56fe\u4e0a\u5de6\u53f3\u62d6\u52a8\u6216\u6ed1\u52a8\u6765\u8f6c\u5934\uff08\u4e5f\u53ef\u4ee5\u7528\u65b9\u5411\u952e\uff09\u3002",
-      st: { view: "\u5728\u89c6\u91ce\u5185", occluded: "\u88ab\u906e\u6321", outside: "\u5728\u89c6\u91ce\u5916", behind: "\u5728\u4f60\u8eab\u540e" },
+      st: { view: "\u5728\u89c6\u91ce\u5185", partial: "\u5728\u89c6\u91ce\u8fb9\u7f18", occluded: "\u88ab\u906e\u6321", outside: "\u5728\u89c6\u91ce\u5916", behind: "\u5728\u4f60\u8eab\u540e" },
       strip: "\u8fd9\u4e00\u5e27\u4e2d\u667a\u80fd\u4f53\u770b\u5230\u7684\u753b\u9762",
       left: "\u5de6", right: "\u53f3",
       can: "\u53ef\u4ee5\u76f4\u63a5\u6839\u636e\u8fd9\u4e00\u5e27\u64cd\u4f5c\uff1a{w}\u5728\u89c6\u91ce\u5185\u3002",
+      part: "{w}\u53ea\u6709\u4e00\u90e8\u5206\u5728\u8fd9\u4e00\u5e27\u91cc\uff0c\u4f4d\u4e8e\u89c6\u91ce\u8fb9\u7f18\u3002\u7a0d\u5fae\u8f6c\u5934\u5c31\u80fd\u5728\u64cd\u4f5c\u524d\u770b\u5230\u5b83\u7684\u5168\u90e8\u3002",
       occ: "{w}\u5728\u89c6\u91ce\u8303\u56f4\u5185\uff0c\u4f46\u88ab{o}\u6321\u4f4f\u4e86\u3002\u9700\u8981\u8f6c\u5934\u6216\u4fa7\u8eab\u624d\u80fd\u770b\u5230\uff0c\u6216\u8005\u5148\u79fb\u5f00{o}\u3002",
       recall: "{w}\u4e0d\u5728\u8fd9\u4e00\u5e27\u91cc\uff0c\u4f46\u667a\u80fd\u4f53\u4e4b\u524d\u89c1\u8fc7\u5b83\uff1a\u5927\u7ea6\u5728{s}\u4fa7 {a}\u00b0\u3002\u5b83\u53ef\u4ee5\u8f6c\u5411\u90a3\u91cc\uff0c\u6216\u6309\u8bb0\u4f4f\u7684\u4f4d\u7f6e\u64cd\u4f5c\u540e\u518d\u9a8c\u8bc1\u3002",
       stale: "\u8bb0\u5fc6\u663e\u793a{w}\u5927\u7ea6\u5728{s}\u4fa7 {a}\u00b0\uff0c\u4f46\u5b83\u5728\u88ab\u770b\u5230\u4e4b\u540e\u79fb\u52a8\u8fc7\u4e86\u3002\u6309\u8fd9\u6761\u8bb0\u5fc6\u64cd\u4f5c\u4f1a\u843d\u7a7a\uff1a\u667a\u80fd\u4f53\u5fc5\u987b\u91cd\u65b0\u67e5\u770b\u3002",
@@ -52,10 +54,11 @@
         ["photos", "\u6700\u5f8c\u306e\u5199\u771f\u3092\u898b\u305b\u3066"], ["settings", "\u30d1\u30b9\u30b9\u30eb\u30fc\u8a2d\u5b9a\u3092\u30aa\u30f3\u306b\u3057\u3066"]],
       memory: "\u8a18\u61b6", rearrange: "\u914d\u7f6e\u3092\u5909\u3048\u308b", reset: "\u30ea\u30bb\u30c3\u30c8", fov: "\u8996\u91ce",
       how: "\u5730\u56f3\u306e\u4e0a\u3067\u5de6\u53f3\u306b\u30c9\u30e9\u30c3\u30b0\u307e\u305f\u306f\u30b9\u30ef\u30a4\u30d7\u3059\u308b\u3068\u982d\u304c\u56de\u308a\u307e\u3059\uff08\u77e2\u5370\u30ad\u30fc\u3082\u4f7f\u3048\u307e\u3059\uff09\u3002",
-      st: { view: "\u8996\u91ce\u5185", occluded: "\u96a0\u308c\u3066\u3044\u308b", outside: "\u8996\u91ce\u5916", behind: "\u80cc\u5f8c" },
+      st: { view: "\u8996\u91ce\u5185", partial: "\u8996\u91ce\u306e\u7aef", occluded: "\u96a0\u308c\u3066\u3044\u308b", outside: "\u8996\u91ce\u5916", behind: "\u80cc\u5f8c" },
       strip: "\u3053\u306e\u30d5\u30ec\u30fc\u30e0\u3067\u30a8\u30fc\u30b8\u30a7\u30f3\u30c8\u304c\u898b\u3066\u3044\u308b\u3082\u306e",
       left: "\u5de6", right: "\u53f3",
       can: "\u3053\u306e\u30d5\u30ec\u30fc\u30e0\u304b\u3089\u64cd\u4f5c\u3067\u304d\u307e\u3059\uff1a{w}\u306f\u8996\u91ce\u5185\u306b\u3042\u308a\u307e\u3059\u3002",
+      part: "{w}\u306f\u3053\u306e\u30d5\u30ec\u30fc\u30e0\u306b\u4e00\u90e8\u3057\u304b\u5165\u3063\u3066\u304a\u3089\u305a\u3001\u8996\u91ce\u306e\u7aef\u306b\u3042\u308a\u307e\u3059\u3002\u5c11\u3057\u982d\u3092\u56de\u305b\u3070\u3001\u64cd\u4f5c\u306e\u524d\u306b\u5168\u4f53\u3092\u8996\u91ce\u306b\u5165\u308c\u3089\u308c\u307e\u3059\u3002",
       occ: "{w}\u306f\u8996\u91ce\u306e\u7bc4\u56f2\u5185\u3067\u3059\u304c\u3001{o}\u306b\u96a0\u308c\u3066\u3044\u307e\u3059\u3002\u982d\u3092\u56de\u3059\u304b\u4f53\u3092\u305a\u3089\u3057\u3066\u898b\u308b\u304b\u3001\u5148\u306b{o}\u3092\u52d5\u304b\u3059\u5fc5\u8981\u304c\u3042\u308a\u307e\u3059\u3002",
       recall: "{w}\u306f\u3053\u306e\u30d5\u30ec\u30fc\u30e0\u306b\u3042\u308a\u307e\u305b\u3093\u304c\u3001\u30a8\u30fc\u30b8\u30a7\u30f3\u30c8\u306f\u4ee5\u524d\u306b\u898b\u3066\u3044\u307e\u3059\uff1a{s}\u306b\u7d04 {a}\u00b0\u3002\u305d\u3061\u3089\u3092\u5411\u304f\u304b\u3001\u8a18\u61b6\u3057\u305f\u4f4d\u7f6e\u3067\u64cd\u4f5c\u3057\u3066\u304b\u3089\u78ba\u8a8d\u3067\u304d\u307e\u3059\u3002",
       stale: "\u8a18\u61b6\u3067\u306f{w}\u306f{s}\u306b\u7d04 {a}\u00b0 \u3067\u3059\u304c\u3001\u898b\u305f\u3042\u3068\u3067\u52d5\u3044\u3066\u3044\u307e\u3059\u3002\u3053\u306e\u8a18\u61b6\u3067\u64cd\u4f5c\u3059\u308b\u3068\u5916\u308c\u307e\u3059\uff1a\u3082\u3046\u4e00\u5ea6\u898b\u308b\u5fc5\u8981\u304c\u3042\u308a\u307e\u3059\u3002",
@@ -74,9 +77,13 @@
     ["settings", -85, 1.5, 0.8, "#8c564b"],
     ["music", 165, 1.8, 0.9, "#d62728"]
   ];
-  var STCOL = { view: "#2a9d4b", occluded: "#e07b00", outside: "#7f7f7f", behind: "#d62728" };
+  var STCOL = { view: "#2a9d4b", partial: "#17a2b8", occluded: "#e07b00", outside: "#7f7f7f", behind: "#d62728" };
 
   function wrapAngle(a) { while (a > Math.PI) a -= 2 * Math.PI; while (a < -Math.PI) a += 2 * Math.PI; return a; }
+  function mix(hex, a) {
+    var n = parseInt(hex.slice(1), 16), r = n >> 16, g = (n >> 8) & 255, b = n & 255;
+    return "rgb(" + Math.round(255 - a * (255 - r)) + "," + Math.round(255 - a * (255 - g)) + "," + Math.round(255 - a * (255 - b)) + ")";
+  }
   function fmt(s, o) { return s.replace(/\{(\w)\}/g, function (m, k) { return o[k] !== undefined ? o[k] : m; }); }
 
   // geometry: heading 0 = +y (up on the map), positive angles turn left (counter-clockwise)
@@ -123,7 +130,7 @@
       }
       var ca = wrapAngle(angleOf(w.cx, w.cy) - heading), st;
       if (nvis / NS >= 0.5) st = "view";
-      else if (nin > 0) st = "occluded";
+      else if (nin > 0) st = (nin - nvis > nvis) ? "occluded" : "partial"; // in-FOV samples are visible or occluded
       else if (Math.abs(ca) <= 110 * DEG) st = "outside";
       else st = "behind";
       var occBy = null, mx = 0;
@@ -269,10 +276,14 @@
         }
         ctx.strokeStyle = w.col; ctx.lineWidth = 7; ctx.lineCap = "butt";
         ctx.beginPath(); ctx.moveTo(q0[0], q0[1]); ctx.lineTo(q1[0], q1[1]); ctx.stroke();
-        var dd = Math.hypot(w.cx, w.cy), lx = w.cx + w.cx / dd * 0.38, ly = w.cy + w.cy / dd * 0.38, lp = P(lx, ly);
+        var dd = Math.hypot(w.cx, w.cy), lx = w.cx + w.cx / dd * 0.5, ly = w.cy + w.cy / dd * 0.5, lp = P(lx, ly);
         ctx.font = "bold " + fs + "px sans-serif"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
+        ctx.lineJoin = "round"; ctx.strokeStyle = "rgba(255,255,255,0.92)"; ctx.lineWidth = 4;
+        ctx.strokeText(T.names[w.key], lp[0], lp[1] - fs * 0.6);
         ctx.fillStyle = w.col; ctx.fillText(T.names[w.key], lp[0], lp[1] - fs * 0.6);
-        ctx.font = fs * 0.92 + "px sans-serif"; ctx.fillStyle = STCOL[res[i].st];
+        ctx.font = fs * 0.92 + "px sans-serif";
+        ctx.strokeText("\u25cf " + T.st[res[i].st], lp[0], lp[1] + fs * 0.6);
+        ctx.fillStyle = STCOL[res[i].st];
         ctx.fillText("\u25cf " + T.st[res[i].st], lp[0], lp[1] + fs * 0.6);
       });
       // user
@@ -284,7 +295,7 @@
       ctx.beginPath(); ctx.moveTo(tip[0], tip[1]); ctx.lineTo(b0[0], b0[1]); ctx.lineTo(b1[0], b1[1]); ctx.closePath(); ctx.fill();
       // fov label
       ctx.font = "12px sans-serif"; ctx.fillStyle = "#7a5aa8"; ctx.textAlign = "left"; ctx.textBaseline = "top";
-      ctx.fillText(T.fov + " 100\u00b0", 8, 8);
+      ctx.fillText(T.fov + " 100\u00b0", 8, mapH - 22);
       ctx.fillStyle = "#555"; ctx.fillText("1 m", W - 50, mapH - 22);
       ctx.strokeStyle = "#555"; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(W - 58 - sc + 40, mapH - 8); ctx.lineTo(W - 18, mapH - 8); ctx.stroke();
 
@@ -304,9 +315,8 @@
         var w = S.wins[n.i];
         var hpx = Math.min(sh - 6, sh * 0.9 / n.t);
         var shade = Math.max(0.35, Math.min(1, 1.3 / n.t));
-        ctx.globalAlpha = shade; ctx.fillStyle = w.col;
+        ctx.fillStyle = mix(w.col, shade);
         ctx.fillRect(sx + k * cw, sy + (sh - hpx) / 2, cw + 0.6, hpx);
-        ctx.globalAlpha = 1;
         if (!spans[w.key]) spans[w.key] = [k, k]; else spans[w.key][1] = k;
       }
       ctx.font = "bold 12px sans-serif"; ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.fillStyle = "#fff";
@@ -322,6 +332,7 @@
       var r = res[ti], tw = S.wins[ti], msg, bg;
       var nm = T.names[target];
       if (r.st === "view") { msg = fmt(T.can, { w: nm }); bg = "#e6f4ea"; }
+      else if (r.st === "partial") { msg = fmt(T.part, { w: nm }); bg = "#e3f4f7"; }
       else if (r.st === "occluded") {
         var on = r.occBy !== null ? T.names[S.wins[r.occBy].key] : "?";
         msg = fmt(T.occ, { w: nm, o: on }); bg = "#fdf0e0";
