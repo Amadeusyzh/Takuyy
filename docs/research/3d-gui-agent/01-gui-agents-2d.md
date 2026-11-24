@@ -120,7 +120,8 @@ memory, and often an exploration phase that writes app documentation. From late 
 **native agent models** trained end-to-end on screenshots (UI-TARS, Aguvis, OpenCUA, GUI-Owl, MAI-UI,
 UI-Venus, Xiaomi-GUI-0, BlueLM-GUI, Qwen-UI-Agent) and to **commercial computer-use agents** built into
 frontier models (Anthropic computer use, Oct 2024; OpenAI CUA/Operator, Jan 2025; Gemini 2.5 Computer Use,
-Oct 2025; computer use merged into GPT-5.4 in Mar 2026 and into Gemini 3.5 Flash by mid-2026).
+Oct 2025; computer use became a native skill of GPT-5.4 in Mar 2026 and, per press reports, of Gemini 3.5 Flash
+by mid-2026).
 
 **Perception and grounding.** Grounding, mapping "the Save button" to a screen location, was the main
 bottleneck in 2024 (OSWorld's authors name it as a primary failure cause). Specialised grounders (SeeClick,
