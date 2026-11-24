@@ -1,0 +1,22 @@
+10:02:20 "GET /page.html?auto=1 HTTP/1.1" 200 -
+10:02:33 "GET /hooks.js HTTP/1.1" 200 -
+10:02:33 "GET /auto-sdf.js HTTP/1.1" 200 -
+10:02:34 "POST /report HTTP/1.1" 204 -
+10:02:35 "POST /report HTTP/1.1" 204 -
+10:02:35 "POST /report HTTP/1.1" 204 -
+10:02:35 "POST /report HTTP/1.1" 204 -
+10:02:35 "POST /report HTTP/1.1" 204 -
+10:02:39 "POST /report HTTP/1.1" 204 -
+10:02:39 "POST /report HTTP/1.1" 204 -
+10:02:40 "POST /report HTTP/1.1" 204 -
+10:02:40 "POST /report HTTP/1.1" 204 -
+10:02:41 "POST /report HTTP/1.1" 204 -
+10:02:41 "POST /report HTTP/1.1" 204 -
+10:02:42 "POST /report HTTP/1.1" 204 -
+10:02:44 "POST /report HTTP/1.1" 204 -
+10:02:44 "POST /report HTTP/1.1" 204 -
+10:02:45 "POST /report HTTP/1.1" 204 -
+10:02:47 "POST /report HTTP/1.1" 204 -
+10:02:52 "POST /report HTTP/1.1" 204 -
+10:08:25 code 404, message File not found
+10:08:25 "GET /favicon.ico HTTP/1.1" 404 -

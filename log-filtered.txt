@@ -1,0 +1,600 @@
+2026-11-24 10:02:30.867 Df MTLCompilerService[1523:40a8] (MTLCompiler) Compilation SUCCESS (ParentProcessName=backboardd_1461) [FunctionName=TcimXc_Iara] (TYPE=MTLSpecializeFunctionToArchive - function specialization): Time 91.353541 ms
+2026-11-24 10:02:30.876 Df MTLCompilerService[1523:40a8] (MTLCompiler) Compilation BEGIN (ParentProcessName=backboardd_1461) Build request: MTLBuildFunctions - pipeline
+2026-11-24 10:02:30.882 Df MTLCompilerService[1523:40a8] (MTLCompiler) Compilation SUCCESS (ParentProcessName=backboardd_1461) [FunctionName=TcimXc_Iara] (TYPE=MTLBuildFunctions - pipeline): Time 5.739708 ms
+2026-11-24 10:02:30.884 I  com.apple.WebKit.Networking[3471:3ca5] [com.apple.network:connection] nw_endpoint_flow_connected_path_change [C3.1.1.2 IPv4#d1bc7f25:8123 ready socket-flow (satisfied (Path is satisfied), interface: lo0)] Connected path is satisfied, not viable
+2026-11-24 10:02:30.928 Df MTLCompilerService[1523:2c35] (MTLCompiler) Compilation BEGIN (ParentProcessName=backboardd_1461) Build request: MTLSpecializeFunctionToArchive - function specialization
+2026-11-24 10:02:30.956 E  MobileSafari[3460:3c78] [com.apple.TextInputUI:CandidateGeneration] Result accumulator timeout: 0.250000, exceeded.
+2026-11-24 10:02:30.959 Df MTLCompilerService[1523:2c35] (MTLCompiler) Compilation SUCCESS (ParentProcessName=backboardd_1461) [FunctionName=TcimXc_Isrg] (TYPE=MTLSpecializeFunctionToArchive - function specialization): Time 30.596541 ms
+2026-11-24 10:02:30.961 I  com.apple.WebKit.Networking[3471:3ca5] [com.apple.network:connection] nw_endpoint_flow_connected_path_change [C3.1.1.2 IPv4#d1bc7f25:8123 ready socket-flow (satisfied (Path is satisfied), interface: lo0)] Connected path is satisfied, not viable
+2026-11-24 10:02:30.960 Df MTLCompilerService[1523:2c35] (MTLCompiler) Compilation BEGIN (ParentProcessName=backboardd_1461) Build request: MTLBuildFunctions - pipeline
+2026-11-24 10:02:30.970 I  com.apple.WebKit.Networking[3471:3ca5] [com.apple.network:connection] nw_endpoint_flow_connected_path_change [C3 IPv4#d1bc7f25:8123 ready parent-flow (satisfied (Path is satisfied), interface: en0)] Connected path is satisfied, child is not viable
+2026-11-24 10:02:30.964 Df MTLCompilerService[1523:2c35] (MTLCompiler) Compilation SUCCESS (ParentProcessName=backboardd_1461) [FunctionName=TcimXc_Isrg] (TYPE=MTLBuildFunctions - pipeline): Time 3.663916 ms
+2026-11-24 10:02:31.001 I  com.apple.WebKit.Networking[3471:3ca5] [com.apple.network:connection] nw_endpoint_flow_connected_path_change [C4.1 IPv4#d1bc7f25:8123 ready socket-flow (satisfied (Path is satisfied), interface: lo0)] Connected path is satisfied, not viable
+2026-11-24 10:02:31.006 I  com.apple.WebKit.Networking[3471:3ca5] [com.apple.network:connection] nw_endpoint_flow_connected_path_change [C4.1 IPv4#d1bc7f25:8123 ready socket-flow (satisfied (Path is satisfied), interface: lo0)] Connected path is satisfied, not viable
+2026-11-24 10:02:31.805 I  MobileSafari[3460:3c1d] [com.apple.WebPrivacy:API] Dispatching list data changed notification for (ALLOWED_QUERY_PARAM)
+	ecn packets sent/acked/marked/lost: 0/0/0/0
+	ecn packets sent/acked/marked/lost: 0/0/0/0
+2026-11-24 10:02:33.552 Df com.apple.WebKit.Networking[3471:3c76] [com.apple.WebKit:Network] 0x111120000 - [pageProxyID=29, webPageID=30, frameID=8589934593, resourceID=42, isMainResource=0, destination=0, isSynchronous=0] NetworkResourceLoader::startNetworkLoad: (isFirstLoad=1, timeout=2147483647.000000)
+2026-11-24 10:02:33.552 Df com.apple.WebKit.Networking[3471:3c76] [com.apple.network:url] Task <C9BD807C-0DB6-4A06-BDBD-B34E219FA892>.<5> resuming, timeouts(2147483647.0, 604800.0), qos(0x19), activity(0D8CB96E-ECF7-4767-A55A-B670E3D3F966)
+2026-11-24 10:02:33.561 I  com.apple.WebKit.Networking[3471:3ca3] [com.apple.network:connection] nw_endpoint_flow_connected_path_change [C5.1.1.2 IPv4#d1bc7f25:8123 ready socket-flow (satisfied (Path is satisfied), interface: lo0)] Connected path is satisfied, not viable
+2026-11-24 10:02:33.563 I  com.apple.WebKit.Networking[3471:3ca3] [com.apple.network:connection] nw_endpoint_flow_connected_path_change [C5.1.1.2 IPv4#d1bc7f25:8123 ready socket-flow (satisfied (Path is satisfied), interface: lo0)] Connected path is satisfied, not viable
+2026-11-24 10:02:33.563 I  com.apple.WebKit.Networking[3471:3ca3] [com.apple.network:connection] nw_endpoint_flow_connected_path_change [C5 IPv4#d1bc7f25:8123 ready parent-flow (satisfied (Path is satisfied), interface: en0)] Connected path is satisfied, child is not viable
+2026-11-24 10:02:33.765 Df MobileSafari[3460:3cc4] [com.apple.WebKit:PerformanceLogging] WebContent[3469]: Memory usage info dump at MainFrameLoadCompleted:
+2026-11-24 10:02:33.765 Df MobileSafari[3460:3cc4] [com.apple.WebKit:PerformanceLogging] WebContent[3469]:   javascript_gc_heap_extra_memory_size_mb: 0
+2026-11-24 10:02:33.768 Df com.apple.WebKit.Networking[3471:3c76] [com.apple.WebKit:Network] 0x111121600 - [pageProxyID=29, webPageID=30, frameID=8589934593, resourceID=45, isMainResource=0, destination=0, isSynchronous=0] NetworkResourceLoader::startNetworkLoad: (isFirstLoad=1, timeout=2147483647.000000)
+2026-11-24 10:02:33.769 Df com.apple.WebKit.Networking[3471:3c76] [com.apple.network:url] Task <C9BD807C-0DB6-4A06-BDBD-B34E219FA892>.<6> resuming, timeouts(2147483647.0, 604800.0), qos(0x19), activity(00000000-0000-0000-0000-000000000000)
+2026-11-24 10:02:33.773 I  com.apple.WebKit.Networking[3471:40a5] [com.apple.network:connection] nw_endpoint_flow_connected_path_change [C6.1 IPv4#d1bc7f25:8123 ready socket-flow (satisfied (Path is satisfied), interface: lo0)] Connected path is satisfied, not viable
+2026-11-24 10:02:33.775 I  com.apple.WebKit.Networking[3471:40a5] [com.apple.network:connection] nw_endpoint_flow_connected_path_change [C6.1 IPv4#d1bc7f25:8123 ready socket-flow (satisfied (Path is satisfied), interface: lo0)] Connected path is satisfied, not viable
+2026-11-24 10:02:33.796 Df com.apple.WebKit.GPU[3472:3cad] [com.apple.xpc:connection] [0x104b08400] activating connection: mach=true listener=false peer=false name=com.apple.fontservicesd
+2026-11-24 10:02:33.824 Df MobileSafari[3460:3c1d] [com.apple.mobilesafari:SuddenTerminationDisabler] Beginning new task assertion with reason: com.apple.WebBookmarks.WBTabCollection
+2026-11-24 10:02:33.824 Df MobileSafari[3460:3c1d] [com.apple.UIKit:BackgroundTask] Will add backgroundTask with taskName: com.apple.SafariShared.SuddenTerminationDisabler, expirationHandler: <__NSGlobalBlock__: 0x1e9c84330>
+2026-11-24 10:02:33.825 Df MobileSafari[3460:3c1d] [com.apple.UIKit:BackgroundTask] Created background task <_UIBackgroundTaskInfo: 0x6000017ff640>: taskID = 29, taskName = com.apple.SafariShared.SuddenTerminationDisabler, creationTime = 288 (elapsed = 0).
+2026-11-24 10:02:33.825 Df MobileSafari[3460:3c1d] [com.apple.mobilesafari:SuddenTerminationDisabler] Did begin task assertion with reason com.apple.WebBookmarks.WBTabCollection
+2026-11-24 10:02:33.826 Df MobileSafari[3460:3c1d] [com.apple.mobilesafari:SuddenTerminationDisabler] Interrupting previous coalesced task assertion to be replaced with existing reasons: {(
+2026-11-24 10:02:33.826 Df MobileSafari[3460:3c1d] [com.apple.UIKit:BackgroundTask] Ending task with identifier 28 and description: <_UIBackgroundTaskInfo: 0x6000017f9fc0>: taskID = 28, taskName = com.apple.SafariShared.SuddenTerminationDisabler, creationTime = 285 (elapsed = 3), _expireHandler: <__NSGlobalBlock__: 0x1e9c84330>
+2026-11-24 10:02:33.826 Df MobileSafari[3460:3c1d] [com.apple.UIKit:BackgroundTask] Decrementing reference count for assertion <BKSProcessAssertion: 0x6000021cc050> (used by background task with identifier 28: <_UIBackgroundTaskInfo: 0x6000017f9fc0>: taskID = 28, taskName = com.apple.SafariShared.SuddenTerminationDisabler, creationTime = 285 (elapsed = 3))
+2026-11-24 10:02:33.829 Df MobileSafari[3460:3c1d] [com.apple.mobilesafari:SuddenTerminationDisabler] Beginning new task assertion with reason: com.apple.WebBookmarks.WBTabCollection
+2026-11-24 10:02:33.829 Df MobileSafari[3460:3c1d] [com.apple.UIKit:BackgroundTask] Will add backgroundTask with taskName: com.apple.SafariShared.SuddenTerminationDisabler, expirationHandler: <__NSGlobalBlock__: 0x1e9c84330>
+2026-11-24 10:02:33.831 Df MobileSafari[3460:3c1d] [com.apple.UIKit:BackgroundTask] Created background task <_UIBackgroundTaskInfo: 0x6000017f5840>: taskID = 30, taskName = com.apple.SafariShared.SuddenTerminationDisabler, creationTime = 288 (elapsed = 0).
+2026-11-24 10:02:33.831 Df MobileSafari[3460:3c1d] [com.apple.mobilesafari:SuddenTerminationDisabler] Did begin task assertion with reason com.apple.WebBookmarks.WBTabCollection
+2026-11-24 10:02:33.832 Df MobileSafari[3460:3c1d] [com.apple.mobilesafari:SuddenTerminationDisabler] Interrupting previous coalesced task assertion to be replaced with existing reasons: {(
+2026-11-24 10:02:33.832 Df MobileSafari[3460:3c1d] [com.apple.UIKit:BackgroundTask] Ending task with identifier 29 and description: <_UIBackgroundTaskInfo: 0x6000017ff640>: taskID = 29, taskName = com.apple.SafariShared.SuddenTerminationDisabler, creationTime = 288 (elapsed = 0), _expireHandler: <__NSGlobalBlock__: 0x1e9c84330>
+2026-11-24 10:02:33.833 Df MobileSafari[3460:3c1d] [com.apple.UIKit:BackgroundTask] Decrementing reference count for assertion <BKSProcessAssertion: 0x6000021cc050> (used by background task with identifier 29: <_UIBackgroundTaskInfo: 0x6000017ff640>: taskID = 29, taskName = com.apple.SafariShared.SuddenTerminationDisabler, creationTime = 288 (elapsed = 0))
+2026-11-24 10:02:33.833 Df MobileSafari[3460:3c1d] [com.apple.mobilesafari:SuddenTerminationDisabler] Beginning new task assertion with reason: com.apple.WebBookmarks.WBTabCollection
+2026-11-24 10:02:33.833 Df MobileSafari[3460:3c1d] [com.apple.UIKit:BackgroundTask] Will add backgroundTask with taskName: com.apple.SafariShared.SuddenTerminationDisabler, expirationHandler: <__NSGlobalBlock__: 0x1e9c84330>
+2026-11-24 10:02:33.817 A  com.apple.WebKit.GPU[3472:3d0d] (Metal) Metal Compiling Shader
+2026-11-24 10:02:33.833 A  com.apple.WebKit.GPU[3472:3cfb] (Metal) Metal Compiling Shader
+2026-11-24 10:02:33.819 Df MTLCompilerService[3485:3d0a] (MTLCompiler) Compilation BEGIN (ParentProcessName=com_apple_WebKit_GPU_3472) Build request: MTLBuildFunctions - pipeline
+2026-11-24 10:02:33.832 Df MTLCompilerService[3485:3d0a] (MTLCompiler) Compilation SUCCESS (ParentProcessName=com_apple_WebKit_GPU_3472) [FunctionName=buffer_image_blit_frag_lpf] (TYPE=MTLBuildFunctions - pipeline): Time 12.686583 ms
+2026-11-24 10:02:33.834 Df MTLCompilerService[3485:3d0a] (MTLCompiler) Compilation BEGIN (ParentProcessName=com_apple_WebKit_GPU_3472) Build request: MTLBuildFunctions - pipeline
+2026-11-24 10:02:33.840 Df MTLCompilerService[3485:3d0a] (MTLCompiler) Compilation SUCCESS (ParentProcessName=com_apple_WebKit_GPU_3472) [FunctionName=buffer_image_blit_vert_lpf] (TYPE=MTLBuildFunctions - pipeline): Time 6.393291 ms
+2026-11-24 10:02:33.899 Df MTLCompilerService[3485:3d0a] (MTLCompiler) Compilation BEGIN (ParentProcessName=com_apple_WebKit_GPU_3472) Build request: MTLSpecializeFunctionToArchive - function specialization
+2026-11-24 10:02:33.834 Df MobileSafari[3460:3c1d] [com.apple.UIKit:BackgroundTask] Created background task <_UIBackgroundTaskInfo: 0x600001837ec0>: taskID = 31, taskName = com.apple.SafariShared.SuddenTerminationDisabler, creationTime = 288 (elapsed = 0).
+2026-11-24 10:02:33.835 Df MobileSafari[3460:3c1d] [com.apple.mobilesafari:SuddenTerminationDisabler] Did begin task assertion with reason com.apple.WebBookmarks.WBTabCollection
+2026-11-24 10:02:33.835 Df MobileSafari[3460:3c1d] [com.apple.mobilesafari:SuddenTerminationDisabler] Interrupting previous coalesced task assertion to be replaced with existing reasons: {(
+2026-11-24 10:02:33.835 Df MobileSafari[3460:3c1d] [com.apple.UIKit:BackgroundTask] Ending task with identifier 30 and description: <_UIBackgroundTaskInfo: 0x6000017f5840>: taskID = 30, taskName = com.apple.SafariShared.SuddenTerminationDisabler, creationTime = 288 (elapsed = 0), _expireHandler: <__NSGlobalBlock__: 0x1e9c84330>
+2026-11-24 10:02:33.836 Df MobileSafari[3460:3c1d] [com.apple.UIKit:BackgroundTask] Decrementing reference count for assertion <BKSProcessAssertion: 0x6000021cc050> (used by background task with identifier 30: <_UIBackgroundTaskInfo: 0x6000017f5840>: taskID = 30, taskName = com.apple.SafariShared.SuddenTerminationDisabler, creationTime = 288 (elapsed = 0))
+2026-11-24 10:02:33.910 Df MobileSafari[3460:3c7b] [com.apple.mobilesafari:SuddenTerminationDisabler] Ending task assertion with reason com.apple.SafariCore.WBSSQLiteStatement
+2026-11-24 10:02:33.966 Df MobileSafari[3460:3c7b] [com.apple.mobilesafari:SuddenTerminationDisabler] Continuing background task assertion with reasons {(
+2026-11-24 10:02:34.010 Df MTLCompilerService[3485:3d0a] (MTLCompiler) Compilation SUCCESS (ParentProcessName=com_apple_WebKit_GPU_3472) [FunctionName=TcimXc_Icir] (TYPE=MTLSpecializeFunctionToArchive - function specialization): Time 111.086500 ms
+2026-11-24 10:02:34.015 Df MTLCompilerService[3485:40da] (MTLCompiler) Compilation BEGIN (ParentProcessName=com_apple_WebKit_GPU_3472) Build request: MTLSpecializeFunctionToArchive - function specialization
+2026-11-24 10:02:34.022 Df MTLCompilerService[3485:40da] (MTLCompiler) Compilation SUCCESS (ParentProcessName=com_apple_WebKit_GPU_3472) [FunctionName=VfxU10] (TYPE=MTLSpecializeFunctionToArchive - function specialization): Time 5.664541 ms
+2026-11-24 10:02:34.026 Df MTLCompilerService[3485:40da] (MTLCompiler) Compilation BEGIN (ParentProcessName=com_apple_WebKit_GPU_3472) Build request: MTLBuildFunctions - pipeline
+2026-11-24 10:02:34.031 Df MTLCompilerService[3485:40da] (MTLCompiler) Compilation SUCCESS (ParentProcessName=com_apple_WebKit_GPU_3472) [FunctionName=TcimXc_Icir] (TYPE=MTLBuildFunctions - pipeline): Time 4.033583 ms
+2026-11-24 10:02:34.033 Df MTLCompilerService[3485:40da] (MTLCompiler) Compilation BEGIN (ParentProcessName=com_apple_WebKit_GPU_3472) Build request: MTLBuildFunctions - pipeline
+2026-11-24 10:02:34.035 Df MTLCompilerService[3485:40da] (MTLCompiler) Compilation SUCCESS (ParentProcessName=com_apple_WebKit_GPU_3472) [FunctionName=VfxU10] (TYPE=MTLBuildFunctions - pipeline): Time 2.479250 ms
+2026-11-24 10:02:34.101 Df MobileSafari[3460:3c7b] [com.apple.CFNetwork:Default] Task <A84D1F92-DD66-454A-9B25-385C777806AF>.<1> resuming, timeouts(60.0, 604800.0) qos(0x11) voucher(<OS_voucher: 0x600002103200>) activity(00000000-0000-0000-0000-000000000000)
+2026-11-24 10:02:33.897 A  com.apple.WebKit.GPU[3472:3cad] (Metal) Metal Compiling Shader
+2026-11-24 10:02:34.057 Df MTLCompilerService[3485:40da] (MTLCompiler) Compilation BEGIN (ParentProcessName=com_apple_WebKit_GPU_3472) Build request: MTLSpecializeFunctionToArchive - function specialization
+2026-11-24 10:02:34.013 A  com.apple.WebKit.GPU[3472:3cfb] (Metal) Metal Compiling Shader
+2026-11-24 10:02:34.024 A  com.apple.WebKit.GPU[3472:3cad] (Metal) Metal Compiling Shader
+2026-11-24 10:02:34.032 A  com.apple.WebKit.GPU[3472:3cfb] (Metal) Metal Compiling Shader
+2026-11-24 10:02:34.054 A  com.apple.WebKit.GPU[3472:3cad] (Metal) Metal Compiling Shader
+2026-11-24 10:02:34.094 A  com.apple.WebKit.GPU[3472:3cfb] (Metal) Metal Compiling Shader
+2026-11-24 10:02:34.117 A  com.apple.WebKit.GPU[3472:3cad] (Metal) Metal Compiling Shader
+2026-11-24 10:02:34.140 A  com.apple.WebKit.GPU[3472:3cad] (Metal) Metal Compiling Shader
+2026-11-24 10:02:34.070 Df MTLCompilerService[3485:40da] (MTLCompiler) Compilation SUCCESS (ParentProcessName=com_apple_WebKit_GPU_3472) [FunctionName=TcmaLlnXc] (TYPE=MTLSpecializeFunctionToArchive - function specialization): Time 13.054958 ms
+2026-11-24 10:02:34.101 Df MTLCompilerService[3485:40da] (MTLCompiler) Compilation BEGIN (ParentProcessName=com_apple_WebKit_GPU_3472) Build request: MTLSpecializeFunctionToArchive - function specialization
+2026-11-24 10:02:34.113 Df MTLCompilerService[3485:40da] (MTLCompiler) Compilation SUCCESS (ParentProcessName=com_apple_WebKit_GPU_3472) [FunctionName=VfxLln] (TYPE=MTLSpecializeFunctionToArchive - function specialization): Time 3.287416 ms
+2026-11-24 10:02:34.131 Df MTLCompilerService[3485:40da] (MTLCompiler) Compilation BEGIN (ParentProcessName=com_apple_WebKit_GPU_3472) Build request: MTLBuildFunctions - pipeline
+2026-11-24 10:02:34.135 Df MTLCompilerService[3485:40da] (MTLCompiler) Compilation SUCCESS (ParentProcessName=com_apple_WebKit_GPU_3472) [FunctionName=TcmaLlnXc] (TYPE=MTLBuildFunctions - pipeline): Time 4.108083 ms
+2026-11-24 10:02:34.141 Df MTLCompilerService[3485:40da] (MTLCompiler) Compilation BEGIN (ParentProcessName=com_apple_WebKit_GPU_3472) Build request: MTLBuildFunctions - pipeline
+2026-11-24 10:02:34.144 Df MTLCompilerService[3485:40da] (MTLCompiler) Compilation SUCCESS (ParentProcessName=com_apple_WebKit_GPU_3472) [FunctionName=VfxLln] (TYPE=MTLBuildFunctions - pipeline): Time 2.567875 ms
+2026-11-24 10:02:34.277 I  MobileSafari[3460:40e1] [com.apple.mobilesafari:Translation] Changed state from 'Unknown' to 'DetectedWebpageLanguage'
+2026-11-24 10:02:34.350 Df runningboardd[1442:2eaa] [com.apple.runningboard:process] [xpcservice<com.apple.WebKit.WebContent([app<com.apple.mobilesafari((null))>:3460])>{vt hash: 71395982}[uuid:7BD67751-0271-46C6-B3E9-CFAA9348D1B6]{definition:com.apple.WebKit.WebContent[extension][client]}:3808] Memory Limits: active 0 inactive 0
+ <RBJetsamProperties| tasklimit=0
+	ecn packets sent/acked/marked/lost: 0/0/0/0
+2026-11-24 10:02:34.700 Df MobileSafari[3460:3c1d] [com.apple.WebKit:ProcessSuspension] 0x1100e4680 - [PID=3808] WebProcessProxy::didChangeThrottleState: type=2
+2026-11-24 10:02:34.700 Df MobileSafari[3460:3c1d] [com.apple.WebKit:ProcessSuspension] 0x1100e4680 - [PID=3808] WebProcessProxy::didChangeThrottleState(Foreground) Taking foreground assertion for network process
+2026-11-24 10:02:34.716 Df MobileSafari[3460:3c1d] [com.apple.WebKit:ProcessSuspension] 0x1100e4680 - [PID=3808] WebProcessProxy::didChangeThrottleState: type=1
+2026-11-24 10:02:34.716 Df MobileSafari[3460:3c1d] [com.apple.WebKit:ProcessSuspension] 0x1100e4680 - [PID=3808] WebProcessProxy::didChangeThrottleState(Background) Taking background assertion for network process
+2026-11-24 10:02:35.109 Df MobileSafari[3460:40e1] [com.apple.mobilesafari:SuddenTerminationDisabler] Beginning new task assertion with reason: com.apple.SafariCore.WBSSQLiteStatement
+2026-11-24 10:02:35.110 Df MobileSafari[3460:40e1] [com.apple.UIKit:BackgroundTask] Will add backgroundTask with taskName: com.apple.SafariShared.SuddenTerminationDisabler, expirationHandler: <__NSGlobalBlock__: 0x1e9c84330>
+2026-11-24 10:02:35.111 Df MobileSafari[3460:40e1] [com.apple.UIKit:BackgroundTask] Created background task <_UIBackgroundTaskInfo: 0x60000171b880>: taskID = 33, taskName = com.apple.SafariShared.SuddenTerminationDisabler, creationTime = 289 (elapsed = 0).
+2026-11-24 10:02:35.111 Df MobileSafari[3460:40e1] [com.apple.mobilesafari:SuddenTerminationDisabler] Did begin task assertion with reason com.apple.SafariCore.WBSSQLiteStatement
+2026-11-24 10:02:35.111 Df MobileSafari[3460:40e1] [com.apple.mobilesafari:SuddenTerminationDisabler] Interrupting previous coalesced task assertion to be replaced with existing reasons: {(
+2026-11-24 10:02:35.112 Df MobileSafari[3460:40e1] [com.apple.UIKit:BackgroundTask] Ending task with identifier 31 and description: <_UIBackgroundTaskInfo: 0x600001837ec0>: taskID = 31, taskName = com.apple.SafariShared.SuddenTerminationDisabler, creationTime = 288 (elapsed = 1), _expireHandler: <__NSGlobalBlock__: 0x1e9c84330>
+2026-11-24 10:02:35.112 Df MobileSafari[3460:40e1] [com.apple.UIKit:BackgroundTask] Decrementing reference count for assertion <BKSProcessAssertion: 0x6000021cc050> (used by background task with identifier 31: <_UIBackgroundTaskInfo: 0x600001837ec0>: taskID = 31, taskName = com.apple.SafariShared.SuddenTerminationDisabler, creationTime = 288 (elapsed = 1))
+	ecn packets sent/acked/marked/lost: 0/0/0/0
+2026-11-24 10:02:35.125 Df com.apple.WebKit.Networking[3471:3c76] [com.apple.WebKit:Network] 0x111120000 - [pageProxyID=29, webPageID=30, frameID=8589934593, resourceID=161, isMainResource=0, destination=0, isSynchronous=0] NetworkResourceLoader::startNetworkLoad: (isFirstLoad=1, timeout=2147483647.000000)
+2026-11-24 10:02:35.125 Df com.apple.WebKit.Networking[3471:3c76] [com.apple.network:url] Task <C9BD807C-0DB6-4A06-BDBD-B34E219FA892>.<7> resuming, timeouts(2147483647.0, 604800.0), qos(0x19), activity(00000000-0000-0000-0000-000000000000)
+2026-11-24 10:02:35.158 Df com.apple.WebKit.Networking[3471:3c76] [com.apple.WebKit:Network] 0x111121600 - [pageProxyID=29, webPageID=30, frameID=8589934593, resourceID=162, isMainResource=0, destination=0, isSynchronous=0] NetworkResourceLoader::startNetworkLoad: (isFirstLoad=1, timeout=2147483647.000000)
+2026-11-24 10:02:35.158 Df com.apple.WebKit.Networking[3471:3c76] [com.apple.network:url] Task <C9BD807C-0DB6-4A06-BDBD-B34E219FA892>.<8> resuming, timeouts(2147483647.0, 604800.0), qos(0x19), activity(00000000-0000-0000-0000-000000000000)
+2026-11-24 10:02:35.169 I  MobileSafari[3460:3c1d] [com.apple.WebPrivacy:API] Dispatching list data changed notification for (RESTRICTED_OPENER_DOMAINS)
+2026-11-24 10:02:35.213 Df com.apple.WebKit.Networking[3471:3c76] [com.apple.WebKit:Network] 0x111122c00 - [pageProxyID=29, webPageID=30, frameID=8589934593, resourceID=177, isMainResource=0, destination=0, isSynchronous=0] NetworkResourceLoader::startNetworkLoad: (isFirstLoad=1, timeout=2147483647.000000)
+2026-11-24 10:02:35.213 Df com.apple.WebKit.Networking[3471:3c76] [com.apple.network:url] Task <C9BD807C-0DB6-4A06-BDBD-B34E219FA892>.<9> resuming, timeouts(2147483647.0, 604800.0), qos(0x19), activity(00000000-0000-0000-0000-000000000000)
+2026-11-24 10:02:35.208 A  com.apple.WebKit.GPU[3472:3d0d] (libsystem_trace.dylib) Activity for state dumps
+2026-11-24 10:02:35.208 F  com.apple.WebKit.GPU[3472:3d0d] (IOSurface) IOSurfaceQueryTransactionList got non-success return from kernel
+2026-11-24 10:02:35.215 Df com.apple.WebKit.GPU[3472:3d0d] (CoreVideo) Pixel format registry initialized. Constant classes enabled.
+2026-11-24 10:02:35.217 A  com.apple.WebKit.GPU[3472:3cfb] (Metal) Metal Compiling Shader
+2026-11-24 10:02:35.217 I  com.apple.WebKit.GPU[3472:3d0d] [com.apple.coreanimation:Utilities] IOSurface Compression Enabled: NO
+2026-11-24 10:02:35.220 Df MTLCompilerService[3485:40da] (MTLCompiler) Compilation BEGIN (ParentProcessName=com_apple_WebKit_GPU_3472) Build request: MTLSpecializeFunctionToArchive - function specialization
+2026-11-24 10:02:35.264 Df MTLCompilerService[3485:40da] (MTLCompiler) Compilation SUCCESS (ParentProcessName=com_apple_WebKit_GPU_3472) [FunctionName=TimgXc_Isrc] (TYPE=MTLSpecializeFunctionToArchive - function specialization): Time 44.426083 ms
+2026-11-24 10:02:35.275 Df MTLCompilerService[3485:40da] (MTLCompiler) Compilation BEGIN (ParentProcessName=com_apple_WebKit_GPU_3472) Build request: MTLBuildFunctions - pipeline
+2026-11-24 10:02:35.280 Df MTLCompilerService[3485:40da] (MTLCompiler) Compilation SUCCESS (ParentProcessName=com_apple_WebKit_GPU_3472) [FunctionName=TimgXc_Isrc] (TYPE=MTLBuildFunctions - pipeline): Time 4.281666 ms
+2026-11-24 10:02:35.294 Df MTLCompilerService[3485:40da] (MTLCompiler) Compilation BEGIN (ParentProcessName=com_apple_WebKit_GPU_3472) Build request: MTLSpecializeFunctionToArchive - function specialization
+2026-11-24 10:02:35.269 Df MTLCompilerService[1523:2c35] (MTLCompiler) Compilation BEGIN (ParentProcessName=backboardd_1461) Build request: MTLSpecializeFunctionToArchive - function specialization
+2026-11-24 10:02:35.271 A  com.apple.WebKit.GPU[3472:3d0d] (Metal) Metal Compiling Shader
+2026-11-24 10:02:35.293 A  com.apple.WebKit.GPU[3472:3cfb] (Metal) Metal Compiling Shader
+2026-11-24 10:02:35.321 A  com.apple.WebKit.GPU[3472:3d0d] (Metal) Metal Compiling Shader
+2026-11-24 10:02:35.313 Df MTLCompilerService[1523:2c35] (MTLCompiler) Compilation SUCCESS (ParentProcessName=backboardd_1461) [FunctionName=TcimXcn_Ialp] (TYPE=MTLSpecializeFunctionToArchive - function specialization): Time 43.557791 ms
+2026-11-24 10:02:35.315 Df MTLCompilerService[1523:2c35] (MTLCompiler) Compilation BEGIN (ParentProcessName=backboardd_1461) Build request: MTLBuildFunctions - pipeline
+2026-11-24 10:02:35.319 Df MTLCompilerService[1523:2c35] (MTLCompiler) Compilation SUCCESS (ParentProcessName=backboardd_1461) [FunctionName=TcimXcn_Ialp] (TYPE=MTLBuildFunctions - pipeline): Time 4.056083 ms
+2026-11-24 10:02:35.316 Df MTLCompilerService[3485:40da] (MTLCompiler) Compilation SUCCESS (ParentProcessName=com_apple_WebKit_GPU_3472) [FunctionName=TcimXc_Isrc] (TYPE=MTLSpecializeFunctionToArchive - function specialization): Time 22.412416 ms
+2026-11-24 10:02:35.327 Df MTLCompilerService[3485:40da] (MTLCompiler) Compilation BEGIN (ParentProcessName=com_apple_WebKit_GPU_3472) Build request: MTLBuildFunctions - pipeline
+2026-11-24 10:02:35.359 Df MTLCompilerService[3485:40da] (MTLCompiler) Compilation SUCCESS (ParentProcessName=com_apple_WebKit_GPU_3472) [FunctionName=TcimXc_Isrc] (TYPE=MTLBuildFunctions - pipeline): Time 13.324583 ms
+2026-11-24 10:02:35.391 A  com.apple.WebKit.GPU[3472:3cad] (libsystem_trace.dylib) Activity for state dumps
+2026-11-24 10:02:35.391 F  com.apple.WebKit.GPU[3472:3cad] (IOSurface) IOSurfaceQueryTransactionList got non-success return from kernel
+2026-11-24 10:02:35.414 A  com.apple.WebKit.GPU[3472:3cab] (Metal) Metal Compiling Shader
+2026-11-24 10:02:35.543 A  com.apple.WebKit.GPU[3472:3cfb] (Metal) Metal Compiling Shader
+2026-11-24 10:02:35.563 Df MTLCompilerService[3487:3d14] (MTLCompiler) Compilation BEGIN (ParentProcessName=com_apple_WebKit_GPU_3472) Build request: MTLBuildLibraryFromSourceToArchive - source
+2026-11-24 10:02:35.567 I  com.apple.WebKit.Networking[3471:3ca3] [com.apple.network:connection] nw_endpoint_flow_connected_path_change [C7.1.1.2 IPv4#d1bc7f25:8123 ready socket-flow (satisfied (Path is satisfied), interface: lo0)] Connected path is satisfied, not viable
+2026-11-24 10:02:35.591 A  com.apple.WebKit.GPU[3472:3d0d] (libsystem_trace.dylib) Activity for state dumps
+2026-11-24 10:02:35.591 F  com.apple.WebKit.GPU[3472:3d0d] (IOSurface) IOSurfaceQueryTransactionList got non-success return from kernel
+2026-11-24 10:02:35.585 I  com.apple.WebKit.Networking[3471:3ca3] [com.apple.network:connection] nw_endpoint_flow_connected_path_change [C7.1.1.2 IPv4#d1bc7f25:8123 ready socket-flow (satisfied (Path is satisfied), interface: lo0)] Connected path is satisfied, not viable
+2026-11-24 10:02:35.598 I  com.apple.WebKit.Networking[3471:3ca3] [com.apple.network:connection] nw_endpoint_flow_connected_path_change [C7 IPv4#d1bc7f25:8123 ready parent-flow (satisfied (Path is satisfied), interface: en0)] Connected path is satisfied, child is not viable
+2026-11-24 10:02:35.639 I  com.apple.WebKit.Networking[3471:3ca3] [com.apple.network:connection] nw_endpoint_flow_connected_path_change [C8.1 IPv4#d1bc7f25:8123 ready socket-flow (satisfied (Path is satisfied), interface: lo0)] Connected path is satisfied, not viable
+2026-11-24 10:02:35.644 I  com.apple.WebKit.Networking[3471:3ca3] [com.apple.network:connection] nw_endpoint_flow_connected_path_change [C8.1 IPv4#d1bc7f25:8123 ready socket-flow (satisfied (Path is satisfied), interface: lo0)] Connected path is satisfied, not viable
+2026-11-24 10:02:35.646 I  com.apple.WebKit.Networking[3471:3ca3] [com.apple.network:connection] nw_endpoint_flow_connected_path_change [C9.1 IPv4#d1bc7f25:8123 ready socket-flow (satisfied (Path is satisfied), interface: lo0)] Connected path is satisfied, not viable
+2026-11-24 10:02:35.647 I  com.apple.WebKit.Networking[3471:3ca3] [com.apple.network:connection] nw_endpoint_flow_connected_path_change [C9.1 IPv4#d1bc7f25:8123 ready socket-flow (satisfied (Path is satisfied), interface: lo0)] Connected path is satisfied, not viable
+2026-11-24 10:02:35.669 Df MTLCompilerService[3485:40da] (MTLCompiler) Compilation BEGIN (ParentProcessName=com_apple_WebKit_GPU_3472) Build request: MTLBuildLibraryFromSourceToArchive - source
+2026-11-24 10:02:35.711 Df MobileSafari[3460:3c1d] [com.apple.WebKit:Process] 0x1100e4680 - [PID=3808] WebProcessProxy::canTerminateAuxiliaryProcess: returns true
+2026-11-24 10:02:35.711 Df MobileSafari[3460:3c1d] [com.apple.WebKit:ProcessSuspension] 0x1100e4680 - [PID=3808] WebProcessProxy::didChangeThrottleState: type=0
+2026-11-24 10:02:35.711 Df MobileSafari[3460:3c1d] [com.apple.WebKit:ProcessSuspension] 0x1100e4680 - [PID=3808] WebProcessProxy::didChangeThrottleState(Suspended) Release all assertions for network process
+	ecn packets sent/acked/marked/lost: 0/0/0/0
+	ecn packets sent/acked/marked/lost: 0/0/0/0
+	ecn packets sent/acked/marked/lost: 0/0/0/0
+2026-11-24 10:02:35.988 A  com.apple.WebKit.GPU[3472:3cf6] (libsystem_trace.dylib) Activity for state dumps
+2026-11-24 10:02:35.988 F  com.apple.WebKit.GPU[3472:3cf6] (IOSurface) IOSurfaceQueryTransactionList got non-success return from kernel
+2026-11-24 10:02:36.370 Df MobileSafari[3460:3c79] [com.apple.TipKit:TipKit • Core] Rule(id: WBSOnboardingIdentifierWBSOnboardingIdentifier(_rawValue: TipForMoreButton).event.com.apple.safari.WBSOnboardingIdentifierWBSOnboardingIdentifier(_rawValue: TipForMoreButton).count(donationsCount) >= Optional(1)) status changed to: passed
+2026-11-24 10:02:36.450 Df MobileSafari[3460:3c79] [com.apple.TipKit:TipKit • Core] Tip(id: WBSOnboardingIdentifierWBSOnboardingIdentifier(_rawValue: TipForMoreButton)) display rules did change: pending → available
+2026-11-24 10:02:36.451 Df MobileSafari[3460:3c1d] [com.apple.TipKit:TipKit • Core] Tip(id: WBSOnboardingIdentifierWBSOnboardingIdentifier(_rawValue: TipForMoreButton)) status did change to: available
+2026-11-24 10:02:37.049 Df MobileSafari[3460:3c1d] [com.apple.xpc:connection] [0x167810a80] activating connection: mach=true listener=false peer=false name=com.apple.metal.simulator
+2026-11-24 10:02:37.049 Df MobileSafari[3460:3c1d] [com.apple.xpc:connection] [0x1028b3b70] activating connection: mach=true listener=false peer=false name=com.apple.metal.simulator
+2026-11-24 10:02:37.050 Df MobileSafari[3460:3c1d] [com.apple.xpc:connection] [0x167810bb0] activating connection: mach=true listener=false peer=false name=com.apple.metal.simulator
+2026-11-24 10:02:37.074 Df MobileSafari[3460:4131] [com.apple.xpc:connection] [0x102be6d90] activating connection: mach=false listener=false peer=false name=com.apple.MTLCompilerService
+2026-11-24 10:02:37.166 Df MobileSafari[3460:4131] [com.apple.xpc:connection] [0x1028144b0] activating connection: mach=false listener=false peer=false name=com.apple.MTLCompilerService
+2026-11-24 10:02:37.167 A  MobileSafari[3460:3c7b] (Metal) Metal Compiling Shader
+2026-11-24 10:02:37.847 Df MTLCompilerService[3816:4138] [com.apple.libcoreservices:] _dirhelper_update_tmpdir: old=(null), new=/var/tmp/com.apple.MTLCompilerService/
+2026-11-24 10:02:37.848 Df MTLCompilerService[3816:4138] [com.apple.xpc:connection] [0x1031bcf60] activating connection: mach=false listener=true peer=false name=com.apple.MTLCompilerService
+2026-11-24 10:02:37.848 Df MTLCompilerService[3816:413d] [com.apple.xpc:connection] [0x1031bd670] activating connection: mach=false listener=false peer=true name=com.apple.MTLCompilerService.peer[3460].0x1031bd670
+2026-11-24 10:02:37.860 Df MTLCompilerService[3816:413d] (MTLCompiler) Compilation BEGIN (ParentProcessName=MobileSafari_3460) Build request: MTLSpecializeFunctionToArchive - function specialization
+2026-11-24 10:02:37.869 Df MTLCompilerService[3816:413d] (MTLCompiler) Compilation SUCCESS (ParentProcessName=MobileSafari_3460) [FunctionName=vkba6pa7jbebia3] (TYPE=MTLSpecializeFunctionToArchive - function specialization): Time 9.067958 ms
+2026-11-24 10:02:37.870 A  MobileSafari[3460:3c7b] (Metal) Metal Compiling Shader
+2026-11-24 10:02:37.871 Df MTLCompilerService[3816:413d] (MTLCompiler) Compilation BEGIN (ParentProcessName=MobileSafari_3460) Build request: MTLBuildFunctions - pipeline
+2026-11-24 10:02:37.883 Df MTLCompilerService[3816:413d] [com.apple.xpc:connection] [0x1031c6440] activating connection: mach=true listener=false peer=false name=com.apple.cfprefsd.daemon
+2026-11-24 10:02:37.894 Df MTLCompilerService[3816:413d] (MTLCompiler) Compilation SUCCESS (ParentProcessName=MobileSafari_3460) [FunctionName=path_distance_fragment] (TYPE=MTLBuildFunctions - pipeline): Time 22.910958 ms
+2026-11-24 10:02:37.895 A  MobileSafari[3460:3c37] (Metal) Metal Compiling Shader
+2026-11-24 10:02:37.895 Df MTLCompilerService[3816:413d] (MTLCompiler) Compilation BEGIN (ParentProcessName=MobileSafari_3460) Build request: MTLBuildFunctions - pipeline
+2026-11-24 10:02:37.900 Df MTLCompilerService[3816:413d] (MTLCompiler) Compilation SUCCESS (ParentProcessName=MobileSafari_3460) [FunctionName=vkba6pa7jbebia3] (TYPE=MTLBuildFunctions - pipeline): Time 4.662583 ms
+2026-11-24 10:02:37.915 A  MobileSafari[3460:3c79] (Metal) Metal Compiling Shader
+2026-11-24 10:02:37.915 Df MTLCompilerService[3816:413d] (MTLCompiler) Compilation BEGIN (ParentProcessName=MobileSafari_3460) Build request: MTLSpecializeFunctionToArchive - function specialization
+2026-11-24 10:02:37.916 Df MTLCompilerService[3816:413d] (MTLCompiler) Compilation SUCCESS (ParentProcessName=MobileSafari_3460) [FunctionName=fca15jbebia3] (TYPE=MTLSpecializeFunctionToArchive - function specialization): Time 1.224458 ms
+2026-11-24 10:02:37.917 A  MobileSafari[3460:3c79] (Metal) Metal Compiling Shader
+2026-11-24 10:02:37.917 Df MTLCompilerService[3816:413d] (MTLCompiler) Compilation BEGIN (ParentProcessName=MobileSafari_3460) Build request: MTLBuildFunctions - pipeline
+2026-11-24 10:02:37.918 Df MTLCompilerService[3816:413d] (MTLCompiler) Compilation SUCCESS (ParentProcessName=MobileSafari_3460) [FunctionName=fca15jbebia3] (TYPE=MTLBuildFunctions - pipeline): Time 0.898625 ms
+2026-11-24 10:02:37.919 A  MobileSafari[3460:3c37] (Metal) Metal Compiling Shader
+2026-11-24 10:02:37.919 Df MTLCompilerService[3816:413d] (MTLCompiler) Compilation BEGIN (ParentProcessName=MobileSafari_3460) Build request: MTLBuildFunctions - pipeline
+2026-11-24 10:02:37.920 Df MTLCompilerService[3816:413d] (MTLCompiler) Compilation SUCCESS (ParentProcessName=MobileSafari_3460) [FunctionName=plane__vertex] (TYPE=MTLBuildFunctions - pipeline): Time 1.024374 ms
+2026-11-24 10:02:37.921 A  MobileSafari[3460:40e2] (Metal) Metal Compiling Shader
+2026-11-24 10:02:37.922 Df MTLCompilerService[3816:413d] (MTLCompiler) Compilation BEGIN (ParentProcessName=MobileSafari_3460) Build request: MTLSpecializeFunctionToArchive - function specialization
+2026-11-24 10:02:37.926 A  MobileSafari[3460:3c79] (Metal) Metal Compiling Shader
+2026-11-24 10:02:37.926 Df MTLCompilerService[3816:413d] (MTLCompiler) Compilation SUCCESS (ParentProcessName=MobileSafari_3460) [FunctionName=viba6la7jbebia3] (TYPE=MTLSpecializeFunctionToArchive - function specialization): Time 4.204541 ms
+2026-11-24 10:02:37.927 Df MTLCompilerService[3816:413d] (MTLCompiler) Compilation BEGIN (ParentProcessName=MobileSafari_3460) Build request: MTLBuildFunctions - pipeline
+2026-11-24 10:02:37.928 Df MTLCompilerService[3816:413d] (MTLCompiler) Compilation SUCCESS (ParentProcessName=MobileSafari_3460) [FunctionName=path_interior_fragment] (TYPE=MTLBuildFunctions - pipeline): Time 0.837708 ms
+2026-11-24 10:02:37.928 A  MobileSafari[3460:40e2] (Metal) Metal Compiling Shader
+2026-11-24 10:02:37.928 Df MTLCompilerService[3816:413d] (MTLCompiler) Compilation BEGIN (ParentProcessName=MobileSafari_3460) Build request: MTLBuildFunctions - pipeline
+2026-11-24 10:02:37.930 Df MTLCompilerService[3816:413d] (MTLCompiler) Compilation SUCCESS (ParentProcessName=MobileSafari_3460) [FunctionName=viba6la7jbebia3] (TYPE=MTLBuildFunctions - pipeline): Time 1.725000 ms
+2026-11-24 10:02:37.931 A  MobileSafari[3460:3c79] (Metal) Metal Compiling Shader
+2026-11-24 10:02:37.932 Df MTLCompilerService[3816:413d] (MTLCompiler) Compilation BEGIN (ParentProcessName=MobileSafari_3460) Build request: MTLSpecializeFunctionToArchive - function specialization
+2026-11-24 10:02:37.936 Df MTLCompilerService[3816:413d] (MTLCompiler) Compilation SUCCESS (ParentProcessName=MobileSafari_3460) [FunctionName=fcja6ca7jbebia3] (TYPE=MTLSpecializeFunctionToArchive - function specialization): Time 4.103333 ms
+2026-11-24 10:02:37.936 A  MobileSafari[3460:40e2] (Metal) Metal Compiling Shader
+2026-11-24 10:02:37.937 Df MTLCompilerService[3816:413d] (MTLCompiler) Compilation BEGIN (ParentProcessName=MobileSafari_3460) Build request: MTLBuildFunctions - pipeline
+2026-11-24 10:02:37.939 Df MTLCompilerService[3816:413d] (MTLCompiler) Compilation SUCCESS (ParentProcessName=MobileSafari_3460) [FunctionName=fcja6ca7jbebia3] (TYPE=MTLBuildFunctions - pipeline): Time 2.319666 ms
+2026-11-24 10:02:37.941 A  MobileSafari[3460:3c79] (Metal) Metal Compiling Shader
+2026-11-24 10:02:37.942 Df MTLCompilerService[3816:413d] (MTLCompiler) Compilation BEGIN (ParentProcessName=MobileSafari_3460) Build request: MTLSpecializeFunctionToArchive - function specialization
+2026-11-24 10:02:37.952 Df MTLCompilerService[3816:413d] (MTLCompiler) Compilation SUCCESS (ParentProcessName=MobileSafari_3460) [FunctionName=fcjba5lca6jbebia3] (TYPE=MTLSpecializeFunctionToArchive - function specialization): Time 10.603625 ms
+2026-11-24 10:02:37.953 A  MobileSafari[3460:40e2] (Metal) Metal Compiling Shader
+2026-11-24 10:02:37.953 Df MTLCompilerService[3816:413d] (MTLCompiler) Compilation BEGIN (ParentProcessName=MobileSafari_3460) Build request: MTLBuildFunctions - pipeline
+2026-11-24 10:02:37.954 Df MTLCompilerService[3816:413d] (MTLCompiler) Compilation SUCCESS (ParentProcessName=MobileSafari_3460) [FunctionName=fcjba5lca6jbebia3] (TYPE=MTLBuildFunctions - pipeline): Time 1.226500 ms
+2026-11-24 10:02:37.957 A  MobileSafari[3460:3c79] (Metal) Metal Compiling Shader
+2026-11-24 10:02:37.957 Df MTLCompilerService[3816:413d] (MTLCompiler) Compilation BEGIN (ParentProcessName=MobileSafari_3460) Build request: MTLSpecializeFunctionToArchive - function specialization
+2026-11-24 10:02:37.959 Df MTLCompilerService[3816:413d] (MTLCompiler) Compilation SUCCESS (ParentProcessName=MobileSafari_3460) [FunctionName=fca15dheba4] (TYPE=MTLSpecializeFunctionToArchive - function specialization): Time 1.815833 ms
+2026-11-24 10:02:37.959 A  MobileSafari[3460:3c37] (Metal) Metal Compiling Shader
+2026-11-24 10:02:37.960 Df MTLCompilerService[3816:413d] (MTLCompiler) Compilation BEGIN (ParentProcessName=MobileSafari_3460) Build request: MTLBuildFunctions - pipeline
+2026-11-24 10:02:37.960 Df MTLCompilerService[3816:413d] (MTLCompiler) Compilation SUCCESS (ParentProcessName=MobileSafari_3460) [FunctionName=fca15dheba4] (TYPE=MTLBuildFunctions - pipeline): Time 0.785916 ms
+2026-11-24 10:02:37.961 A  MobileSafari[3460:3c79] (Metal) Metal Compiling Shader
+2026-11-24 10:02:37.962 Df MTLCompilerService[3816:413d] (MTLCompiler) Compilation BEGIN (ParentProcessName=MobileSafari_3460) Build request: MTLSpecializeFunctionToArchive - function specialization
+2026-11-24 10:02:37.969 Df MTLCompilerService[3816:413d] (MTLCompiler) Compilation SUCCESS (ParentProcessName=MobileSafari_3460) [FunctionName=ffgea5cia6dheb2a3] (TYPE=MTLSpecializeFunctionToArchive - function specialization): Time 6.599041 ms
+2026-11-24 10:02:37.970 Df MTLCompilerService[3816:413d] (MTLCompiler) Compilation BEGIN (ParentProcessName=MobileSafari_3460) Build request: MTLSpecializeFunctionToArchive - function specialization
+2026-11-24 10:02:37.970 A  MobileSafari[3460:3c37] (Metal) Metal Compiling Shader
+2026-11-24 10:02:37.980 A  MobileSafari[3460:3c79] (Metal) Metal Compiling Shader
+2026-11-24 10:02:37.979 Df MTLCompilerService[3816:413d] (MTLCompiler) Compilation SUCCESS (ParentProcessName=MobileSafari_3460) [FunctionName=custom_fn] (TYPE=MTLSpecializeFunctionToArchive - function specialization): Time 8.913083 ms
+2026-11-24 10:02:37.980 Df MTLCompilerService[3816:413d] (MTLCompiler) Compilation BEGIN (ParentProcessName=MobileSafari_3460) Build request: MTLBuildFunctions - pipeline
+2026-11-24 10:02:37.986 Df MTLCompilerService[3816:413d] (MTLCompiler) Compilation SUCCESS (ParentProcessName=MobileSafari_3460) [FunctionName=ffgea5cia6dheb2a3] (TYPE=MTLBuildFunctions - pipeline): Time 5.291166 ms
+2026-11-24 10:02:37.986 A  MobileSafari[3460:3c37] (Metal) Metal Compiling Shader
+2026-11-24 10:02:37.987 Df MTLCompilerService[3816:413d] (MTLCompiler) Compilation BEGIN (ParentProcessName=MobileSafari_3460) Build request: MTLBuildFunctions - pipeline
+2026-11-24 10:02:37.988 Df MTLCompilerService[3816:413d] (MTLCompiler) Compilation SUCCESS (ParentProcessName=MobileSafari_3460) [FunctionName=custom_effect_vertex] (TYPE=MTLBuildFunctions - pipeline): Time 1.087333 ms
+2026-11-24 10:02:38.106 Df MTLCompilerService[1523:2c35] (MTLCompiler) Compilation BEGIN (ParentProcessName=backboardd_1461) Build request: MTLSpecializeFunctionToArchive - function specialization
+2026-11-24 10:02:38.150 Df MTLCompilerService[1523:2c35] (MTLCompiler) Compilation SUCCESS (ParentProcessName=backboardd_1461) [FunctionName=TcimBvcmXc_IalpCtl] (TYPE=MTLSpecializeFunctionToArchive - function specialization): Time 43.667250 ms
+2026-11-24 10:02:38.153 Df MTLCompilerService[1523:2c35] (MTLCompiler) Compilation BEGIN (ParentProcessName=backboardd_1461) Build request: MTLBuildFunctions - pipeline
+2026-11-24 10:02:38.157 Df MTLCompilerService[1523:2c35] (MTLCompiler) Compilation SUCCESS (ParentProcessName=backboardd_1461) [FunctionName=TcimBvcmXc_IalpCtl] (TYPE=MTLBuildFunctions - pipeline): Time 3.966083 ms
+2026-11-24 10:02:38.115 Df MTLCompilerService[1529:1f1f] (MTLCompiler) Compilation BEGIN (ParentProcessName=backboardd_1461) Build request: MTLBuildFunctions - pipeline
+2026-11-24 10:02:38.138 Df MTLCompilerService[1529:1f1f] (MTLCompiler) Compilation SUCCESS (ParentProcessName=backboardd_1461) [FunctionName=glass_background_lpf] (TYPE=MTLBuildFunctions - pipeline): Time 22.314625 ms
+2026-11-24 10:02:38.172 Df com.apple.WebKit.Networking[3471:3c76] [com.apple.WebKit:Network] 0x111120000 - [pageProxyID=29, webPageID=30, frameID=8589934593, resourceID=583, isMainResource=0, destination=0, isSynchronous=0] NetworkResourceLoader::startNetworkLoad: (isFirstLoad=1, timeout=2147483647.000000)
+2026-11-24 10:02:38.174 Df com.apple.WebKit.Networking[3471:3c76] [com.apple.network:url] Task <C9BD807C-0DB6-4A06-BDBD-B34E219FA892>.<10> resuming, timeouts(2147483647.0, 604800.0), qos(0x19), activity(00000000-0000-0000-0000-000000000000)
+2026-11-24 10:02:38.160 Df MobileSafari[3460:3c79] [com.apple.mobilesafari:SuddenTerminationDisabler] Ending task assertion with reason com.apple.SafariCore.WBSSQLiteStatement
+2026-11-24 10:02:38.169 Df MobileSafari[3460:3c79] [com.apple.mobilesafari:SuddenTerminationDisabler] Continuing background task assertion with reasons {(
+2026-11-24 10:02:38.222 Df com.apple.WebKit.Networking[3471:3c76] [com.apple.WebKit:Network] 0x111121600 - [pageProxyID=29, webPageID=30, frameID=8589934593, resourceID=636, isMainResource=0, destination=0, isSynchronous=0] NetworkResourceLoader::startNetworkLoad: (isFirstLoad=1, timeout=2147483647.000000)
+2026-11-24 10:02:38.222 Df com.apple.WebKit.Networking[3471:3c76] [com.apple.network:url] Task <C9BD807C-0DB6-4A06-BDBD-B34E219FA892>.<11> resuming, timeouts(2147483647.0, 604800.0), qos(0x19), activity(00000000-0000-0000-0000-000000000000)
+2026-11-24 10:02:38.176 Df MTLCompilerService[1523:2c35] (MTLCompiler) Compilation BEGIN (ParentProcessName=backboardd_1461) Build request: MTLSpecializeFunctionToArchive - function specialization
+2026-11-24 10:02:38.224 Df MTLCompilerService[1523:2c35] (MTLCompiler) Compilation SUCCESS (ParentProcessName=backboardd_1461) [FunctionName=TimgXcu_Idfr] (TYPE=MTLSpecializeFunctionToArchive - function specialization): Time 47.640458 ms
+2026-11-24 10:02:38.225 Df MTLCompilerService[1523:2c35] (MTLCompiler) Compilation BEGIN (ParentProcessName=backboardd_1461) Build request: MTLBuildFunctions - pipeline
+2026-11-24 10:02:38.210 A  com.apple.WebKit.GPU[3472:3d0d] (libsystem_trace.dylib) Activity for state dumps
+2026-11-24 10:02:38.210 F  com.apple.WebKit.GPU[3472:3d0d] (IOSurface) IOSurfaceQueryTransactionList got non-success return from kernel
+2026-11-24 10:02:38.217 A  com.apple.WebKit.GPU[3472:3cf6] (libsystem_trace.dylib) Activity for state dumps
+2026-11-24 10:02:38.217 F  com.apple.WebKit.GPU[3472:3cf6] (IOSurface) IOSurfaceQueryTransactionList got non-success return from kernel
+2026-11-24 10:02:38.227 Df MTLCompilerService[1523:2c35] (MTLCompiler) Compilation SUCCESS (ParentProcessName=backboardd_1461) [FunctionName=TimgXcu_Idfr] (TYPE=MTLBuildFunctions - pipeline): Time 1.751666 ms
+2026-11-24 10:02:38.231 I  com.apple.WebKit.Networking[3471:3ca3] [com.apple.network:connection] nw_endpoint_flow_connected_path_change [C10.1.1.2 IPv4#d1bc7f25:8123 ready socket-flow (satisfied (Path is satisfied), interface: lo0)] Connected path is satisfied, not viable
+2026-11-24 10:02:38.232 I  com.apple.WebKit.Networking[3471:3ca3] [com.apple.network:connection] nw_endpoint_flow_connected_path_change [C10.1.1.2 IPv4#d1bc7f25:8123 ready socket-flow (satisfied (Path is satisfied), interface: lo0)] Connected path is satisfied, not viable
+2026-11-24 10:02:38.233 I  com.apple.WebKit.Networking[3471:3ca3] [com.apple.network:connection] nw_endpoint_flow_connected_path_change [C10 IPv4#d1bc7f25:8123 ready parent-flow (satisfied (Path is satisfied), interface: en0)] Connected path is satisfied, child is not viable
+2026-11-24 10:02:38.237 I  com.apple.WebKit.Networking[3471:3ca3] [com.apple.network:connection] nw_endpoint_flow_connected_path_change [C11.1 IPv4#d1bc7f25:8123 ready socket-flow (satisfied (Path is satisfied), interface: lo0)] Connected path is satisfied, not viable
+2026-11-24 10:02:38.239 I  com.apple.WebKit.Networking[3471:3ca3] [com.apple.network:connection] nw_endpoint_flow_connected_path_change [C11.1 IPv4#d1bc7f25:8123 ready socket-flow (satisfied (Path is satisfied), interface: lo0)] Connected path is satisfied, not viable
+2026-11-24 10:02:38.253 Df MTLCompilerService[1523:2c35] (MTLCompiler) Compilation BEGIN (ParentProcessName=backboardd_1461) Build request: MTLSpecializeFunctionToArchive - function specialization
+2026-11-24 10:02:38.286 Df MTLCompilerService[1523:2c35] (MTLCompiler) Compilation SUCCESS (ParentProcessName=backboardd_1461) [FunctionName=TmuaXc_Isrc_Isqr] (TYPE=MTLSpecializeFunctionToArchive - function specialization): Time 32.746041 ms
+2026-11-24 10:02:38.289 Df MTLCompilerService[1523:2c35] (MTLCompiler) Compilation BEGIN (ParentProcessName=backboardd_1461) Build request: MTLBuildFunctions - pipeline
+2026-11-24 10:02:38.296 Df MTLCompilerService[1523:2c35] (MTLCompiler) Compilation SUCCESS (ParentProcessName=backboardd_1461) [FunctionName=TmuaXc_Isrc_Isqr] (TYPE=MTLBuildFunctions - pipeline): Time 6.646875 ms
+2026-11-24 10:02:38.347 Df MTLCompilerService[1523:2c35] (MTLCompiler) Compilation BEGIN (ParentProcessName=backboardd_1461) Build request: MTLSpecializeFunctionToArchive - function specialization
+2026-11-24 10:02:38.377 Df MTLCompilerService[1523:2c35] (MTLCompiler) Compilation SUCCESS (ParentProcessName=backboardd_1461) [FunctionName=TimgBvcmXc_IalpCtl] (TYPE=MTLSpecializeFunctionToArchive - function specialization): Time 30.125458 ms
+2026-11-24 10:02:38.378 Df MTLCompilerService[1523:2c35] (MTLCompiler) Compilation BEGIN (ParentProcessName=backboardd_1461) Build request: MTLBuildFunctions - pipeline
+2026-11-24 10:02:38.381 Df MTLCompilerService[1523:2c35] (MTLCompiler) Compilation SUCCESS (ParentProcessName=backboardd_1461) [FunctionName=TimgBvcmXc_IalpCtl] (TYPE=MTLBuildFunctions - pipeline): Time 2.537458 ms
+2026-11-24 10:02:38.407 A  com.apple.WebKit.GPU[3472:3cf6] (libsystem_trace.dylib) Activity for state dumps
+2026-11-24 10:02:38.407 F  com.apple.WebKit.GPU[3472:3cf6] (IOSurface) IOSurfaceQueryTransactionList got non-success return from kernel
+2026-11-24 10:02:38.410 A  com.apple.WebKit.GPU[3472:3cf6] (libsystem_trace.dylib) Activity for state dumps
+2026-11-24 10:02:38.410 F  com.apple.WebKit.GPU[3472:3cf6] (IOSurface) IOSurfaceQueryTransactionList got non-success return from kernel
+2026-11-24 10:02:38.778 Df MTLCompilerService[3485:40da] (MTLCompiler) Compilation SUCCESS (ParentProcessName=com_apple_WebKit_GPU_3472) (TYPE=MTLBuildLibraryFromSourceToArchive - source): Time 3096.093750 ms
+2026-11-24 10:02:38.779 Df MTLCompilerService[3487:3d14] (MTLCompiler) Compilation SUCCESS (ParentProcessName=com_apple_WebKit_GPU_3472) (TYPE=MTLBuildLibraryFromSourceToArchive - source): Time 3213.261750 ms
+2026-11-24 10:02:38.812 A  com.apple.WebKit.GPU[3472:3cf6] (Metal) Metal Compiling Shader
+2026-11-24 10:02:38.812 Df MTLCompilerService[3485:40da] (MTLCompiler) Compilation BEGIN (ParentProcessName=com_apple_WebKit_GPU_3472) Build request: MTLSpecializeFunctionToArchive - function specialization
+2026-11-24 10:02:38.813 Df MTLCompilerService[3485:40da] (MTLCompiler) Compilation SUCCESS (ParentProcessName=com_apple_WebKit_GPU_3472) (TYPE=MTLSpecializeFunctionToArchive - function specialization): Time 1.211416 ms
+2026-11-24 10:02:38.814 A  com.apple.WebKit.GPU[3472:3cad] (Metal) Metal Compiling Shader
+2026-11-24 10:02:38.814 Df MTLCompilerService[3485:40da] (MTLCompiler) Compilation BEGIN (ParentProcessName=com_apple_WebKit_GPU_3472) Build request: MTLSpecializeFunctionToArchive - function specialization
+2026-11-24 10:02:38.817 Df MTLCompilerService[3485:40da] (MTLCompiler) Compilation SUCCESS (ParentProcessName=com_apple_WebKit_GPU_3472) (TYPE=MTLSpecializeFunctionToArchive - function specialization): Time 2.869541 ms
+2026-11-24 10:02:38.817 A  com.apple.WebKit.GPU[3472:3cf6] (Metal) Metal Compiling Shader
+2026-11-24 10:02:38.818 Df MTLCompilerService[3485:40da] (MTLCompiler) Compilation BEGIN (ParentProcessName=com_apple_WebKit_GPU_3472) Build request: MTLBuildFunctions - pipeline
+2026-11-24 10:02:38.819 Df MTLCompilerService[3485:40da] (MTLCompiler) Compilation SUCCESS (ParentProcessName=com_apple_WebKit_GPU_3472) [FunctionName=main0] (TYPE=MTLBuildFunctions - pipeline): Time 1.508958 ms
+2026-11-24 10:02:38.820 A  com.apple.WebKit.GPU[3472:3cad] (Metal) Metal Compiling Shader
+2026-11-24 10:02:38.820 Df MTLCompilerService[3485:3d05] (MTLCompiler) Compilation BEGIN (ParentProcessName=com_apple_WebKit_GPU_3472) Build request: MTLBuildFunctions - pipeline
+2026-11-24 10:02:38.821 Df MTLCompilerService[3485:3d05] (MTLCompiler) Compilation SUCCESS (ParentProcessName=com_apple_WebKit_GPU_3472) [FunctionName=main0] (TYPE=MTLBuildFunctions - pipeline): Time 0.948583 ms
+2026-11-24 10:02:38.828 Df MTLCompilerService[3485:3d05] (MTLCompiler) Compilation BEGIN (ParentProcessName=com_apple_WebKit_GPU_3472) Build request: MTLSpecializeFunctionToArchive - function specialization
+2026-11-24 10:02:38.828 A  com.apple.WebKit.GPU[3472:3cfb] (Metal) Metal Compiling Shader
+2026-11-24 10:02:38.832 Df MTLCompilerService[3485:3d05] (MTLCompiler) Compilation SUCCESS (ParentProcessName=com_apple_WebKit_GPU_3472) (TYPE=MTLSpecializeFunctionToArchive - function specialization): Time 3.620666 ms
+2026-11-24 10:02:38.833 Df MTLCompilerService[3485:3d05] (MTLCompiler) Compilation BEGIN (ParentProcessName=com_apple_WebKit_GPU_3472) Build request: MTLBuildFunctions - pipeline
+2026-11-24 10:02:38.832 A  com.apple.WebKit.GPU[3472:3cad] (Metal) Metal Compiling Shader
+2026-11-24 10:02:38.836 Df MTLCompilerService[3485:3d05] (MTLCompiler) Compilation SUCCESS (ParentProcessName=com_apple_WebKit_GPU_3472) [FunctionName=blitFloatFS] (TYPE=MTLBuildFunctions - pipeline): Time 3.008708 ms
+2026-11-24 10:02:38.837 Df MTLCompilerService[3485:3d05] (MTLCompiler) Compilation BEGIN (ParentProcessName=com_apple_WebKit_GPU_3472) Build request: MTLBuildFunctions - pipeline
+2026-11-24 10:02:38.837 A  com.apple.WebKit.GPU[3472:3cfb] (Metal) Metal Compiling Shader
+2026-11-24 10:02:38.841 Df MTLCompilerService[3485:3d05] (MTLCompiler) Compilation SUCCESS (ParentProcessName=com_apple_WebKit_GPU_3472) [FunctionName=blitVS] (TYPE=MTLBuildFunctions - pipeline): Time 3.377708 ms
+2026-11-24 10:02:38.875 Df MTLCompilerService[1523:2c35] (MTLCompiler) Compilation BEGIN (ParentProcessName=backboardd_1461) Build request: MTLSpecializeFunctionToArchive - function specialization
+2026-11-24 10:02:38.894 Df MTLCompilerService[1523:2c35] (MTLCompiler) Compilation SUCCESS (ParentProcessName=backboardd_1461) [FunctionName=TbdsXc_Icir_Isrc] (TYPE=MTLSpecializeFunctionToArchive - function specialization): Time 19.157333 ms
+2026-11-24 10:02:38.895 Df MTLCompilerService[1523:2c35] (MTLCompiler) Compilation BEGIN (ParentProcessName=backboardd_1461) Build request: MTLBuildFunctions - pipeline
+2026-11-24 10:02:38.898 Df MTLCompilerService[1523:2c35] (MTLCompiler) Compilation SUCCESS (ParentProcessName=backboardd_1461) [FunctionName=TbdsXc_Icir_Isrc] (TYPE=MTLBuildFunctions - pipeline): Time 2.697541 ms
+	ecn packets sent/acked/marked/lost: 0/0/0/0
+	ecn packets sent/acked/marked/lost: 0/0/0/0
+2026-11-24 10:02:39.246 Df com.apple.WebKit.Networking[3471:3c76] [com.apple.WebKit:Network] 0x111120000 - [pageProxyID=29, webPageID=30, frameID=8589934593, resourceID=930, isMainResource=0, destination=0, isSynchronous=0] NetworkResourceLoader::startNetworkLoad: (isFirstLoad=1, timeout=2147483647.000000)
+2026-11-24 10:02:39.246 Df com.apple.WebKit.Networking[3471:3c76] [com.apple.network:url] Task <C9BD807C-0DB6-4A06-BDBD-B34E219FA892>.<12> resuming, timeouts(2147483647.0, 604800.0), qos(0x19), activity(00000000-0000-0000-0000-000000000000)
+2026-11-24 10:02:39.260 A  com.apple.WebKit.GPU[3472:3cfb] (Metal) Metal Compiling Shader
+2026-11-24 10:02:39.261 Df MTLCompilerService[3485:3d05] (MTLCompiler) Compilation BEGIN (ParentProcessName=com_apple_WebKit_GPU_3472) Build request: MTLBuildLibraryFromSourceToArchive - source
+2026-11-24 10:02:39.278 I  com.apple.WebKit.Networking[3471:3ca3] [com.apple.network:connection] nw_endpoint_flow_connected_path_change [C12.1.1.2 IPv4#d1bc7f25:8123 ready socket-flow (satisfied (Path is satisfied), interface: lo0)] Connected path is satisfied, not viable
+2026-11-24 10:02:39.281 I  com.apple.WebKit.Networking[3471:3ca3] [com.apple.network:connection] nw_endpoint_flow_connected_path_change [C12.1.1.2 IPv4#d1bc7f25:8123 ready socket-flow (satisfied (Path is satisfied), interface: lo0)] Connected path is satisfied, not viable
+2026-11-24 10:02:39.281 I  com.apple.WebKit.Networking[3471:3ca3] [com.apple.network:connection] nw_endpoint_flow_connected_path_change [C12 IPv4#d1bc7f25:8123 ready parent-flow (satisfied (Path is satisfied), interface: en0)] Connected path is satisfied, child is not viable
+2026-11-24 10:02:39.567 Df MTLCompilerService[3485:3d05] (MTLCompiler) Compilation SUCCESS (ParentProcessName=com_apple_WebKit_GPU_3472) (TYPE=MTLBuildLibraryFromSourceToArchive - source): Time 305.908166 ms
+2026-11-24 10:02:39.569 E  com.apple.WebKit.GPU[3472:40fd] [com.apple.Metal:Metal Compiler Warning] Warning: Compilation succeeded with: 
+  float _ut = _utrace(ANGLE_userUniforms, ANGLE_nonConstGlobals, _uro, _urd, _upixR, _usteps, _ustatus);
+2026-11-24 10:02:39.573 A  com.apple.WebKit.GPU[3472:3d0d] (Metal) Metal Compiling Shader
+2026-11-24 10:02:39.573 Df MTLCompilerService[3485:3d05] (MTLCompiler) Compilation BEGIN (ParentProcessName=com_apple_WebKit_GPU_3472) Build request: MTLSpecializeFunctionToArchive - function specialization
+2026-11-24 10:02:39.594 Df MTLCompilerService[3485:3d05] (MTLCompiler) Compilation SUCCESS (ParentProcessName=com_apple_WebKit_GPU_3472) (TYPE=MTLSpecializeFunctionToArchive - function specialization): Time 20.795291 ms
+2026-11-24 10:02:39.595 A  com.apple.WebKit.GPU[3472:3cf6] (Metal) Metal Compiling Shader
+2026-11-24 10:02:39.596 Df MTLCompilerService[3485:3d05] (MTLCompiler) Compilation BEGIN (ParentProcessName=com_apple_WebKit_GPU_3472) Build request: MTLBuildFunctions - pipeline
+2026-11-24 10:02:39.603 Df MTLCompilerService[3485:3d05] (MTLCompiler) Compilation SUCCESS (ParentProcessName=com_apple_WebKit_GPU_3472) [FunctionName=main0] (TYPE=MTLBuildFunctions - pipeline): Time 7.069583 ms
+2026-11-24 10:02:39.631 A  com.apple.WebKit.GPU[3472:3cfb] (libsystem_trace.dylib) Activity for state dumps
+2026-11-24 10:02:39.631 F  com.apple.WebKit.GPU[3472:3cfb] (IOSurface) IOSurfaceQueryTransactionList got non-success return from kernel
+2026-11-24 10:02:39.666 A  com.apple.WebKit.GPU[3472:3cf6] (libsystem_trace.dylib) Activity for state dumps
+2026-11-24 10:02:39.666 F  com.apple.WebKit.GPU[3472:3cf6] (IOSurface) IOSurfaceQueryTransactionList got non-success return from kernel
+2026-11-24 10:02:39.825 A  com.apple.WebKit.GPU[3472:3cfb] (libsystem_trace.dylib) Activity for state dumps
+2026-11-24 10:02:39.825 F  com.apple.WebKit.GPU[3472:3cfb] (IOSurface) IOSurfaceQueryTransactionList got non-success return from kernel
+2026-11-24 10:02:39.826 A  com.apple.WebKit.GPU[3472:3cf6] (libsystem_trace.dylib) Activity for state dumps
+2026-11-24 10:02:39.826 F  com.apple.WebKit.GPU[3472:3cf6] (IOSurface) IOSurfaceQueryTransactionList got non-success return from kernel
+2026-11-24 10:02:40.131 Df com.apple.WebKit.Networking[3471:3c76] [com.apple.WebKit:Network] 0x111121600 - [pageProxyID=29, webPageID=30, frameID=8589934593, resourceID=1184, isMainResource=0, destination=0, isSynchronous=0] NetworkResourceLoader::startNetworkLoad: (isFirstLoad=1, timeout=2147483647.000000)
+2026-11-24 10:02:40.133 Df com.apple.WebKit.Networking[3471:3c76] [com.apple.network:url] Task <C9BD807C-0DB6-4A06-BDBD-B34E219FA892>.<13> resuming, timeouts(2147483647.0, 604800.0), qos(0x19), activity(00000000-0000-0000-0000-000000000000)
+2026-11-24 10:02:40.149 A  com.apple.WebKit.GPU[3472:3cf6] (Metal) Metal Compiling Shader
+2026-11-24 10:02:40.150 Df MTLCompilerService[3485:3d05] (MTLCompiler) Compilation BEGIN (ParentProcessName=com_apple_WebKit_GPU_3472) Build request: MTLBuildLibraryFromSourceToArchive - source
+2026-11-24 10:02:40.146 I  com.apple.WebKit.Networking[3471:3ca3] [com.apple.network:connection] nw_endpoint_flow_connected_path_change [C13.1 IPv4#d1bc7f25:8123 ready socket-flow (satisfied (Path is satisfied), interface: lo0)] Connected path is satisfied, not viable
+2026-11-24 10:02:40.220 I  com.apple.WebKit.Networking[3471:3ca3] [com.apple.network:connection] nw_endpoint_flow_connected_path_change [C13.1 IPv4#d1bc7f25:8123 ready socket-flow (satisfied (Path is satisfied), interface: lo0)] Connected path is satisfied, not viable
+	ecn packets sent/acked/marked/lost: 0/0/0/0
+	ecn packets sent/acked/marked/lost: 0/0/0/0
+2026-11-24 10:02:40.502 Df MTLCompilerService[3485:3d05] (MTLCompiler) Compilation SUCCESS (ParentProcessName=com_apple_WebKit_GPU_3472) (TYPE=MTLBuildLibraryFromSourceToArchive - source): Time 351.800791 ms
+2026-11-24 10:02:40.507 Df MTLCompilerService[3485:3d05] (MTLCompiler) Compilation BEGIN (ParentProcessName=com_apple_WebKit_GPU_3472) Build request: MTLSpecializeFunctionToArchive - function specialization
+2026-11-24 10:02:40.507 A  com.apple.WebKit.GPU[3472:3cfb] (Metal) Metal Compiling Shader
+2026-11-24 10:02:40.529 Df MTLCompilerService[3485:3d05] (MTLCompiler) Compilation SUCCESS (ParentProcessName=com_apple_WebKit_GPU_3472) (TYPE=MTLSpecializeFunctionToArchive - function specialization): Time 21.784958 ms
+2026-11-24 10:02:40.530 Df MTLCompilerService[3485:3d05] (MTLCompiler) Compilation BEGIN (ParentProcessName=com_apple_WebKit_GPU_3472) Build request: MTLBuildFunctions - pipeline
+2026-11-24 10:02:40.530 A  com.apple.WebKit.GPU[3472:3cfb] (Metal) Metal Compiling Shader
+2026-11-24 10:02:40.538 Df MTLCompilerService[3485:3d05] (MTLCompiler) Compilation SUCCESS (ParentProcessName=com_apple_WebKit_GPU_3472) [FunctionName=main0] (TYPE=MTLBuildFunctions - pipeline): Time 7.606166 ms
+2026-11-24 10:02:40.553 A  com.apple.WebKit.GPU[3472:3cfb] (libsystem_trace.dylib) Activity for state dumps
+2026-11-24 10:02:40.553 F  com.apple.WebKit.GPU[3472:3cfb] (IOSurface) IOSurfaceQueryTransactionList got non-success return from kernel
+2026-11-24 10:02:40.597 A  com.apple.WebKit.GPU[3472:3cfb] (libsystem_trace.dylib) Activity for state dumps
+2026-11-24 10:02:40.597 F  com.apple.WebKit.GPU[3472:3cfb] (IOSurface) IOSurfaceQueryTransactionList got non-success return from kernel
+2026-11-24 10:02:40.675 A  com.apple.WebKit.GPU[3472:3cf6] (libsystem_trace.dylib) Activity for state dumps
+2026-11-24 10:02:40.675 F  com.apple.WebKit.GPU[3472:3cf6] (IOSurface) IOSurfaceQueryTransactionList got non-success return from kernel
+2026-11-24 10:02:40.979 Df com.apple.WebKit.Networking[3471:3c76] [com.apple.WebKit:Network] 0x111120000 - [pageProxyID=29, webPageID=30, frameID=8589934593, resourceID=1445, isMainResource=0, destination=0, isSynchronous=0] NetworkResourceLoader::startNetworkLoad: (isFirstLoad=1, timeout=2147483647.000000)
+2026-11-24 10:02:40.980 Df com.apple.WebKit.Networking[3471:3c76] [com.apple.network:url] Task <C9BD807C-0DB6-4A06-BDBD-B34E219FA892>.<14> resuming, timeouts(2147483647.0, 604800.0), qos(0x19), activity(00000000-0000-0000-0000-000000000000)
+2026-11-24 10:02:40.996 A  com.apple.WebKit.GPU[3472:3cf6] (Metal) Metal Compiling Shader
+2026-11-24 10:02:41.002 Df MTLCompilerService[3485:3d05] (MTLCompiler) Compilation BEGIN (ParentProcessName=com_apple_WebKit_GPU_3472) Build request: MTLBuildLibraryFromSourceToArchive - source
+2026-11-24 10:02:41.014 I  com.apple.WebKit.Networking[3471:40a5] [com.apple.network:connection] nw_endpoint_flow_connected_path_change [C14.1.1.2 IPv4#d1bc7f25:8123 ready socket-flow (satisfied (Path is satisfied), interface: lo0)] Connected path is satisfied, not viable
+2026-11-24 10:02:41.015 I  com.apple.WebKit.Networking[3471:40a5] [com.apple.network:connection] nw_endpoint_flow_connected_path_change [C14.1.1.2 IPv4#d1bc7f25:8123 ready socket-flow (satisfied (Path is satisfied), interface: lo0)] Connected path is satisfied, not viable
+2026-11-24 10:02:41.015 I  com.apple.WebKit.Networking[3471:40a5] [com.apple.network:connection] nw_endpoint_flow_connected_path_change [C14 IPv4#d1bc7f25:8123 ready parent-flow (satisfied (Path is satisfied), interface: en0)] Connected path is satisfied, child is not viable
+2026-11-24 10:02:41.198 Df com.apple.WebKit.Networking[3471:3c76] [com.apple.WebKit:Network] 0x111121600 - [pageProxyID=29, webPageID=30, frameID=8589934593, resourceID=1529, isMainResource=0, destination=0, isSynchronous=0] NetworkResourceLoader::startNetworkLoad: (isFirstLoad=1, timeout=2147483647.000000)
+2026-11-24 10:02:41.199 Df com.apple.WebKit.Networking[3471:3c76] [com.apple.network:url] Task <C9BD807C-0DB6-4A06-BDBD-B34E219FA892>.<15> resuming, timeouts(2147483647.0, 604800.0), qos(0x19), activity(00000000-0000-0000-0000-000000000000)
+2026-11-24 10:02:41.205 I  com.apple.WebKit.Networking[3471:3ca3] [com.apple.network:connection] nw_endpoint_flow_connected_path_change [C15.1 IPv4#d1bc7f25:8123 ready socket-flow (satisfied (Path is satisfied), interface: lo0)] Connected path is satisfied, not viable
+2026-11-24 10:02:41.207 I  com.apple.WebKit.Networking[3471:3ca3] [com.apple.network:connection] nw_endpoint_flow_connected_path_change [C15.1 IPv4#d1bc7f25:8123 ready socket-flow (satisfied (Path is satisfied), interface: lo0)] Connected path is satisfied, not viable
+2026-11-24 10:02:41.391 A  com.apple.WebKit.GPU[3472:3cab] (libsystem_trace.dylib) Activity for state dumps
+2026-11-24 10:02:41.391 F  com.apple.WebKit.GPU[3472:3cab] (IOSurface) IOSurfaceQueryTransactionList got non-success return from kernel
+2026-11-24 10:02:41.452 Df MTLCompilerService[3485:3d05] (MTLCompiler) Compilation SUCCESS (ParentProcessName=com_apple_WebKit_GPU_3472) (TYPE=MTLBuildLibraryFromSourceToArchive - source): Time 449.815625 ms
+2026-11-24 10:02:41.457 A  com.apple.WebKit.GPU[3472:3cab] (Metal) Metal Compiling Shader
+2026-11-24 10:02:41.457 Df MTLCompilerService[3485:3d05] (MTLCompiler) Compilation BEGIN (ParentProcessName=com_apple_WebKit_GPU_3472) Build request: MTLSpecializeFunctionToArchive - function specialization
+2026-11-24 10:02:41.482 Df MTLCompilerService[3485:3d05] (MTLCompiler) Compilation SUCCESS (ParentProcessName=com_apple_WebKit_GPU_3472) (TYPE=MTLSpecializeFunctionToArchive - function specialization): Time 24.718750 ms
+2026-11-24 10:02:41.482 A  com.apple.WebKit.GPU[3472:3cf6] (Metal) Metal Compiling Shader
+2026-11-24 10:02:41.482 Df MTLCompilerService[3485:3d05] (MTLCompiler) Compilation BEGIN (ParentProcessName=com_apple_WebKit_GPU_3472) Build request: MTLBuildFunctions - pipeline
+2026-11-24 10:02:41.487 Df MTLCompilerService[3485:3d05] (MTLCompiler) Compilation SUCCESS (ParentProcessName=com_apple_WebKit_GPU_3472) [FunctionName=main0] (TYPE=MTLBuildFunctions - pipeline): Time 4.392000 ms
+	ecn packets sent/acked/marked/lost: 0/0/0/0
+2026-11-24 10:02:41.503 A  com.apple.WebKit.GPU[3472:3cab] (libsystem_trace.dylib) Activity for state dumps
+2026-11-24 10:02:41.503 F  com.apple.WebKit.GPU[3472:3cab] (IOSurface) IOSurfaceQueryTransactionList got non-success return from kernel
+	ecn packets sent/acked/marked/lost: 0/0/0/0
+2026-11-24 10:02:41.629 A  com.apple.WebKit.GPU[3472:3cf6] (libsystem_trace.dylib) Activity for state dumps
+2026-11-24 10:02:41.629 F  com.apple.WebKit.GPU[3472:3cf6] (IOSurface) IOSurfaceQueryTransactionList got non-success return from kernel
+2026-11-24 10:02:41.938 Df com.apple.WebKit.Networking[3471:3c76] [com.apple.WebKit:Network] 0x111120000 - [pageProxyID=29, webPageID=30, frameID=8589934593, resourceID=1781, isMainResource=0, destination=0, isSynchronous=0] NetworkResourceLoader::startNetworkLoad: (isFirstLoad=1, timeout=2147483647.000000)
+2026-11-24 10:02:41.938 Df com.apple.WebKit.Networking[3471:3c76] [com.apple.network:url] Task <C9BD807C-0DB6-4A06-BDBD-B34E219FA892>.<16> resuming, timeouts(2147483647.0, 604800.0), qos(0x19), activity(00000000-0000-0000-0000-000000000000)
+2026-11-24 10:02:41.964 A  com.apple.WebKit.GPU[3472:3cf6] (Metal) Metal Compiling Shader
+2026-11-24 10:02:41.967 Df MTLCompilerService[3485:3d05] (MTLCompiler) Compilation BEGIN (ParentProcessName=com_apple_WebKit_GPU_3472) Build request: MTLBuildLibraryFromSourceToArchive - source
+2026-11-24 10:02:41.972 I  com.apple.WebKit.Networking[3471:40a5] [com.apple.network:connection] nw_endpoint_flow_connected_path_change [C16.1.1.2 IPv4#d1bc7f25:8123 ready socket-flow (satisfied (Path is satisfied), interface: lo0)] Connected path is satisfied, not viable
+2026-11-24 10:02:41.997 I  com.apple.WebKit.Networking[3471:40a5] [com.apple.network:connection] nw_endpoint_flow_connected_path_change [C16.1.1.2 IPv4#d1bc7f25:8123 ready socket-flow (satisfied (Path is satisfied), interface: lo0)] Connected path is satisfied, not viable
+2026-11-24 10:02:41.997 I  com.apple.WebKit.Networking[3471:40a5] [com.apple.network:connection] nw_endpoint_flow_connected_path_change [C16 IPv4#d1bc7f25:8123 ready parent-flow (satisfied (Path is satisfied), interface: en0)] Connected path is satisfied, child is not viable
+2026-11-24 10:02:42.341 A  com.apple.WebKit.GPU[3472:3cab] (libsystem_trace.dylib) Activity for state dumps
+2026-11-24 10:02:42.341 F  com.apple.WebKit.GPU[3472:3cab] (IOSurface) IOSurfaceQueryTransactionList got non-success return from kernel
+	ecn packets sent/acked/marked/lost: 0/0/0/0
+2026-11-24 10:02:42.547 Df MTLCompilerService[3485:3d05] (MTLCompiler) Compilation SUCCESS (ParentProcessName=com_apple_WebKit_GPU_3472) (TYPE=MTLBuildLibraryFromSourceToArchive - source): Time 580.088666 ms
+2026-11-24 10:02:42.549 A  com.apple.WebKit.GPU[3472:3cab] (libsystem_trace.dylib) Activity for state dumps
+2026-11-24 10:02:42.549 F  com.apple.WebKit.GPU[3472:3cab] (IOSurface) IOSurfaceQueryTransactionList got non-success return from kernel
+2026-11-24 10:02:42.556 A  com.apple.WebKit.GPU[3472:3cab] (Metal) Metal Compiling Shader
+2026-11-24 10:02:42.557 Df MTLCompilerService[3485:3d05] (MTLCompiler) Compilation BEGIN (ParentProcessName=com_apple_WebKit_GPU_3472) Build request: MTLSpecializeFunctionToArchive - function specialization
+2026-11-24 10:02:42.594 Df MTLCompilerService[3485:3d05] (MTLCompiler) Compilation SUCCESS (ParentProcessName=com_apple_WebKit_GPU_3472) (TYPE=MTLSpecializeFunctionToArchive - function specialization): Time 36.580583 ms
+2026-11-24 10:02:42.594 A  com.apple.WebKit.GPU[3472:3cfb] (Metal) Metal Compiling Shader
+2026-11-24 10:02:42.594 Df MTLCompilerService[3485:3d05] (MTLCompiler) Compilation BEGIN (ParentProcessName=com_apple_WebKit_GPU_3472) Build request: MTLBuildFunctions - pipeline
+2026-11-24 10:02:42.603 Df MTLCompilerService[3485:3d05] (MTLCompiler) Compilation SUCCESS (ParentProcessName=com_apple_WebKit_GPU_3472) [FunctionName=main0] (TYPE=MTLBuildFunctions - pipeline): Time 8.857791 ms
+2026-11-24 10:02:43.088 Df com.apple.WebKit.Networking[3471:3c76] [com.apple.WebKit:Network] 0x111120000 - [pageProxyID=29, webPageID=30, frameID=8589934593, resourceID=2195, isMainResource=0, destination=0, isSynchronous=0] NetworkResourceLoader::startNetworkLoad: (isFirstLoad=1, timeout=2147483647.000000)
+2026-11-24 10:02:43.090 Df com.apple.WebKit.Networking[3471:3c76] [com.apple.network:url] Task <C9BD807C-0DB6-4A06-BDBD-B34E219FA892>.<17> resuming, timeouts(2147483647.0, 604800.0), qos(0x19), activity(00000000-0000-0000-0000-000000000000)
+2026-11-24 10:02:43.110 I  com.apple.WebKit.Networking[3471:40a5] [com.apple.network:connection] nw_endpoint_flow_connected_path_change [C17.1.1.2 IPv4#d1bc7f25:8123 ready socket-flow (satisfied (Path is satisfied), interface: lo0)] Connected path is satisfied, not viable
+2026-11-24 10:02:43.113 I  com.apple.WebKit.Networking[3471:40a5] [com.apple.network:connection] nw_endpoint_flow_connected_path_change [C17.1.1.2 IPv4#d1bc7f25:8123 ready socket-flow (satisfied (Path is satisfied), interface: lo0)] Connected path is satisfied, not viable
+2026-11-24 10:02:43.113 I  com.apple.WebKit.Networking[3471:40a5] [com.apple.network:connection] nw_endpoint_flow_connected_path_change [C17 IPv4#d1bc7f25:8123 ready parent-flow (satisfied (Path is satisfied), interface: en0)] Connected path is satisfied, child is not viable
+2026-11-24 10:02:43.130 A  com.apple.WebKit.GPU[3472:3cf6] (Metal) Metal Compiling Shader
+2026-11-24 10:02:43.130 Df MTLCompilerService[3485:3d05] (MTLCompiler) Compilation BEGIN (ParentProcessName=com_apple_WebKit_GPU_3472) Build request: MTLBuildLibraryFromSourceToArchive - source
+2026-11-24 10:02:43.498 A  com.apple.WebKit.GPU[3472:3cfb] (libsystem_trace.dylib) Activity for state dumps
+2026-11-24 10:02:43.498 F  com.apple.WebKit.GPU[3472:3cfb] (IOSurface) IOSurfaceQueryTransactionList got non-success return from kernel
+2026-11-24 10:02:43.766 Df MobileSafari[3460:3cc4] [com.apple.WebKit:PerformanceLogging] WebContent[3469]: PerformanceMonitor::measurePostLoadMemoryUsage: Process was using 23175424 bytes of memory after the page load.
+	ecn packets sent/acked/marked/lost: 0/0/0/0
+2026-11-24 10:02:44.197 Df com.apple.WebKit.Networking[3471:3c76] [com.apple.WebKit:Network] 0x111120000 - [pageProxyID=29, webPageID=30, frameID=8589934593, resourceID=2653, isMainResource=0, destination=0, isSynchronous=0] NetworkResourceLoader::startNetworkLoad: (isFirstLoad=1, timeout=2147483647.000000)
+2026-11-24 10:02:44.197 Df com.apple.WebKit.Networking[3471:3c76] [com.apple.network:url] Task <C9BD807C-0DB6-4A06-BDBD-B34E219FA892>.<18> resuming, timeouts(2147483647.0, 604800.0), qos(0x19), activity(00000000-0000-0000-0000-000000000000)
+2026-11-24 10:02:44.217 I  com.apple.WebKit.Networking[3471:3ca3] [com.apple.network:connection] nw_endpoint_flow_connected_path_change [C18.1 IPv4#d1bc7f25:8123 ready socket-flow (satisfied (Path is satisfied), interface: lo0)] Connected path is satisfied, not viable
+2026-11-24 10:02:44.219 I  com.apple.WebKit.Networking[3471:3ca3] [com.apple.network:connection] nw_endpoint_flow_connected_path_change [C18.1 IPv4#d1bc7f25:8123 ready socket-flow (satisfied (Path is satisfied), interface: lo0)] Connected path is satisfied, not viable
+2026-11-24 10:02:44.700 Df MTLCompilerService[3485:3d05] (MTLCompiler) Compilation SUCCESS (ParentProcessName=com_apple_WebKit_GPU_3472) (TYPE=MTLBuildLibraryFromSourceToArchive - source): Time 1569.624250 ms
+2026-11-24 10:02:44.708 Df MTLCompilerService[3485:3d05] (MTLCompiler) Compilation BEGIN (ParentProcessName=com_apple_WebKit_GPU_3472) Build request: MTLSpecializeFunctionToArchive - function specialization
+2026-11-24 10:02:44.707 A  com.apple.WebKit.GPU[3472:3cab] (Metal) Metal Compiling Shader
+2026-11-24 10:02:44.775 A  com.apple.WebKit.GPU[3472:3cab] (Metal) Metal Compiling Shader
+2026-11-24 10:02:44.775 Df MTLCompilerService[3485:3d05] (MTLCompiler) Compilation SUCCESS (ParentProcessName=com_apple_WebKit_GPU_3472) (TYPE=MTLSpecializeFunctionToArchive - function specialization): Time 66.299208 ms
+2026-11-24 10:02:44.775 Df MTLCompilerService[3485:3d05] (MTLCompiler) Compilation BEGIN (ParentProcessName=com_apple_WebKit_GPU_3472) Build request: MTLBuildFunctions - pipeline
+2026-11-24 10:02:44.786 Df MTLCompilerService[3485:3d05] (MTLCompiler) Compilation SUCCESS (ParentProcessName=com_apple_WebKit_GPU_3472) [FunctionName=main0] (TYPE=MTLBuildFunctions - pipeline): Time 10.749166 ms
+	ecn packets sent/acked/marked/lost: 0/0/0/0
+2026-11-24 10:02:44.916 A  com.apple.WebKit.GPU[3472:3cf6] (libsystem_trace.dylib) Activity for state dumps
+2026-11-24 10:02:44.916 F  com.apple.WebKit.GPU[3472:3cf6] (IOSurface) IOSurfaceQueryTransactionList got non-success return from kernel
+2026-11-24 10:02:44.990 A  com.apple.WebKit.GPU[3472:3cfb] (libsystem_trace.dylib) Activity for state dumps
+2026-11-24 10:02:44.990 F  com.apple.WebKit.GPU[3472:3cfb] (IOSurface) IOSurfaceQueryTransactionList got non-success return from kernel
+2026-11-24 10:02:45.302 Df com.apple.WebKit.Networking[3471:3c76] [com.apple.WebKit:Network] 0x111120000 - [pageProxyID=29, webPageID=30, frameID=8589934593, resourceID=2864, isMainResource=0, destination=0, isSynchronous=0] NetworkResourceLoader::startNetworkLoad: (isFirstLoad=1, timeout=2147483647.000000)
+2026-11-24 10:02:45.304 Df com.apple.WebKit.Networking[3471:3c76] [com.apple.network:url] Task <C9BD807C-0DB6-4A06-BDBD-B34E219FA892>.<19> resuming, timeouts(2147483647.0, 604800.0), qos(0x19), activity(00000000-0000-0000-0000-000000000000)
+2026-11-24 10:02:45.341 Df MTLCompilerService[3485:3d05] (MTLCompiler) Compilation BEGIN (ParentProcessName=com_apple_WebKit_GPU_3472) Build request: MTLBuildLibraryFromSourceToArchive - source
+2026-11-24 10:02:45.341 A  com.apple.WebKit.GPU[3472:3cfb] (Metal) Metal Compiling Shader
+2026-11-24 10:02:45.451 I  com.apple.WebKit.Networking[3471:3ca3] [com.apple.network:connection] nw_endpoint_flow_connected_path_change [C19.1.1.2 IPv4#d1bc7f25:8123 ready socket-flow (satisfied (Path is satisfied), interface: lo0)] Connected path is satisfied, not viable
+2026-11-24 10:02:45.452 I  com.apple.WebKit.Networking[3471:3ca3] [com.apple.network:connection] nw_endpoint_flow_connected_path_change [C19.1.1.2 IPv4#d1bc7f25:8123 ready socket-flow (satisfied (Path is satisfied), interface: lo0)] Connected path is satisfied, not viable
+2026-11-24 10:02:45.453 I  com.apple.WebKit.Networking[3471:3ca3] [com.apple.network:connection] nw_endpoint_flow_connected_path_change [C19 IPv4#d1bc7f25:8123 ready parent-flow (satisfied (Path is satisfied), interface: en0)] Connected path is satisfied, child is not viable
+2026-11-24 10:02:45.713 A  com.apple.WebKit.GPU[3472:3cab] (libsystem_trace.dylib) Activity for state dumps
+2026-11-24 10:02:45.713 F  com.apple.WebKit.GPU[3472:3cab] (IOSurface) IOSurfaceQueryTransactionList got non-success return from kernel
+2026-11-24 10:02:45.908 A  com.apple.WebKit.GPU[3472:3cab] (libsystem_trace.dylib) Activity for state dumps
+2026-11-24 10:02:45.908 F  com.apple.WebKit.GPU[3472:3cab] (IOSurface) IOSurfaceQueryTransactionList got non-success return from kernel
+	ecn packets sent/acked/marked/lost: 0/0/0/0
+2026-11-24 10:02:47.177 Df MTLCompilerService[3485:3d05] (MTLCompiler) Compilation SUCCESS (ParentProcessName=com_apple_WebKit_GPU_3472) (TYPE=MTLBuildLibraryFromSourceToArchive - source): Time 1835.811708 ms
+2026-11-24 10:02:47.190 A  com.apple.WebKit.GPU[3472:3cf6] (Metal) Metal Compiling Shader
+2026-11-24 10:02:47.191 Df MTLCompilerService[3485:3d05] (MTLCompiler) Compilation BEGIN (ParentProcessName=com_apple_WebKit_GPU_3472) Build request: MTLSpecializeFunctionToArchive - function specialization
+2026-11-24 10:02:47.237 Df MTLCompilerService[3485:3d05] (MTLCompiler) Compilation SUCCESS (ParentProcessName=com_apple_WebKit_GPU_3472) (TYPE=MTLSpecializeFunctionToArchive - function specialization): Time 46.202625 ms
+2026-11-24 10:02:47.238 Df MTLCompilerService[3485:3d05] (MTLCompiler) Compilation BEGIN (ParentProcessName=com_apple_WebKit_GPU_3472) Build request: MTLBuildFunctions - pipeline
+2026-11-24 10:02:47.238 A  com.apple.WebKit.GPU[3472:3cfb] (Metal) Metal Compiling Shader
+2026-11-24 10:02:47.250 Df MTLCompilerService[3485:3d05] (MTLCompiler) Compilation SUCCESS (ParentProcessName=com_apple_WebKit_GPU_3472) [FunctionName=main0] (TYPE=MTLBuildFunctions - pipeline): Time 11.668791 ms
+2026-11-24 10:02:47.282 Df com.apple.WebKit.Networking[3471:3c76] [com.apple.WebKit:Network] 0x111120000 - [pageProxyID=29, webPageID=30, frameID=8589934593, resourceID=3544, isMainResource=0, destination=0, isSynchronous=0] NetworkResourceLoader::startNetworkLoad: (isFirstLoad=1, timeout=2147483647.000000)
+2026-11-24 10:02:47.282 Df com.apple.WebKit.Networking[3471:3c76] [com.apple.network:url] Task <C9BD807C-0DB6-4A06-BDBD-B34E219FA892>.<20> resuming, timeouts(2147483647.0, 604800.0), qos(0x19), activity(00000000-0000-0000-0000-000000000000)
+2026-11-24 10:02:47.293 I  com.apple.WebKit.Networking[3471:40a5] [com.apple.network:connection] nw_endpoint_flow_connected_path_change [C20.1.1.2 IPv4#d1bc7f25:8123 ready socket-flow (satisfied (Path is satisfied), interface: lo0)] Connected path is satisfied, not viable
+2026-11-24 10:02:47.296 I  com.apple.WebKit.Networking[3471:40a5] [com.apple.network:connection] nw_endpoint_flow_connected_path_change [C20.1.1.2 IPv4#d1bc7f25:8123 ready socket-flow (satisfied (Path is satisfied), interface: lo0)] Connected path is satisfied, not viable
+2026-11-24 10:02:47.297 I  com.apple.WebKit.Networking[3471:40a5] [com.apple.network:connection] nw_endpoint_flow_connected_path_change [C20 IPv4#d1bc7f25:8123 ready parent-flow (satisfied (Path is satisfied), interface: en0)] Connected path is satisfied, child is not viable
+	ecn packets sent/acked/marked/lost: 0/0/0/0
+2026-11-24 10:02:47.476 A  com.apple.WebKit.GPU[3472:3cad] (libsystem_trace.dylib) Activity for state dumps
+2026-11-24 10:02:47.475 F  com.apple.WebKit.GPU[3472:3cad] (IOSurface) IOSurfaceQueryTransactionList got non-success return from kernel
+2026-11-24 10:02:50.285 Df com.apple.WebKit.Networking[3471:3c76] [com.apple.WebKit:Network] 0x111120000 - [pageProxyID=29, webPageID=30, frameID=8589934593, resourceID=3563, isMainResource=0, destination=0, isSynchronous=0] NetworkResourceLoader::startNetworkLoad: (isFirstLoad=1, timeout=2147483647.000000)
+2026-11-24 10:02:50.286 Df com.apple.WebKit.Networking[3471:3c76] [com.apple.network:url] Task <C9BD807C-0DB6-4A06-BDBD-B34E219FA892>.<21> resuming, timeouts(2147483647.0, 604800.0), qos(0x19), activity(00000000-0000-0000-0000-000000000000)
+2026-11-24 10:02:50.334 I  com.apple.WebKit.Networking[3471:40a5] [com.apple.network:connection] nw_endpoint_flow_connected_path_change [C21.1.1.2 IPv4#d1bc7f25:8123 ready socket-flow (satisfied (Path is satisfied), interface: lo0)] Connected path is satisfied, not viable
+2026-11-24 10:02:50.351 I  com.apple.WebKit.Networking[3471:40a5] [com.apple.network:connection] nw_endpoint_flow_connected_path_change [C21.1.1.2 IPv4#d1bc7f25:8123 ready socket-flow (satisfied (Path is satisfied), interface: lo0)] Connected path is satisfied, not viable
+2026-11-24 10:02:50.352 I  com.apple.WebKit.Networking[3471:40a5] [com.apple.network:connection] nw_endpoint_flow_connected_path_change [C21 IPv4#d1bc7f25:8123 ready parent-flow (satisfied (Path is satisfied), interface: en0)] Connected path is satisfied, child is not viable
+	ecn packets sent/acked/marked/lost: 0/0/0/0
+2026-11-24 10:03:09.583 E  MobileSafari[3460:3c1d] [com.apple.UIKit:BackgroundTask] Background Task 33 ("com.apple.SafariShared.SuddenTerminationDisabler"), was created over 30 seconds ago. In applications running in the background, this creates a risk of termination. Remember to call UIApplication.endBackgroundTask(_:) for your task in a timely manner to avoid this.
+2026-11-24 10:04:16.827 Df MobileSafari[3460:3c34] [com.apple.mobilesafari:Passwords] Aborting clean up for passwords with unmatchable contributor ID because groups have changed since the account store was loaded.
+2026-11-24 10:04:16.831 Df MobileSafari[3460:3c34] [com.apple.mobilesafari:Passwords] Aborting clean up for passwords with unmatchable contributor ID because groups have changed since the account store was loaded.
+2026-11-24 10:04:16.831 Df MobileSafari[3460:3c34] [com.apple.mobilesafari:Passwords] Aborting clean up for passwords with unmatchable contributor ID because groups have changed since the account store was loaded.
+2026-11-24 10:04:16.831 Df MobileSafari[3460:3c34] [com.apple.mobilesafari:Passwords] Aborting clean up for passwords with unmatchable contributor ID because groups have changed since the account store was loaded.
+2026-11-24 10:04:16.831 Df MobileSafari[3460:3c34] [com.apple.mobilesafari:Passwords] Aborting clean up for passwords with unmatchable contributor ID because groups have changed since the account store was loaded.
+2026-11-24 10:04:55.883 Df MobileSafari[3460:3c33] [com.apple.mobilesafari:SuddenTerminationDisabler] Beginning new task assertion with reason: -[WBSSQLiteDatabase close]
+2026-11-24 10:04:55.886 Df MobileSafari[3460:3c33] [com.apple.UIKit:BackgroundTask] Will add backgroundTask with taskName: com.apple.SafariShared.SuddenTerminationDisabler, expirationHandler: <__NSGlobalBlock__: 0x1e9c84330>
+2026-11-24 10:06:24.104 Df runningboardd[1442:36fc] [com.apple.runningboard:process] [osservice<com.apple.TextInput.kbd>:3474] Ignoring jetsam update because this process is not memory-managed
+2026-11-24 10:06:24.113 Df runningboardd[1442:36fc] [com.apple.runningboard:process] [osservice<com.apple.Safari.SafeBrowsing.Service>:3478] Ignoring jetsam update because this process is not memory-managed
+2026-11-24 10:06:24.115 Df runningboardd[1442:36fc] [com.apple.runningboard:process] [osservice<com.apple.amsengagementd>:2393] Ignoring jetsam update because this process is not memory-managed
+2026-11-24 10:06:38.509 Df MTLCompilerService[2519:48d7] (MTLCompiler) Compilation BEGIN (ParentProcessName=WidgetRenderer_Default_2514) Build request: MTLBuildFunctions - pipeline
+2026-11-24 10:06:38.567 Df MTLCompilerService[2519:48d7] (MTLCompiler) Compilation SUCCESS (ParentProcessName=WidgetRenderer_Default_2514) [FunctionName=ffea15feba4] (TYPE=MTLBuildFunctions - pipeline): Time 53.829875 ms
+2026-11-24 10:06:38.731 Df MTLCompilerService[2519:48d8] (MTLCompiler) Compilation BEGIN (ParentProcessName=WidgetRenderer_Default_2514) Build request: MTLSpecializeFunctionToArchive - function specialization
+2026-11-24 10:06:38.761 Df MTLCompilerService[2519:48d8] (MTLCompiler) Compilation SUCCESS (ParentProcessName=WidgetRenderer_Default_2514) [FunctionName=vhia3ea2ca8feba4] (TYPE=MTLSpecializeFunctionToArchive - function specialization): Time 29.272458 ms
+2026-11-24 10:06:38.785 Df MTLCompilerService[2519:48d8] (MTLCompiler) Compilation BEGIN (ParentProcessName=WidgetRenderer_Default_2514) Build request: MTLSpecializeFunctionToArchive - function specialization
+2026-11-24 10:06:38.873 Df MTLCompilerService[2519:48d8] (MTLCompiler) Compilation SUCCESS (ParentProcessName=WidgetRenderer_Default_2514) [FunctionName=fhia3ea2ca8feba4] (TYPE=MTLSpecializeFunctionToArchive - function specialization): Time 87.798750 ms
+2026-11-24 10:06:38.967 Df MTLCompilerService[2519:48d8] (MTLCompiler) Compilation BEGIN (ParentProcessName=WidgetRenderer_Default_2514) Build request: MTLBuildFunctions - pipeline
+2026-11-24 10:06:38.978 Df MTLCompilerService[2519:48d8] (MTLCompiler) Compilation SUCCESS (ParentProcessName=WidgetRenderer_Default_2514) [FunctionName=fhia3ea2ca8feba4] (TYPE=MTLBuildFunctions - pipeline): Time 10.521666 ms
+2026-11-24 10:06:39.026 Df MTLCompilerService[2519:48d8] (MTLCompiler) Compilation BEGIN (ParentProcessName=WidgetRenderer_Default_2514) Build request: MTLBuildFunctions - pipeline
+2026-11-24 10:06:39.039 Df MTLCompilerService[2519:48d8] (MTLCompiler) Compilation SUCCESS (ParentProcessName=WidgetRenderer_Default_2514) [FunctionName=vhia3ea2ca8feba4] (TYPE=MTLBuildFunctions - pipeline): Time 9.310125 ms
+2026-11-24 10:06:39.057 Df MTLCompilerService[2519:48d8] (MTLCompiler) Compilation BEGIN (ParentProcessName=WidgetRenderer_Default_2514) Build request: MTLSpecializeFunctionToArchive - function specialization
+2026-11-24 10:06:39.065 Df MTLCompilerService[2519:48d8] (MTLCompiler) Compilation SUCCESS (ParentProcessName=WidgetRenderer_Default_2514) [FunctionName=vhea3ea11feba4] (TYPE=MTLSpecializeFunctionToArchive - function specialization): Time 8.021125 ms
+2026-11-24 10:06:39.092 Df MTLCompilerService[2519:48d8] (MTLCompiler) Compilation BEGIN (ParentProcessName=WidgetRenderer_Default_2514) Build request: MTLSpecializeFunctionToArchive - function specialization
+2026-11-24 10:06:39.171 Df MTLCompilerService[2519:48d8] (MTLCompiler) Compilation SUCCESS (ParentProcessName=WidgetRenderer_Default_2514) [FunctionName=fhea3ea11feba4] (TYPE=MTLSpecializeFunctionToArchive - function specialization): Time 78.286791 ms
+2026-11-24 10:06:39.234 Df MTLCompilerService[2519:48d8] (MTLCompiler) Compilation BEGIN (ParentProcessName=WidgetRenderer_Default_2514) Build request: MTLBuildFunctions - pipeline
+2026-11-24 10:06:39.243 Df MTLCompilerService[2519:48d8] (MTLCompiler) Compilation SUCCESS (ParentProcessName=WidgetRenderer_Default_2514) [FunctionName=fhea3ea11feba4] (TYPE=MTLBuildFunctions - pipeline): Time 9.574708 ms
+2026-11-24 10:06:39.263 Df MTLCompilerService[2519:48d8] (MTLCompiler) Compilation BEGIN (ParentProcessName=WidgetRenderer_Default_2514) Build request: MTLBuildFunctions - pipeline
+2026-11-24 10:06:39.270 Df MTLCompilerService[2519:48d8] (MTLCompiler) Compilation SUCCESS (ParentProcessName=WidgetRenderer_Default_2514) [FunctionName=vhea3ea11feba4] (TYPE=MTLBuildFunctions - pipeline): Time 6.606458 ms
+2026-11-24 10:06:39.338 Df MTLCompilerService[2519:48d8] (MTLCompiler) Compilation BEGIN (ParentProcessName=WidgetRenderer_Default_2514) Build request: MTLSpecializeFunctionToArchive - function specialization
+2026-11-24 10:06:39.359 Df MTLCompilerService[2519:48d8] (MTLCompiler) Compilation SUCCESS (ParentProcessName=WidgetRenderer_Default_2514) [FunctionName=fbka4ea9ka7] (TYPE=MTLSpecializeFunctionToArchive - function specialization): Time 20.555958 ms
+2026-11-24 10:06:39.368 Df MTLCompilerService[2519:48d8] (MTLCompiler) Compilation BEGIN (ParentProcessName=WidgetRenderer_Default_2514) Build request: MTLBuildFunctions - pipeline
+2026-11-24 10:06:39.379 Df MTLCompilerService[2519:48d8] (MTLCompiler) Compilation SUCCESS (ParentProcessName=WidgetRenderer_Default_2514) [FunctionName=fbka4ea9ka7] (TYPE=MTLBuildFunctions - pipeline): Time 10.389333 ms
+2026-11-24 10:06:39.496 Df MTLCompilerService[2519:48d8] (MTLCompiler) Compilation BEGIN (ParentProcessName=WidgetRenderer_Default_2514) Build request: MTLSpecializeFunctionToArchive - function specialization
+2026-11-24 10:06:39.549 Df MTLCompilerService[2519:48d8] (MTLCompiler) Compilation SUCCESS (ParentProcessName=WidgetRenderer_Default_2514) [FunctionName=fgia2mbcama8feba4] (TYPE=MTLSpecializeFunctionToArchive - function specialization): Time 53.031541 ms
+2026-11-24 10:06:39.550 Df MTLCompilerService[2519:48d8] (MTLCompiler) Compilation BEGIN (ParentProcessName=WidgetRenderer_Default_2514) Build request: MTLBuildFunctions - pipeline
+2026-11-24 10:06:39.553 Df MTLCompilerService[2519:48d8] (MTLCompiler) Compilation SUCCESS (ParentProcessName=WidgetRenderer_Default_2514) [FunctionName=fgia2mbcama8feba4] (TYPE=MTLBuildFunctions - pipeline): Time 2.957750 ms
+2026-11-24 10:08:03.583 Df MobileSafari[3460:3c33] [com.apple.UIKit:BackgroundTask] Created background task <_UIBackgroundTaskInfo: 0x60000187c6c0>: taskID = 38, taskName = com.apple.SafariShared.SuddenTerminationDisabler, creationTime = 597 (elapsed = 20).
+2026-11-24 10:08:03.584 Df MobileSafari[3460:3c33] [com.apple.mobilesafari:SuddenTerminationDisabler] Did begin task assertion with reason -[WBSSQLiteDatabase close]
+2026-11-24 10:08:05.950 Df MobileSafari[3460:3c33] [com.apple.mobilesafari:SuddenTerminationDisabler] Interrupting previous coalesced task assertion to be replaced with existing reasons: {(
+2026-11-24 10:08:05.953 Df MobileSafari[3460:3c33] [com.apple.UIKit:BackgroundTask] Ending task with identifier 33 and description: <_UIBackgroundTaskInfo: 0x60000171b880>: taskID = 33, taskName = com.apple.SafariShared.SuddenTerminationDisabler, creationTime = 289 (elapsed = 331), _expireHandler: <__NSGlobalBlock__: 0x1e9c84330>
+2026-11-24 10:08:06.069 Df MobileSafari[3460:3c33] [com.apple.UIKit:BackgroundTask] Decrementing reference count for assertion <BKSProcessAssertion: 0x6000021cc050> (used by background task with identifier 33: <_UIBackgroundTaskInfo: 0x60000171b880>: taskID = 33, taskName = com.apple.SafariShared.SuddenTerminationDisabler, creationTime = 289 (elapsed = 331))
+2026-11-24 10:08:07.716 Df MobileSafari[3460:3c7b] [com.apple.mobilesafari:SuddenTerminationDisabler] Ending task assertion with reason com.apple.SafariShared.WBSSiteMetadataImageCache
+2026-11-24 10:08:07.717 Df MobileSafari[3460:3c7b] [com.apple.mobilesafari:SuddenTerminationDisabler] Continuing background task assertion with reasons {(
+2026-11-24 10:08:07.914 Df MobileSafari[3460:3c78] [com.apple.mobilesafari:SuddenTerminationDisabler] Beginning new task assertion with reason: com.apple.SafariCore.WBSSQLiteStatement
+2026-11-24 10:08:07.915 Df MobileSafari[3460:3c78] [com.apple.UIKit:BackgroundTask] Will add backgroundTask with taskName: com.apple.SafariShared.SuddenTerminationDisabler, expirationHandler: <__NSGlobalBlock__: 0x1e9c84330>
+2026-11-24 10:08:07.915 Df MobileSafari[3460:3c78] [com.apple.UIKit:BackgroundTask] Created background task <_UIBackgroundTaskInfo: 0x600001863440>: taskID = 39, taskName = com.apple.SafariShared.SuddenTerminationDisabler, creationTime = 622 (elapsed = 0).
+2026-11-24 10:08:07.915 Df MobileSafari[3460:3c78] [com.apple.mobilesafari:SuddenTerminationDisabler] Did begin task assertion with reason com.apple.SafariCore.WBSSQLiteStatement
+2026-11-24 10:08:07.916 Df MobileSafari[3460:3c78] [com.apple.mobilesafari:SuddenTerminationDisabler] Interrupting previous coalesced task assertion to be replaced with existing reasons: {(
+2026-11-24 10:08:07.916 Df MobileSafari[3460:3c78] [com.apple.UIKit:BackgroundTask] Ending task with identifier 38 and description: <_UIBackgroundTaskInfo: 0x60000187c6c0>: taskID = 38, taskName = com.apple.SafariShared.SuddenTerminationDisabler, creationTime = 597 (elapsed = 25), _expireHandler: <__NSGlobalBlock__: 0x1e9c84330>
+2026-11-24 10:08:07.918 Df MobileSafari[3460:3c78] [com.apple.UIKit:BackgroundTask] Decrementing reference count for assertion <BKSProcessAssertion: 0x6000021cc050> (used by background task with identifier 38: <_UIBackgroundTaskInfo: 0x60000187c6c0>: taskID = 38, taskName = com.apple.SafariShared.SuddenTerminationDisabler, creationTime = 597 (elapsed = 25))
+2026-11-24 10:08:08.128 Df MobileSafari[3460:3c33] [com.apple.mobilesafari:SuddenTerminationDisabler] Ending task assertion with reason -[WBSSQLiteDatabase close]
+2026-11-24 10:08:08.130 Df MobileSafari[3460:3c33] [com.apple.mobilesafari:SuddenTerminationDisabler] Continuing background task assertion with reasons {(
+2026-11-24 10:08:09.815 E  com.apple.WebKit.Networking[3471:3cb8] [com.apple.WebKit:PrivateClickMeasurement] 0x11020c100 - DatabaseUtilities::setBusyTimeout failed, error message: not an error
+2026-11-24 10:08:10.500 Df MobileSafari[3460:41e6] [com.apple.CFNetwork:Default] Task <F7232B03-9525-4F3B-817E-6E52929349B9>.<2> resuming, timeouts(60.0, 604800.0) qos(0x11) voucher((null)) activity(00000000-0000-0000-0000-000000000000)
+2026-11-24 10:08:10.598 Df MobileSafari[3460:41ab] [com.apple.CFNetwork:Default] Task <A7E3A9D9-4FA6-42E2-8CDC-89CFC96C08BF>.<3> resuming, timeouts(60.0, 604800.0) qos(0x11) voucher((null)) activity(00000000-0000-0000-0000-000000000000)
+2026-11-24 10:08:11.252 Df MobileSafari[3460:3c79] [com.apple.mobilesafari:SuddenTerminationDisabler] Beginning new task assertion with reason: com.apple.SafariShared.WBSOnDiskDataCache
+2026-11-24 10:08:11.253 Df MobileSafari[3460:3c79] [com.apple.UIKit:BackgroundTask] Will add backgroundTask with taskName: com.apple.SafariShared.SuddenTerminationDisabler, expirationHandler: <__NSGlobalBlock__: 0x1e9c84330>
+2026-11-24 10:08:11.256 Df MobileSafari[3460:3c79] [com.apple.UIKit:BackgroundTask] Created background task <_UIBackgroundTaskInfo: 0x6000017f98c0>: taskID = 40, taskName = com.apple.SafariShared.SuddenTerminationDisabler, creationTime = 625 (elapsed = 0).
+2026-11-24 10:08:11.261 Df MobileSafari[3460:3c79] [com.apple.mobilesafari:SuddenTerminationDisabler] Did begin task assertion with reason com.apple.SafariShared.WBSOnDiskDataCache
+2026-11-24 10:08:11.261 Df MobileSafari[3460:3c79] [com.apple.mobilesafari:SuddenTerminationDisabler] Interrupting previous coalesced task assertion to be replaced with existing reasons: {(
+2026-11-24 10:08:11.262 Df MobileSafari[3460:3c79] [com.apple.UIKit:BackgroundTask] Ending task with identifier 39 and description: <_UIBackgroundTaskInfo: 0x600001863440>: taskID = 39, taskName = com.apple.SafariShared.SuddenTerminationDisabler, creationTime = 622 (elapsed = 3), _expireHandler: <__NSGlobalBlock__: 0x1e9c84330>
+2026-11-24 10:08:11.262 Df MobileSafari[3460:3c79] [com.apple.UIKit:BackgroundTask] Decrementing reference count for assertion <BKSProcessAssertion: 0x6000021cc050> (used by background task with identifier 39: <_UIBackgroundTaskInfo: 0x600001863440>: taskID = 39, taskName = com.apple.SafariShared.SuddenTerminationDisabler, creationTime = 622 (elapsed = 3))
+2026-11-24 10:08:11.264 Df MobileSafari[3460:3c79] [com.apple.mobilesafari:SuddenTerminationDisabler] Ending task assertion with reason com.apple.SafariShared.WBSOnDiskDataCache
+2026-11-24 10:08:11.264 Df MobileSafari[3460:3c79] [com.apple.mobilesafari:SuddenTerminationDisabler] Continuing background task assertion with reasons {(
+2026-11-24 10:08:11.312 Df MobileSafari[3460:3c7a] [com.apple.mobilesafari:SuddenTerminationDisabler] Beginning new task assertion with reason: com.apple.SafariShared.WBSSiteMetadataImageCache
+2026-11-24 10:08:11.562 Df MobileSafari[3460:3c7a] [com.apple.UIKit:BackgroundTask] Will add backgroundTask with taskName: com.apple.SafariShared.SuddenTerminationDisabler, expirationHandler: <__NSGlobalBlock__: 0x1e9c84330>
+2026-11-24 10:08:11.562 Df MobileSafari[3460:3c7a] [com.apple.UIKit:BackgroundTask] Created background task <_UIBackgroundTaskInfo: 0x600001862400>: taskID = 41, taskName = com.apple.SafariShared.SuddenTerminationDisabler, creationTime = 626 (elapsed = 0).
+2026-11-24 10:08:11.562 Df MobileSafari[3460:3c7a] [com.apple.mobilesafari:SuddenTerminationDisabler] Did begin task assertion with reason com.apple.SafariShared.WBSSiteMetadataImageCache
+2026-11-24 10:08:11.562 Df MobileSafari[3460:3c7a] [com.apple.mobilesafari:SuddenTerminationDisabler] Interrupting previous coalesced task assertion to be replaced with existing reasons: {(
+2026-11-24 10:08:11.586 Df MobileSafari[3460:3c7a] [com.apple.UIKit:BackgroundTask] Ending task with identifier 40 and description: <_UIBackgroundTaskInfo: 0x6000017f98c0>: taskID = 40, taskName = com.apple.SafariShared.SuddenTerminationDisabler, creationTime = 625 (elapsed = 1), _expireHandler: <__NSGlobalBlock__: 0x1e9c84330>
+2026-11-24 10:08:11.587 Df MobileSafari[3460:3c7a] [com.apple.UIKit:BackgroundTask] Decrementing reference count for assertion <BKSProcessAssertion: 0x6000021cc050> (used by background task with identifier 40: <_UIBackgroundTaskInfo: 0x6000017f98c0>: taskID = 40, taskName = com.apple.SafariShared.SuddenTerminationDisabler, creationTime = 625 (elapsed = 1))
+2026-11-24 10:08:11.636 Df MobileSafari[3460:3c37] [com.apple.mobilesafari:SuddenTerminationDisabler] Ending task assertion with reason com.apple.WebBookmarks.WBTabCollection
+2026-11-24 10:08:11.637 Df MobileSafari[3460:3c37] [com.apple.mobilesafari:SuddenTerminationDisabler] Continuing background task assertion with reasons {(
+2026-11-24 10:08:11.766 Df MobileSafari[3460:3c7a] [com.apple.mobilesafari:SuddenTerminationDisabler] Ending task assertion with reason com.apple.SafariShared.WBSSiteMetadataImageCache
+2026-11-24 10:08:11.770 Df MobileSafari[3460:3c7a] [com.apple.mobilesafari:SuddenTerminationDisabler] Continuing background task assertion with reasons {(
+	<RBSDomainAttribute| domain:"com.apple.frontboard" name:"SuspendableJetsamPriority-ForegroundSupport" sourceEnvironment:"(null)">,
+2026-11-24 10:08:12.355 Df MobileSafari[3460:3c37] [com.apple.mobilesafari:SuddenTerminationDisabler] Ending task assertion with reason com.apple.WebBookmarks.WBTabCollection
+2026-11-24 10:08:12.358 Df MobileSafari[3460:3c37] [com.apple.mobilesafari:SuddenTerminationDisabler] Continuing background task assertion with reasons {(
+2026-11-24 10:08:12.753 Df runningboardd[1442:48cc] [com.apple.runningboard:process] [app<com.apple.iMessageAppsViewService((null))>:4531] Memory Limits: active 0 inactive 0
+ <RBJetsamProperties| tasklimit=0
+2026-11-24 10:08:15.235 Df MobileSafari[3460:41b8] [com.apple.mobilesafari:SuddenTerminationDisabler] Ending task assertion with reason com.apple.SafariCore.WBSSQLiteStatement
+2026-11-24 10:08:15.235 Df MobileSafari[3460:41b8] [com.apple.mobilesafari:SuddenTerminationDisabler] Continuing background task assertion with reasons {(
+	<RBSDomainAttribute| domain:"com.apple.frontboard" name:"SuspendableJetsamPriority-Active" sourceEnvironment:"(null)">
+	<RBSDomainAttribute| domain:"com.apple.frontboard" name:"SuspendableJetsamPriority-Active" sourceEnvironment:"(null)">
+	<RBSDomainAttribute| domain:"com.apple.frontboard" name:"SuspendableJetsamPriority-Active" sourceEnvironment:"(null)">
+2026-11-24 10:08:20.952 Df MobileSafari[3460:3c33] [com.apple.mobilesafari:SuddenTerminationDisabler] Beginning new task assertion with reason: com.apple.SafariCore.WBSSQLiteStatement
+2026-11-24 10:08:20.952 Df MobileSafari[3460:3c33] [com.apple.UIKit:BackgroundTask] Will add backgroundTask with taskName: com.apple.SafariShared.SuddenTerminationDisabler, expirationHandler: <__NSGlobalBlock__: 0x1e9c84330>
+2026-11-24 10:08:20.970 Df MobileSafari[3460:3c33] [com.apple.UIKit:BackgroundTask] Created background task <_UIBackgroundTaskInfo: 0x60000188b440>: taskID = 42, taskName = com.apple.SafariShared.SuddenTerminationDisabler, creationTime = 635 (elapsed = 0).
+2026-11-24 10:08:20.970 Df MobileSafari[3460:3c33] [com.apple.mobilesafari:SuddenTerminationDisabler] Did begin task assertion with reason com.apple.SafariCore.WBSSQLiteStatement
+2026-11-24 10:08:20.970 Df MobileSafari[3460:3c33] [com.apple.mobilesafari:SuddenTerminationDisabler] Interrupting previous coalesced task assertion to be replaced with existing reasons: {(
+2026-11-24 10:08:20.980 Df MobileSafari[3460:3c33] [com.apple.UIKit:BackgroundTask] Ending task with identifier 41 and description: <_UIBackgroundTaskInfo: 0x600001862400>: taskID = 41, taskName = com.apple.SafariShared.SuddenTerminationDisabler, creationTime = 626 (elapsed = 9), _expireHandler: <__NSGlobalBlock__: 0x1e9c84330>
+2026-11-24 10:08:21.145 Df MobileSafari[3460:3c33] [com.apple.UIKit:BackgroundTask] Decrementing reference count for assertion <BKSProcessAssertion: 0x6000021cc050> (used by background task with identifier 41: <_UIBackgroundTaskInfo: 0x600001862400>: taskID = 41, taskName = com.apple.SafariShared.SuddenTerminationDisabler, creationTime = 626 (elapsed = 9))
+	<RBSDomainAttribute| domain:"com.apple.frontboard" name:"SuspendableJetsamPriority-Active" sourceEnvironment:"(null)">
+2026-11-24 10:08:21.815 Df MobileSafari[3460:3c33] [com.apple.mobilesafari:SuddenTerminationDisabler] Beginning new task assertion with reason: com.apple.SafariShared.WBSOnDiskDataCache
+2026-11-24 10:08:21.815 Df MobileSafari[3460:3c33] [com.apple.UIKit:BackgroundTask] Will add backgroundTask with taskName: com.apple.SafariShared.SuddenTerminationDisabler, expirationHandler: <__NSGlobalBlock__: 0x1e9c84330>
+2026-11-24 10:08:21.837 Df MobileSafari[3460:3c33] [com.apple.UIKit:BackgroundTask] Created background task <_UIBackgroundTaskInfo: 0x60000188f500>: taskID = 43, taskName = com.apple.SafariShared.SuddenTerminationDisabler, creationTime = 636 (elapsed = 0).
+2026-11-24 10:08:21.839 Df MobileSafari[3460:3c33] [com.apple.mobilesafari:SuddenTerminationDisabler] Did begin task assertion with reason com.apple.SafariShared.WBSOnDiskDataCache
+2026-11-24 10:08:21.839 Df MobileSafari[3460:3c33] [com.apple.mobilesafari:SuddenTerminationDisabler] Interrupting previous coalesced task assertion to be replaced with existing reasons: {(
+2026-11-24 10:08:21.843 Df MobileSafari[3460:3c33] [com.apple.UIKit:BackgroundTask] Ending task with identifier 42 and description: <_UIBackgroundTaskInfo: 0x60000188b440>: taskID = 42, taskName = com.apple.SafariShared.SuddenTerminationDisabler, creationTime = 635 (elapsed = 1), _expireHandler: <__NSGlobalBlock__: 0x1e9c84330>
+2026-11-24 10:08:21.843 Df MobileSafari[3460:3c33] [com.apple.UIKit:BackgroundTask] Decrementing reference count for assertion <BKSProcessAssertion: 0x6000021cc050> (used by background task with identifier 42: <_UIBackgroundTaskInfo: 0x60000188b440>: taskID = 42, taskName = com.apple.SafariShared.SuddenTerminationDisabler, creationTime = 635 (elapsed = 1))
+2026-11-24 10:08:21.844 Df MobileSafari[3460:3c33] [com.apple.mobilesafari:SuddenTerminationDisabler] Ending task assertion with reason com.apple.SafariShared.WBSOnDiskDataCache
+2026-11-24 10:08:21.844 Df MobileSafari[3460:3c33] [com.apple.mobilesafari:SuddenTerminationDisabler] Continuing background task assertion with reasons {(
+2026-11-24 10:08:21.844 Df MobileSafari[3460:3c33] [com.apple.mobilesafari:SuddenTerminationDisabler] Beginning new task assertion with reason: com.apple.SafariShared.WBSOnDiskDataCache
+2026-11-24 10:08:21.845 Df MobileSafari[3460:3c33] [com.apple.UIKit:BackgroundTask] Will add backgroundTask with taskName: com.apple.SafariShared.SuddenTerminationDisabler, expirationHandler: <__NSGlobalBlock__: 0x1e9c84330>
+2026-11-24 10:08:21.845 Df MobileSafari[3460:3c33] [com.apple.UIKit:BackgroundTask] Created background task <_UIBackgroundTaskInfo: 0x600001880880>: taskID = 44, taskName = com.apple.SafariShared.SuddenTerminationDisabler, creationTime = 636 (elapsed = 0).
+2026-11-24 10:08:21.845 Df MobileSafari[3460:3c33] [com.apple.mobilesafari:SuddenTerminationDisabler] Did begin task assertion with reason com.apple.SafariShared.WBSOnDiskDataCache
+2026-11-24 10:08:21.845 Df MobileSafari[3460:3c33] [com.apple.mobilesafari:SuddenTerminationDisabler] Interrupting previous coalesced task assertion to be replaced with existing reasons: {(
+2026-11-24 10:08:21.845 Df MobileSafari[3460:3c33] [com.apple.UIKit:BackgroundTask] Ending task with identifier 43 and description: <_UIBackgroundTaskInfo: 0x60000188f500>: taskID = 43, taskName = com.apple.SafariShared.SuddenTerminationDisabler, creationTime = 636 (elapsed = 0), _expireHandler: <__NSGlobalBlock__: 0x1e9c84330>
+2026-11-24 10:08:21.845 Df MobileSafari[3460:3c33] [com.apple.UIKit:BackgroundTask] Decrementing reference count for assertion <BKSProcessAssertion: 0x6000021cc050> (used by background task with identifier 43: <_UIBackgroundTaskInfo: 0x60000188f500>: taskID = 43, taskName = com.apple.SafariShared.SuddenTerminationDisabler, creationTime = 636 (elapsed = 0))
+2026-11-24 10:08:22.302 Df MobileSafari[3460:3c33] [com.apple.mobilesafari:SuddenTerminationDisabler] Ending task assertion with reason com.apple.SafariShared.WBSOnDiskDataCache
+2026-11-24 10:08:22.311 Df MobileSafari[3460:3c33] [com.apple.mobilesafari:SuddenTerminationDisabler] Continuing background task assertion with reasons {(
+2026-11-24 10:08:23.211 Df com.apple.WebKit.Networking[3471:3c76] [com.apple.WebKit:Network] 0x111120000 - [pageProxyID=29, webPageID=30, frameID=8589934593, resourceID=3564, isMainResource=0, destination=8, isSynchronous=0] NetworkResourceLoader::startNetworkLoad: (isFirstLoad=1, timeout=2147483647.000000)
+2026-11-24 10:08:23.221 Df com.apple.WebKit.Networking[3471:3c76] [com.apple.network:url] Task <C9BD807C-0DB6-4A06-BDBD-B34E219FA892>.<22> resuming, timeouts(2147483647.0, 604800.0), qos(0x19), activity(00000000-0000-0000-0000-000000000000)
+2026-11-24 10:08:23.298 I  com.apple.WebKit.Networking[3471:3ca5] [com.apple.network:connection] nw_endpoint_flow_connected_path_change [C22.1.1.2 IPv4#d1bc7f25:8123 ready socket-flow (satisfied (Path is satisfied), interface: lo0)] Connected path is satisfied, not viable
+2026-11-24 10:08:23.300 I  com.apple.WebKit.Networking[3471:3ca5] [com.apple.network:connection] nw_endpoint_flow_connected_path_change [C22.1.1.2 IPv4#d1bc7f25:8123 ready socket-flow (satisfied (Path is satisfied), interface: lo0)] Connected path is satisfied, not viable
+2026-11-24 10:08:23.300 I  com.apple.WebKit.Networking[3471:3ca5] [com.apple.network:connection] nw_endpoint_flow_connected_path_change [C22 IPv4#d1bc7f25:8123 ready parent-flow (satisfied (Path is satisfied), interface: en0)] Connected path is satisfied, child is not viable
+2026-11-24 10:08:23.362 Df MobileSafari[3460:3c37] [com.apple.mobilesafari:SuddenTerminationDisabler] Ending task assertion with reason com.apple.WebBookmarks.WBTabCollection
+2026-11-24 10:08:23.362 Df MobileSafari[3460:3c37] [com.apple.mobilesafari:SuddenTerminationDisabler] Continuing background task assertion with reasons {(
+2026-11-24 10:08:24.816 Df MobileSafari[3460:3c33] [com.apple.mobilesafari:SuddenTerminationDisabler] Ending task assertion with reason com.apple.SafariCore.WBSSQLiteStatement
+2026-11-24 10:08:24.816 Df MobileSafari[3460:3c33] [com.apple.mobilesafari:SuddenTerminationDisabler] Ending background task assertion
+2026-11-24 10:08:24.816 Df MobileSafari[3460:3c33] [com.apple.UIKit:BackgroundTask] Ending task with identifier 44 and description: <_UIBackgroundTaskInfo: 0x600001880880>: taskID = 44, taskName = com.apple.SafariShared.SuddenTerminationDisabler, creationTime = 636 (elapsed = 3), _expireHandler: <__NSGlobalBlock__: 0x1e9c84330>
+2026-11-24 10:08:24.816 Df MobileSafari[3460:3c33] [com.apple.UIKit:BackgroundTask] Decrementing reference count for assertion <BKSProcessAssertion: 0x6000021cc050> (used by background task with identifier 44: <_UIBackgroundTaskInfo: 0x600001880880>: taskID = 44, taskName = com.apple.SafariShared.SuddenTerminationDisabler, creationTime = 636 (elapsed = 3))
+	ecn packets sent/acked/marked/lost: 0/0/0/0
+2026-11-24 10:08:27.616 Df MobileSafari[3460:41bf] [com.apple.mobilesafari:SuddenTerminationDisabler] Beginning new task assertion with reason: com.apple.SafariShared.WBSFormAutoFillCorrectionsSQLiteStore
+2026-11-24 10:08:27.620 Df MobileSafari[3460:41bf] [com.apple.UIKit:BackgroundTask] Will add backgroundTask with taskName: com.apple.SafariShared.SuddenTerminationDisabler, expirationHandler: <__NSGlobalBlock__: 0x1e9c84330>
+2026-11-24 10:08:27.817 Df MobileSafari[3460:41bf] [com.apple.UIKit:BackgroundTask] Created background task <_UIBackgroundTaskInfo: 0x600001873e80>: taskID = 45, taskName = com.apple.SafariShared.SuddenTerminationDisabler, creationTime = 642 (elapsed = 0).
+2026-11-24 10:08:27.818 Df MobileSafari[3460:41bf] [com.apple.mobilesafari:SuddenTerminationDisabler] Did begin task assertion with reason com.apple.SafariShared.WBSFormAutoFillCorrectionsSQLiteStore
+2026-11-24 10:08:27.821 Df MobileSafari[3460:4131] [com.apple.mobilesafari:SuddenTerminationDisabler] Beginning new task assertion with reason: com.apple.SafariCore.WBSSQLiteStatement
+2026-11-24 10:08:27.836 Df MobileSafari[3460:4131] [com.apple.UIKit:BackgroundTask] Will add backgroundTask with taskName: com.apple.SafariShared.SuddenTerminationDisabler, expirationHandler: <__NSGlobalBlock__: 0x1e9c84330>
+2026-11-24 10:08:27.843 Df MobileSafari[3460:4131] [com.apple.UIKit:BackgroundTask] Created background task <_UIBackgroundTaskInfo: 0x600001874700>: taskID = 46, taskName = com.apple.SafariShared.SuddenTerminationDisabler, creationTime = 642 (elapsed = 0).
+2026-11-24 10:08:27.843 Df MobileSafari[3460:4131] [com.apple.mobilesafari:SuddenTerminationDisabler] Did begin task assertion with reason com.apple.SafariCore.WBSSQLiteStatement
+2026-11-24 10:08:27.844 Df MobileSafari[3460:4131] [com.apple.mobilesafari:SuddenTerminationDisabler] Interrupting previous coalesced task assertion to be replaced with existing reasons: {(
+2026-11-24 10:08:27.844 Df MobileSafari[3460:4131] [com.apple.UIKit:BackgroundTask] Ending task with identifier 45 and description: <_UIBackgroundTaskInfo: 0x600001873e80>: taskID = 45, taskName = com.apple.SafariShared.SuddenTerminationDisabler, creationTime = 642 (elapsed = 0), _expireHandler: <__NSGlobalBlock__: 0x1e9c84330>
+2026-11-24 10:08:27.845 Df MobileSafari[3460:4131] [com.apple.UIKit:BackgroundTask] Decrementing reference count for assertion <BKSProcessAssertion: 0x6000021d25d0> (used by background task with identifier 45: <_UIBackgroundTaskInfo: 0x600001873e80>: taskID = 45, taskName = com.apple.SafariShared.SuddenTerminationDisabler, creationTime = 642 (elapsed = 0))
+2026-11-24 10:08:27.897 Df MobileSafari[3460:41bf] [com.apple.mobilesafari:SuddenTerminationDisabler] Ending task assertion with reason com.apple.SafariShared.WBSFormAutoFillCorrectionsSQLiteStore
+2026-11-24 10:08:27.897 Df MobileSafari[3460:41bf] [com.apple.mobilesafari:SuddenTerminationDisabler] Continuing background task assertion with reasons {(
+2026-11-24 10:08:28.391 Df MobileSafari[3460:3c1d] [com.apple.WebKit:Process] 0x1100e40c0 - [PID=3469] WebProcessProxy::canTerminateAuxiliaryProcess: returns false (pageCount=1, provisionalPageCount=0, suspendedPageCount=0, m_isInProcessCache=0, m_shutdownPreventingScopeCounter=0)
+2026-11-24 10:08:32.268 I  MobileSafari[3460:3c33] [com.apple.network:connection] nw_endpoint_flow_connected_path_change [C1.1.1.1 IPv4#30f6cc33:443 ready socket-flow (satisfied (Path is satisfied), interface: en0)] Connected path is satisfied, not viable
+2026-11-24 10:08:32.268 I  MobileSafari[3460:3c33] [com.apple.network:connection] nw_endpoint_flow_connected_path_change [C1 IPv4#30f6cc33:443 ready parent-flow (satisfied (Path is satisfied), interface: en0)] Connected path is satisfied, child is not viable
+2026-11-24 10:08:32.549 I  MobileSafari[3460:4131] [com.apple.network:connection] nw_endpoint_flow_connected_path_change [C2.1.1 IPv4#cc01354f:443 ready socket-flow (satisfied (Path is satisfied), interface: en0)] Connected path is satisfied, not viable
+2026-11-24 10:08:32.550 I  MobileSafari[3460:4131] [com.apple.network:connection] nw_endpoint_flow_connected_path_change [C2 IPv4#cc01354f:443 ready parent-flow (satisfied (Path is satisfied), interface: en0)] Connected path is satisfied, child is not viable
+2026-11-24 10:08:32.586 I  MobileSafari[3460:4131] [com.apple.network:connection] nw_endpoint_flow_connected_path_change [C3.1.1 IPv4#cc01354f:443 ready socket-flow (satisfied (Path is satisfied), interface: en0)] Connected path is satisfied, not viable
+2026-11-24 10:08:32.587 I  MobileSafari[3460:4131] [com.apple.network:connection] nw_endpoint_flow_connected_path_change [C3 IPv4#cc01354f:443 ready parent-flow (satisfied (Path is satisfied), interface: en0)] Connected path is satisfied, child is not viable
+2026-11-24 10:08:33.211 Df MobileSafari[3460:4131] [com.apple.mobilesafari:SuddenTerminationDisabler] Ending task assertion with reason com.apple.SafariCore.WBSSQLiteStatement
+2026-11-24 10:08:33.211 Df MobileSafari[3460:4131] [com.apple.mobilesafari:SuddenTerminationDisabler] Ending background task assertion
+2026-11-24 10:08:33.220 Df MobileSafari[3460:4131] [com.apple.UIKit:BackgroundTask] Ending task with identifier 46 and description: <_UIBackgroundTaskInfo: 0x600001874700>: taskID = 46, taskName = com.apple.SafariShared.SuddenTerminationDisabler, creationTime = 642 (elapsed = 5), _expireHandler: <__NSGlobalBlock__: 0x1e9c84330>
+2026-11-24 10:08:33.220 Df MobileSafari[3460:4131] [com.apple.UIKit:BackgroundTask] Decrementing reference count for assertion <BKSProcessAssertion: 0x6000021d25d0> (used by background task with identifier 46: <_UIBackgroundTaskInfo: 0x600001874700>: taskID = 46, taskName = com.apple.SafariShared.SuddenTerminationDisabler, creationTime = 642 (elapsed = 5))
+2026-11-24 10:08:58.103 Df runningboardd[1442:48cf] [com.apple.runningboard:process] [xpcservice<com.apple.Maps.GeneralMapsWidget([osservice<com.apple.chronod>:1503])>{vt hash: 65357341}[uuid:134F69AC-9ECD-460C-B51A-DF003B7A3105]{definition:com.apple.Maps.GeneralMapsWidget[extension][client]}:4674] Memory Limits: active 0 inactive 0
+ <RBJetsamProperties| tasklimit=0
+	ecn packets sent/acked/marked/lost: 4/3/0/0
+	ecn packets sent/acked/marked/lost: 4/3/0/0
+	ecn packets sent/acked/marked/lost: 4/3/0/0
+2026-11-24 10:09:04.445 Df runningboardd[1442:483d] [com.apple.runningboard:process] [osservice<com.apple.email.maild>:1563] Ignoring jetsam update because this process is not memory-managed
+    "<RBSDomainAttribute| domain:\134"com.apple.frontboard\134" name:\134"SuspendableJetsamLimit-ActiveUI\134" sourceEnvironment:\134"(null)\134">",
+    "<RBSDomainAttribute| domain:\134"com.apple.frontboard\134" name:\134"SuspendableJetsamPriority-Foreground\134" sourceEnvironment:\134"(null)\134">"
+    "<RBSDomainAttribute| domain:\134"com.apple.frontboard\134" name:\134"SuspendableJetsamPriority-Foreground\134" sourceEnvironment:\134"(null)\134">"
+2026-11-24 10:09:09.609 Df runningboardd[1442:48cc] [com.apple.runningboard:process] [anon<WeatherWidget>:504] Ignoring jetsam update because this process is not memory-managed
+2026-11-24 10:09:09.618 Df runningboardd[1442:48cc] [com.apple.runningboard:process] [anon<StocksWidget>:505] Ignoring jetsam update because this process is not memory-managed
+2026-11-24 10:09:09.620 Df runningboardd[1442:48cc] [com.apple.runningboard:process] [anon<WorldClockWidget>:475] Ignoring jetsam update because this process is not memory-managed
+2026-11-24 10:09:09.637 Df runningboardd[1442:48cc] [com.apple.runningboard:process] [anon<chronod>:410] Ignoring jetsam update because this process is not memory-managed
+2026-11-24 10:09:09.639 Df runningboardd[1442:48cc] [com.apple.runningboard:process] [anon<NewsToday2>:507] Ignoring jetsam update because this process is not memory-managed
+2026-11-24 10:10:14.329 Df runningboardd[1442:3a1e] [com.apple.runningboard:process] [xpcservice<com.apple.news.tag([osservice<com.apple.chronod>:1503])>{vt hash: 206870429}[uuid:134F69AC-9ECD-460C-B51A-DF003B7A3105]{definition:com.apple.news.tag[extension][client]}:4876] Memory Limits: active 0 inactive 0
+ <RBJetsamProperties| tasklimit=0
+2026-11-24 10:10:34.462 Df runningboardd[1442:53f7] [com.apple.runningboard:process] [xpcservice<com.apple.news.tag([osservice<com.apple.chronod>:1503])>{vt hash: 206870429}[uuid:134F69AC-9ECD-460C-B51A-DF003B7A3105]{definition:com.apple.news.tag[extension][client]}:4927] Memory Limits: active 0 inactive 0
+ <RBJetsamProperties| tasklimit=0
+Child process terminated with signal 15: Terminated
