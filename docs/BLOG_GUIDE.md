@@ -14,6 +14,7 @@ world models and embodied AI. This file is the contract every post must follow.
 | `graphics-engine` | Game/graphics engine architecture, GPU APIs and render graphs, building a mini engine, production engines, physics and simulation engines, AI + engines (the bridge to world models and embodied AI) |
 | `world-models` | Model-based RL, video world simulators, 3D/4D world generation, JEPA, evaluation |
 | `embodied-ai` | Robotics basics, simulation & sim2real, imitation learning, VLA models, embodied AI x XR/HCI |
+| `3d-gui-agent` | Research column on the owner's own research idea, the 3D GUI Agent (GUI agents for VR/AR/MR interfaces): the research vision, surveys of 2D GUI agents, 3D interaction and agents in XR, and a password-protected research plan (see section 12) |
 | `paper-digest` | Dated digests of new papers across all tracks (graphics, engines, neural rendering, world models, embodied AI, HCI/XR) |
 | `roadmap` | Hub posts that link the tracks together (written last) |
 
@@ -27,6 +28,8 @@ Use exactly one category per post, equal to its series key.
 - The `date` must not be in the future (posts with future dates are not built). Use the fixed date
   `2026-10-27` and encode the order in the time: base hour per track, minute = NN.
   - graphics `09:NN`, 3d-vision `11:NN`, neural-rendering `12:NN`, graphics-engine `13:NN`, world-models `15:NN`, embodied-ai `18:NN`, roadmap `21:NN`.
+  - Exception: `3d-gui-agent` posts carry their real publication date (the column records when the idea was stated
+    publicly), with the time `12:0N` for post N, e.g. `2026-11-24-3d-gui-agent-02-gui-agents-on-2d-screens.md`.
   - Exception: `paper-digest` posts are dated issues. They use the real publication date (never in the future at build
     time) and the file name `<date>-paper-digest-NN-<yyyy>-<months>.md`, e.g. `2026-11-02-paper-digest-01-2026-oct-nov.md`.
 - Chinese: Simplified Chinese, natural technical writing. Japanese: natural です/ます style.
@@ -192,3 +195,19 @@ Posts that report recent work (research-frontier chapters, "2025-2026 update" se
 - Summaries say what the paper does, how, what is new, and how it connects to graphics, 3D vision and the earlier
   chapters of this blog. Do not copy abstracts; do not invent numbers.
 - Product and industry items (engines, SDKs, models without papers) cite official announcements or documentation.
+
+## 12. Password-protected posts
+
+A post can be published as ciphertext only (used for the unpublished research plan of the `3d-gui-agent` column):
+
+- The plaintext sources (the three markdown files, their figure SVGs and scripts) are never committed. Build the
+  site locally with them in place, then run `PROTECT_PASSWORD=... python3 bin/protect_post.py ...` (see its
+  docstring). It replaces each post with a stub whose body holds the gzipped, AES-256-GCM encrypted rendered body
+  (key from PBKDF2-SHA256, 600,000 iterations) and an unlock form; `assets/js/protected.js` decrypts it in the
+  browser, typesets the math, styles tables and rebuilds the table of contents. Figures are inlined as data URIs, so
+  no plaintext file is published. Widgets (`<script>`) are not supported inside protected posts.
+- It also writes `docs/protected/<slug>.bundle.json` (the encrypted sources; recover them with
+  `bin/unprotect_bundle.py`) and `docs/protected/<slug>.sha256.txt` (SHA-256 of each markdown source: a public, dated
+  commitment that lets anyone verify the content once it is revealed).
+- Remove the plaintext files and their figures from the working tree before committing; check with
+  `git status` and a search of `_site` for a distinctive sentence of the plaintext.
