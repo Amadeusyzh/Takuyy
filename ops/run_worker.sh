@@ -12,12 +12,19 @@ OUT="$RUNNER_TEMP/out"
 mkdir -p "$OUT"
 
 PROMPT="$RUNNER_TEMP/prompt.md"
+COMMON_MD="$OPS/${WORKER_COMMON:-common.md}"
+if [ "${WORKER_PRIVATE:-0}" = "1" ]; then
+  # Private worker: everything under private/ stays out of git (finish_worker.sh encrypts it before anything
+  # leaves the runner).
+  mkdir -p private
+  echo "private/" >> .git/info/exclude
+fi
 if [ "${WORKER_MODE:-new}" = "existing" ]; then
   # The branch api/<id> was prepared by the orchestrator (for example from the integration branch).
   git fetch -q origin "+refs/heads/$BRANCH:refs/remotes/origin/$BRANCH"
   git checkout -q -B "$BRANCH" "origin/$BRANCH"
   {
-    sed "s#__BRANCH__#$BRANCH#g" "$OPS/common.md"
+    sed "s#__BRANCH__#$BRANCH#g" "$COMMON_MD"
     printf '\n\n---\n\n'
     cat "$OPS/briefs/$WORKER_ID.md"
   } > "$PROMPT"
@@ -26,7 +33,7 @@ elif [ "${WORKER_MODE:-new}" = "continue" ]; then
   git checkout -q -B "$BRANCH" "origin/$BRANCH"
   git show "origin/report/$WORKER_ID:report.md" > "$RUNNER_TEMP/earlier-report.md" 2>/dev/null || echo "(no earlier report)" > "$RUNNER_TEMP/earlier-report.md"
   {
-    sed "s#__BRANCH__#$BRANCH#g" "$OPS/common.md"
+    sed "s#__BRANCH__#$BRANCH#g" "$COMMON_MD"
     printf '\n\n---\n\n'
     python3 - "$OPS/continue.md" "$RUNNER_TEMP/earlier-report.md" <<'PY'
 import sys
@@ -39,7 +46,7 @@ PY
 else
   git checkout -q -b "$BRANCH"
   {
-    sed "s#__BRANCH__#$BRANCH#g" "$OPS/common.md"
+    sed "s#__BRANCH__#$BRANCH#g" "$COMMON_MD"
     printf '\n\n---\n\n'
     cat "$OPS/briefs/$WORKER_ID.md"
   } > "$PROMPT"

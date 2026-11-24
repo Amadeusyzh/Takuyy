@@ -19,7 +19,7 @@ env:
 
 jobs:
   setup:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     outputs:
       matrix: ${{ steps.matrix.outputs.matrix }}
       ok: ${{ steps.probe.outputs.ok }}
@@ -38,7 +38,7 @@ jobs:
     needs: setup
     if: needs.setup.outputs.ok == 'true'
     name: ${{ matrix.id }}
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 350
     strategy:
       fail-fast: false
@@ -80,15 +80,19 @@ jobs:
           WORKER_ID: ${{ matrix.id }}
           WORKER_BUDGET: ${{ matrix.budget }}
           WORKER_MODE: ${{ matrix.mode }}
+          WORKER_PRIVATE: ${{ matrix.private && '1' || '0' }}
+          WORKER_COMMON: ${{ matrix.common || 'common.md' }}
         run: bash ops-src/ops/run_worker.sh
       - name: Commit leftovers, push branch and report
         if: always()
         env:
           WORKER_ID: ${{ matrix.id }}
+          WORKER_PRIVATE: ${{ matrix.private && '1' || '0' }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: bash ops-src/ops/finish_worker.sh
       - name: Upload transcript
-        if: always()
+        # never for private workers: artifacts of a public repository can be downloaded by anyone
+        if: always() && !matrix.private
         uses: actions/upload-artifact@v4
         with:
           name: transcript-${{ matrix.id }}
