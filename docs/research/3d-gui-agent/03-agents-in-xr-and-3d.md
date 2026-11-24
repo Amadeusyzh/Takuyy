@@ -324,3 +324,684 @@ publisher page. Relevance is judged against the working definition above.
 | 120 | Muse personal agent on AI glasses | Meta | Announced Connect 2026-09; "in the coming months" | 2026 | https://about.fb.com/news/2026/09/the-biggest-news-from-connect-2026/ | Acts on what the user looks at via connectors (shopping, payments, booking) | Glasses agent acting through services, not UI |
 | 121 | Meta Ray-Ban Display + Neural Band | Meta | On sale 2025-09-30, US, $799 | 2025 | https://about.fb.com/news/2025/09/meta-ray-ban-display-ai-glasses-emg-wristband/ | In-lens display, EMG wrist gestures, Meta AI visual answers and step guides | User operates display UI; agent answers/guides |
 | 122 | Project Astra | Google DeepMind | Research prototype | 2024-2025 | https://deepmind.google/models/project-astra/ | Camera/screen understanding, memory, tool use, "interface control" on Android | Phone UI control demos, not 3D |
+
+---
+
+## 4. Deep notes on the 25 most relevant works
+
+Ordered by branch, not by rank (the ranking by overlap is in section 7, "The gap"). Numbers are from
+the paper's own text unless stated; where abstract and body disagree, both are given. "Overlap"
+uses three levels: **none**, **partial** (one of perceive / understand intent / operate-or-guide on a
+3D GUI), **substantial** (two of the three, or one of them very directly).
+
+### 4.1 Orienter / "Look Before You Leap" (Shuqing Li et al., FSE 2026; arXiv 2409.10811)
+
+- **Problem.** Find *interactable GUI elements* (IGEs) in screenshots of VR apps. Unlike 2D mobile
+  GUIs, XR elements are open-vocabulary (a lever, a floating panel, a door handle), and whether an
+  element is interactable depends on context (the same crate may or may not be grabbable), so 2D
+  detectors trained on fixed classes transfer poorly.
+- **Method.** Zero-shot pipeline around a large multimodal model (GPT-4V, GPT-4o, Claude 3.5 Sonnet
+  or Gemini 1.5 Pro): (I) semantic context comprehension from the frame plus app information crawled
+  from Steam; (II) reflection-directed candidate detection, in which the LMM proposes element
+  descriptions, the APE open-vocabulary grounding model localizes them, and an LMM "advisor"
+  validates them in a loop; (III) context-sensitive interactability classification with
+  chain-of-thought.
+- **Data.** 1,552 right-eye frames (960x540) from 100 Steam VR apps; 4,470 interactable
+  annotations across 766 semantic categories, labelled by 13 annotators over more than 3 months.
+- **Results.** Interactability F1 at IoU 0.75: 44.10% (Gemini, app split) vs 32.69% for Faster
+  R-CNN and 2.21% for OmniParser; about 46.0% on the genre split vs 31.05% for the best baseline.
+  On the context-sensitive split, 32.51% vs about 0.5%. Precision collapses at strict IoU (5.64% at
+  IoU 0.95). Prompting an LMM directly for boxes fails at localization. Used to guide automated
+  exploration of 77 apps for 60 minutes, element coverage rises from 0.65 to 0.83 and effective
+  interactions from 5,911 to 13,038 (the abstract states "103.1% more IGEs, 125.7% more effective
+  interactions"; the body figures are smaller, as the search workers noted independently).
+- **Limitations.** Single-eye 2D projection; low absolute F1; annotator subjectivity; Steam PC-VR
+  apps only; the "acting" is simulated as interaction points on frames, not real 6DoF input; no
+  language goal.
+- **Transfers / does not.** Transfers: open-vocabulary, context-aware element grounding is the
+  perception module a 3D GUI agent needs; the reflection loop and LMM + grounding-model split mirror
+  2D GUI agents (Set-of-Marks, OmniParser). Does not transfer: no depth or stereo, no user intent,
+  no planning, no real input injection.
+- **Overlap with the 3D GUI agent idea: substantial (perception).** Orienter is the only peer-reviewed
+  work that grounds GUI elements in rendered XR frames, and its arXiv title even names a
+  "Vision-Based Spatial Intelligent Agent". It covers the *perceive* part almost exactly. It does not
+  understand user intent and does not operate the UI for a user; its goal is test coverage.
+
+### 4.2 ComboBench (Shuqing Li et al., arXiv 2510.24706, 2025)
+
+- **Problem.** Can LLMs translate a semantic action ("tame the horse", "reload the gun") into the
+  sequence of physical headset/controller manipulations a VR game requires?
+- **Method/data.** 262 scenarios from Half-Life: Alyx, Into the Radius, Moss: Book II and Vivecraft;
+  ground-truth operation sequences recorded on Quest 2; seven LLMs evaluated zero- and few-shot.
+- **Results.** Best strict sequence match 11.7% (Gemini-1.5-Pro, 5-shot), GPT-4o 10.9%, GPT-4 8.8%,
+  open models about 0-2%; zero-shot at most 5.8%. Normalized alignment scores are high (up to 0.832,
+  human 0.833) but step-order accuracy stays low (at most about 0.24 to 0.3). Few-shot examples raise
+  order accuracy 10-20x, plateauing after about 3 shots. Mapping steps to motor actions is the
+  weakest capability.
+- **Limitations.** Text only (no screenshots), nothing executed, single run at temperature 0, small
+  human baseline, some inconsistent tables.
+- **Transfers / does not.** Transfers: a clean definition of the *intent to XR input* step and
+  evidence that LLMs lack procedural knowledge of 6DoF controller use. Does not: no perception and
+  no closed loop.
+- **Overlap: substantial (action grounding), partial overall.** It isolates the language-to-XR-action
+  step of a 3D GUI agent, but on game mechanics rather than GUI widgets, and without execution.
+
+### 4.3 NavAI (Xue Qin, M. DiGiovanni, arXiv 2601.03251, 2026)
+
+- **Problem.** A general LLM framework for navigation tasks inside VR environments.
+- **Method.** NL request plus field-of-view screenshots with a grid overlay go to GPT-4o; a vote
+  across GPT-4o, Grok-2 and Gemini-2.5-Flash picks the next step; JSON function calls (move,
+  rotate, look, scan_360) execute in a Unity simulator.
+- **Data/results.** Three Unity scenes (Highway, Ship, Country House): 21/21 basic actions, 16/18
+  goal tasks (89%). About 8 turns per task at about 49 s per turn, so up to about 395 s per task.
+- **Limitations.** Very slow; simulator, not headset; unreliable stopping; locomotion only, no menus
+  or widgets.
+- **Transfers / does not.** Transfers: the full *instruction + rendered view to action* loop in VR,
+  with a grid overlay as a pointing aid (a 3D analogue of Set-of-Marks). Does not: no UI elements,
+  latency two orders of magnitude above interactive use.
+- **Overlap: substantial (closed loop), but on navigation, not GUI.** NavAI is the only published
+  closed-loop LLM agent that acts in VR from screenshots and NL goals; it moves the viewpoint rather
+  than operating interface elements.
+
+### 4.4 SIAgent (Zhimin Wang, Chenyu Gu, Feng Lu, arXiv 2603.00522, 2026)
+
+- **Problem.** Gesture-to-command mappings in VR must be learned and remembered; can an agent infer
+  intent from natural eye-hand behaviour and execute the operation?
+- **Method.** Pico 4 Pro + Unity (per the HCI worker's reading of the full text). A 3 s gaze window
+  at 30 Hz is reduced to 18 points and hand pose/finger states are verbalized; three LLM calls
+  (ChatGLM-4) return six ranked intents; a virtual-hand agent executes the chosen one.
+- **Data/results.** Study 1 (N=16, 54 trials each) vs controller and gaze+pinch: intent recognition
+  97.2% vs 93.1% for gaze+pinch; execution accuracy 86.8%; 7.7 s per task excluding LLM time vs
+  5.8 s with a controller; LLM latency about 9.1 s; less arm fatigue; 81% preferred SIAgent. Top-1
+  intent accuracy: GLM-4 83.3%, GPT-4o 72.2%, GPT-3.5 46.3%; adding hand to gaze raises top-1 from
+  30.2% to 58.3%. Study 2: N=3.
+- **Limitations.** Latency; discrete single-intent tasks; predefined operations; tiny Study 2.
+- **Transfers / does not.** Transfers: implicit gaze/hand signals as intent evidence, ranked
+  intent hypotheses, and an agent-driven virtual hand as the actuator. Does not: no language
+  instructions, no GUI perception.
+- **Overlap: substantial (intent + operate), but not from language and not on GUI widgets.** It is
+  the clearest published case of "the agent operates the VR scene for the user".
+
+### 4.5 Revisiting put-that-there, context aware window interactions via LLMs (Riccardo Bovo et al., arXiv 2511.02378, 2025)
+
+- **Problem.** Update Bolt's 1980 "put that there" for modern HMDs: let users manage XR windows by
+  speech plus deixis.
+- **Method.** GPT-4, prompted without fine-tuning, receives window metadata (id, size, location),
+  flat surfaces from the Quest Scene API (about 10 automatic classes plus about 30 hand-annotated
+  ones), speech, pointing hover events and head direction, and outputs JSON triplets
+  `["place"|"remove", windowId, surface]`. Supports explicit ("put Maps on the coffee table"),
+  deictic ("put that there") and goal-level commands ("I need to send a message"), with one-to-many
+  actions.
+- **Results.** None quantitative; a user study is planned.
+- **Limitations.** Acts through window-manager APIs, not GUI perception; only placement, not
+  operation inside apps; coarse Quest semantic labels; open issues of control and transparency named
+  by the authors.
+- **Overlap: substantial (intent + operate on the XR window layer).** It is the cleanest formulation
+  of "LLM acts on the XR UI from multimodal intent", restricted to window placement and assuming
+  privileged metadata.
+
+### 4.6 DuoZone (Jing Qian et al., arXiv 2511.15676, 2025)
+
+- **Problem.** Arranging many app windows in XR by hand is slow and tiring.
+- **Method.** On Apple Vision Pro with a GPT-4.1 server: the LLM scores app relevance to the user's
+  goal, assigns apps to user-defined zones using a cost matrix (pointing distance, head turn, hand
+  movement), and a non-LLM optimizer sizes windows (the LLM alone resized randomly). The user
+  confirms before changes apply; about 4 s per request.
+- **Data/results.** N=16 professionals, within-subject vs native visionOS: layout matching 34.5%
+  faster; workspace construction 168.3 s vs 218.1 s; NASA-TLX 33.3 vs 47.7 and 22.4 vs 34.2;
+  acceptance 90.3% of app recommendations, 82.8% of sizing, 76.5% of ordering. Satisfaction did not
+  differ.
+- **Limitations.** Cloud LLM; baseline always first in task 2; apps not fully functional; short
+  sessions.
+- **Overlap: substantial (operate the XR window layer under mixed initiative).** The best-evaluated
+  NL-to-XR-UI system found; scope limited to window layout, with app metadata instead of GUI
+  perception.
+
+### 4.7 Meta XR Operator (Meta, Meta XR SDK v205, developer blog 2026-08-18)
+
+- **What it is.** An experimental OpenXR API layer that exposes XR state and input to AI agents
+  "via the Model Context Protocol (MCP)"; a runtime MCP server runs in the app process (localhost
+  port 8720) and a proxy keeps the agent connected across app restarts; "no app code changes
+  needed". Integrated in Meta XR Core SDK for Unity; standalone package for other OpenXR engines.
+- **Capabilities (quoted from the blog).** "Screenshot the running app as rendered in Meta XR
+  Simulator"; "Read room geometry"; "Press buttons, move thumbsticks, pull triggers, point and aim";
+  "Read the Unity scene hierarchy, check components"; "Press buttons, work through menus, and
+  navigate multi-step flows autonomously".
+- **Limitations (quoted).** "a single aim-ray per hand with no per-finger data"; "no access to
+  audio"; "works from screenshots only"; "operates too slowly for real-time interaction". Meta XR
+  Simulator recommended; Quest "with additional setup"; Windows recommended.
+- **Purpose.** Closing the build-test-verify loop for developers who use coding agents.
+- **Overlap: substantial (infrastructure for perceive + operate), none for user intent.** This is
+  the first vendor-supplied channel by which a general LLM agent can see a VR app and drive its UI
+  with controller input. There is no published evaluation, no end-user use, and the agent's goal is
+  a developer's test, not a user's request. For a 3D GUI agent project it is the most practical
+  action and observation interface available on Quest as of November 2026.
+
+### 4.8 Gemini on Samsung Galaxy XR / Android XR (Google and Samsung, shipping since 2025-10-21)
+
+- **Claims (Google blog, Galaxy XR launch).** Gemini Live can "better understand what you're seeing
+  and doing" and help "take action on your behalf across your apps"; "Hey Google, organize these
+  windows" arranges open windows into a layout; Circle to Search works on virtual or real objects.
+  Price $1,799 (or $149/month), US and Korea.
+- **Mechanism.** Not published. Android XR's developer guidance tells app developers: "To let your
+  users navigate your app using their voice, use the Gemini live API along with function calling",
+  i.e. in-app control is built per app through function calling, not by generic GUI operation.
+  Android XR's own pitch says Gemini adds capabilities "by helping your users understand what
+  they're seeing and taking actions on their behalf".
+- **Evidence of capability.** No technical report or benchmark; the research worker found a press
+  review describing action capabilities as limited (not cited as evidence).
+- **Overlap: substantial in ambition, unknown in substance.** It is the only shipped headset
+  assistant whose maker claims cross-app actions and window rearrangement on a 3D UI. Because the
+  mechanism, coverage and success rates are undisclosed, the column should present it as the
+  industrial signal that the idea is timely, not as prior art that solves it.
+
+### 4.9 Siri AI in visionOS 27 and App Intents onscreen awareness (Apple, WWDC26, 2026-06-08; release notes 2026-11-09)
+
+- **Claims.** Siri AI is "deeply integrated into iPhone, iPad, Mac, Apple Watch, and Apple Vision Pro";
+  it "can answer questions related to the content on a user's screen" and "get things done across
+  apps with even more systemwide app actions" (Apple Newsroom). visionOS 27 release notes: "Just
+  look at Siri and start speaking"; Visual Intelligence lets you "ask Siri about physical objects in
+  your room or content on your screen"; Siri uses "app actions" and onscreen awareness (Siri AI
+  requires M2 or later).
+- **Mechanism (WWDC26 session 343, "Explore advanced App Intents features for Siri and Apple
+  Intelligence").** Actions and onscreen awareness go through developer-provided App Intents, App
+  Entities, NSUserActivity and view annotations. Apple states: "Siri has an understanding of text on
+  screen, but it's limited to exactly what's in the pixels. For example, Siri can't act on the
+  tracks shown". The session does not mention visionOS specifically.
+- **Related.** RealityKit's `AccessibilityComponent` gives 3D entities labels, values, traits and
+  actions for VoiceOver on visionOS (Apple developer documentation, per the testing worker); this is
+  structured 3D-UI semantics an agent could read.
+- **Overlap: partial (intent + operate via app APIs; gaze-addressed).** Apple's design is the
+  opposite pole to a pixel-based GUI agent: the assistant acts only on what developers expose. This
+  confirms the gap for apps without intents and frames a key design choice for the column
+  (API-first vs GUI-first vs hybrid).
+
+### 4.10 Voice2Action (Yang Su, arXiv 2310.00092, 2023)
+
+- **Method.** Voice/text commands are split into action and entity extraction, then executed
+  hierarchically through canonical interaction subsets with environment feedback, in an
+  urban-engineering VR scene.
+- **Results.** Abstract: on synthetic instruction data in the urban-engineering VR environment,
+  Voice2Action "can perform more efficiently and accurately than approaches without
+  optimizations"; no user study. Single author, no venue.
+- **Overlap: partial (intent to VR actions via engine API).** An early NL-to-VR-action agent; it uses
+  engine-level entities rather than the GUI, and the evaluation is thin.
+
+### 4.11 LLMR (Fernanda De La Torre et al., CHI 2024; arXiv 2309.12276)
+
+- **Problem.** Real-time creation and modification of interactive MR worlds from language.
+- **Method.** Unity framework orchestrating several GPT-4 roles: a scene analyzer that summarizes
+  the scene graph, a planner, a builder that writes C#, an inspector that checks compile/run errors,
+  and a skill library and memory.
+- **Results.** Average error rate about a quarter of plain GPT-4's (the abstract says 4x lower);
+  usability study with 11 participants; CHI 2024 Honorable Mention.
+- **Limitations.** Depends on code generation at run time (latency and robustness); evaluated on
+  creation/modification tasks only; no operation of existing apps.
+- **Overlap: partial (understand intent, act through code on the world).** LLMR shows that an LLM can
+  read an XR scene graph and change the world, which is a usable back-end for a 3D GUI agent, but it
+  builds new content rather than operating the existing interface on the user's behalf.
+
+### 4.12 EmBARDiment (Riccardo Bovo et al., IEEE VR 2025; arXiv 2408.08158)
+
+- **Method.** An embodied XR chatbot whose context is taken implicitly from the user's gaze over
+  multiple windows, their actions and a memory, so that users need not restate what they are
+  looking at.
+- **Results.** The abstract claims reduced need for "engineered explicit prompts" and more grounded
+  interaction; it reports no numbers (the HCI worker read fewer question reformulations in the full
+  text).
+- **Overlap: partial (perceives the multi-window XR UI through gaze, understands intent; does not
+  act).** A direct precedent for using gaze-on-UI as context for a 3D GUI agent.
+
+### 4.13 GazePointAR (Jaewook Lee et al., CHI 2024; arXiv 2404.08213)
+
+- **Method.** Wearable AR voice assistant that resolves pronouns ("what is this?") from gaze,
+  pointing and conversation history, replacing the pronoun with a description of the referent before
+  querying an LLM.
+- **Results.** Three-part lab study (N=12) comparing it with two commercial assistants, testing
+  pronoun disambiguation on three tasks and an open-ended phase, then a first-person diary study.
+  Participants "appreciated the naturalness and human-like nature of pronoun-driven queries,
+  although sometimes pronoun use was counter-intuitive" (abstract).
+- **Overlap: partial (intent grounding only).** Its pronoun resolution is exactly what a 3D GUI agent
+  needs for "close that", "move this there", but the system answers questions rather than acting.
+
+### 4.14 Sensible Agent (Geonsun Lee et al., UIST 2025; arXiv 2509.09255)
+
+- **Method.** A proactive AR agent (WebXR on an Android XR headset) that, when triggered by a pause
+  or a gaze fixation, sends one frame to GPT-4o to choose an action and a query format (multiple
+  choice, binary, icon), then selects output modality and input channel (gaze, head, hand, voice)
+  by context (e.g. voice off in noise).
+- **Data/results.** Workshop N=12; data collection N=40 (960 annotations, 937 analysed);
+  preliminary study N=10 with Wizard-of-Oz activation: NASA-TLX 20.55 vs 43.27; mental demand 21.1
+  vs 65.0; preference 6.0 vs 3.8 (7-point); SUS 81.3 vs 76.7 (n.s.); interaction time 28.54 s vs
+  16.43 s.
+- **Overlap: partial (intent + mixed-initiative confirmation; acts only after confirmation, on its own
+  suggestions).** The best model for how a 3D GUI agent should ask permission unobtrusively.
+
+### 4.15 Satori (Chenyi Li et al., CHI 2025; arXiv 2410.16668)
+
+- **Method.** HoloLens 2 proactive assistant with a Belief-Desire-Intention user model: belief from
+  object detectors and action history, desire (goal) inferred by GPT-4V from 1 fps frames, intention
+  (next step) by GPT-4V search-and-reflect, step completion by BLIP-2; guidance as text, generated
+  images and speech.
+- **Results.** N=16 against a Wizard-of-Oz system built by AR designers: non-inferior on all 11
+  usability items; better intention accuracy (6.48 vs 5.95) and guidance location (6.23 vs 5.66);
+  guidance timing 81.69%; action-forecast F1 69.88% on GTEA.
+- **Limitations.** 2-3 s latency; predefined task database; HoloLens field of view.
+- **Overlap: partial (understand intent + guide, physical tasks).** Template for the *guide* mode; it
+  guides physical tasks, not GUI operation.
+
+### 4.16 VRExplorer (Zhengyang Zhu et al., ASE 2025; arXiv 2607.10174)
+
+- **Method.** Static and dynamic analysis of Unity scenes, prefabs and scripts; an Entity-Action-Task
+  abstraction (developers implement interfaces such as IGrabbable, ITriggerable); NavMesh path
+  finding; a probabilistic state machine alternating tasks and exploration.
+- **Data/results.** 11 GitHub Unity VR projects: +122.8% executable-line coverage and +52.8% method
+  coverage over VRGuide on average (VRChess 10.74% to 71.74%); 100% interactable-object coverage on
+  the three projects compared head-to-head; 3 bugs found.
+- **Limitations.** Semi-automated (30-90 min manual analysis per project); Unity only.
+- **Overlap: partial (operate VR objects automatically, through scene access; no intent).** Shows the
+  vocabulary of 3D interactions (grab, trigger, transform) an agent must perform, and that scene-graph
+  access makes execution reliable.
+
+### 4.17 XRintTest / XRBench3D (Ruizhen Gu et al., arXiv 2601.23139, 2026; tool demo at ASE 2025)
+
+- **Method.** Four interaction types (fire, manipulate, socket, custom); an Interaction Flow Graph
+  parsed from XR Interaction Toolkit components; a greedy navigator; grabs and triggers sent as
+  simulated controller events through the XRI device simulator; an oracle that flags unresponsive
+  interactions.
+- **Data/results.** XRBench3D: 10 scenes, 456 interactions; coverage 97% fire, 94% manipulate, 83%
+  socket, 93% overall vs 8% for random; one runtime exception and two unresponsive-interaction bugs.
+- **Limitations.** Static parsing misses runtime-spawned objects; custom interactions unsupported;
+  Unity/XRI only.
+- **Overlap: partial (operate 3D interactions with realistic simulated controller input).** XRBench3D
+  is the closest thing to an executable XR interaction benchmark; it has no instructions and no
+  pixel perception.
+
+### 4.18 AUTOVR (John Y. Kim et al., USENIX Security 2025; arXiv 2508.12187)
+
+- **Method.** Frida instrumentation of Unity IL2CPP binaries on Quest 2; recovers UI event handlers
+  (IEventSystemHandler, UnityEvent callbacks), invokes them directly, forces collider contacts to
+  fire physics events, and reloads scenes to explore other paths.
+- **Data/results.** 366 Quest Store and SideQuest apps; 390 vs 117 unique sensitive-data exposures
+  compared with Android Monkey; about 222 s average runtime per app.
+- **Overlap: partial (operates real commercial headset apps; bypasses perception and intent).** Proof
+  that third-party Quest app UIs can be driven without developer cooperation, at the cost of binary
+  instrumentation, which would not be acceptable for an end-user agent.
+
+### 4.19 VRSight and the DISCOVR dataset (Daniel Killough et al., UIST 2025; arXiv 2508.02958)
+
+- **Method.** A post hoc "3D screen reader" for blind VR users: object detection (YOLOv8n fine-tuned
+  on DISCOVR), depth estimation and a multimodal LLM produce spatial-audio descriptions of what is in
+  view, without app modifications.
+- **Data/results.** DISCOVR: 17,691 frames (1 fps) from 17 social VR apps on Quest 2/Pro/3, 30
+  classes in 6 groups including menu, button, ui-text, ui-graphic, HUD and dashboard; about 92K
+  instances; 3 apps held out. YOLOv8n test mAP50 67.3, mAP50-95 46.3; menu 62.2, button 45.9. Study
+  with 9 blind participants in Rec Room.
+- **Overlap: partial (perceives XR UI from pixels in third-party apps; describes, does not act).**
+  Together with Orienter, the only pixel-level XR UI perception work; DISCOVR is the largest public
+  VR UI-element dataset.
+
+### 4.20 SIMA and SIMA 2 (SIMA Team, Google DeepMind; arXiv 2404.10179 and 2512.04797)
+
+- **SIMA (2024).** Pretrained vision/video encoders plus a transformer policy trained by behaviour
+  cloning on human play with language annotations; screen pixels in, keyboard and mouse out; 10+
+  commercial games and research environments; 1,485 evaluation tasks in 9 skill categories. On a No
+  Man's Sky subset: SIMA 34%, humans 60%, the no-language ablation 11%; 67% average improvement over
+  environment-specialized agents.
+- **SIMA 2 (2025).** Gemini Flash-Lite fine-tuned on gameplay plus Gemini data; 720p frames in;
+  structured text out (reasoning, dialogue, actions) parsed into 96 keys, clicks and discretized
+  mouse moves. About double SIMA 1's average success; untuned Gemini Flash-Lite 3.2% and Pro 7.0%
+  across 10 training domains; on held-out MineDojo it completes 26 of 50 task categories vs 2 for
+  SIMA 1; self-improvement with Gemini as task setter and reward model in ASKA and Genie 3 worlds.
+  Fine-tuning costs general reasoning (AIME -15.4%, GPQA -19.5%).
+- **Limitations (authors).** Long horizons, short memory, precise keyboard/mouse control,
+  understanding of complex 3D scenes.
+- **Overlap: partial (language + pixels + action in 3D, but game worlds, not GUIs, and no XR).** The
+  strongest evidence that one instructable agent can act across many 3D worlds through a human
+  interface; the column can borrow the action-interface design and self-improvement loop.
+
+### 4.21 Lumine (Weihao Tan et al., arXiv 2511.08892, 2025), with Game-TARS (arXiv 2510.23691) as a comparison
+
+- **Method.** Qwen2-VL-7B trained in Genshin Impact: 1280x720 frames at 5 Hz in; each step emits six
+  33 ms chunks of text keyboard/mouse actions (30 Hz); reasoning only when needed. Data: 1,731 h of
+  filtered human play for pretraining, 200 h instruction-following, 15K reasoning traces.
+- **Results.** First-action latency 113.9 ms without reasoning, 234 ms with it; over 80% success on
+  simple tasks in four categories; Mondstadt storyline in 56 min vs 53 min for experts; zero-shot
+  transfer to Wuthering Waves and Honkai: Star Rail.
+- **Limitations.** About half of errors are multimodal understanding errors; 20-frame memory;
+  training-domain biases (misreading a key prompt).
+- **Game-TARS** uses a unified native action space (mouseMove, mouseClick, keyPress) across OS, web
+  and games with 500B+ tokens of pretraining and "sparse thinking" (63% Minecraft success vs 55%
+  without thinking and 45% with greedy thinking); below about 10B tokens the native action space
+  underperforms GUI-parsing agents.
+- **Overlap: partial (real-time 3D action from pixels).** Lumine supplies a latency budget and an
+  adaptive-reasoning recipe that a headset agent will need, since XR, unlike Cradle's games, cannot be
+  paused.
+
+### 4.22 Embodied Web Agents (Yining Hong et al., NeurIPS 2025 Datasets and Benchmarks; arXiv 2506.15677)
+
+- **Setup.** About 1.5k tasks that require both a 3D environment (AI2-THOR indoors; Google Street
+  View/Earth outdoors) and live websites: cooking 911, shopping 216, navigation 144, geolocation 142,
+  traveling 110. High-level embodied actions; web actions via Set-of-Marks or accessibility tree.
+- **Results.** Best model vs human: navigation 34.72% vs 90.28%; shopping 25.46% vs 92.59%;
+  traveling 30.91% vs 91.82%; cooking 6.4% vs 77.08%. 66.6% of GPT-4o cooking failures are
+  cross-domain (switching between the 3D world and the web), vs 14.6% embodied-only and 8.0%
+  web-only.
+- **Overlap: partial (3D world + 2D GUI in one task; not XR).** XR interfaces are exactly this mix:
+  flat windows floating in a 3D space. The cross-domain failure statistic is the best available
+  evidence that 3D GUI agents need dedicated research rather than a 2D agent plus a 3D wrapper.
+
+### 4.23 VisionClaw (Xiaoan Liu et al., arXiv 2604.03486, 2026)
+
+- **Method.** Always-on perception on Ray-Ban Meta glasses connected to OpenClaw agents that act
+  through apps and services: adding items to an Amazon cart, creating calendar events from posters,
+  making notes from documents, controlling IoT devices.
+- **Results.** Lab study (N=12) and longitudinal deployment (N=5): faster completion and less
+  interaction overhead than non-always-on and non-agent baselines; users shifted to opportunistic
+  delegation (no effect sizes in the abstract).
+- **Overlap: partial (perceive the user's world, understand intent, act; but via services, not a 3D
+  GUI).** The closest *wearable agent that acts*; it confirms demand for delegation on glasses and
+  shows that today's acting route is APIs, not interface operation.
+
+### 4.24 XARP Tools (Arthur Caetano et al., PACM HCI / EICS; arXiv 2508.04108)
+
+- **Method.** A Python server drives a Unity XR client; the same high-level functions are exposed to
+  humans as a library and to AI agents as tools and over MCP.
+- **Results.** Acceptance evaluation with 24 XR and AI developers and a six-week longitudinal study
+  with two developers; hand and head tracking streamed close to the 72 FPS device rate; AI agents
+  using XARP consumed 19% fewer tokens than agents writing equivalent C# Unity code.
+- **Overlap: partial (agent-ready perceive/act API for XR; no GUI operation of third-party apps).**
+  With Meta XR Operator, this is the infrastructure layer on which a 3D GUI agent could be built in
+  apps one controls.
+
+### 4.25 Guided Reality (Ada Yi Zhao et al., UIST 2025; arXiv 2508.03547), with AgentHands (CHI 2026)
+
+- **Method.** An LLM plus vision models generate AR task guidance with five categories of visual
+  augmentation, localizing interaction points in the user's view and embedding guidance in space.
+  Evaluated with 16 users and 4 instructors.
+- **AgentHands** (Ziyi Liu et al., CHI 2026) has an LLM emit word-synchronized gesture events
+  rendered as an agent's hands that point and demonstrate in XR (N=10 formative, N=12 comparative
+  study vs speech-only).
+- **Overlap: partial (guide mode with spatial visual guidance; physical tasks, not GUI).** These
+  supply the visual vocabulary (highlights, arrows, demonstrating hands) for a 3D GUI agent that
+  *guides* a user through a menu instead of operating it.
+
+---
+
+## 5. Datasets and benchmarks
+
+### 5.1 XR interface and XR interaction data (most relevant)
+
+| Name | Platform / modality | Size | Tasks | Metrics | Venue / year | Link |
+|---|---|---|---|---|---|---|
+| Orienter IGE benchmark | PC-VR (Steam) right-eye screenshots, 960x540, COCO boxes | 1,552 images, 100 apps, 4,470 interactable annotations, 766 categories | Interactable GUI element detection + semantics | P/R/F1/mAP at IoU 0.75-0.95 | FSE 2026 | https://arxiv.org/abs/2409.10811 |
+| DISCOVR (VRSight) | Social VR frames, Quest 2/Pro/3 | 17,691 images, 17 apps, 30 classes (menu, button, ui-text, HUD, dashboard...), about 92K instances | Virtual object and UI detection | mAP (YOLOv8n 46.3 mAP50-95) | UIST 2025 | https://arxiv.org/abs/2508.02958 |
+| GUI-World (XR subset) | Screen-recorded GUI videos, one scenario is XR | 12,379 videos total; XR 393 videos, 3,930 QA | GUI video understanding QA | Free-form / MCQ / conversation scores | ICLR 2025 | https://arxiv.org/abs/2406.10819 |
+| ComboBench | Text scenarios from 4 VR games; operation sequences recorded on Quest 2 | 262 scenarios | Semantic action to controller/HMD sequence | Strict match, NSAS, step order | arXiv 2025 | https://arxiv.org/abs/2510.24706 |
+| XRBench3D | Unity VR scenes (XR Interaction Toolkit) | 10 scenes, 456 interactions | Automated execution of fire/manipulate/socket interactions | Interaction coverage | arXiv 2026 | https://arxiv.org/abs/2601.23139 |
+| MineXR / MineXR++ (ContextXR) | Personalized XR layouts created on a headset; app facet graphs | 31 participants, 695 widgets, 109 layouts, 178 apps; MineXR++ 42 apps, 273 facets, 1,007 capabilities | Layout mining; next-facet suggestion | Navigation cost, Recall@10 | CHI 2024 / UIST 2026 | https://arxiv.org/abs/2403.08057 , https://arxiv.org/abs/2609.30466 |
+| StereoID screenshot set | Stereo screenshots of VR apps | 171K screenshots, 288 apps | Stereo inconsistency detection | Precision/recall | FSE 2024 | https://arxiv.org/abs/2406.09313 |
+| XRZoo | XR app-store metadata (AR/MR/VR) | 12,528 apps, 9 stores | Empirical XR software engineering | — | arXiv 2024 | https://arxiv.org/abs/2412.06759 |
+| GenXR-Bench | XR (WebXR) development tasks for coding agents | 112 tasks | Build interactive XR apps | Pass@1 (best 50.9%), test-suite agreement 96.5% | arXiv 2026 | https://arxiv.org/abs/2610.29014 |
+| VCXR60 (Vibe Coding XR) | Prompts for WebXR app generation | 60 prompts | Prompt-to-XR-app | Success / quality ratings | VRST 2026 | https://arxiv.org/abs/2603.24591 |
+| HoloAssist | HoloLens 2, 7 synchronized streams, instructor-performer dialogue | 166 h, 350 pairs | Mistake detection, intervention type, hand forecasting | Per task | ICCV 2023 | https://arxiv.org/abs/2309.17024 |
+| PARSE-Ego4D | Ego4D clips + suggested assistant actions | 18K+ suggestions, 33K human annotations | Personal action recommendation for AR/VR assistants | Precision/recall, human agreement | ICLR 2025 workshops | https://arxiv.org/abs/2407.09503 |
+
+**No public dataset of instruction-to-action trajectories on XR GUIs exists** (no XR analogue of
+AndroidControl, AITW, Mind2Web or OSWorld). The closest are GUI-World's XR videos (QA plus a
+handful of annotated actions per video), XRBench3D (interaction graph, no instructions), ComboBench
+(text sequences, no screenshots) and the Orienter/DISCOVR screenshots (boxes, no actions).
+
+### 5.2 Gaze, motion and hands in XR (behaviour signals an agent could learn intent from)
+
+| Name | Platform / modality | Size | Tasks | Metrics | Venue / year | Link |
+|---|---|---|---|---|---|---|
+| BOXRR-23 | XR head and hand motion (consumer apps) | 4.7M recordings, 105,852 users | Identification, motion modelling | — | IEEE TVCG 2024 (*) | https://arxiv.org/abs/2310.00430 |
+| GazeBaseVR | 250 Hz binocular eye tracking in VR | 407 participants, 5,020 recordings, 26 months | Biometrics, gaze analysis | EER etc. | Scientific Data 2023 | https://arxiv.org/abs/2210.07533 |
+| EHTask | Eye + head in 360-degree VR video | 30 participants, 15 videos, 4 tasks | Task (intent) recognition | Accuracy (84.4%) | IEEE TVCG 2023 | https://doi.org/10.1109/TVCG.2021.3138902 |
+| OpenEDS / OpenEDS2020 | Eye images from a VR headset | 152 participants (12,759 annotated) / 80 participants (550,400 images) | Segmentation, gaze prediction | mIoU, angular error | arXiv 2019 / 2020 | https://arxiv.org/abs/1905.03702 , https://arxiv.org/abs/2005.03876 |
+| Who Is Alyx? | HTC Vive Pro, Half-Life: Alyx; motion, eye, physiology | 71 players, over 110 h | User identification | Accuracy | Frontiers in VR 2023 (*) | https://arxiv.org/abs/2308.03788 |
+| HOT3D | Aria glasses and Quest 3, multi-view hands + objects | 833+ min, 3.7M+ images, 19 subjects, 33 objects | 3D hand/object tracking | Pose error | CVPR 2025 | https://arxiv.org/abs/2411.19167 |
+
+### 5.3 Egocentric and 3D-spatial benchmarks (perception the agent needs)
+
+| Name | Platform / modality | Size | Tasks | Metrics | Venue / year | Link |
+|---|---|---|---|---|---|---|
+| Ego4D | Egocentric video (+ some audio, 3D, gaze) | 3,670 h, 931 wearers, 74 locations, 9 countries | Episodic memory, hands-objects, social, forecasting | Per task | CVPR 2022 | https://arxiv.org/abs/2110.07058 |
+| Ego-Exo4D | Ego + exo video, audio, gaze, point clouds, IMU | 1,286 h, 740 participants, 123 scenes | Keystep, proficiency, cross-view, 3D pose | Per task | CVPR 2024 | https://arxiv.org/abs/2311.18259 |
+| EgoSchema | Ego4D 3-min clips | 5,000+ MCQ, 250+ h | Very long video QA | Accuracy (humans about 76%, models under 33% at release) | NeurIPS 2023 | https://arxiv.org/abs/2308.09126 |
+| EgoLife / EgoLifeQA | Glasses video + audio + exo cameras | About 300 h, 6 people, 1 week | Life-assistant QA | Accuracy | CVPR 2025 | https://arxiv.org/abs/2503.03803 |
+| HD-EPIC | Aria video, gaze, 3D kitchen digital twins | 41 h; 26K VQA | VQA, recognition, 3D | Accuracy (best 38.5%) | CVPR 2025 | https://arxiv.org/abs/2502.04144 |
+| EgoBlind | Video filmed by blind users | 1,392 videos, 5,311 questions | Assistive VQA | Accuracy (best about 60%, humans 87.4%) | NeurIPS 2025 D&B | https://arxiv.org/abs/2503.08221 |
+| VSI-Bench | Indoor videos (ScanNet, ScanNet++, ARKitScenes) | 5,000+ QA, 288 videos, 8 tasks | Visual-spatial reasoning and memory | Accuracy (best 45.4%, humans about 79%) | CVPR 2025 (*) | https://arxiv.org/abs/2412.14171 |
+| ScanRefer | ScanNet | 51,583 descriptions | 3D referring-expression grounding | Acc@0.25/0.5 IoU | ECCV 2020 | https://arxiv.org/abs/1912.08830 |
+| Embodied Web Agents | AI2-THOR, Street View + live websites | About 1.5k tasks | Cross 3D/web tasks | Success rate | NeurIPS 2025 D&B | https://arxiv.org/abs/2506.15677 |
+| EmbodiedBench | 4 simulated environments | 1,128 tasks | High- and low-level embodied tasks | Success rate (best avg 28.9%) | ICML 2025 | https://arxiv.org/abs/2502.09560 |
+| VideoGameBench | 10 1990s games, real-time frames | 10 games | Complete games from pixels | Completion % (best 0.48%) | arXiv 2025 | https://arxiv.org/abs/2505.18134 |
+
+---
+
+## 6. Facts and numbers useful for the blog
+
+**Prior work and capability numbers.**
+- Best LLM accuracy at mapping a VR game action to the exact controller/HMD sequence: 11.7%
+  (Gemini-1.5-Pro, 5-shot), zero-shot at most 5.8% (ComboBench, arXiv 2510.24706).
+- Best zero-shot interactable-element F1 on VR screenshots: about 44-46% at IoU 0.75 (Orienter,
+  FSE 2026; arXiv 2409.10811), vs about 31-33% for trained detectors.
+- Largest public VR UI-element dataset: 17,691 frames, about 92K boxes, 17 apps (DISCOVR, UIST 2025).
+- LLM navigation in VR from screenshots: 89% of goal tasks, but about 49 s per decision turn (NavAI,
+  arXiv 2601.03251).
+- LLM window management on Vision Pro: layout matching 34.5% faster, NASA-TLX 33.3 vs 47.7 (DuoZone,
+  arXiv 2511.15676, N=16).
+- Gaze+hand intent agent in VR: 97.2% intent recognition, but about 9.1 s LLM latency (SIAgent, arXiv
+  2603.00522).
+- 79% of 314 open-source Unity VR apps have no automated tests (Rzig et al., ISSTA 2023).
+- Embodied Web Agents: 66.6% of GPT-4o failures in cooking tasks come from switching between the 3D
+  world and the web (NeurIPS 2025 D&B).
+- VideoGameBench: frontier VLMs complete 0.48% of games in real time, 1.6% when the game pauses for
+  them (arXiv 2505.18134). Relevant because XR cannot be paused.
+- VSI-Bench: best MLLM 45.4% vs humans about 79% on spatial memory from indoor video (arXiv 2412.14171).
+- Lumine: about 114 ms to first action without reasoning, 234 ms with reasoning, at 5 Hz perception
+  (arXiv 2511.08892): a reference latency budget for real-time 3D agents.
+- Over-reliance: AR X-ray visualizations of AI output led to more inappropriate reliance than a 2D
+  minimap (Liu et al., CHI 2026, N=32).
+- Acceptance: N=1,036 crowdsourced respondents rated location data as the most sensitive data an XR
+  conversational agent could use (Bozkir and Kasneci, arXiv 2512.15343).
+
+**Products (official sources, dates).**
+- Galaxy XR (Android XR) launched 2025-10-21, $1,799; Google claims Gemini can "take action on your
+  behalf across your apps" and "organize these windows" (blog.google, Galaxy XR launch post).
+- Android XR developer guidance: to let users navigate an app by voice, "use the Gemini live API
+  along with function calling" (developer.android.com/develop/xr/gemini).
+- Siri AI on Apple Vision Pro announced 2026-06-08 (Apple Newsroom); visionOS 27 release notes
+  (support.apple.com/en-us/149067, 2026-11-09): "Just look at Siri and start speaking"; Visual
+  Intelligence for "physical objects in your room or content on your screen".
+- Apple WWDC26 session 343: Siri's understanding of screen content is "limited to exactly what's in
+  the pixels. For example, Siri can't act on the tracks shown" unless the app adopts onscreen
+  awareness APIs.
+- Meta XR Operator, Meta XR SDK v205, blog 2026-08-18: agents can "press buttons, work through menus,
+  and navigate multi-step flows autonomously" in VR apps via MCP; "too slowly for real-time
+  interaction".
+- Meta Ray-Ban Display with Neural Band on sale 2025-09-30 in the US at $799 (Meta Newsroom).
+- Meta Connect 2026 (late September 2026) announced the Muse agent for AI glasses "in the coming
+  months", acting through shopping, payment and booking connectors (Meta Newsroom; not shipped at
+  the time of writing).
+- Android XR display-less glasses (Warby Parker, Gentle Monster; Samsung-engineered) pre-order
+  2026-11-12, on sale 2026-12-10 per Google's blog (as read by the glasses worker; not re-checked by
+  the author).
+
+**Market (reported vs estimated; see section 9 for weaker numbers).**
+- EssilorLuxottica reported more than 7 million AI-glasses units sold in FY2025 (Ray-Ban Meta and
+  Oakley Meta), more than triple 2024 (FY2025 results release, 2026-02-11). *Reported.*
+- Counterpoint: global smart-glasses shipments +110% YoY in H1 2025 (Meta share 73%) and +139% YoY
+  in H2 2025 (Meta 82%); AI glasses 88% of H2 shipments (counterpointresearch.com, 2026-02-27).
+  *Analyst estimate of shipments.*
+- IDC: 2025 XR shipments (headsets plus glasses) +44.4%, Meta share 72.2%, Quest -42.3%; 2026
+  forecast +33.5% (IDC press release, 2026-03-23). *Analyst estimate.* The decline of headsets while
+  glasses grow is the market background for the column.
+- IDC (via The Register, 2026-01-02): Apple Vision Pro about 45K units in 2025 vs 390K in 2024.
+  *Estimate, secondary report.*
+
+---
+
+## 7. Open problems and gaps, and "The gap"
+
+### 7.1 Open problems as they bear on 3D GUI agents
+
+1. **No task benchmark.** There is no XR benchmark with natural-language tasks, initial states,
+   success checks and trajectories for operating XR apps; testing benchmarks (XRBench3D) and
+   perception sets (Orienter, DISCOVR) are the nearest substrates.
+2. **Perception of 3D UI is weak.** Zero-shot interactable-element F1 is below 50% at IoU 0.75 and
+   collapses at stricter IoU; no work uses stereo, depth or head pose to localize UI elements in 3D
+   rather than in a 2D projection.
+3. **Action grounding in 6DoF is unsolved.** LLMs reach 11.7% exact controller-sequence accuracy;
+   there is no standard XR action space (ray + pinch? controller buttons? gaze dwell? window-manager
+   API?) comparable to tap/swipe/type on phones.
+4. **Latency.** Published XR agents take 4 s (DuoZone) to about 49 s per turn (NavAI); game agents
+   show that real-time 3D control needs about 100-250 ms. XR cannot pause, and head motion changes
+   the view during inference.
+5. **Partial observability and memory.** Windows behind the user, occluded volumes and content out
+   of the field of view require spatial memory (scene graphs, cognitive maps); VSI-Bench shows MLLMs
+   are poor at this.
+6. **API-first vs GUI-first.** Apple and Google route assistant actions through app intents and
+   function calling; this covers only apps that opt in. Pixel-level GUI operation covers all apps but
+   is fragile. Hybrid action spaces (shown to help in CAD/Blender agents) are unexplored in XR.
+7. **Access.** Third-party apps are closed: AUTOVR needed binary instrumentation; Meta XR Operator
+   works in the Simulator and in Unity apps one builds. Platform-level agent hooks (accessibility
+   trees for 3D UI such as RealityKit `AccessibilityComponent`) are underused.
+8. **Shared control in space.** How an agent should show what it is about to do (ghost hand,
+   highlight, preview), when to ask, and how to hand control back are studied for guidance and window
+   layout only (DuoZone, Sensible Agent, AgentHands), not for GUI operation.
+9. **Safety and privacy.** Deceptive UI in social VR (MetaScanner) is a direct threat to agents that
+   click; always-on perception of the user's room raises privacy concerns (Bozkir and Kasneci).
+   Over-reliance on in-situ AI is documented.
+10. **Data.** No large recordings of human XR GUI use with UI annotations and actions; motion and gaze
+    datasets lack UI labels.
+
+### 7.2 The gap
+
+**What no existing work does yet (as of 2026-11-24, after the searches in section 1).** No
+peer-reviewed paper or arXiv preprint found presents an agent that:
+
+- takes a **natural-language** (or speech + gaze/pointing) request from a headset user,
+- **perceives the 3D GUI of existing XR apps** (windows, volumes, menus, widgets placed in depth,
+  partially occluded or outside the field of view) from the rendered view and/or UI structure,
+- **plans and executes multi-step operations across apps** with XR inputs (ray/pinch, controller,
+  gaze, window manager), and
+- is **evaluated as a GUI agent** (task success over a set of instructions and apps),
+
+nor a benchmark or dataset of instruction-to-action trajectories on XR GUIs. The two search workers
+dedicated to direct overlap (priority sweep and XR testing) reached this conclusion independently,
+and a 2026 software-engineering survey (Guo et al., arXiv 2611.18567) names LLM agents for VR GUI
+exploration as open, with coordinate localization unsolved.
+
+**What does exist, piece by piece.** Perception of XR GUI elements from pixels (Orienter; DISCOVR);
+language to controller-action plans without execution (ComboBench); a closed loop from language and
+screenshots to VR locomotion (NavAI); intent to executed VR operations from gaze and hands (SIAgent);
+language and deixis to window placement through metadata (Revisiting Put-That-There; DuoZone, with
+user confirmation); automated execution of 3D interactions without intent (VRExplorer, XRintTest,
+AUTOVR); infrastructure for agents to see and drive VR apps (Meta XR Operator, XARP Tools); and one
+shipped assistant with undisclosed cross-app actions and window arrangement (Gemini on Galaxy XR).
+
+**What the 3D GUI agent idea adds.** (1) The unification of these pieces into one evaluated
+perceive-understand-operate loop on XR GUIs; (2) the *3D-specific* parts that no piece addresses:
+depth, occlusion and off-view UI, 6DoF manipulation of windows and volumes, the mix of flat panels
+and 3D content (the Embodied Web Agents failure mode), and gaze/hand deixis as part of the
+instruction; (3) a guide mode in which the same agent shows the user how to operate the UI with
+spatial cues instead of acting; (4) the motivation that operating complexity hinders adoption of 3D
+terminals, which none of the works frames as its problem; and (5) a benchmark and trajectory data.
+
+**Where the column should acknowledge overlap.** Orienter's arXiv title already speaks of a
+"Vision-Based Spatial Intelligent Agent" for XR apps; Revisiting Put-That-There and DuoZone already
+let an LLM act on the XR window layer from language; Google publicly claims Gemini on Galaxy XR acts
+across apps and arranges windows; Meta ships a tool that lets agents work through VR menus. The idea
+is therefore *timely and partly anticipated*, and its novelty claim should rest on the unified,
+evaluated, user-intent-driven agent for general 3D GUIs, on 3D-specific perception and action, and
+on the benchmark, not on "agents in XR" in general.
+
+### 7.3 The closest five works, ranked by overlap
+
+| Rank | Work | What overlaps | What is missing relative to a 3D GUI agent |
+|---|---|---|---|
+| 1 | Orienter / "Look Before You Leap" (Li et al., FSE 2026; arXiv 2409.10811) | Perceives and grounds interactable GUI elements in rendered frames of real VR apps; framed as a "spatial intelligent agent"; drives automated exploration | No user intent or NL task; 2D single-eye projection; acting simulated; coverage goal |
+| 2 | Revisiting put-that-there (Bovo et al., arXiv 2511.02378) | NL + pointing + gaze to executed actions on the XR window layer; goal-level and one-to-many commands | Privileged window metadata instead of GUI perception; placement only, not in-app operation; no evaluation |
+| 3 | DuoZone (Qian et al., arXiv 2511.15676) | NL goal to window selection and layout on Vision Pro; mixed initiative; N=16 evaluation | Window layer only; user confirms every change; no GUI perception |
+| 4 | NavAI (Qin and DiGiovanni, arXiv 2601.03251) | Closed loop from NL + VR screenshots to executed actions | Locomotion only, no UI elements; about 49 s per turn; simulator |
+| 5 | SIAgent (Wang et al., arXiv 2603.00522) | Infers user intent in VR and an agent executes the operation | Intent from gaze/hand, not language; predefined scene operations, not GUI |
+
+Runners-up: ComboBench (language to VR controller sequences, text only, no execution) and
+Voice2Action (NL to VR actions via engine API). **Non-academic overlap:** Gemini on Galaxy XR (claims
+cross-app actions and window arrangement; mechanism and evaluation undisclosed) and Meta XR Operator
+(lets an MCP agent screenshot and drive VR app menus; developer testing, no evaluation). If products
+were ranked with papers, Galaxy XR Gemini would sit at rank 1-2 by claimed scope, but it cannot be
+assessed.
+
+---
+
+## 8. Ideas for figures and interactive widgets
+
+1. **Coverage matrix (static SVG).** Rows: the closest ~15 works and products; columns: *perceive XR
+   UI*, *understand NL intent*, *operate*, *guide*, *3D-specific (depth/occlusion/6DoF)*, *evaluated*.
+   Filled, half and empty cells; the empty column intersection is the gap. Data in section 7.3 and
+   the overlap verdicts in section 4.
+2. **Timeline 2023-2026 (static SVG).** Three swim lanes: research (LLMR, GazePointAR, Orienter,
+   ComboBench, DuoZone, NavAI, SIAgent), infrastructure (XARP, Meta XR Operator) and products (Meta AI
+   on Quest, Galaxy XR Gemini, Siri AI visionOS 27, Muse). Shows the 2025-2026 convergence.
+3. **"Pieces of the loop" diagram.** The perceive, understand, plan, act loop with each work placed
+   on the stage it covers (Orienter at perceive, ComboBench at plan-to-action, NavAI across the loop
+   but for locomotion), leaving the full loop on 3D GUIs empty.
+4. **Interactive widget: API-first vs GUI-first agent.** A small WebGL scene with three floating
+   windows; the user types a command; toggle between an "intent API" agent (succeeds only on apps
+   that expose intents, as in WWDC26 session 343) and a "GUI" agent (clicks via ray, can fail on
+   occluded targets). Illustrates coverage vs reliability.
+5. **Interactive widget: where is the UI?** A 360-degree room with windows behind and beside the
+   user; the field-of-view cone shows what an agent sees in one frame; a memory map fills as the head
+   turns. Illustrates partial observability and the need for spatial memory (VSI-Bench).
+6. **Latency bar chart.** Seconds per agent decision: Lumine (0.11-0.23 s), Satori (2-3 s), DuoZone
+   (about 4 s), SIAgent (about 9 s), NavAI (about 49 s), against comfort thresholds for interactive
+   XR. Values from section 4.
+7. **Grounding figure.** A VR screenshot with Orienter-style candidate boxes and context-dependent
+   interactability labels next to a 2D phone screenshot with OmniParser boxes, to show why XR
+   grounding is harder (open vocabulary, context dependence). Must be redrawn, not copied, for rights.
+8. **Shared-control spectrum.** A horizontal axis from "explain" through "highlight" and "ghost hand"
+   to "ask then act" and "act autonomously", with works placed on it (XAIR, Guided Reality,
+   AgentHands, Sensible Agent, DuoZone, SIAgent, Put-That-There).
+9. **Market context chart.** EssilorLuxottica AI-glasses units and IDC's headset decline vs glasses
+   growth, labelled as reported or estimated; supports the "3D terminals have not yet entered daily
+   life" motivation.
+
+---
+
+## 9. Unverified items
+
+Items seen by the search workers that were not verified to the dossier's standard, or with
+unresolved discrepancies. They are not used as evidence above.
+
+- **Venue/status doubts.** GesPrompt at DIS 2025 (search snippet only); Dudley et al. at SUI 2025 and
+  AiGet at CHI 2025 (venue from arXiv comment/snippets; full text not read); EnVisionVR at IEEE TVCG;
+  NavAI journal version (Automated Software Engineering 33, 124 (2026), DOI 10.1007/s10515-026-00676-z,
+  snippet only) and its listing at the ASE 2025 VARSE workshop; SIAgent venue (a template header
+  suggesting IEEE TVCG); EgoPlan-Bench2 at ICCV 2025; Voyager at TMLR (one lab page); several venues
+  taken from OpenAlex only (marked * in tables). The Orienter DOI 10.1145/3808134 is from researchr
+  via a worker; the researchr page opened by the author shows the FSE 2026 slot but no DOI.
+- **Internal inconsistencies in sources.** Orienter abstract vs body gains (103.1%/125.7% vs
+  smaller body figures); DuoZone acceptance figure printed both as 39.6% and 60.4%; Satori N reported
+  as 12, 14 and 16; Game-TARS game count (about 100 vs 500+); XRintTest scene/interaction counts;
+  VideoCAD depth score; Voyager 3.3x (arXiv) vs 3.1x (NeurIPS listing).
+- **Products.** Meta AI on Quest opening apps / taking screenshots (Horizon OS release note seen only
+  as a search snippet); Project Astra opening apps and scrolling Android (press reports of the I/O
+  2025 demo); Android XR "Gemini Intelligence" agentic features announced at I/O 2026 (secondary
+  sources only); Meta XR Operator release date (v205.1 on 2026-07-28 per a third-party site vs the
+  2026-08-18 blog); visionOS 27 release month (MacRumors September 2026 vs Apple's support page dated
+  2026-11-09); the press review describing Galaxy XR Gemini actions as limited.
+- **Market.** IDC December 2025 forecast (14.5M units in 2025, +41.6%; read from search snippets
+  because the IDC site returned HTTP 403); IDC Q1-Q2 2026 quarterly unit counts (secondary sites).
+- **Works not opened or not found.** agentAR (UIST 2025, DOI 10.1145/3746059.3747676), ImaginateAR
+  (UIST 2025), ShadAR (UIST 2026), ClickAIXR (arXiv 2604.04905), XARA (arXiv 2610.21067),
+  CognitiveReality (arXiv 2609.31418), OrchestrXR (arXiv 2607.01588), GPT-VR Nexus (IEEE VR
+  Workshops 2024), VRAgent (GitHub, HenryLab-XR), SceneVR (possibly ASSETS 2025), VOPA (ISSTA 2024),
+  "Where Did My Apps Go?" (CHI 2026), AdaptiveCoPilot (arXiv 2501.04156, abstract versions disagree).
+  Searches for "Ubi-Agent", "Stereo-Talker", "VRAgent"/"XRAgent" as papers, "ProactiveBench" and
+  "EgoAssist" found nothing.
+- **Do not cite.** "Survey of LLMs in XR" (arXiv 2508.03014, withdrawn in v2 for improper reuse of
+  material) and VR-GPT (arXiv 2405.11537, v2 withdrawn with an errors note).
