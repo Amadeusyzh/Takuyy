@@ -230,7 +230,8 @@ def fig_comfort(lang):
             ax.text(xm, y + 0.32, txt, ha="center", va="bottom", fontsize=11.5, color=C["dark"])
         for x, c, txt in marks:
             ax.plot([x, x], [y - 0.3, y + 0.3], color=C[c], lw=3)
-            ax.text(x * 1.03, y - 0.12, f"{txt} {x:g} m", ha="left", va="top", fontsize=11, color=C[c],
+            up = c == "b"
+            ax.text(x * 1.03, y + 0.14 if up else y - 0.12, f"{txt} {x:g} m", ha="left", va="bottom" if up else "top", fontsize=11, color=C[c],
                     bbox=dict(fc="white", ec="none", alpha=0.85, pad=1))
         for lo, hi, txt in avoid:
             ax.add_patch(Rectangle((lo, y - 0.22), hi - lo, 0.44, fc="none", ec=C["x"], hatch="xx", lw=1.5))
