@@ -57,7 +57,7 @@ A useful definition says what it excludes. These are the boundaries we draw, eac
 - **The spatial system UI.** Launchers, quick settings, the window manager, the recentre and boundary controls, the system keyboard: the layer every user has to operate, and the one where buried settings live.
 - **3D widgets and volumes.** Sliders and dials in space, 3D models to rotate or scale, volumetric apps whose controls are objects rather than buttons.
 - **The UI of immersive apps, when the task is an interface operation.** Changing a setting inside a VR app, opening its menu, selecting an item in its inventory screen. The line is the task, not the app: operating the app's interface is in scope, playing the app is not.
-- **Multi-app tasks.** "Put the recipe next to the timer and start a 10-minute countdown" spans two apps and the window layer, like the cross-app tasks that 2D benchmarks found hardest.
+- **Multi-app tasks.** "Put the recipe next to the timer and start a 10-minute countdown" spans two apps and the window layer, like the cross-app tasks that recent 2D benchmarks such as MobileWorld include (post 2).
 
 **Out of scope:**
 
@@ -106,7 +106,7 @@ The evidence for "one of several barriers" is also real, and it points at the pa
 
 And there is counter-evidence: early adopters describe the Vision Pro interface as intuitive, and the fastest-growing device class, AI glasses, has almost no GUI at all, which can be read as "simpler interaction wins" or as "cheaper and lighter wins". No survey we found even offered "too hard to use" as an answer. The missing evidence is part of the research: if a 3D GUI agent works, it becomes possible to measure how much operating cost matters, by removing it.
 
-So we do not claim that agents will bring headsets into daily life. We claim something narrower: operating cost is a real, measured barrier, it is the one barrier that software alone can lower, and lowering it is worth studying for its own sake and for the users in the next section.
+So we do not claim that agents will bring headsets into daily life. We claim something narrower: the cost of operating a 3D interface is real and measured, it appears in the adoption evidence as one barrier among several, it is a barrier that software can lower directly, and lowering it is worth studying for its own sake and for the users in the next section.
 
 ## 4. The strongest case: accessibility
 
@@ -128,7 +128,7 @@ The platforms already ship assistive services that read a UI tree and act for th
 
 **What transfers.** Three lessons from 2D are strong enough to adopt from the start:
 
-- **Screenshots plus structure.** Screenshot-first models cover every app, and accessibility trees or the DOM help where they exist. XR has the same two sources: the rendered view, and the scene graph or the platform's spatial semantics (Android XR's subspace semantics tree, RealityKit's `AccessibilityComponent`).
+- **Screenshots plus structure.** Screenshot-first models cover every app, and accessibility trees or the DOM help where they exist. XR has the same two sources: the rendered view, and the scene graph or the platform's spatial semantics (Android XR's subspace semantics tree, RealityKit's `AccessibilityComponent`), although on most platforms only the app itself, its tests or the system can read this structure today.
 - **Element-level actions.** The choice of action space matters as much as the model: with GPT-4 held fixed, AppAgent's success rose from 2.2% with raw coordinate actions to 48.9% with actions over numbered elements (C. Zhang et al., CHI 2025). An XR agent should likewise act on *targets* (a window, a button, a slider) through a small set of verbs, and leave the rays and pinches to a low-level controller.
 - **Execution-based evaluation.** AndroidWorld (Rawles et al., ICLR 2025) and OSWorld (Xie et al., NeurIPS 2024) run the agent in a real environment and check the final state with a program. That is the only kind of evaluation that measures whether a user's request was actually carried out.
 
@@ -136,8 +136,8 @@ The platforms already ship assistive services that read a UI tree and act for th
 
 1. **The view changes with every head movement.** A phone screenshot shows the whole interface and stays the same until something is tapped. A headset frame shows only the part of the interface in the field of view, and a different part a moment later. One UI state produces endless different images.
 2. **Targets can be small, distant, occluded or behind the user.** A 2 cm button on a panel 1.5 m away covers less than 1° of visual angle; a window can hide another; the window the user asks for may be behind them. The agent must decide where to look, or ask the user to turn, and it needs a memory of where things are.
-3. **Actions are 3D.** Rays, pinches, grabs, two-handed scaling, 6-DoF poses, gaze, locomotion. The best language model produced the exact controller sequence for a VR action in 11.7% of the scenarios of ComboBench (Shuqing Li et al., arXiv 2510.24706, 2025).
-4. **The user waits inside the interface.** On a desktop an agent can work in the background for twenty minutes. In a headset the user watches, the world keeps rendering at 90 frames per second, and the content may move while the agent thinks. Published XR agent prototypes take about 4 s (DuoZone) to about 49 s (NavAI) per turn; a delay above about 4 s already degrades the experience with LLM-driven agents in VR (Maslych et al., CUI 2025).
+3. **Actions are 3D.** Rays, pinches, grabs, two-handed scaling, 6-DoF poses, gaze, locomotion. The best of seven language models tested on ComboBench (Gemini 1.5 Pro, with five examples in the prompt) produced the exact controller sequence for a VR action in 11.7% of its 262 scenarios, and none exceeded 5.8% without examples (Shuqing Li et al., arXiv 2510.24706, 2025).
+4. **The user waits inside the interface.** On a desktop an agent can work in the background for twenty minutes. In a headset the user watches, the world keeps rendering at 90 frames per second, and the content may move while the agent thinks. The XR agent prototypes compared in post 4 take about 4 s (DuoZone) to about 49 s (NavAI) per turn; a delay above about 4 s already degrades the experience with LLM-driven agents in VR (Maslych et al., CUI 2025).
 
 The interactive sketch below lets you feel the first two points. Turn the head and watch what an agent that sees through the user's eyes can and cannot know.
 
@@ -178,7 +178,7 @@ The 2D literature adds that users prefer to confirm at intermediate steps rather
 
 > Pieces of such an agent already exist: detection of GUI elements in VR frames, LLM window management from speech and pointing, LLM navigation from VR screenshots, and tools that let agents drive VR apps for testing.
 
-- **Detection of GUI elements in VR frames.** Orienter (Shuqing Li et al., FSE 2026) finds interactable elements in screenshots of 100 Steam VR apps with a large multimodal model plus an open-vocabulary detector, reaching an interactability F1 of 44.10% at IoU 0.75, against 2.21% for the 2D screen parser OmniParser. VRSight's DISCOVR dataset (UIST 2025) labels menus, buttons and UI text in 17,691 social-VR frames.
+- **Detection of GUI elements in VR frames.** Orienter (Shuqing Li et al., FSE 2026) finds interactable elements in screenshots of 100 Steam VR apps with a large multimodal model plus an open-vocabulary detector, reaching an interactability F1 of 44.10% at IoU 0.75, against 2.21% for the 2D screen parser OmniParser. VRSight's DISCOVR dataset (UIST 2025) labels menus, buttons and UI text in 17,691 frames from 17 VR apps, mostly social VR.
 - **LLM window management from speech and pointing.** Revisiting Put-That-There (Bovo et al., ISMAR 2025 Adjunct) turns speech, pointing and head direction into JSON actions that place or remove windows on the surfaces of the room, without a user study yet; DuoZone (section 6) does window layout with confirmation and a 16-person evaluation.
 - **LLM navigation from VR screenshots.** NavAI (Qin and DiGiovanni, ASE 2025 Workshops) closes the loop from a language goal and field-of-view screenshots to executed movement in Unity scenes, completing 16 of 18 goal tasks at about 49 s per turn; it moves the viewpoint and does not touch menus.
 - **Tools that let agents drive VR apps for testing.** Meta XR Operator (August 2026, experimental) lets a coding agent take screenshots of a running VR app and press buttons and work through menus; GenXR-Bench (Huang et al., arXiv 2610.29014, 2026) uses VLM actors to operate the XR apps that coding agents generate; VRExplorer and XRintTest drive Unity VR scenes for test coverage.
@@ -187,7 +187,7 @@ Close to these, SIAgent (Wang, Gu and Lu, IEEE TVCG 2026) has an agent execute V
 
 > Vendors are moving in this direction: Google says Gemini on Galaxy XR can take actions across apps and organize windows; Apple's Siri on visionOS 27 takes actions through app intents; Meta ships an experimental tool that lets coding agents drive VR apps. Their mechanisms and success rates are mostly undisclosed or limited to developer testing.
 
-Google's launch post for Galaxy XR (October 2025) says that Gemini can "take action on your behalf across your apps" and that "Hey Google, organize these windows" arranges open windows; no mechanism or evaluation is published. Apple's Siri on visionOS 27 acts through the actions that apps declare with App Intents, and Apple states that Siri cannot act on what is only in the pixels. Meta's XR Operator is a developer tool that, in Meta's words, "operates too slowly for real-time interaction". These are strong signals that the direction is timely, and they also show the two routes: semantic actions that apps opt into, and operation of the GUI itself.
+Google's launch post for Galaxy XR (October 2025) says that Gemini can "take action on your behalf across your apps" and that "Hey Google, organize these windows" arranges open windows; no mechanism or evaluation is published. Apple's Siri on visionOS 27 gets things done across apps through the actions that apps declare with App Intents; in its WWDC26 App Intents session Apple explains that Siri's understanding of on-screen text is "limited to exactly what's in the pixels", so it cannot act on items that an app does not expose. Meta's XR Operator is a developer tool that, in Meta's words, "operates too slowly for real-time interaction". These are strong signals that the direction is timely, and they also show the two routes: semantic actions that apps opt into, and operation of the GUI itself.
 
 The capability heat map of post 4 (its section 2) rates 23 such works and products on four properties: perceiving the 3D UI, understanding a natural-language intent, operating the UI, and being evaluated. Every property is covered fully by some work; no row covers all four. Put together:
 
@@ -240,11 +240,11 @@ Status as of November 2026. "arXiv" means preprint only.
 | Guided Reality: Generating Visually-Enriched AR Task Guidance with LLMs and Vision Models | A. Y. Zhao et al. | UIST | 2025 | [arXiv](https://arxiv.org/abs/2508.03547) | A visual vocabulary for spatial guidance |
 | VRCopilot: Authoring 3D Layouts with Generative AI Models in VR | L. Zhang et al. | UIST | 2024 | [DOI](https://doi.org/10.1145/3654777.3676451) | Full automation lowers the sense of agency |
 | "What Can I Do for You": How Should AI Companions Provide Assistance to Players in Virtual Reality Games | T. Zhang et al. | arXiv | 2026 | [arXiv](https://arxiv.org/abs/2609.13727) | Autonomous agent play lowers workload but also enjoyment |
-| "Do I Just Tap My Headset?": How Novice Users Discover Gestural Interactions with Consumer Augmented Reality Applications | A. Khurana et al. | IMWUT | 2023 | [DOI](https://doi.org/10.1145/3631451) | Novices fail at knowing what to do, not at moving |
+| "Do I Just Tap My Headset?": How Novice Users Discover Gestural Interactions with Consumer Augmented Reality Applications | A. Khurana et al. | IMWUT | 2023 | [DOI](https://doi.org/10.1145/3631451) | Most novice errors: not knowing what to do or what happened, rather than moving |
 | Selection-based Text Entry in Virtual Reality | M. Speicher et al. | CHI | 2018 | [DOI](https://doi.org/10.1145/3173574.3174221) | VR keyboards at 5.3 to 15.4 wpm |
 | Bumpy Ride? Understanding the Effects of External Forces on Spatial Interactions in Moving Vehicles | M. Sasalovici et al. | CHI | 2025 | [DOI](https://doi.org/10.1145/3706598.3714077) | Selection error rates on a current headset, still and moving |
 
-Product sources: [Introducing Galaxy XR](https://blog.google/products/android/samsung-galaxy-xr) (Google, October 2025); [Introducing Meta XR Operator](https://developers.meta.com/horizon/blog/meta-xr-operator-close-the-build-test-verify-loop-for-vr/) (Meta, 18 August 2026); [About visionOS 27 updates](https://support.apple.com/en-us/149067) (Apple).
+Product sources: [Introducing Galaxy XR](https://blog.google/products/android/samsung-galaxy-xr) (Google, October 2025); [Introducing Meta XR Operator](https://developers.meta.com/horizon/blog/meta-xr-operator-close-the-build-test-verify-loop-for-vr/) (Meta, 18 August 2026); [Apple introduces Siri AI](https://www.apple.com/newsroom/2026/06/apple-introduces-siri-ai-a-profoundly-more-capable-and-personal-assistant/) (Apple, 8 June 2026), [Explore advanced App Intents features for Siri and Apple Intelligence](https://developer.apple.com/videos/play/wwdc2026/343/) (WWDC26 session 343) and [About visionOS 27 updates](https://support.apple.com/en-us/149067) (Apple).
 
 ## Learning resources
 

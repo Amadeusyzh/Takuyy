@@ -57,7 +57,7 @@ related_posts: false
 - **空间系统 UI。**启动器、快速设置、窗口管理器、重新居中和边界控件、系统键盘：这是每个用户都必须操作的一层，也是那些藏得很深的设置所在的地方。
 - **3D 控件与体积。**空间中的滑块和旋钮，需要旋转或缩放的 3D 模型，以及控件是物体而不是按钮的体积式应用。
 - **沉浸式应用的 UI，当任务是界面操作时。**在 VR 应用里更改一项设置、打开它的菜单、在它的物品栏界面中选择一件物品。界线在于任务而不在于应用：操作应用的界面在范围内，玩这个应用则不在。
-- **多应用任务。**“把菜谱放到计时器旁边，并开始 10 分钟倒计时”横跨两个应用和窗口层，就像 2D 基准发现最难的那类跨应用任务。
+- **多应用任务。**“把菜谱放到计时器旁边，并开始 10 分钟倒计时”横跨两个应用和窗口层，就像 MobileWorld 等近期 2D 基准中包含的跨应用任务（第 2 篇）。
 
 **范围外：**
 
@@ -106,7 +106,7 @@ related_posts: false
 
 也存在反面证据：早期使用者认为 Vision Pro 的界面很直观，而增长最快的设备类别 AI 眼镜几乎完全没有 GUI，这既可以解读为“更简单的交互胜出”，也可以解读为“更便宜、更轻的胜出”。我们找到的调查中，没有一项甚至把“太难用”列为可选答案。缺失的证据本身就是研究的一部分：如果 3D GUI 智能体行得通，就有可能通过消除操作代价来测量它究竟有多重要。
 
-因此，我们并不声称智能体会把头显带进日常生活。我们的主张要窄得多：操作代价是一个真实的、经过测量的障碍，它是唯一一个单靠软件就能降低的障碍，而降低它既因其本身而值得研究，也因下一节所讲的用户而值得研究。
+因此，我们并不声称智能体会把头显带进日常生活。我们的主张要窄得多：操作 3D 界面的代价是真实存在且经过测量的，它在普及相关的证据中是若干障碍之一，它是软件可以直接降低的障碍，而降低它既因其本身而值得研究，也因下一节所讲的用户而值得研究。
 
 ## 4. 最有力的论据：无障碍
 
@@ -128,7 +128,7 @@ related_posts: false
 
 **可以迁移的。**来自 2D 的三条经验足够有力，可以从一开始就采用：
 
-- **截图加结构。**截图优先的模型覆盖所有应用，而无障碍树或 DOM 在存在时能提供帮助。XR 有同样的两个来源：渲染出的视图，以及场景图或平台的空间语义（Android XR 的子空间语义树、RealityKit 的 `AccessibilityComponent`）。
+- **截图加结构。**截图优先的模型覆盖所有应用，而无障碍树或 DOM 在存在时能提供帮助。XR 有同样的两个来源：渲染出的视图，以及场景图或平台的空间语义（Android XR 的子空间语义树、RealityKit 的 `AccessibilityComponent`），尽管在大多数平台上，目前只有应用本身、它的测试或系统才能读取这种结构。
 - **元素级动作。**动作空间的选择与模型同样重要：在固定使用 GPT-4 的情况下，AppAgent 的成功率从使用原始坐标动作时的 2.2% 升至使用基于编号元素的动作时的 48.9%（C. Zhang 等，CHI 2025）。XR 智能体同样应当通过一小组动词作用于*目标*（一个窗口、一个按钮、一个滑块），而把射线和捏合交给底层控制器。
 - **基于执行的评测**（execution-based evaluation）。AndroidWorld（Rawles 等，ICLR 2025）和 OSWorld（Xie 等，NeurIPS 2024）在真实环境中运行智能体，并用程序检查最终状态。只有这种评测才能衡量用户的请求是否真的被执行了。
 
@@ -136,8 +136,8 @@ related_posts: false
 
 1. **视野随每一次头部运动而变化。**手机截图显示整个界面，并且在点按某处之前保持不变。头显的一帧只显示视野内的那部分界面，片刻之后又是另一部分。一个 UI 状态会产生无穷多幅不同的图像。
 2. **目标可能很小、很远、被遮挡或位于用户身后。**1.5 m 外面板上一个 2 cm 的按钮所张视角不到 1°；一个窗口可能挡住另一个；用户要求的窗口可能就在他们身后。智能体必须决定往哪里看，或者请用户转身，而且它需要记住各个东西在哪里。
-3. **动作是 3D 的。**射线、捏合、抓取、双手缩放、6-DoF 位姿、注视、移动（locomotion）。在 ComboBench 的场景中，最好的语言模型只在 11.7% 的情况下为一个 VR 动作生成了准确的控制器操作序列（Shuqing Li 等，arXiv 2510.24706，2025）。
-4. **用户在界面之中等待。**在桌面上，智能体可以在后台工作二十分钟。在头显中，用户在一旁看着，世界继续以每秒 90 帧渲染，而内容可能在智能体思考时移动。已发表的 XR 智能体原型每轮耗时约 4 s（DuoZone）到约 49 s（NavAI）；与 VR 中由 LLM 驱动的智能体交互时，超过约 4 s 的延迟就已经会损害体验（Maslych 等，CUI 2025）。
+3. **动作是 3D 的。**射线、捏合、抓取、双手缩放、6-DoF 位姿、注视、移动（locomotion）。在 ComboBench 上测试的七个语言模型中，表现最好的（Gemini 1.5 Pro，提示中给出五个示例）也只在其 262 个场景的 11.7% 中为一个 VR 动作生成了准确的控制器操作序列，而在没有示例时，没有一个模型超过 5.8%（Shuqing Li 等，arXiv 2510.24706，2025）。
+4. **用户在界面之中等待。**在桌面上，智能体可以在后台工作二十分钟。在头显中，用户在一旁看着，世界继续以每秒 90 帧渲染，而内容可能在智能体思考时移动。第 4 篇中比较的 XR 智能体原型每轮耗时约 4 s（DuoZone）到约 49 s（NavAI）；与 VR 中由 LLM 驱动的智能体交互时，超过约 4 s 的延迟就已经会损害体验（Maslych 等，CUI 2025）。
 
 下面的交互示意让你亲身感受前两点。转动头部，看看一个通过用户双眼观察的智能体能知道什么、不能知道什么。
 
@@ -178,7 +178,7 @@ related_posts: false
 
 > 这样一个智能体的组成部分已经存在：VR 帧中 GUI 元素的检测、基于语音和指向的 LLM 窗口管理、基于 VR 截图的 LLM 导航，以及让智能体为测试而驱动 VR 应用的工具。
 
-- **VR 帧中 GUI 元素的检测。**Orienter（Shuqing Li 等，FSE 2026）用一个大型多模态模型加一个开放词汇检测器，在 100 款 Steam VR 应用的截图中寻找可交互元素，在 IoU 0.75 下的可交互性 F1 达到 44.10%，而 2D 屏幕解析器 OmniParser 为 2.21%。VRSight 的 DISCOVR 数据集（UIST 2025）在 17,691 帧社交 VR 画面中标注了菜单、按钮和 UI 文字。
+- **VR 帧中 GUI 元素的检测。**Orienter（Shuqing Li 等，FSE 2026）用一个大型多模态模型加一个开放词汇检测器，在 100 款 Steam VR 应用的截图中寻找可交互元素，在 IoU 0.75 下的可交互性 F1 达到 44.10%，而 2D 屏幕解析器 OmniParser 为 2.21%。VRSight 的 DISCOVR 数据集（UIST 2025）在来自 17 款 VR 应用（大多是社交 VR）的 17,691 帧画面中标注了菜单、按钮和 UI 文字。
 - **基于语音和指向的 LLM 窗口管理。**Revisiting Put-That-There（Bovo 等，ISMAR 2025 Adjunct）把语音、指向和头部朝向转换为 JSON 动作，在房间的各个表面上放置或移除窗口，目前尚无用户研究；DuoZone（第 6 节）在带确认的方式下进行窗口布局，并做了 16 人的评估。
 - **基于 VR 截图的 LLM 导航。**NavAI（Qin 和 DiGiovanni，ASE 2025 Workshops）在 Unity 场景中打通了从语言目标和视野截图到实际执行移动的闭环，以每轮约 49 s 完成了 18 个目标任务中的 16 个；它移动视点，不触及菜单。
 - **让智能体为测试而驱动 VR 应用的工具。**Meta XR Operator（2026 年 8 月，实验性）让编程智能体截取正在运行的 VR 应用的画面，按下按钮并逐层操作菜单；GenXR-Bench（Huang 等，arXiv 2610.29014，2026）使用 VLM 执行者来操作编程智能体生成的 XR 应用；VRExplorer 和 XRintTest 为测试覆盖率而驱动 Unity VR 场景。
@@ -187,7 +187,7 @@ related_posts: false
 
 > 厂商正朝这个方向前进：Google 表示 Galaxy XR 上的 Gemini 可以跨应用执行操作并整理窗口；Apple 在 visionOS 27 上的 Siri 通过应用意图（app intents）执行操作；Meta 推出了一个实验性工具，让编程智能体驱动 VR 应用。它们的机制和成功率大多未公开，或仅限于开发者测试。
 
-Google 为 Galaxy XR 发布的介绍文章（2025 年 10 月）称，Gemini 可以“take action on your behalf across your apps”（在你的各个应用中替你执行操作），并且说一句“Hey Google, organize these windows”（嘿 Google，整理这些窗口）就能排列已打开的窗口；没有公布任何机制或评测。Apple 在 visionOS 27 上的 Siri 通过应用用 App Intents 声明的动作来执行操作，Apple 也说明 Siri 无法对仅存在于像素中的内容采取行动。Meta 的 XR Operator 是一个开发者工具，用 Meta 的话说，它“operates too slowly for real-time interaction”（运行速度太慢，无法用于实时交互）。这些都是强烈的信号，表明这个方向正当其时，同时也显示出两条路线：由应用主动接入的语义动作，以及对 GUI 本身的操作。
+Google 为 Galaxy XR 发布的介绍文章（2025 年 10 月）称，Gemini 可以“take action on your behalf across your apps”（在你的各个应用中替你执行操作），并且说一句“Hey Google, organize these windows”（嘿 Google，整理这些窗口）就能排列已打开的窗口；没有公布任何机制或评测。Apple 在 visionOS 27 上的 Siri 通过应用用 App Intents 声明的动作来跨应用完成任务；Apple 在 WWDC26 的 App Intents 讲座中解释说，Siri 对屏幕上文字的理解“limited to exactly what's in the pixels”（仅限于像素中确切呈现的内容），因此它无法对应用没有公开的项目采取行动。Meta 的 XR Operator 是一个开发者工具，用 Meta 的话说，它“operates too slowly for real-time interaction”（运行速度太慢，无法用于实时交互）。这些都是强烈的信号，表明这个方向正当其时，同时也显示出两条路线：由应用主动接入的语义动作，以及对 GUI 本身的操作。
 
 第 4 篇的能力热力图（其第 2 节）按四个属性对 23 项此类工作和产品进行评分：感知 3D UI、理解自然语言意图、操作 UI，以及经过评估。每个属性都有某项工作完全覆盖；但没有一行覆盖全部四个。综合起来：
 
@@ -240,11 +240,11 @@ Google 为 Galaxy XR 发布的介绍文章（2025 年 10 月）称，Gemini 可�
 | Guided Reality: Generating Visually-Enriched AR Task Guidance with LLMs and Vision Models | A. Y. Zhao et al. | UIST | 2025 | [arXiv](https://arxiv.org/abs/2508.03547) | 一套用于空间引导的视觉词汇 |
 | VRCopilot: Authoring 3D Layouts with Generative AI Models in VR | L. Zhang et al. | UIST | 2024 | [DOI](https://doi.org/10.1145/3654777.3676451) | 完全自动化会降低能动感 |
 | "What Can I Do for You": How Should AI Companions Provide Assistance to Players in Virtual Reality Games | T. Zhang et al. | arXiv | 2026 | [arXiv](https://arxiv.org/abs/2609.13727) | 智能体自主游玩降低了工作负荷，但也降低了乐趣 |
-| "Do I Just Tap My Headset?": How Novice Users Discover Gestural Interactions with Consumer Augmented Reality Applications | A. Khurana et al. | IMWUT | 2023 | [DOI](https://doi.org/10.1145/3631451) | 新手的失败在于不知道该做什么，而不在于动作本身 |
+| "Do I Just Tap My Headset?": How Novice Users Discover Gestural Interactions with Consumer Augmented Reality Applications | A. Khurana et al. | IMWUT | 2023 | [DOI](https://doi.org/10.1145/3631451) | 新手的大多数错误：不知道该做什么或发生了什么，而不在于动作本身 |
 | Selection-based Text Entry in Virtual Reality | M. Speicher et al. | CHI | 2018 | [DOI](https://doi.org/10.1145/3173574.3174221) | VR 键盘速度为 5.3 到 15.4 wpm |
 | Bumpy Ride? Understanding the Effects of External Forces on Spatial Interactions in Moving Vehicles | M. Sasalovici et al. | CHI | 2025 | [DOI](https://doi.org/10.1145/3706598.3714077) | 当前头显在静止和行驶中的选择错误率 |
 
-产品来源：[Introducing Galaxy XR](https://blog.google/products/android/samsung-galaxy-xr)（Google，2025 年 10 月）；[Introducing Meta XR Operator](https://developers.meta.com/horizon/blog/meta-xr-operator-close-the-build-test-verify-loop-for-vr/)（Meta，2026 年 8 月 18 日）；[About visionOS 27 updates](https://support.apple.com/en-us/149067)（Apple）。
+产品来源：[Introducing Galaxy XR](https://blog.google/products/android/samsung-galaxy-xr)（Google，2025 年 10 月）；[Introducing Meta XR Operator](https://developers.meta.com/horizon/blog/meta-xr-operator-close-the-build-test-verify-loop-for-vr/)（Meta，2026 年 8 月 18 日）；[Apple introduces Siri AI](https://www.apple.com/newsroom/2026/06/apple-introduces-siri-ai-a-profoundly-more-capable-and-personal-assistant/)（Apple，2026 年 6 月 8 日）；[Explore advanced App Intents features for Siri and Apple Intelligence](https://developer.apple.com/videos/play/wwdc2026/343/)（WWDC26 讲座 343）；[About visionOS 27 updates](https://support.apple.com/en-us/149067)（Apple）。
 
 ## 学习资源
 

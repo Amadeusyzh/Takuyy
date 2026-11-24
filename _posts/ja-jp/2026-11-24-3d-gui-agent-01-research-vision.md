@@ -57,7 +57,7 @@ related_posts: false
 - **空間的なシステム UI。** ランチャー、クイック設定、ウィンドウマネージャー、再センタリングと境界のコントロール、システムキーボード。すべてのユーザーが操作しなければならない層であり、奥深くに埋もれた設定がある層です。
 - **3D ウィジェットとボリューム。** 空間内のスライダーやダイヤル、回転や拡大縮小をする 3D モデル、コントロールがボタンではなくオブジェクトであるボリュメトリックなアプリ。
 - **イマーシブなアプリの UI（タスクがインターフェース操作である場合）。** VR アプリ内の設定を変える、そのメニューを開く、インベントリ画面でアイテムを選ぶ。線を引くのはアプリではなくタスクです。アプリのインターフェースを操作することは範囲内ですが、アプリで遊ぶことは範囲外です。
-- **複数アプリにまたがるタスク。**「レシピをタイマーの隣に置いて、10 分のカウントダウンを始めて」は二つのアプリとウィンドウの層にまたがります。2D のベンチマークで最も難しいとされたアプリ横断のタスクと同様です。
+- **複数アプリにまたがるタスク。**「レシピをタイマーの隣に置いて、10 分のカウントダウンを始めて」は二つのアプリとウィンドウの層にまたがります。MobileWorld のような最近の 2D ベンチマークに含まれるアプリ横断のタスクと同様です（第 2 回）。
 
 **範囲外：**
 
@@ -106,7 +106,7 @@ related_posts: false
 
 一方で反証もあります。初期の採用者は Vision Pro のインターフェースを直感的だと述べていますし、最も急速に成長しているデバイスのクラスである AI グラスにはほとんど GUI がありません。これは「より単純なインタラクションが勝つ」とも、「より安く軽いものが勝つ」とも読めます。私たちが見つけた調査の中に、「使い方が難しすぎる」を回答の選択肢として用意していたものすらありませんでした。この欠けている証拠は、研究の一部をなします。3D GUI エージェントが機能すれば、操作コストを取り除くことによって、それがどれほど重要なのかを測定できるようになります。
 
-したがって私たちは、エージェントがヘッドセットを日常生活にもたらすとは主張しません。主張するのはもっと狭いことです。操作コストは実在する、測定された障壁であり、ソフトウェアだけで下げられる唯一の障壁であり、それを下げることは、それ自体として、また次節で扱うユーザーのために、研究する価値がある、ということです。
+したがって私たちは、エージェントがヘッドセットを日常生活にもたらすとは主張しません。主張するのはもっと狭いことです。3D インターフェースを操作するコストは実在し、測定されたものであり、普及に関する証拠の中ではいくつかある障壁の一つとして現れ、ソフトウェアが直接下げることのできる障壁であり、それを下げることは、それ自体として、また次節で扱うユーザーのために、研究する価値がある、ということです。
 
 ## 4. 最も強い根拠：アクセシビリティ
 
@@ -128,7 +128,7 @@ related_posts: false
 
 **引き継がれるもの。** 2D からの教訓のうち三つは、最初から採用するに足るほど強力です。
 
-- **スクリーンショットと構造の併用。** スクリーンショット中心のモデルはあらゆるアプリをカバーし、アクセシビリティツリーや DOM は、存在する場合に役立ちます。XR にも同じ二つの情報源があります。レンダリングされた視界と、シーングラフまたはプラットフォームの空間セマンティクス（Android XR のサブスペースセマンティクスツリー、RealityKit の `AccessibilityComponent`）です。
+- **スクリーンショットと構造の併用。** スクリーンショット中心のモデルはあらゆるアプリをカバーし、アクセシビリティツリーや DOM は、存在する場合に役立ちます。XR にも同じ二つの情報源があります。レンダリングされた視界と、シーングラフまたはプラットフォームの空間セマンティクス（Android XR のサブスペースセマンティクスツリー、RealityKit の `AccessibilityComponent`）です。ただし、現在ほとんどのプラットフォームでは、この構造を読み取れるのはアプリ自身、そのテスト、またはシステムだけです。
 - **要素レベルの行動。** 行動空間の選び方はモデルと同じくらい重要です。GPT-4 を固定したまま、AppAgent の成功率は、生の座標による行動では 2.2% だったものが、番号付きの要素に対する行動では 48.9% に上がりました（C. Zhang ら、CHI 2025）。XR のエージェントも同様に、少数の動詞を通じて*対象*（ウィンドウ、ボタン、スライダー）に対して行動し、レイやピンチは低レベルのコントローラーに任せるべきです。
 - **実行に基づく評価（execution-based evaluation）。** AndroidWorld（Rawles ら、ICLR 2025）と OSWorld（Xie ら、NeurIPS 2024）は、エージェントを実際の環境で動かし、最終状態をプログラムで確認します。ユーザーの要求が実際に遂行されたかどうかを測れるのは、この種の評価だけです。
 
@@ -136,8 +136,8 @@ related_posts: false
 
 1. **視界は頭を動かすたびに変わります。** スマートフォンのスクリーンショットはインターフェース全体を写し、何かがタップされるまで変わりません。ヘッドセットのフレームは、インターフェースのうち視野内にある部分だけを写し、一瞬後には別の部分を写します。一つの UI 状態が、際限なく異なる画像を生み出します。
 2. **対象は小さい、遠い、遮蔽されている、あるいはユーザーの背後にあることがあります。** 1.5 m 先のパネル上の 2 cm のボタンは、視角 1° 未満しか占めません。ウィンドウが別のウィンドウを隠すこともありますし、ユーザーが求めるウィンドウが背後にあることもあります。エージェントはどこを見るかを決めるか、ユーザーに振り向くよう頼まなければならず、物がどこにあるかの記憶も必要です。
-3. **行動は 3D です。** レイ、ピンチ、つかむ動作、両手による拡大縮小、6-DoF の姿勢、視線、移動（locomotion）。最良の言語モデルでも、VR の操作に対する正確なコントローラーの操作列を生成できたのは、ComboBench のシナリオの 11.7% でした（Shuqing Li ら、arXiv 2510.24706、2025）。
-4. **ユーザーはインターフェースの中で待っています。** デスクトップでは、エージェントはバックグラウンドで 20 分間作業できます。ヘッドセットではユーザーが見守っており、世界は毎秒 90 フレームで描画され続け、エージェントが考えている間にコンテンツが動くこともあります。公開されている XR エージェントのプロトタイプは、1 ターンあたり約 4 s（DuoZone）から約 49 s（NavAI）かかります。VR で LLM 駆動のエージェントを使う場合、約 4 s を超える遅延ですでに体験が損なわれます（Maslych ら、CUI 2025）。
+3. **行動は 3D です。** レイ、ピンチ、つかむ動作、両手による拡大縮小、6-DoF の姿勢、視線、移動（locomotion）。ComboBench で評価された七つの言語モデルのうち最良のもの（Gemini 1.5 Pro、プロンプトに五つの例を与えた場合）でも、VR の操作に対する正確なコントローラーの操作列を生成できたのは、262 のシナリオの 11.7% にとどまり、例を与えない場合はどのモデルも 5.8% を超えませんでした（Shuqing Li ら、arXiv 2510.24706、2025）。
+4. **ユーザーはインターフェースの中で待っています。** デスクトップでは、エージェントはバックグラウンドで 20 分間作業できます。ヘッドセットではユーザーが見守っており、世界は毎秒 90 フレームで描画され続け、エージェントが考えている間にコンテンツが動くこともあります。第 4 回で比較する XR エージェントのプロトタイプは、1 ターンあたり約 4 s（DuoZone）から約 49 s（NavAI）かかります。VR で LLM 駆動のエージェントを使う場合、約 4 s を超える遅延ですでに体験が損なわれます（Maslych ら、CUI 2025）。
 
 下のインタラクティブなスケッチで、最初の二点を体感できます。頭を回して、ユーザーの目を通して見るエージェントに何が分かり、何が分からないのかを確かめてください。
 
@@ -178,7 +178,7 @@ related_posts: false
 
 > そのようなエージェントの部品はすでに存在します。VR フレーム内の GUI 要素の検出、音声とポインティングによる LLM のウィンドウ管理、VR のスクリーンショットからの LLM によるナビゲーション、そしてテストのためにエージェントが VR アプリを操作できるようにするツールです。
 
-- **VR フレーム内の GUI 要素の検出。** Orienter（Shuqing Li ら、FSE 2026）は、大規模マルチモーダルモデルとオープンボキャブラリー検出器を組み合わせて、100 本の Steam VR アプリのスクリーンショットからインタラクション可能な要素を見つけ、IoU 0.75 におけるインタラクション可能性の F1 で 44.10% を達成しました。2D の画面パーサーである OmniParser は 2.21% でした。VRSight の DISCOVR データセット（UIST 2025）は、17,691 枚のソーシャル VR のフレームにメニュー、ボタン、UI テキストのラベルを付けています。
+- **VR フレーム内の GUI 要素の検出。** Orienter（Shuqing Li ら、FSE 2026）は、大規模マルチモーダルモデルとオープンボキャブラリー検出器を組み合わせて、100 本の Steam VR アプリのスクリーンショットからインタラクション可能な要素を見つけ、IoU 0.75 におけるインタラクション可能性の F1 で 44.10% を達成しました。2D の画面パーサーである OmniParser は 2.21% でした。VRSight の DISCOVR データセット（UIST 2025）は、17 本の VR アプリ（大半はソーシャル VR）から得た 17,691 枚のフレームにメニュー、ボタン、UI テキストのラベルを付けています。
 - **音声とポインティングによる LLM のウィンドウ管理。** Revisiting Put-That-There（Bovo ら、ISMAR 2025 Adjunct）は、音声、ポインティング、頭の向きを、部屋の表面にウィンドウを配置したり取り除いたりする JSON の行動に変換しますが、まだユーザースタディは行われていません。DuoZone（第 6 節）は確認付きのウィンドウレイアウトを行い、16 人による評価を行っています。
 - **VR のスクリーンショットからの LLM によるナビゲーション。** NavAI（Qin と DiGiovanni、ASE 2025 Workshops）は、言語によるゴールと視野のスクリーンショットから、Unity シーン内で実行される移動までのループを閉じ、18 件のゴールタスクのうち 16 件を 1 ターンあたり約 49 s で完了しました。視点を動かすだけで、メニューには触れません。
 - **テストのためにエージェントが VR アプリを操作できるようにするツール。** Meta XR Operator（2026 年 8 月、試験的）は、コーディングエージェントが実行中の VR アプリのスクリーンショットを撮り、ボタンを押し、メニューを操作できるようにします。GenXR-Bench（Huang ら、arXiv 2610.29014、2026）は、コーディングエージェントが生成した XR アプリを VLM のアクターで操作します。VRExplorer と XRintTest は、テストカバレッジのために Unity の VR シーンを操作します。
@@ -187,7 +187,7 @@ related_posts: false
 
 > ベンダーもこの方向に動いています。Google は、Galaxy XR 上の Gemini がアプリをまたいで操作を行い、ウィンドウを整理できると述べています。Apple の visionOS 27 の Siri は、アプリインテント（app intents）を通じて操作を行います。Meta は、コーディングエージェントが VR アプリを操作できるようにする試験的なツールを提供しています。それらの仕組みや成功率は、ほとんど公開されていないか、開発者によるテストに限られています。
 
-Google の Galaxy XR の発表記事（2025 年 10 月）は、Gemini が "take action on your behalf across your apps"（アプリをまたいであなたの代わりに操作を行う）ことができ、"Hey Google, organize these windows"（ねえ Google、これらのウィンドウを整理して）と言うと開いているウィンドウが整理されると述べています。仕組みや評価は公開されていません。Apple の visionOS 27 の Siri は、アプリが App Intents で宣言したアクションを通じて行動し、Apple は、ピクセルの中にしかないものに対して Siri は行動できないと述べています。Meta の XR Operator は開発者向けツールであり、Meta 自身の言葉では "operates too slowly for real-time interaction"（リアルタイムのインタラクションには遅すぎる）とされています。これらはこの方向性が時宜にかなっていることを示す強いシグナルであると同時に、二つの経路があることも示しています。アプリがオプトインするセマンティックな行動と、GUI そのものの操作です。
+Google の Galaxy XR の発表記事（2025 年 10 月）は、Gemini が "take action on your behalf across your apps"（アプリをまたいであなたの代わりに操作を行う）ことができ、"Hey Google, organize these windows"（ねえ Google、これらのウィンドウを整理して）と言うと開いているウィンドウが整理されると述べています。仕組みや評価は公開されていません。Apple の visionOS 27 の Siri は、アプリが App Intents で宣言したアクションを通じてアプリをまたいで物事をこなします。Apple は WWDC26 の App Intents のセッションで、画面上のテキストに対する Siri の理解は "limited to exactly what's in the pixels"（ピクセルに写っているものだけに限られる）と説明しており、そのため Siri は、アプリが公開していない項目に対しては行動できません。Meta の XR Operator は開発者向けツールであり、Meta 自身の言葉では "operates too slowly for real-time interaction"（リアルタイムのインタラクションには遅すぎる）とされています。これらはこの方向性が時宜にかなっていることを示す強いシグナルであると同時に、二つの経路があることも示しています。アプリがオプトインするセマンティックな行動と、GUI そのものの操作です。
 
 第 4 回の能力ヒートマップ（同記事の第 2 節）は、こうした 23 の研究と製品を四つの性質について評価しています。3D UI の知覚、自然言語の意図の理解、UI の操作、そして評価されていることです。どの性質も、いずれかの研究によって完全にカバーされていますが、四つすべてをカバーする行はありません。まとめると次のようになります。
 
@@ -240,11 +240,11 @@ Google の Galaxy XR の発表記事（2025 年 10 月）は、Gemini が "take 
 | Guided Reality: Generating Visually-Enriched AR Task Guidance with LLMs and Vision Models | A. Y. Zhao et al. | UIST | 2025 | [arXiv](https://arxiv.org/abs/2508.03547) | 空間的な案内のための視覚的な語彙 |
 | VRCopilot: Authoring 3D Layouts with Generative AI Models in VR | L. Zhang et al. | UIST | 2024 | [DOI](https://doi.org/10.1145/3654777.3676451) | 完全自動化は主体感を下げる |
 | "What Can I Do for You": How Should AI Companions Provide Assistance to Players in Virtual Reality Games | T. Zhang et al. | arXiv | 2026 | [arXiv](https://arxiv.org/abs/2609.13727) | エージェントの自律的なプレイは作業負荷を下げるが、楽しさも下げる |
-| "Do I Just Tap My Headset?": How Novice Users Discover Gestural Interactions with Consumer Augmented Reality Applications | A. Khurana et al. | IMWUT | 2023 | [DOI](https://doi.org/10.1145/3631451) | 初心者がつまずくのは、何をすべきかを知ることであって、体を動かすことではない |
+| "Do I Just Tap My Headset?": How Novice Users Discover Gestural Interactions with Consumer Augmented Reality Applications | A. Khurana et al. | IMWUT | 2023 | [DOI](https://doi.org/10.1145/3631451) | 初心者のエラーの大半は、体を動かすことではなく、何をすべきか、または何が起きたかが分からないこと |
 | Selection-based Text Entry in Virtual Reality | M. Speicher et al. | CHI | 2018 | [DOI](https://doi.org/10.1145/3173574.3174221) | VR キーボードで 5.3〜15.4 wpm |
 | Bumpy Ride? Understanding the Effects of External Forces on Spatial Interactions in Moving Vehicles | M. Sasalovici et al. | CHI | 2025 | [DOI](https://doi.org/10.1145/3706598.3714077) | 現行のヘッドセットにおける、停車中と走行中の選択エラー率 |
 
-製品の情報源：[Introducing Galaxy XR](https://blog.google/products/android/samsung-galaxy-xr)（Google、2025 年 10 月）；[Introducing Meta XR Operator](https://developers.meta.com/horizon/blog/meta-xr-operator-close-the-build-test-verify-loop-for-vr/)（Meta、2026 年 8 月 18 日）；[About visionOS 27 updates](https://support.apple.com/en-us/149067)（Apple）。
+製品の情報源：[Introducing Galaxy XR](https://blog.google/products/android/samsung-galaxy-xr)（Google、2025 年 10 月）；[Introducing Meta XR Operator](https://developers.meta.com/horizon/blog/meta-xr-operator-close-the-build-test-verify-loop-for-vr/)（Meta、2026 年 8 月 18 日）；[Apple introduces Siri AI](https://www.apple.com/newsroom/2026/06/apple-introduces-siri-ai-a-profoundly-more-capable-and-personal-assistant/)（Apple、2026 年 6 月 8 日）；[Explore advanced App Intents features for Siri and Apple Intelligence](https://developer.apple.com/videos/play/wwdc2026/343/)（WWDC26 セッション 343）；[About visionOS 27 updates](https://support.apple.com/en-us/149067)（Apple）。
 
 ## 学習リソース
 
