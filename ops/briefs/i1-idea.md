@@ -14,6 +14,18 @@ reason they have not become widespread). The owner asked to organize the idea, r
 blog. The owner wants the public part of the column to establish the idea early ("占位"), and the detailed
 research plan to stay protected until a paper is out.
 
+## The owner's decisions so far
+
+- **Prototype platform: Meta Quest first.** Ground the system design, the benchmark environment and the data
+  plan in what Quest and Meta Horizon OS allow (see the platforms dossier: Meta Spatial SDK, Unity with the Meta
+  XR SDK and the XR Interaction Toolkit, the Meta XR Simulator, Meta XR Operator, the passthrough camera API and
+  its rules, 2D Android panels, WebXR in the Quest browser with IWER for development, accessibility rules).
+  Keep the formulation platform-independent and say what would carry over to visionOS and Android XR later.
+- **Target venues: ISMAR, IEEE VR and CHI.** Find the next submission deadlines of each (from the official calls
+  for papers; if a call is not out yet, say so and estimate from previous years), and plan the first paper and
+  the follow-ups against them: which contribution fits which venue (for example a system and user study for
+  CHI, a benchmark or technique for ISMAR or IEEE VR), what must be ready by each deadline, and the timeline.
+
 ## Inputs
 
 Read all four dossiers in `docs/research/3d-gui-agent/` first (2D GUI agents; 3D UI and XR interaction; agents
