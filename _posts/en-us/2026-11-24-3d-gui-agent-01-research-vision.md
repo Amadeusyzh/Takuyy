@@ -92,7 +92,7 @@ Two further costs come from the space itself. **Content can be anywhere.** A win
 
 ## 3. Does this matter for everyday XR? An honest answer
 
-The motivation of this column, in the owner's words, is that the complexity of operating 3D interfaces is one reason why 3D mobile terminals have not entered everyday life. That is a hypothesis, and the evidence supports it only partly. We state the position we can defend:
+This column starts from an intuition: that the complexity of operating 3D interfaces is one reason why 3D mobile terminals have not entered everyday life. That is a hypothesis, and the evidence supports it only partly. We state the position we can defend:
 
 > The difficulty of operating 3D interfaces is one of several barriers to everyday XR, alongside, and usually behind, price, comfort, content and motion sickness. An agent can lower the operating cost; it cannot fix weight, price or sickness.
 
