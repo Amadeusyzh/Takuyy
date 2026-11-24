@@ -398,7 +398,7 @@ This section collects the "For 3D" notes into one argument. The question is not 
 | Grounding | point in box; 74% single pass on ScreenSpot-Pro, 85% with cascades | heatmaps become rays; zoom becomes foveation; engine-generated labels; exact ray-hit rewards | target is an object or volume; several objects per pixel; tiny distant targets; body-relative references |
 | Action space | tap, type, swipe, key; hybrid GUI + API + MCP | small designed action sets; intents and APIs first | 6-DoF poses, rays, pinch, grab, two hands, gaze, voice, locomotion; tolerances instead of hits |
 | Field of view | everything on one screen (scroll for the rest) | active perception, exploration memory | targets behind the user, occluded or in another room; spatial memory needed |
-| Latency | 2.5-4 s per step; tasks of tens of minutes | quantization, batching, small models, device-cloud split | the user waits inside the interface; rendering budget of 11-14 ms per frame shares the device |
+| Latency | 2.5-4 s per step; tasks of tens of minutes | quantization, batching, small models, device-cloud split | the user waits inside the interface; rendering budget of 8-14 ms per frame shares the device |
 | Training | SFT, rule-reward RL, online RL in 10k+ VMs | the whole recipe; free spatial rewards; reverse task synthesis | no trajectory corpus; GPU-heavy simulators; weaker transfer to unseen apps |
 | Evaluation | execution-checked, parameterized, pass^k | the design principles | headless XR runtimes at scale; spatial tolerances; occluded outcomes |
 | Humans and safety | confirm, pause, take over, isolate | the patterns | takeover of the user's hands and view; physical surprise; passthrough injection; room and gaze privacy |
