@@ -1461,7 +1461,9 @@
   }
   // Switches to the variant the picture needs. One that is not compiled yet is compiled in the background
   // (COMPLETION_STATUS_KHR) while the current one goes on drawing; without the extension the compile is
-  // waited for once the status line has been painted. Returns true while a variant is being compiled.
+  // waited for once the status line has been painted. On an iPhone or iPad the light version of the same
+  // variant is compiled alongside and drawn meanwhile, since it is ready much sooner. Returns true while a
+  // variant is being compiled.
   function variants(now) {
     var k = wantKey();
     if (k === curKey) {
@@ -1471,29 +1473,43 @@
       }
       return false;
     }
-    var c = progs[k];
-    if (!c) c = progs[k] = { o: startProgram(VS, fsFor(k)), P: null, t0: now, painted: false };
-    if (!c.P) {
-      if (parExt ? !gl.getProgramParameter(c.o.p, parExt.COMPLETION_STATUS_KHR) : !c.painted) {
-        c.painted = true;
-        if (appleMobile && !liteMode && now - c.t0 > STUCK_MS) liteMode = true; // too slow here: light variants only
+    if (readyVariant(k, now)) {
+      useVariant(k);
+      return false;
+    }
+    if (appleMobile && k.indexOf("l") < 0) {
+      if (now - progs[k].t0 > STUCK_MS) {
+        liteMode = true; // too slow here: light variants only
         return true;
       }
-      try {
-        c.P = finishProgram(c.o);
-      } catch (err) {
-        fail();
-        if (window.console) console.warn(err);
-        return false;
-      }
-      if (!c.P) return true; // the context was lost
-      c.o = null;
+      if (curKey !== "l" + k && readyVariant("l" + k, now)) useVariant("l" + k);
     }
-    P = c.P;
+    return true;
+  }
+  // starts the compile of variant k if it has not been started; true once its program is ready
+  function readyVariant(k, now) {
+    var c = progs[k];
+    if (!c) c = progs[k] = { o: startProgram(VS, fsFor(k)), P: null, t0: now, painted: false };
+    if (c.P) return true;
+    if (parExt ? !gl.getProgramParameter(c.o.p, parExt.COMPLETION_STATUS_KHR) : !c.painted) {
+      c.painted = true;
+      return false;
+    }
+    try {
+      c.P = finishProgram(c.o);
+    } catch (err) {
+      fail();
+      if (window.console) console.warn(err);
+      return false;
+    }
+    if (c.P) c.o = null;
+    return !!c.P; // null: the context was lost
+  }
+  function useVariant(k) {
+    P = progs[k].P;
     curKey = k;
     warm = 1 + LAT_N; // the new program builds its pipeline on one pixel first
     dirty = true;
-    return false;
   }
 
   // one animation frame of work; returns true while there is more to do
