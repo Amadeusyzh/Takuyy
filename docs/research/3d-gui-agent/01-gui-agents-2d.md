@@ -44,8 +44,9 @@ Compiled 2026-11-24. English only. Every arXiv id in this file was checked again
 
 ### 1.4 Verification method
 
-- 238 arXiv ids were fetched from the arXiv API in batches; title, first author, first-version date, comment
-  and journal-ref fields were compared with the claims. All 238 resolved and matched.
+- 239 arXiv ids were fetched from the arXiv API in batches; title, first author, first-version date, comment
+  and journal-ref fields were compared with the claims. All resolved and matched; every one of the 229
+  distinct arXiv ids cited in this file is among them (checked by script).
 - Abstracts of the papers that carry the headline numbers in §4 and §6 (OSWorld, OSWorld 2.0, AndroidWorld,
   WebArena, Online-Mind2Web, ScreenSpot-Pro, Agent S3, Agent S4, UI-TARS-2, Mobile-Agent-v3 and v3.5, MAI-UI,
   MAI-Gym, Xiaomi-GUI-0, BlueLM-GUI, Qwen-UI-Agent, UFO2, Fara-7B, the online-RL generalisation study) were
@@ -441,7 +442,9 @@ Links are arXiv abstract pages unless marked. "Relevance" is relevance to 3D GUI
 | 214 | EntWorld: Environment and Benchmark for Verifiable Enterprise GUI Agents | Y. Mo et al. | arXiv | 2026 | [2601.17722](https://arxiv.org/abs/2601.17722) | Enterprise apps; compares a11y / screenshot / hybrid input | Input-modality evidence |
 | 215 | GUI-World: A Video Benchmark and Dataset for Multimodal GUI-oriented Understanding | D. Chen et al. | ICLR 2025 | 2024 | [2406.10819](https://arxiv.org/abs/2406.10819) | 12,379 GUI videos in 6 scenarios with QA; includes 393 XR videos | The only XR GUI data found in the 2D agent literature |
 
-Count: 215 numbered works (A 26, B 30, C 16, D 17, E 30, F 40, G 16, H 18, I 12, J 10).
+| 216 | MobileWorld: Benchmarking Autonomous Mobile Agents in Agent-User Interactive and MCP-Augmented Environments | Q. Kong et al. | arXiv | 2025 | [2512.19432](https://arxiv.org/abs/2512.19432) | 201 long-horizon cross-app tasks incl. asking the user and MCP tools; successor to saturated AndroidWorld | Agent-user interaction as a scored task type |
+
+Count: 216 numbered works (A 26, B 30, C 16, D 17, E 30, F 40, G 16, H 18, I 12, J 11).
 
 ### 3.2 Commercial computer-use agents (products and frontier models)
 
@@ -697,8 +700,11 @@ Each note ends with **3D:**, what transfers to 3D GUIs and what does not.
   single-agent (primary).
 - **Gemini 2.5 Computer Use.** A model variant exposed as a tool in the Gemini API, run in a Playwright or cloud
   browser loop; each proposed action carries a safety decision (allowed / require confirmation / blocked) that
-  the client must honour. Google reports leading results on Online-Mind2Web, WebVoyager and AndroidWorld at
-  lower latency; exact numbers are in the model card (not readable here, §10). Browser-optimised, "not yet
+  the client must honour. Each turn takes the request, a screenshot and recent action history; developers can
+  exclude actions or add custom functions. Safety: an out-of-model, inference-time "per-step safety service"
+  checks each proposed action, plus system instructions to refuse or confirm high-stakes actions (blog,
+  2025-10-07). Google reports leading results on Online-Mind2Web, WebVoyager and AndroidWorld at lower latency;
+  exact numbers appear only in charts and the model card (not readable here, §10). Browser-optimised, "not yet
   optimized for desktop OS-level control".
 - **Later.** Computer use folded into Gemini 3.x models and Android screen automation shipped on Galaxy S26
   (2026, secondary), running apps in a virtual phone environment.
@@ -960,7 +966,7 @@ source type. "Self-rep." = self-reported by the submitter; "n/v" = no current be
 | SPA-Bench | Live Android, English + Chinese | Not in abstract; 10+ agents | System and third-party apps | 7 metrics (completion, cost) | ICLR 2025 | [2410.15164](https://arxiv.org/abs/2410.15164) | n/a | n/v |
 | B-MoCA | Android, randomised configurations | 131 tasks | Generalisation across device configs | Success | ICLR 2024 workshop | [2404.16660](https://arxiv.org/abs/2404.16660) | n/a | n/v |
 | A3 (Android Agent Arena) | Live online Android apps | 100 tasks, 20 apps | Dynamic online apps | Essential-state procedural (MLLM judge) | arXiv 2025 (Findings ACL 2026 per DOI, §10) | [2501.01149](https://arxiv.org/abs/2501.01149) | n/a | n/v |
-| MobileWorld | Mobile | Not verified | Real-world mobile tasks | Success | Not verified (§10) | n/a | n/a | Qwen-UI-Agent 82.1 (Jul 2026, abstract); MAI-Gym-9B 78.4 |
+| MobileWorld | Android, open-source app stand-ins (e.g. Mattermost for Slack), backend-verified | 201 tasks, 20 apps; 27.8 steps avg; 62.2% multi-app | Long-horizon cross-app, agent-user interaction, MCP-augmented tasks | Success | arXiv 2025 | [2512.19432](https://arxiv.org/abs/2512.19432) | n/a | At release 51.7% (framework) / 20.9% (end-to-end); Qwen-UI-Agent 82.1 (Jul 2026, abstract); MAI-Gym-9B 78.4 |
 | ElderBench | Android | 249 tasks, 20 apps | Tasks elicited from older adults | Success | arXiv 2026 | [2609.04850](https://arxiv.org/abs/2609.04850) | n/a | n/v |
 | GUI-World | Video; 6 scenarios: Android, software, website, iOS, multi-window, **XR** (VR/AR/MR, e.g. Apple Vision Pro) | 12,379 videos (393 XR); 8 question types in 3 formats | Dynamic GUI understanding (QA), not acting | MCQA accuracy, LLM-judged free-form score | ICLR 2025 | [2406.10819](https://arxiv.org/abs/2406.10819) | n/a | XR split: GPT-4o 84.3% MCQA (paper, Table 3) |
 | ScreenSpot | Mobile, desktop, web grounding | 600+ screenshots, 1.2k+ instructions | Single-step grounding | Click accuracy | ACL 2024 | [2401.10935](https://arxiv.org/abs/2401.10935) | n/a | Saturated (~90%+) |
@@ -1247,14 +1253,17 @@ the site's conventions.
   cited but was not re-opened at ACM DL. **VUT:** no venue found (possibly CHI 2022; unconfirmed).
 - **A3 at Findings of ACL 2026** (DOI 10.18653/v1/2026.findings-acl.184): DOI not opened.
 - **"Characterizing Unintended Consequences..." at CHI 2026:** search snippet only.
-- **MobileWorld benchmark:** used by MAI-UI, Qwen-UI-Agent and MAI-Gym; the benchmark paper itself was not
-  located or verified.
 - **AndroidWorld human performance 80.0%:** secondary (aggregator); not found on the GitHub page.
 - **Numbers marked "paper" / "paper text"** were read from HTML renderings by the sweep agents and not re-read
   in this audit; abstract-level numbers were re-read. Notable items to re-check before quoting in a post:
   UFO2's GUI vs GUI+API ablation pairing; CC-Net's pixel-only drop; Spotlight and Pix2Struct table values;
-  Morae's user-study means; RedTeamCUA per-model attack rates (42.9% Claude 3.7 CUA, 7.6% Operator, 60% Claude
-  4.5 CUA).
+  Morae's user-study means (the abstract confirms only the direction of the result). Re-confirmed from
+  abstracts on 2026-11-24: RedTeamCUA (42.9% Claude 3.7 Sonnet CUA, 7.6% Operator, 60% Claude 4.5 Sonnet CUA,
+  attempt rate up to 92.5%), pop-ups (86%, -47%), A11y-CUA (78.3 / 41.67 / 28.3%), confirmation study (81%,
+  -13.54%), PriMobiBench (82.5%, ~70%, -58%, ~8%), SeeAct (51.1% with manual grounding; "set-of-mark prompting
+  turns out to be not effective for web agents"). Vendor pages re-read: GPT-5.4 (OSWorld-Verified 75.0, GPT-5.2
+  47.3, human 72.4, WebArena-Verified 67.3, Online-Mind2Web 92.8 vs Atlas 70.9; "first general-purpose model
+  with native computer-use capabilities"); Opus 4.8 post (only the Opus 4.7 re-score to 82.3% is in text).
 - **Product facts from press only:** ChatGPT Atlas shutdown (reported 2026-07-09 / 2026-08-09), ChatGPT Work,
   Doubao phone assistant on ZTE nubia, Open-AutoGLM release, Manus acquisition by Meta (TechCrunch), Gemini
   Android screen automation details, Apple Siri on-screen awareness at WWDC 2026.
