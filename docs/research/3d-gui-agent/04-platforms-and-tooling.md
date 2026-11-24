@@ -42,7 +42,7 @@ Conventions used in this file:
   - khronos.org, w3.org/TR, GitHub (KhronosGroup, meta-quest, facebook, mbucchia, MixedRealityToolkit),
     docs.unity3d.com and docs.unity.com, godotengine.org, dev.epicgames.com, monado.freedesktop.org.
   - Hugging Face model cards, arXiv, idc.com.
-- **arXiv:** all 79 arXiv ids cited in this file were checked against the arXiv API (`export.arxiv.org/api/query`)
+- **arXiv:** all 81 arXiv ids cited in this file were checked against the arXiv API (`export.arxiv.org/api/query`)
   on 2026-11-24. Title, first author, date and journal-ref or comment fields matched. For the latency and
   agent-model papers whose numbers are quoted, the abstracts were also re-read.
 - **Key platform claims re-opened by hand after the delegated passes:**
@@ -113,11 +113,12 @@ flowchart TB
     - Android XR: MediaProjection with per-session consent; its behaviour on XR is undocumented.
 - **UI structure.** On 2D Android, the accessibility tree is the backbone of agents such as AppAgent and
   AndroidWorld's agents. On XR it fragments:
-  - 2D panels keep a 2D accessibility tree.
+  - 2D panels keep a 2D accessibility tree. Jetpack Compose for XR documents the split: a 3D subspace semantics tree of containers, and separate 2D semantics trees inside each panel, which "operate as distinct hierarchies" [#154].
   - Spatial UI only exposes structure to in-process test APIs (Jetpack `compose-testing`'s subspace semantics
     tree) or to the app's own engine scene graph (RealityKit entities, Unity hierarchy, IWSDK ECS).
   - RealityKit content is invisible to VoiceOver unless the developer adds an `AccessibilityComponent`.
   - No platform exposes another app's 3D scene graph to a third party.
+  - Horizon OS uses apps' accessibility information internally to target gaze "Look and Pinch" input on 2D panels [#155], but prohibits third-party accessibility services in store apps [#156].
 - **World semantics.** Room and plane models (Meta MRUK, ARKit data providers, Jetpack XR ARCore, the OpenXR
   spatial-entities extensions) are structured, labelled and cheap. They describe the room, not the UI, but are
   needed to place or find UI relative to furniture.
@@ -345,7 +346,19 @@ personal authors.
 | 150 | From Seeing to Acting: Smart Glasses as First-Person Intelligence Platforms | Jiangning Zhang et al. | [preprint] arXiv 2608.24877 | 2026 | https://arxiv.org/abs/2608.24877 | Survey of smart glasses as AI platforms. | Glasses deployment landscape. |
 | 151 | Cloud, Edge, or Split? Profiling VLM Deployment for Drone Applications | Zoha Azimi et al. | [paper] iEdge 2026 (accepted per arXiv) | 2026 | https://arxiv.org/abs/2609.25415 | Profiles onboard vs split VLM deployment. | Split inference trade-offs (analogous to puck + glasses). |
 
-**Total: 151 entries.**
+### 3.7 Second-pass additions
+
+| # | Title | First author et al. | Venue / status | Year | Link | Contribution (one line) | Relevance to 3D GUI agents (one line) |
+|---|---|---|---|---|---|---|---|
+| 152 | Vibe Coding XR: Accelerating AI + XR Prototyping with XR Blocks and Gemini | Ruofei Du et al. | [preprint] arXiv 2603.24591 | 2026 | https://arxiv.org/abs/2603.24591 | LLM-native WebXR framework with a semantic "Reality Model"; desktop "simulated reality" to headset loop; VCXR60 prompt set. | A semantic world/UI vocabulary designed for LLMs, which is also a good observation format for agents. |
+| 153 | "What Can I Do for You": How Should AI Companions Provide Assistance to Players in VR Games | Taiyu Zhang et al. | [preprint] arXiv 2609.13727 | 2026 | https://arxiv.org/abs/2609.13727 | Vision Pro study (n=24) comparing no help, command-based help, discussion and autonomous agent play. | Autonomous agent play gave the lowest workload but hurt challenge, autonomy, immersion and enjoyment, a warning about "operate for the user" vs "guide the user". |
+
+| 154 | `androidx.xr.compose.subspace.semantics` (API reference) | Google | [doc] Compose for XR 1.0.0-rc01 | 2026 | https://developer.android.com/reference/kotlin/androidx/xr/compose/subspace/semantics/package-summary | `SubspaceModifier.semantics` with `contentDescription` and `testTag`; 3D subspace and 2D semantics trees are "distinct hierarchies". | The official two-level structure of spatial UI (3D containers holding 2D trees). |
+
+| 155 | Android apps on Horizon OS: features overview | Meta | [doc] | updated 2026-11-16 | https://developers.meta.com/vr/documentation/android-apps/features-overview | Look and Pinch "infers interactable elements from your app's view hierarchy and accessibility information"; MediaProjection captures "the user's whole view or a single panel". | The OS itself targets gaze input using the accessibility tree; capture covers whole view or one panel. |
+| 156 | Prohibited Android permissions (Horizon OS) | Meta | [policy] | updated 2025-04-30 | https://developers.meta.com/horizon/resources/permissions-prohibited/ | Lists `BIND_ACCESSIBILITY_SERVICE` and `SYSTEM_ALERT_WINDOW` as prohibited. | Store-distributed third-party accessibility-service agents are ruled out on Quest. |
+
+**Total: 156 entries.**
 
 ---
 
@@ -493,6 +506,19 @@ Ordered by usefulness for a first research prototype.
 - **Testing.** The compose-testing package queries a 3D semantics tree with matchers such as `hasTestTag` and
   `hasContentDescription`. SceneCore testing rules (`SceneCoreTestRule`, `SceneTester`) were introduced with
   the beta [#21, #24].
+- **Two semantics trees (API reference for `androidx.xr.compose.subspace.semantics`) [#154].**
+  - `SubspaceModifier.semantics` sets key/value pairs on a 3D container (`SpatialPanel`, the "Picture
+    Frame") "for use in testing, accessibility, etc.". Properties include `contentDescription`, "of the
+    accessibility node", and `testTag`.
+  - Standard Compose `Modifier.semantics` on the 2D content inside (the "Canvas") serves "fine-grained user
+    interactions and TalkBack accessibility".
+  - Quote: "The 3D Subspace semantics tree and the 2D foundational semantics tree operate as distinct
+    hierarchies. Spatial containers do not support merging descendant semantics."
+  - This is the most explicit official statement on any platform of how spatial UI structure is organized:
+    a 3D tree of containers, each holding a separate 2D tree. An agent's observation should mirror it with
+    two levels: panel/volume nodes with poses, then 2D widget trees.
+  - The docs do not say whether system accessibility services receive the 3D tree, or only the per-panel
+    2D trees.
 - **Permissions.** Hand joint data needs `HAND_TRACKING`; basic pinch, poke, aim and grip need no permission.
   Scene understanding needs `SCENE_UNDERSTANDING_*` [#28].
 - **Relevance.**
@@ -659,6 +685,17 @@ Ordered by usefulness for a first research prototype.
     compositor.
   - An MR agent must fuse three sources: camera (world), MRUK (structure of the room), and its own app's scene
     graph (UI).
+- **2D Android apps on Horizon OS and the accessibility route [#155, #156].**
+  - Horizon OS's gaze-based "Look and Pinch" input "infers interactable elements from your app's view
+    hierarchy and accessibility information". The platform already uses accessibility metadata to ground
+    gaze targeting on 2D panels. This is direct evidence that an accessibility tree is a workable grounding
+    substrate for 3D input.
+  - The Media Projection API can "capture the user's whole view or a single panel". App screen sharing
+    (API 34) shares one window and excludes system UI. "Immersive apps can block screen capture through
+    OpenXR APIs".
+  - Meta's list of prohibited Android permissions includes `BIND_ACCESSIBILITY_SERVICE` (and
+    `SYSTEM_ALERT_WINDOW`). An AppAgent-style agent built as an accessibility service cannot be distributed on
+    the Horizon Store. Whether a sideloaded one runs in developer mode is unverified.
 
 ### 4.14 GenXR-Bench / XR Blocks: the nearest existing benchmark architecture
 
@@ -819,7 +856,7 @@ agent's decision rate.
 |---|---|---|---|---|
 | visionOS | No camera frames except via enterprise entitlements and license; ARKit hand and world data need authorization and a Full Space [#1, #11] | Passthrough only with enterprise entitlement; user starts each broadcast; `contentCaptureProtected` views hidden [#3, #4] | No third-party cross-app automation; XCUITest not for visionOS-SDK apps; App Review 2.5.1, 2.5.14, 5.1.2 [#5, #18] | Gaze never reaches apps [#12] |
 | Android XR | Dangerous permissions for eye, hand, face, scene; passthrough camera access via Camera2 reported (Feb 2025, secondary) [#28] | MediaProjection with per-session consent [#30] | Accessibility services only for genuine assistive tools; Play declaration required (policy text unverified); AppFunctions caller permission privileged [#29, #31] | First-party Gemini sees the view [#33] |
-| Meta Horizon OS | `HEADSET_CAMERA` permission; camera frames are Device User Data; ban on surveillance and identifying people [#40, #51] | MediaProjection with consent (as used by Operator) [#36] | Developer mode needed for adb; Operator and test services are developer-only; third-party AccessibilityService support unknown | VRC accessibility items recommended, not required [#47] |
+| Meta Horizon OS | `HEADSET_CAMERA` permission; camera frames are Device User Data; ban on surveillance and identifying people [#40, #51] | MediaProjection with consent (as used by Operator) [#36] | `BIND_ACCESSIBILITY_SERVICE` and `SYSTEM_ALERT_WINDOW` on the prohibited-permissions list [#156]; developer mode needed for adb; Operator and test services are developer-only | VRC accessibility items recommended, not required [#47] |
 | WebXR | Raw camera access needs a separate module, not used here; sessions need user activation | Canvas capture in-page | Automation via emulator only (IWER); no device-level injection on real headsets | Browser permission prompts for immersive sessions |
 
 **Risks specific to an agent acting in physical space:**
@@ -876,7 +913,13 @@ agent's decision rate.
    AppFunctions and Gemini automation, WebMCP and Meta AI Connectors, Meta XR Operator. A portable research
    agent should target a thin abstraction, such as MCP-style tools plus an OpenXR layer, rather than one of
    these.
-10. **Safety of physical side effects.** No study yet covers an agent rearranging windows, changing immersion
+10. **Operate vs guide.** In a Vision Pro game study (n=24), fully autonomous agent play minimized workload
+    but reduced challenge, autonomy, immersion and enjoyment [#153]. For productivity tasks the trade-off
+    may differ, but a 3D GUI agent should probably support a spectrum of modes and let the user choose:
+    - Do it for me.
+    - Show me where (highlight or ray hint).
+    - Coach me step by step.
+11. **Safety of physical side effects.** No study yet covers an agent rearranging windows, changing immersion
     level or boundaries, or starting MR content in a real room. Guardrails are needed: never touch the
     boundary, confirm immersion changes, keep a hazard-aware placement policy.
 
@@ -928,7 +971,7 @@ test first.
 |---|---|---|---|---|---|---|---|
 | **Apple visionOS** | ◐ Simulator screenshots ✔; device capture via ReplayKit/enterprise; passthrough only with an enterprise license | ◐ Own app only (SwiftUI and RealityKit trees, `AccessibilityComponent`); no cross-app tree | ✘ on device (no third-party injection); simulator maps mouse to pinch and gaze | ✘ XCUITest not for visionOS-SDK apps; AppIntentsTesting for intents | ◐ Device Hub simulator (Mac only); no CLI capture documented | Free SDK; Mac required; enterprise APIs need an org account + license; Vision Pro $3,499 | High: closed, no automation; strict review rules; low install base |
 | **Android XR** | ✔ Emulator screenshot/record; ◐ MediaProjection with consent on device (XR behaviour ?) | ◐ 2D panels via AccessibilityService (?); spatial UI via in-process `compose-testing` / `scenecore-testing` | ◐ Emulator hand/eye/mouse; AccessibilityService gestures (? for spatial mapping); adb (?) | ◐ Compose XR and SceneCore test APIs; AndroidWorld-style harness portable | ✔ Android XR emulator (headset, wired glasses, AI glasses), stable Nov 2026 | Free SDK and emulator; Galaxy XR $1,799; XREAL AURA $1,099 | Medium: Play policy on accessibility use; spatial accessibility undocumented |
-| **Meta Horizon OS (Quest)** | ✔ MediaProjection (Operator), MQDH/adb capture; PCA camera frames with permission | ◐ Own app (Unity hierarchy via Operator, Spatial SDK panels, MRUK); system UI ✘ | ◐ Operator controller input and head pose (simulator); adb key events; hand injection ✘ | ◐ Meta XR Operator (MCP, experimental), simulator CI replay, AutoDriver | ✔ Meta XR Simulator (synthetic rooms, VRS record/replay, multi-instance); no Android layer | Free SDKs; Quest 3S/3 cheap; Operator needs Unity 6 + Windows | Medium: experimental APIs; developer-only; strict camera data rules |
+| **Meta Horizon OS (Quest)** | ✔ MediaProjection (Operator), MQDH/adb capture; PCA camera frames with permission | ◐ Own app (Unity hierarchy via Operator, Spatial SDK panels, MRUK); system UI ✘; `BIND_ACCESSIBILITY_SERVICE` prohibited for store apps | ◐ Operator controller input and head pose (simulator); adb key events; hand injection ✘ | ◐ Meta XR Operator (MCP, experimental), simulator CI replay, AutoDriver | ✔ Meta XR Simulator (synthetic rooms, VRS record/replay, multi-instance); no Android layer | Free SDKs; Quest 3S/3 cheap; Operator needs Unity 6 + Windows | Medium: experimental APIs; developer-only; strict camera data rules |
 | **WebXR (IWER / IWSDK)** | ✔ `capture_canvas`, Playwright screenshots, headless | ✔ Own app: scene hierarchy, ECS snapshot/diff, `ui_inspect`; arbitrary pages: pixels + DOM only | ✔ IWER device, controller and hand API; IWSDK MCP tools | ✔ Playwright-managed browser + MCP; Vitest (GenXR-Bench) | ✔ IWER/IWSDK; ActionRecorder from real Quest (experimental) | MIT, free; runs on any PC/CI | Low: synthetic apps, no OS shell; Chromium-only; young SDK |
 | **OpenXR desktop (Monado / Meta XR Simulator / layers)** | ◐ Via an API layer on `xrEndFrame` or compositor capture | ✘ None at OpenXR level | ✔ Custom API layer; Monado qwerty/remote drivers; Meta XR Simulator | ◐ Build your own; Khronos layer templates | ✔ Monado (OSS), Meta XR Simulator | Free | Medium–high: you build the layer; UI opaque |
 | **Unity XRI** | ✔ Game view / RenderTexture / extra ID pass | ◐ Scene graph via code; `AccessibilityHierarchy` if built | ✔ XR Interaction Simulator; Input System device writes | ✔ Unity Test Framework + `InputTestFixture`; ML-Agents; XRintTest IFG | ✔ Editor simulator; Meta XR Simulator | Unity license (Personal free under revenue cap; PolySpatial needs Pro+) | Medium: no scripting API for the simulator; heavy toolchain |
@@ -1051,7 +1094,7 @@ out of the claims above or explicitly flagged there.
 - Whether OpenXR/Unity apps run in the Android XR emulator.
 
 **Meta**
-- Whether third-party AccessibilityService can be installed and works on Horizon OS.
+- Whether a sideloaded (developer-mode) third-party AccessibilityService runs on Horizon OS. Store distribution is ruled out: `BIND_ACCESSIBILITY_SERVICE` is a prohibited permission [#156].
 - `adb shell input tap/swipe`, `screencap`, `screenrecord`, `scrcpy` and `uiautomator` on current Quest
   firmware (not in the official docs fetched).
 - Whether `android.permission.CAMERA` is required in addition to `HEADSET_CAMERA` (Meta pages differ).
