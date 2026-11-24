@@ -53,7 +53,7 @@ related_posts: false
 
 ### 1.1 构建或编辑 XR 世界的 LLM
 
-第一波 XR 中的 LLM 研究（2023-2024）用语言来**创建或改变虚拟世界**。**LLMR**（De La Torre et al.，CHI 2024，Honorable Mention）在 Unity 中编排多个 GPT-4 角色：一个把场景图总结为文本的*场景分析器*（scene analyzer），一个*规划器*（planner），一个编写 C# 代码的*构建器*（builder），一个检查编译和运行时错误的*检查器*（inspector），外加一个技能库。它的错误率约为普通 GPT-4 的四分之一（摘要称低 4 倍），并有 11 名参与者在可用性研究中使用了它。**DreamCodeVR**（Giunchi et al.，IEEE VR 2024）把语音请求编译成能改变正在运行的 VR 应用的 C# 代码。**LLMER**（Chen et al.，IEEE TVCG 2025）用 JSON 取代代码，报告与早期生成代码的系统相比 token 减少 80% 以上、任务时间减少约 60%。**VRCopilot**（Zhang et al.，UIST 2024）比较了手动、自动和脚手架式（scaffolded）三种 3D 布局共创方式，发现脚手架方式（AI 提出线框，由用户编辑）给用户更强的能动感（sense of agency），这是关于人们希望 XR AI 拥有多大自主性的一个早期数据点。**sMoRe**（Xing et al.，arXiv 2024）根据语音和文本命令在 MR 中放置和组织虚拟物体。
+第一波 XR 中的 LLM 研究（2023-2024）用语言来**创建或改变虚拟世界**。**LLMR**（De La Torre et al.，CHI 2024，Honorable Mention）在 Unity 中编排多个 GPT-4 角色：一个把场景图总结为文本的*场景分析器*（scene analyzer），一个*规划器*（planner），一个编写 C# 代码的*构建器*（builder），一个检查编译和运行时错误的*检查器*（inspector），外加一个技能库。它的错误率约为普通 GPT-4 的四分之一（摘要称低 4 倍），并有 11 名参与者在可用性研究中使用了它。**DreamCodeVR**（Giunchi et al.，IEEE VR 2024）把语音请求编译成能改变正在运行的 VR 应用的 C# 代码。**LLMER**（Chen et al.，IEEE TVCG 2025）用 JSON 取代代码，报告与先前工作相比 token 减少 80% 以上、任务时间减少约 60%。**VRCopilot**（Zhang et al.，UIST 2024）比较了手动、自动和脚手架式（scaffolded）三种 3D 布局共创方式，发现脚手架方式（AI 提出线框，由用户编辑）给用户更强的能动感（sense of agency），这是关于人们希望 XR AI 拥有多大自主性的一个早期数据点。**sMoRe**（Xing et al.，arXiv 2024）根据语音和文本命令在 MR 中放置和组织虚拟物体。
 
 最新的系统面向开发者。**XR Blocks**（Li et al.，arXiv 2025）和 **Vibe Coding XR**（Du et al.，据 arXiv 为 VRST 2026）通过一个对 LLM 友好、涵盖用户、世界、界面和智能体的“Reality Model”，把提示转化为 WebXR 应用。**GenXR-Bench**（Huang et al.，arXiv，2026 年 10 月）在 112 个 XR 开发任务上评估编程智能体；它的测试框架（harness）在第 4 节讨论，其中包含操作所生成应用的 VLM“行动者”（actors）。**ControlAnything**（Ryskeldiev，arXiv，2026 年 11 月）让编程智能体在使用时于 Quest 3 上生成 AR 控件和设备连接器（10 个请求中 9 个就绪，中位数 32.5 s）。
 
@@ -189,7 +189,7 @@ related_posts: false
 
 *方法。* 在 Apple Vision Pro 上配合一台 GPT-4.1 服务器，用户在空间中定义区域并陈述一个目标。LLM 为每个应用与目标的相关性打分，并利用代价矩阵（指向距离、转头、手部移动）把应用分配到各个区域；由一个非 LLM 的优化器确定窗口大小，因为单靠 LLM 会随机调整窗口大小。在任何改变发生之前都由用户确认；一次请求约需 4 s。
 
-*结果。* N=16 名专业人士，被试内设计，与 visionOS 原生窗口管理对比：布局匹配快 34.5%；构建一个工作区耗时 168.3 s，对比 218.1 s；两项任务中的 NASA-TLX 工作负荷分别为 33.3 对 47.7 和 22.4 对 34.2。参与者接受了 90.3% 的应用推荐、82.8% 的尺寸决定和 76.5% 的排序决定。满意度没有差异。
+*结果。* N=16 名专业人士，被试内设计，与 visionOS 原生窗口管理对比：布局匹配快 34.5%；构建一个工作区耗时 168.3 s，对比 218.1 s；在报告的两组比较中 NASA-TLX 工作负荷都更低（33.3 对 47.7，22.4 对 34.2）。参与者接受了 90.3% 的应用推荐、82.8% 的尺寸决定和 76.5% 的排序决定。满意度没有差异。
 
 *它不做什么。* 只涉及窗口层；以应用元数据代替 GUI 感知；每次改变都需用户确认。**重叠：在混合主动下操作 XR 窗口层方面相当大**，而它的先确认后应用（confirm-then-apply）设计是共享控制（shared control）的一个范例。
 
