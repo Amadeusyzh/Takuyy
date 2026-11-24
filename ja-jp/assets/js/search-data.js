@@ -41,7 +41,62 @@ ninja.data = [{
           handler: () => {
             window.location.href = "/Takuyy/ja-jp/cv/";
           },
-        },{id: "post-論文速報-2026-年-10-11-月-グラフィックス-エンジン-ニューラルレンダリング-世界モデル-身体性-ai-xr",
+        },{id: "post-研究計画-定式化-プロトタイプ-ベンチマーク-ロードマップ",
+        
+          title: "研究計画：定式化、プロトタイプ、ベンチマーク、ロードマップ",
+        
+        description: "3D GUI Agent 連載の詳しい研究計画です。研究が発表されるまで、閲覧にはパスワードが必要です。",
+        section: "記事",
+        handler: () => {
+          
+            window.location.href = "/Takuyy/ja-jp/blog/2026/3d-gui-agent-05-research-plan/";
+          
+        },
+      },{id: "post-xr-における-ai-エージェント-最も近い研究-プラットフォーム-そしてギャップ",
+        
+          title: "XR における AI エージェント：最も近い研究、プラットフォーム、そしてギャップ",
+        
+        description: "2026 年 11 月時点で、VR、AR、MR デバイスの 3D インターフェースをユーザーのために操作するエージェントに近いものすべての地図です。XR 世界を構築する LLM、XR アシスタント、XR テストエージェント、ゲームエージェント、ヘッドセットとグラスのアシスタント、最も近い研究の詳細（Orienter、ComboBench、NavAI、SIAgent、Put-That-There、DuoZone、Galaxy XR 上の Gemini、Meta XR Operator、visionOS 上の Siri）、各プラットフォームがエージェントに何を観測・制御させるか、データセット、そして何がまだ欠けているかを扱います。",
+        section: "記事",
+        handler: () => {
+          
+            window.location.href = "/Takuyy/ja-jp/blog/2026/3d-gui-agent-04-agents-in-xr-and-the-gap/";
+          
+        },
+      },{id: "post-3d-インターフェースはなぜ操作しにくいのか-その証拠",
+        
+          title: "3D インターフェースはなぜ操作しにくいのか：その証拠",
+        
+        description: "VR、AR、MR インターフェースの操作にかかるコストを調査します。3D タスクの分類、視線、ピンチ、レイ、タッチとそのポインティングモデル、奥行きのコストとミダスタッチ、ウィンドウ、ボリューム、参照フレーム、測定された疲労・エラー・テキスト入力・VR 酔いの数値、普及とアクセシビリティの証拠、現在ある支援、そしてエージェントが代行できるか、案内できるか、どちらも無理かで分類した 30 のヘッドセット操作のカタログを扱います。",
+        section: "記事",
+        handler: () => {
+          
+            window.location.href = "/Takuyy/ja-jp/blog/2026/3d-gui-agent-03-why-3d-interfaces-are-hard/";
+          
+        },
+      },{id: "post-2d-画面上の-gui-エージェント-2026-年-11-月までのサーベイ",
+        
+          title: "2D 画面上の GUI エージェント：2026 年 11 月までのサーベイ",
+        
+        description: "AI エージェントはスマートフォン、デスクトップ、Web をどう操作するのか：知覚・計画・グラウンディング・行動のループ、スクリーンショットとアクセシビリティツリーの比較、SeeClick から GroundCascade までのグラウンディングモデル、計画・振り返り・記憶、合成データと強化学習による訓練、ベンチマークと 2026 年 11 月時点の最先端、人間の関与、安全性、そして 3D インターフェースへ持ち越せるものを解説します。",
+        section: "記事",
+        handler: () => {
+          
+            window.location.href = "/Takuyy/ja-jp/blog/2026/3d-gui-agent-02-gui-agents-on-2d-screens/";
+          
+        },
+      },{id: "post-3d-gui-エージェント-vr-ar-mr-のインターフェースをユーザーに代わって操作するための研究ビジョン",
+        
+          title: "3D GUI エージェント：VR・AR・MR のインターフェースをユーザーに代わって操作するための研究ビジョン",
+        
+        description: "ヘッドセットや XR グラスの 3D インターフェースはなぜ操作しにくいのか、そして本コラムが提案する研究の方向性、すなわち空間 GUI をユーザーに代わって操作する、あるいはユーザーをその操作へと案内するエージェントについて述べます。",
+        section: "記事",
+        handler: () => {
+          
+            window.location.href = "/Takuyy/ja-jp/blog/2026/3d-gui-agent-01-research-vision/";
+          
+        },
+      },{id: "post-論文速報-2026-年-10-11-月-グラフィックス-エンジン-ニューラルレンダリング-世界モデル-身体性-ai-xr",
         
           title: "論文速報｜2026 年 10–11 月：グラフィックス、エンジン、ニューラルレンダリング、世界モデル、身体性 AI、XR",
         

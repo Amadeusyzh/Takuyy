@@ -41,7 +41,62 @@ ninja.data = [{
           handler: () => {
             window.location.href = "/Takuyy/cv/";
           },
-        },{id: "post-paper-digest-october-november-2026-graphics-engines-neural-rendering-world-models-embodied-ai-and-xr",
+        },{id: "post-the-research-plan-formulation-prototype-benchmark-and-roadmap",
+        
+          title: "The research plan: formulation, prototype, benchmark and roadmap",
+        
+        description: "The detailed research plan of the 3D GUI Agent column, protected with a password until the work is published.",
+        section: "Posts",
+        handler: () => {
+          
+            window.location.href = "/Takuyy/blog/2026/3d-gui-agent-05-research-plan/";
+          
+        },
+      },{id: "post-ai-agents-in-xr-the-closest-work-the-platforms-and-the-gap",
+        
+          title: "AI agents in XR: the closest work, the platforms, and the gap",
+        
+        description: "A map, as of November 2026, of everything that comes close to an agent that operates the 3D interfaces of VR, AR and MR devices for a user: LLMs that build XR worlds, XR assistants, XR testing agents, game agents, headset and glasses assistants, the closest works in depth (Orienter, ComboBench, NavAI, SIAgent, Put-That-There, DuoZone, Gemini on Galaxy XR, Meta XR Operator, Siri on visionOS), what each platform lets an agent observe and control, the datasets, and what is still missing.",
+        section: "Posts",
+        handler: () => {
+          
+            window.location.href = "/Takuyy/blog/2026/3d-gui-agent-04-agents-in-xr-and-the-gap/";
+          
+        },
+      },{id: "post-why-3d-interfaces-are-hard-to-operate-the-evidence",
+        
+          title: "Why 3D interfaces are hard to operate: the evidence",
+        
+        description: "A survey of what it costs to operate VR, AR and MR interfaces: the 3D task taxonomy, gaze, pinch, rays and touch with their pointing models, the cost of depth and the Midas touch, windows, volumes and reference frames, measured fatigue, error, text-entry and sickness numbers, adoption and accessibility evidence, the help that exists today, and a catalogue of 30 headset operations sorted by whether an agent could do them, guide them, or neither.",
+        section: "Posts",
+        handler: () => {
+          
+            window.location.href = "/Takuyy/blog/2026/3d-gui-agent-03-why-3d-interfaces-are-hard/";
+          
+        },
+      },{id: "post-gui-agents-on-2d-screens-a-survey-to-november-2026",
+        
+          title: "GUI agents on 2D screens: a survey to November 2026",
+        
+        description: "How AI agents operate phones, desktops and the web: the perceive-plan-ground-act loop, screenshots versus accessibility trees, grounding models from SeeClick to GroundCascade, planning, reflection and memory, training with synthetic data and reinforcement learning, benchmarks and the state of the art as of November 2026, humans in the loop, safety, and what carries over to 3D interfaces.",
+        section: "Posts",
+        handler: () => {
+          
+            window.location.href = "/Takuyy/blog/2026/3d-gui-agent-02-gui-agents-on-2d-screens/";
+          
+        },
+      },{id: "post-3d-gui-agents-a-research-vision-for-operating-the-interfaces-of-vr-ar-and-mr-for-the-user",
+        
+          title: "3D GUI agents: a research vision for operating the interfaces of VR, AR...",
+        
+        description: "Why the 3D interfaces of headsets and XR glasses are hard to operate, and the research direction this column proposes: agents that operate the spatial GUI on the user&#39;s behalf, or guide the user through it.",
+        section: "Posts",
+        handler: () => {
+          
+            window.location.href = "/Takuyy/blog/2026/3d-gui-agent-01-research-vision/";
+          
+        },
+      },{id: "post-paper-digest-october-november-2026-graphics-engines-neural-rendering-world-models-embodied-ai-and-xr",
         
           title: "Paper Digest | October-November 2026: graphics, engines, neural rendering, world models, embodied AI...",
         

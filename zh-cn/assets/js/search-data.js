@@ -41,7 +41,62 @@ ninja.data = [{
           handler: () => {
             window.location.href = "/Takuyy/zh-cn/cv/";
           },
-        },{id: "post-论文速递-2026-年-10-11-月-图形学-引擎-神经渲染-世界模型-具身智能与-xr",
+        },{id: "post-研究计划-问题形式化-原型-基准与路线图",
+        
+          title: "研究计划：问题形式化、原型、基准与路线图",
+        
+        description: "3D GUI Agent 专栏的详细研究计划，在工作发表之前需要密码才能阅读。",
+        section: "文章",
+        handler: () => {
+          
+            window.location.href = "/Takuyy/zh-cn/blog/2026/3d-gui-agent-05-research-plan/";
+          
+        },
+      },{id: "post-xr-中的-ai-智能体-最接近的工作-平台与空白",
+        
+          title: "XR 中的 AI 智能体：最接近的工作、平台与空白",
+        
+        description: "截至 2026 年 11 月，所有接近“替用户操作 VR、AR 和 MR 设备 3D 界面的智能体”的工作的全景图：构建 XR 世界的 LLM、XR 助手、XR 测试智能体、游戏智能体、头显与眼镜助手，对最接近工作的深入分析（Orienter、ComboBench、NavAI、SIAgent、Put-That-There、DuoZone、Galaxy XR 上的 Gemini、Meta XR Operator、visionOS 上的 Siri），各平台允许智能体观察和控制什么，现有数据集，以及仍然缺少什么。",
+        section: "文章",
+        handler: () => {
+          
+            window.location.href = "/Takuyy/zh-cn/blog/2026/3d-gui-agent-04-agents-in-xr-and-the-gap/";
+          
+        },
+      },{id: "post-为什么-3d-界面难以操作-证据",
+        
+          title: "为什么 3D 界面难以操作：证据",
+        
+        description: "综述操作 VR、AR 与 MR 界面的代价：3D 任务分类，注视、捏合、射线与触摸及其指向模型，深度的代价与点石成金问题，窗口、体积与参考系，实测的疲劳、错误、文本输入与晕动数据，普及与无障碍方面的证据，现有的帮助手段，以及一份包含 30 项头显操作的目录，按智能体能否代做、引导还是都不行加以分类。",
+        section: "文章",
+        handler: () => {
+          
+            window.location.href = "/Takuyy/zh-cn/blog/2026/3d-gui-agent-03-why-3d-interfaces-are-hard/";
+          
+        },
+      },{id: "post-二维屏幕上的-gui-智能体-截至-2026-年-11-月的综述",
+        
+          title: "二维屏幕上的 GUI 智能体：截至 2026 年 11 月的综述",
+        
+        description: "AI 智能体如何操作手机、桌面和网页：感知-规划-定位-执行循环，截图与无障碍树之争，从 SeeClick 到 GroundCascade 的定位模型，规划、反思与记忆，基于合成数据与强化学习的训练，截至 2026 年 11 月的基准与最新水平，人在回路，安全，以及哪些经验可以迁移到三维界面。",
+        section: "文章",
+        handler: () => {
+          
+            window.location.href = "/Takuyy/zh-cn/blog/2026/3d-gui-agent-02-gui-agents-on-2d-screens/";
+          
+        },
+      },{id: "post-3d-gui-智能体-替用户操作-vr-ar-与-mr-界面的研究愿景",
+        
+          title: "3D GUI 智能体：替用户操作 VR、AR 与 MR 界面的研究愿景",
+        
+        description: "为什么头显和 XR 眼镜的 3D 界面难以操作，以及本专栏提出的研究方向：由智能体替用户操作空间 GUI，或引导用户完成操作。",
+        section: "文章",
+        handler: () => {
+          
+            window.location.href = "/Takuyy/zh-cn/blog/2026/3d-gui-agent-01-research-vision/";
+          
+        },
+      },{id: "post-论文速递-2026-年-10-11-月-图形学-引擎-神经渲染-世界模型-具身智能与-xr",
         
           title: "论文速递｜2026 年 10–11 月：图形学、引擎、神经渲染、世界模型、具身智能与 XR",
         
