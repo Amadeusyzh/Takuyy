@@ -55,6 +55,7 @@
       probeOut: "probe: ran out of steps ({s})",
       lo: "0", hi: "{m} steps", over: "white: out of steps",
       compiling: "compiling shaders\u2026",
+      lite: "light shading",
       lost: "the WebGL context was lost; waiting for the browser to restore it\u2026",
       paused: "the WebGL context was lost twice within a minute, so rendering is paused \u00b7 tap the picture to resume",
       caption: "Every pixel sends a ray into a signed distance field f. The value of f at a point is the radius of a ball that contains no surface, so the ray can always advance by f, until f drops below the size of a pixel at that distance (sphere tracing, Hart 1996). The shapes are combined with the polynomial smooth minimum smin_k, where k is the width of the blend; Carve uses the matching smooth maximum max_k(f, \u2212g), and carving shapes are drawn as faint ghosts. Normals are the gradient of f from four samples, soft shadows measure how closely the shadow ray grazes other shapes (min k\u00b7f/t), and ambient occlusion compares f with the distance along the normal at five points. Steps colours each pixel by its number of iterations: rays that skim silhouettes or run along the floor cost the most, and over-relaxation (Keinert et al. 2014) cuts the count. Slice cuts the scene with a plane and draws f as contour lines, orange outside and blue inside. Probe ray draws the empty-space spheres of a single ray; orbit to see them from the side.",
@@ -83,6 +84,7 @@
       probeOut: "\u63a2\u6d4b\uff1a\u6b65\u6570\u7528\u5c3d\uff08{s}\uff09",
       lo: "0", hi: "{m} \u6b65", over: "\u767d\u8272\uff1a\u6b65\u6570\u7528\u5c3d",
       compiling: "\u6b63\u5728\u7f16\u8bd1\u7740\u8272\u5668\u2026",
+      lite: "\u7b80\u5316\u7740\u8272",
       lost: "WebGL \u4e0a\u4e0b\u6587\u5df2\u4e22\u5931\uff0c\u6b63\u5728\u7b49\u5f85\u6d4f\u89c8\u5668\u6062\u590d\u2026",
       paused: "WebGL \u4e0a\u4e0b\u6587\u5728\u4e00\u5206\u949f\u5185\u4e22\u5931\u4e86\u4e24\u6b21\uff0c\u6e32\u67d3\u5df2\u6682\u505c \u00b7 \u70b9\u51fb\u753b\u9762\u7ee7\u7eed",
       caption: "\u6bcf\u4e2a\u50cf\u7d20\u5411\u6709\u7b26\u53f7\u8ddd\u79bb\u573a\uff08signed distance field\uff09f \u53d1\u51fa\u4e00\u6761\u5149\u7ebf\u3002f \u5728\u67d0\u70b9\u7684\u503c\u662f\u4e00\u4e2a\u4e0d\u542b\u4efb\u4f55\u8868\u9762\u7684\u7403\u7684\u534a\u5f84\uff0c\u6240\u4ee5\u5149\u7ebf\u603b\u53ef\u4ee5\u5b89\u5168\u5730\u524d\u8fdb f\uff0c\u76f4\u5230 f \u5c0f\u4e8e\u8be5\u8ddd\u79bb\u5904\u4e00\u4e2a\u50cf\u7d20\u7684\u5927\u5c0f\u4e3a\u6b62\uff08\u7403\u9762\u8ffd\u8e2a\uff0csphere tracing\uff0cHart 1996\uff09\u3002\u5f62\u72b6\u4e4b\u95f4\u7528\u591a\u9879\u5f0f\u5e73\u6ed1\u6700\u5c0f\u503c smin_k \u7ec4\u5408\uff0ck \u662f\u878d\u5408\u533a\u7684\u5bbd\u5ea6\uff1b\u201c\u96d5\u523b\u201d\u4f7f\u7528\u5bf9\u5e94\u7684\u5e73\u6ed1\u6700\u5927\u503c max_k(f, \u2212g)\uff0c\u96d5\u523b\u7528\u7684\u5f62\u72b6\u4ee5\u6de1\u6de1\u7684\u865a\u5f71\u663e\u793a\u3002\u6cd5\u7ebf\u662f f \u7684\u68af\u5ea6\uff0c\u7531\u56db\u6b21\u91c7\u6837\u5f97\u5230\uff1b\u8f6f\u9634\u5f71\u8861\u91cf\u9634\u5f71\u5149\u7ebf\u4e0e\u5176\u4ed6\u5f62\u72b6\u64e6\u80a9\u800c\u8fc7\u7684\u8ddd\u79bb\uff08min k\u00b7f/t\uff09\uff1b\u73af\u5883\u5149\u906e\u853d\uff08AO\uff09\u5728\u6cd5\u7ebf\u65b9\u5411\u7684\u4e94\u4e2a\u70b9\u4e0a\u6bd4\u8f83 f \u4e0e\u6cbf\u6cd5\u7ebf\u7684\u8ddd\u79bb\u3002\u201c\u6b65\u6570\u201d\u6309\u8fed\u4ee3\u6b21\u6570\u7ed9\u6bcf\u4e2a\u50cf\u7d20\u7740\u8272\uff1a\u63a0\u8fc7\u8f6e\u5ed3\u6216\u6cbf\u5730\u9762\u884c\u8fdb\u7684\u5149\u7ebf\u6700\u6602\u8d35\uff0c\u8d85\u677e\u5f1b\uff08Keinert \u7b49\uff0c2014\uff09\u53ef\u4ee5\u51cf\u5c11\u6b65\u6570\u3002\u201c\u5207\u7247\u201d\u7528\u4e00\u4e2a\u5e73\u9762\u5207\u5f00\u573a\u666f\uff0c\u628a f \u753b\u6210\u7b49\u503c\u7ebf\uff0c\u5916\u90e8\u4e3a\u6a59\u8272\u3001\u5185\u90e8\u4e3a\u84dd\u8272\u3002\u201c\u63a2\u6d4b\u5149\u7ebf\u201d\u753b\u51fa\u4e00\u6761\u5149\u7ebf\u7684\u6240\u6709\u7a7a\u7403\uff1b\u73af\u7ed5\u89c6\u89d2\u5373\u53ef\u4ece\u4fa7\u9762\u89c2\u5bdf\u5b83\u4eec\u3002",
@@ -111,6 +113,7 @@
       probeOut: "\u30d7\u30ed\u30fc\u30d6\uff1a\u30b9\u30c6\u30c3\u30d7\u6570\u306e\u4e0a\u9650\u306b\u5230\u9054\uff08{s}\uff09",
       lo: "0", hi: "{m} \u30b9\u30c6\u30c3\u30d7", over: "\u767d\uff1a\u4e0a\u9650\u306b\u5230\u9054",
       compiling: "\u30b7\u30a7\u30fc\u30c0\u30fc\u3092\u30b3\u30f3\u30d1\u30a4\u30eb\u4e2d\u2026",
+      lite: "\u7c21\u6613\u30b7\u30a7\u30fc\u30c7\u30a3\u30f3\u30b0",
       lost: "WebGL \u30b3\u30f3\u30c6\u30ad\u30b9\u30c8\u304c\u5931\u308f\u308c\u307e\u3057\u305f\u3002\u30d6\u30e9\u30a6\u30b6\u30fc\u306b\u3088\u308b\u5fa9\u5143\u3092\u5f85\u3063\u3066\u3044\u307e\u3059\u2026",
       paused: "WebGL \u30b3\u30f3\u30c6\u30ad\u30b9\u30c8\u304c 1 \u5206\u4ee5\u5185\u306b 2 \u56de\u5931\u308f\u308c\u305f\u305f\u3081\u3001\u63cf\u753b\u3092\u4e00\u6642\u505c\u6b62\u3057\u307e\u3057\u305f \u00b7 \u753b\u50cf\u3092\u30bf\u30c3\u30d7\u3059\u308b\u3068\u518d\u958b\u3057\u307e\u3059",
       caption: "\u5404\u30d4\u30af\u30bb\u30eb\u306f\u7b26\u53f7\u4ed8\u304d\u8ddd\u96e2\u5834\uff08signed distance field\uff09f \u306e\u4e2d\u306b\u30ec\u30a4\u3092\u98db\u3070\u3057\u307e\u3059\u3002\u3042\u308b\u70b9\u3067\u306e f \u306e\u5024\u306f\u3001\u8868\u9762\u3092\u542b\u307e\u306a\u3044\u7403\u306e\u534a\u5f84\u3067\u3059\u3002\u305d\u306e\u305f\u3081\u30ec\u30a4\u306f\u5e38\u306b f \u3060\u3051\u5b89\u5168\u306b\u9032\u3081\u308b\u3053\u3068\u304c\u3067\u304d\u3001f \u304c\u305d\u306e\u8ddd\u96e2\u3067\u306e 1 \u30d4\u30af\u30bb\u30eb\u306e\u5927\u304d\u3055\u3092\u4e0b\u56de\u308b\u307e\u3067\u7e70\u308a\u8fd4\u3057\u307e\u3059\uff08\u30b9\u30d5\u30a3\u30a2\u30c8\u30ec\u30fc\u30b7\u30f3\u30b0\u3001sphere tracing\u3001Hart 1996\uff09\u3002\u5f62\u72b6\u3069\u3046\u3057\u306f\u591a\u9805\u5f0f\u306e\u30b9\u30e0\u30fc\u30ba\u6700\u5c0f\u5024 smin_k \u3067\u7d44\u307f\u5408\u308f\u3055\u308c\u3001k \u306f\u30d6\u30ec\u30f3\u30c9\u9818\u57df\u306e\u5e45\u3067\u3059\u3002\u300c\u524a\u308b\u300d\u306f\u5bfe\u5fdc\u3059\u308b\u30b9\u30e0\u30fc\u30ba\u6700\u5927\u5024 max_k(f, \u2212g) \u3092\u4f7f\u3044\u3001\u524a\u308b\u5f62\u72b6\u306f\u8584\u3044\u30b4\u30fc\u30b9\u30c8\u3068\u3057\u3066\u63cf\u304b\u308c\u307e\u3059\u3002\u6cd5\u7dda\u306f 4 \u70b9\u306e\u30b5\u30f3\u30d7\u30eb\u304b\u3089\u6c42\u3081\u305f f \u306e\u52fe\u914d\u3067\u3059\u3002\u30bd\u30d5\u30c8\u30b7\u30e3\u30c9\u30a6\u306f\u30b7\u30e3\u30c9\u30a6\u30ec\u30a4\u304c\u4ed6\u306e\u5f62\u72b6\u306b\u3069\u308c\u3060\u3051\u8fd1\u3065\u3044\u305f\u304b\uff08min k\u00b7f/t\uff09\u3067\u3001\u30a2\u30f3\u30d3\u30a8\u30f3\u30c8\u30aa\u30af\u30eb\u30fc\u30b8\u30e7\u30f3\uff08AO\uff09\u306f\u6cd5\u7dda\u65b9\u5411\u306e 5 \u70b9\u3067 f \u3068\u6cd5\u7dda\u65b9\u5411\u306e\u8ddd\u96e2\u3092\u6bd4\u3079\u3066\u6c42\u3081\u307e\u3059\u3002\u300c\u30b9\u30c6\u30c3\u30d7\u6570\u300d\u306f\u5404\u30d4\u30af\u30bb\u30eb\u3092\u53cd\u5fa9\u56de\u6570\u3067\u8272\u5206\u3051\u3057\u307e\u3059\u3002\u8f2a\u90ed\u3092\u304b\u3059\u3081\u308b\u30ec\u30a4\u3084\u5e8a\u306b\u6cbf\u3063\u3066\u9032\u3080\u30ec\u30a4\u304c\u6700\u3082\u9ad8\u30b3\u30b9\u30c8\u3067\u3001\u904e\u7de9\u548c\uff08Keinert \u3089\u30012014\uff09\u3067\u56de\u6570\u3092\u6e1b\u3089\u305b\u307e\u3059\u3002\u300c\u30b9\u30e9\u30a4\u30b9\u300d\u306f\u5e73\u9762\u3067\u30b7\u30fc\u30f3\u3092\u5207\u308a\u3001f \u3092\u7b49\u9ad8\u7dda\u3068\u3057\u3066\u63cf\u304d\u307e\u3059\uff08\u5916\u5074\u304c\u30aa\u30ec\u30f3\u30b8\u3001\u5185\u5074\u304c\u9752\uff09\u3002\u300c\u30ec\u30a4\u3092\u8abf\u3079\u308b\u300d\u306f 1 \u672c\u306e\u30ec\u30a4\u306e\u7a7a\u306e\u7403\u3092\u3059\u3079\u3066\u63cf\u304d\u307e\u3059\u3002\u8996\u70b9\u3092\u56de\u3059\u3068\u6a2a\u304b\u3089\u89b3\u5bdf\u3067\u304d\u307e\u3059\u3002",
@@ -290,6 +293,7 @@
     "  return t;",
     "}",
     "",
+    "#if !LITE",
     "float shadow(vec3 ro, vec3 rd) {",
     "  float res = 1.0, t = 0.015, ph = 1e10;",
     "  for (int i = ZERO; i < 56; i++) {",
@@ -317,6 +321,7 @@
     "  }",
     "  return clamp(1.0 - 2.2 * occ, 0.0, 1.0);",
     "}",
+    "#endif",
     "",
     "vec3 background(vec3 rd) {",
     "  float y = rd.y;",
@@ -337,6 +342,7 @@
     "}",
     "",
     // distance-field colouring in display space: orange outside, blue inside, a band every 0.1
+    "#if SLICE",
     "vec3 fieldColor(float d, float w) {",
     "  vec3 col = d > 0.0 ? vec3(0.96, 0.62, 0.30) : vec3(0.40, 0.68, 0.98);",
     "  col *= 1.0 - 0.72 * exp(-4.0 * abs(d));",
@@ -345,8 +351,10 @@
     "  col = mix(col, vec3(1.0), 1.0 - smoothstep(0.004, 0.012 + 1.5 * w, abs(d)));",
     "  return col;",
     "}",
+    "#endif",
     "",
     // single-primitive sphere trace for the ghosts of carving shapes
+    "#if EXTRAS",
     "float traceOne(int i, vec3 ro, vec3 rd, float tEnd) {",
     "  vec3 oc = ro - uA[i].xyz; float r = uC[i].w;",
     "  float b = dot(oc, rd), c = dot(oc, oc) - r * r, disc = b * b - c;",
@@ -360,6 +368,7 @@
     "  }",
     "  return -1.0;",
     "}",
+    "#endif",
     "",
     "void main() {",
     "  vec2 frag = gl_FragCoord.xy + uJitter;",
@@ -367,7 +376,11 @@
     "  vec3 ro = uCamPos;",
     "  vec3 rd = normalize(uCamF + uTanHalf * (uv.x * uCamR + uv.y * uCamU));",
     "  float pixR = uTanHalf / uRes.y;", // half a pixel, as an angle
+    "#if SLICE",
     "  gClip = uView == 2 ? uSliceH : 1e5;",
+    "#else",
+    "  gClip = 1e5;",
+    "#endif",
     "  int steps, status;",
     "  float t = trace(ro, rd, pixR, steps, status);",
     "  bool hit = status == 1;",
@@ -390,7 +403,9 @@
     "      vec3 objAlb;",
     "      float dObj = mapObjCol(p, objAlb);",
     "      bool floorHit = p.y < dObj;",
+    "#if SLICE",
     "      cap = uView == 2 && dObj < 0.0 && p.y - uSliceH > min(dObj, p.y) - 1e-4;",
+    "#endif",
     "      vec3 alb; float spec;",
     "      if (floorHit) {",
     "        float w = pixR * t * 2.0 / max(abs(rd.y), 0.04);",
@@ -401,8 +416,14 @@
     "        alb = vec3(0.075, 0.08, 0.09) * (1.0 + 0.45 * line * exp(-0.005 * t * t)) + vec3(0.03) * axis;",
     "        spec = 0.15;",
     "      } else { alb = objAlb; spec = 1.0; }",
+    "#if !LITE",
     "      sh = shadow(p + n * 0.002, LDIR);",
+    "#endif",
+    "#if LITE",
+    "      float ao = 1.0;",
+    "#else",
     "      float ao = uAO == 1 ? calcAO(p, n) : 1.0;",
+    "#endif",
     "      float dif = clamp(dot(n, LDIR), 0.0, 1.0) * sh;",
     "      vec3 hv = normalize(LDIR - rd);",
     "      float nh = clamp(dot(n, hv), 0.0, 1.0);",
@@ -414,6 +435,7 @@
     "      col = alb * (dif * vec3(1.75, 1.58, 1.36) + skyD * vec3(0.20, 0.25, 0.34) + bounce * vec3(0.10, 0.08, 0.06) + back * vec3(0.10, 0.11, 0.14));",
     "      col += sp * vec3(1.8, 1.7, 1.5);",
     "      col += fre * ao * spec * vec3(0.10, 0.13, 0.18);",
+    "#if EXTRAS",
     "      if (uSel >= 0 && !floorHit) {", // selection tint on the region the selected shape owns
     "        float ds = abs(sdPrim(uSel, p));",
     "        col = mix(col, col * vec3(0.9, 1.05, 1.25) + vec3(0.02, 0.05, 0.10), 1.0 - smoothstep(0.0, 0.05, ds));",
@@ -424,6 +446,7 @@
     "        float ring = 1.0 - smoothstep(0.0, 1.5 * w + 0.008, abs(rr - uC[uSel].w));",
     "        col += vec3(0.08, 0.16, 0.30) * ring;",
     "      }",
+    "#endif",
     "      col = mix(col, background(rd), max(1.0 - exp(-0.0012 * t * t), floorHit ? smoothstep(9.0, 26.0, t) : 0.0));",
     "      col = pow(aces(col), vec3(1.0 / 2.2));",
     "    } else {",
@@ -431,6 +454,7 @@
     "    }",
     // Slice view: the field inside the cut face (cap) and on the slice plane in front of the scene, the
     // second drawn over the first; both samples come from one loop with a single mapObj() call
+    "#if SLICE",
     "    float tp = (uSliceH - ro.y) / rd.y;",
     "    vec3 pp = ro + rd * tp;",
     "    bool plane = uView == 2 && tp > 0.0 && tp < tS - 0.003 && abs(pp.x) < SLICE_R && abs(pp.z) < SLICE_R;",
@@ -451,8 +475,10 @@
     "      col = mix(col, fc, 0.72);",
     "      col = mix(col, vec3(0.9), edge);",
     "    }",
+    "#endif",
     "  }",
     // ghosts of the carving shapes (and a brighter one for the selected shape)
+    "#if EXTRAS",
     "  for (int i = 0; i < uN; i++) {",
     "    if (uA[i].w < 7.5 && i != uSel) continue;",
     "    float tg = traceOne(i, ro, rd, min(tS, TMAX) - 0.004);",
@@ -510,6 +536,7 @@
     "      if (i > 0 && tq > 0.05 && c3 > 0.0 && disc3 > 0.0 && tq < tS + 0.02) col = mix(col, (i == uProbeN - 1 && uProbeHit == 1) ? vec3(1.0, 0.35, 0.55) : vec3(1.0, 0.92, 0.55), 0.95);",
     "    }",
     "  }",
+    "#endif",
     "  outColor = vec4(col, 1.0);",
     "}"
   ].join("\n");
@@ -521,6 +548,17 @@
     "out vec4 outColor;",
     "void main() { outColor = vec4(texelFetch(uTex, ivec2(gl_FragCoord.xy), 0).rgb, 1.0); }"
   ].join("\n");
+
+  // Shader variants. The fragment shader is compiled with only the parts the picture needs: key "l" (LITE)
+  // leaves out the shadows and the occlusion, "s" (SLICE) adds the slice view, "x" (EXTRAS) the ghosts of
+  // carving shapes, the selection and the probe ray. The full shader took the Metal compiler of an iPhone
+  // so long that the GPU process, which all WebGL canvases of the page share, stopped drawing; the default
+  // picture needs about a third of it.
+  function fsFor(key) {
+    var d = "#define LITE " + (key.indexOf("l") >= 0 ? 1 : 0) + "\n#define SLICE " + (key.indexOf("s") >= 0 ? 1 : 0) +
+      "\n#define EXTRAS " + (key.indexOf("x") >= 0 ? 1 : 0) + "\n";
+    return FS.replace("precision highp int;\n", "precision highp int;\n" + d);
+  }
 
   // compileShader and linkProgram return at once, but the calls that report the outcome (LINK_STATUS,
   // the uniform queries) make the page wait until the driver has finished. They are made only once
@@ -739,12 +777,20 @@
   // ------------------------------------------------------------------ GL resources
   var P = null, PB = null, vao = null, accTex = null, accFb = null, W = 0, H = 0;
   var pend = null, parExt = null;
+  // compiled variants by key ({ o: compile under way, P: program, t0, painted }), the key of P, the key of pend
+  var progs = {}, curKey = "", pendKey = "";
+  // iPhones and iPads start with the light variant, and go on to the full one only if the light one showed its
+  // first picture within LITE_MS; a variant still compiling after STUCK_MS sends them back to the light ones
+  var appleMobile = /iP(hone|ad|od)/.test(navigator.userAgent) || (/Macintosh/.test(navigator.userAgent) && navigator.maxTouchPoints > 1);
+  var liteMode = false, liteT0 = 0, liteJudged = false;
+  var LITE_MS = 5000, STUCK_MS = 15000;
   var uniformsA = new Float32Array(MAXP * 4), uniformsB = new Float32Array(MAXP * 4), uniformsC = new Float32Array(MAXP * 4), uniformsR = new Float32Array(MAXP * 9);
   var probeArr = new Float32Array(NPROBE * 4);
 
   // the compile of both programs is issued here; nothing waits for the driver
   function beginGL() {
-    pend = [startProgram(VS, FS), startProgram(VS, FS_BLIT)];
+    pendKey = wantKey();
+    pend = [startProgram(VS, fsFor(pendKey)), startProgram(VS, FS_BLIT)];
   }
   function compiled() {
     if (!parExt) return true;
@@ -756,6 +802,9 @@
     PB = finishProgram(pend[1]);
     pend = null;
     if (!P || !PB) return false;
+    progs = {};
+    progs[pendKey] = { o: null, P: P, t0: 0, painted: true };
+    curKey = pendKey;
     vao = gl.createVertexArray();
     gl.bindVertexArray(vao);
     var buf = gl.createBuffer();
@@ -1252,6 +1301,10 @@
     if (end) {
       row = 0;
       accN++;
+      if (liteMode && !liteJudged && accN === 1) {
+        liteJudged = true;
+        if (now - liteT0 < LITE_MS) liteMode = false; // fast enough: the full variant is compiled next
+      }
       // the first frame is shown only if the measurement keeps its resolution
       if (calibrating) deferBlit = true;
       else blit();
@@ -1386,7 +1439,7 @@
     return false;
   }
 
-  function showStats(now) {
+  function showStats(now, compiling) {
     var viewName = L["v" + st.view];
     var tail = accN < AA_FRAMES ? (fps ? (fps < 10 ? fps.toFixed(1) : Math.round(fps)) + " fps" : "\u2026") : fmt(L.aa, { a: accN });
     var line = fmt(L.stats, { n: prims.length, k: st.k.toFixed(2), view: viewName, res: W + "\u00d7" + H, fps: tail });
@@ -1394,9 +1447,53 @@
       var pl = probe.status === 1 ? fmt(L.probe, { s: probe.steps, t: probe.t.toFixed(2) }) : probe.status === 0 ? fmt(L.probeMiss, { s: probe.steps }) : fmt(L.probeOut, { s: probe.steps });
       line += "\n" + pl;
     }
+    if (curKey.indexOf("l") >= 0) line += " \u00b7 " + L.lite;
+    if (compiling) line += "\n" + L.compiling;
     if (flashMsg && now < flashUntil) line += "\n" + flashMsg;
     else if (flashMsg) { flashMsg = ""; }
     statsEl.textContent = line;
+  }
+
+  // the variant the picture needs now
+  function wantKey() {
+    var extras = !!probe || sel >= 0 || ordered.some(function (pr) { return pr.op; });
+    return (liteMode ? "l" : "") + (st.view === 2 ? "s" : "") + (extras ? "x" : "");
+  }
+  // Switches to the variant the picture needs. One that is not compiled yet is compiled in the background
+  // (COMPLETION_STATUS_KHR) while the current one goes on drawing; without the extension the compile is
+  // waited for once the status line has been painted. Returns true while a variant is being compiled.
+  function variants(now) {
+    var k = wantKey();
+    if (k === curKey) {
+      // on a desktop GPU the variant with the extras is compiled ahead, once the first picture is up
+      if (!appleMobile && parExt && accN > 0 && k.indexOf("x") < 0 && !progs[k + "x"]) {
+        progs[k + "x"] = { o: startProgram(VS, fsFor(k + "x")), P: null, t0: now, painted: false };
+      }
+      return false;
+    }
+    var c = progs[k];
+    if (!c) c = progs[k] = { o: startProgram(VS, fsFor(k)), P: null, t0: now, painted: false };
+    if (!c.P) {
+      if (parExt ? !gl.getProgramParameter(c.o.p, parExt.COMPLETION_STATUS_KHR) : !c.painted) {
+        c.painted = true;
+        if (appleMobile && !liteMode && now - c.t0 > STUCK_MS) liteMode = true; // too slow here: light variants only
+        return true;
+      }
+      try {
+        c.P = finishProgram(c.o);
+      } catch (err) {
+        fail();
+        if (window.console) console.warn(err);
+        return false;
+      }
+      if (!c.P) return true; // the context was lost
+      c.o = null;
+    }
+    P = c.P;
+    curKey = k;
+    warm = 1 + LAT_N; // the new program builds its pipeline on one pixel first
+    dirty = true;
+    return false;
   }
 
   // one animation frame of work; returns true while there is more to do
@@ -1414,6 +1511,8 @@
       row = 0;
     }
     updateBasis();
+    var compiling = variants(now);
+    if (!P) return false;
     if (warm) {
       warmUp();
       return true;
@@ -1421,8 +1520,8 @@
     if (needBlit && row === 0 && accN > 0) blit();
     needBlit = false;
     if (accN < AA_FRAMES) band(now);
-    showStats(now);
-    return accN < AA_FRAMES || flashMsg !== "";
+    showStats(now, compiling);
+    return accN < AA_FRAMES || flashMsg !== "" || compiling;
   }
 
   var visible = false, raf = 0, tried = false;
@@ -1555,6 +1654,10 @@
     P = PB = null;
     vao = accTex = accFb = null;
     pend = null;
+    progs = {};
+    curKey = "";
+    // on an iPhone or iPad a lost context is taken as a sign that the full shader is too much for it
+    if (appleMobile) liteMode = liteJudged = true;
     W = H = 0;
     accN = 0;
     row = 0;
@@ -1611,6 +1714,8 @@
     refreshUI();
     updateBasis();
     resetCost();
+    liteMode = appleMobile;
+    liteT0 = performance.now();
     boot();
   }
 
