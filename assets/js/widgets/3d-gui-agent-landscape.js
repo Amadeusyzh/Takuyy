@@ -360,7 +360,7 @@
       svg.setAttribute("viewBox", "0 0 " + Wd + " " + H);
       svg.setAttribute("height", H);
       while (svg.firstChild) svg.removeChild(svg.firstChild);
-      var ml = narrow ? 30 : 44, mb = narrow ? 34 : 40, mt = 8, mr = 6;
+      var ml = narrow ? 40 : 48, mb = narrow ? 34 : 40, mt = 8, mr = 6;
       var cw = (Wd - ml - mr) / 3, ch = (H - mt - mb) / 3;
       function cx(p) { return ml + p * cw; }
       function cy(o) { return mt + (2 - o) * ch; }
@@ -379,7 +379,7 @@
         tx.textContent = T.lv[k];
         svg.appendChild(tx);
         var ty = sv("text", { x: 0, y: 0, "text-anchor": "middle", "font-size": narrow ? 10 : 12, fill: "#444",
-          transform: "translate(" + (ml - 8) + "," + (cy(k) + ch / 2) + ") rotate(-90)" });
+          transform: "translate(" + (ml - 6) + "," + (cy(k) + ch / 2) + ") rotate(-90)" });
         ty.textContent = T.ol[k];
         svg.appendChild(ty);
       }

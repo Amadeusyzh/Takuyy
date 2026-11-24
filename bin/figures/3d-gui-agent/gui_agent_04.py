@@ -247,6 +247,32 @@ CAP = [
 CAT_COL = {"A": C["a"], "B": C["b"], "C": C["c"], "D": C["z"], "E": C["y"], "F": C["x"], "H": "#b07d10"}
 
 
+NOTE_L = {
+    "IGE F1 44%": ("可交互元素 F1 44%", "操作可能要素 F1 44%"),
+    "11.7% exact": ("完全匹配 11.7%", "完全一致 11.7%"),
+    "16/18, 49 s/turn": ("16/18，每轮 49 s", "16/18、1 ターン 49 s"),
+    "97.2% intent": ("意图识别 97.2%", "意図認識 97.2%"),
+    "no study yet": ("尚无研究", "評価はまだない"),
+    "N=16, 34.5% faster": ("N=16，快 34.5%", "N=16、34.5% 高速"),
+    "synthetic data": ("合成数据", "合成データ"),
+    "builds content": ("构建内容", "コンテンツを生成"),
+    "answers": ("只回答", "回答のみ"),
+    "guides, N=16": ("引导，N=16", "ガイド、N=16"),
+    "asks, N=10": ("询问，N=10", "確認、N=10"),
+    "coverage": ("以覆盖率为目标", "網羅が目的"),
+    "93% of 456": ("456 个中覆盖 93%", "456 件中 93%"),
+    "366 Quest apps": ("366 个 Quest 应用", "Quest アプリ 366 本"),
+    "describes": ("只描述", "説明のみ"),
+    "3D games": ("3D 游戏", "3D ゲーム"),
+    "not XR": ("非 XR", "XR ではない"),
+    "acts via services": ("通过服务行动", "サービス経由で行動"),
+    "claimed, undisclosed": ("仅宣称，未公开", "主張のみ、非公開"),
+    "App Intents only": ("仅限 App Intents", "App Intents のみ"),
+    "dev tool, no eval": ("开发工具，无评测", "開発ツール、評価なし"),
+    "own apps, tests": ("自有应用，测试", "自作アプリ、テスト"),
+}
+
+
 def fig_capability():
     cmap = ["#f3f3f3", "#c9b8e6", "#6a3d9a"]
     n = len(CAP)
@@ -265,7 +291,7 @@ def fig_capability():
                 ax.add_patch(Rectangle((x0 + j * 1.15, y - 0.42), 1.1, 0.84, fc=cmap[v], ec="white", lw=1))
                 ax.text(x0 + j * 1.15 + 0.55, y, "●" if v == 2 else ("◐" if v == 1 else ""), ha="center",
                         va="center", fontsize=12, color="white" if v == 2 else "#5b3f8c")
-            ax.text(x0 + 4 * 1.15 + 0.15, y, note, ha="left", va="center", fontsize=10.5, color="#444")
+            ax.text(x0 + 4 * 1.15 + 0.15, y, L(lang, note, *NOTE_L[note]), ha="left", va="center", fontsize=10.5, color="#444")
         # target row
         y = 0
         ax.text(x0 - 0.15, y, L(lang, "3D GUI agent (target)", "3D GUI 智能体（目标）", "3D GUI エージェント（目標）"),
@@ -287,7 +313,7 @@ def fig_capability():
                      (0, L(lang, "none", "无", "なし"))):
             ax.add_patch(Rectangle((lx, ly - 0.2), 0.4, 0.4, fc=cmap[v], ec="#aaa", lw=0.6))
             ax.text(lx + 0.5, ly, t, va="center", fontsize=11)
-            lx += 1.15
+            lx += 1.45
         save(fig, OUT / f"04-capability_{lang}.svg")
 
 
