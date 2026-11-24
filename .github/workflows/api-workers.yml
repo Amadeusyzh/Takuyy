@@ -82,6 +82,7 @@ jobs:
           WORKER_MODE: ${{ matrix.mode }}
           WORKER_PRIVATE: ${{ matrix.private && '1' || '0' }}
           WORKER_COMMON: ${{ matrix.common || 'common.md' }}
+          WORKER_CONTINUE: ${{ matrix.cont || 'continue.md' }}
         run: bash ops-src/ops/run_worker.sh
       - name: Commit leftovers, push branch and report
         if: always()

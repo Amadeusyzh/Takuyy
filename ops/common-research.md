@@ -58,6 +58,9 @@ Rules:
   its source and date. Say clearly when a number is an estimate.
 - Keep your own context lean. Delegate broad searches to subagents with precise briefs, and ask them for
   compact tables (title | authors | venue/status | date | link | one-line note).
+- Run subagents in the foreground and wait for every one to return. Your run ends as soon as you send your
+  final message; a subagent still working in the background at that moment is stopped and its work is lost.
+  Never end your turn while any work is pending.
 
 ## Output
 

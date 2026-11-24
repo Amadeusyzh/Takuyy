@@ -35,7 +35,7 @@ elif [ "${WORKER_MODE:-new}" = "continue" ]; then
   {
     sed "s#__BRANCH__#$BRANCH#g" "$COMMON_MD"
     printf '\n\n---\n\n'
-    python3 - "$OPS/continue.md" "$RUNNER_TEMP/earlier-report.md" <<'PY'
+    python3 - "$OPS/${WORKER_CONTINUE:-continue.md}" "$RUNNER_TEMP/earlier-report.md" <<'PY'
 import sys
 tpl = open(sys.argv[1]).read()
 print(tpl.replace("__REPORT__", open(sys.argv[2]).read().strip()))

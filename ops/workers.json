@@ -1,8 +1,5 @@
 {
   "workers": [
-    {"id": "r1-gui-agents", "budget": 40, "mode": "new", "common": "common-research.md"},
-    {"id": "r2-xr-ui", "budget": 40, "mode": "new", "common": "common-research.md"},
-    {"id": "r3-xr-agents", "budget": 40, "mode": "new", "common": "common-research.md"},
-    {"id": "r4-platforms", "budget": 35, "mode": "new", "common": "common-research.md"}
+    {"id": "r2-xr-ui", "budget": 40, "mode": "continue", "common": "common-research.md", "cont": "continue-research.md"}
   ]
 }
