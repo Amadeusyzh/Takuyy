@@ -17,10 +17,8 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - { os: macos-26, test: "page:perf.html", runner: sim, name: m26-sim-perf }
-          - { os: macos-15, test: "page:perf.html", runner: sim, name: m15-sim-perf }
-          - { os: macos-26, test: "page:perf.html", runner: webkit, name: m26-webkit-perf }
-          - { os: macos-15, test: "page:perf.html", runner: webkit, name: m15-webkit-perf }
+          - { os: macos-26, test: lab, runner: sim, name: m26-sim-lab }
+          - { os: macos-15, test: lab, runner: sim, name: m15-sim-lab }
     runs-on: ${{ matrix.os }}
     timeout-minutes: 40
     steps:

@@ -8,6 +8,8 @@ SITE=https://amadeusyzh.github.io/Takuyy
 PORT=8123
 xcodebuild -version > "$OUT/xcode.txt" 2>&1; xcrun simctl list runtimes > "$OUT/runtimes.txt" 2>&1
 cp "$HERE"/hooks.js "$HERE"/auto-*.js "$WWW/"
+[ -f "$HERE/pages/lab-sdf.js" ] && cp "$HERE/pages/lab-sdf.js" "$WWW/lab-sdf.js"
+export HERE
 if [ "$TEST" = sdf ] || [ "${TEST#page:}" != "$TEST" ]; then
   if [ "$TEST" = sdf ]; then curl -fsSL "$SITE/labtest/sdf.html?r=$RANDOM" -o "$WWW/page.html"; else cp "$HERE/pages/${TEST#page:}" "$WWW/page.html"; fi
   python3 - "$WWW/page.html" <<'PY2'
@@ -25,6 +27,10 @@ import sys
 p, base = sys.argv[1], sys.argv[2]; s = open(p, encoding="utf-8").read()
 i = s.index("<head>") + len("<head>")
 s = s[:i] + '\n<base href="%s">\n<script src="http://localhost:8123/hooks.js"></script>\n<script src="http://localhost:8123/auto-lab.js"></script>\n' % base + s[i:]
+import os
+if os.path.exists(os.environ.get("HERE", "") + "/pages/lab-sdf.js"):
+    s = s.replace('src="/Takuyy/assets/js/lab-sdf.js', 'src="http://localhost:8123/lab-sdf.js')
+    print("lab-sdf.js from the branch under test")
 open(p, "w", encoding="utf-8").write(s)
 PY2
 fi
