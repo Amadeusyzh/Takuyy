@@ -98,9 +98,9 @@ XR における LLM 研究の第一波（2023-2024 年）は、言語を用い�
 
 出荷済みのアシスタントはすでに多くを知覚しています。カメラの映像、画面、場合によっては視線です。それをどう使うかは異なります。
 
-- **Samsung Galaxy XR 上の Gemini**（Android XR、2025 年 10 月 21 日発売、$1,799）：Google の発表記事によれば、Gemini Live は "can better understand what you're seeing and doing"（あなたが見ているもの、していることをよりよく理解できる）とされ、"take action on your behalf across your apps"（アプリをまたいであなたの代わりに操作を行う）ことができ、"Hey Google, organize these windows"（OK Google、これらのウィンドウを整理して）で開いているウィンドウを並べ替えます。詳細は 2.8 節で述べます。
+- **Samsung Galaxy XR 上の Gemini**（Android XR、2025 年 10 月 21 日発売、1,799 ドル）：Google の発表記事によれば、Gemini Live は "can better understand what you're seeing and doing"（あなたが見ているもの、していることをよりよく理解できる）とされ、"take action on your behalf across your apps"（アプリをまたいであなたの代わりに操作を行う）ことができ、"Hey Google, organize these windows"（OK Google、これらのウィンドウを整理して）で開いているウィンドウを並べ替えます。詳細は 2.8 節で述べます。
 - **Apple Vision Pro 上の Siri AI**（2026 年 6 月 8 日の WWDC で発表。visionOS 27 のリリースノートの日付は 2026 年 11 月 9 日）：Siri を見て話しかけ、部屋の中の物体や画面上のコンテンツについて尋ねることができ、Siri はアプリアクションを通じて "get[s] things done across apps"（アプリをまたいで物事を片付ける）とされています。
-- **Meta**：Neural Band リストバンド付きの Meta Ray-Ban Display（米国で 2025 年 9 月 30 日発売、$799）は、回答やステップごとのガイドをレンズ内に表示します。Connect 2026 で Meta は、AI グラス向けのパーソナルエージェント **Muse**（ショッピング、決済、予約のコネクタを通じて行動するもので、"in the coming months"（今後数か月のうちに）提供予定）と、OS に Meta AI エージェントを組み込み "play a movie, open an app, adjust your workspace"（映画を再生し、アプリを開き、ワークスペースを調整する）ことができる **Meta VR Glasses**（$1,299.99、2027 年春）を発表しました。執筆時点ではいずれも出荷されていません。
+- **Meta**：Neural Band リストバンド付きの Meta Ray-Ban Display（米国で 2025 年 9 月 30 日発売、799 ドル）は、回答やステップごとのガイドをレンズ内に表示します。Connect 2026 で Meta は、AI グラス向けのパーソナルエージェント **Muse**（ショッピング、決済、予約のコネクタを通じて行動するもので、"in the coming months"（今後数か月のうちに）提供予定）と、OS に Meta AI エージェントを組み込み "play a movie, open an app, adjust your workspace"（映画を再生し、アプリを開き、ワークスペースを調整する）ことができる **Meta VR Glasses**（1,299.99 ドル、2027 年春）を発表しました。執筆時点ではいずれも出荷されていません。
 - **研究**：一人称視点 AI は、一人称視点動画に対する質問応答（Ego4D、EgoSchema）から、先回り型の支援（ProAssist, EMNLP 2025；HoloAssist は、指導者が作業者を案内する 166 時間の HoloLens 2 データセット）を経て、タスクを実行するグラス型エージェントへと進んできました。**VisionClaw**（Liu et al., arXiv 2026）は Ray-Ban Meta グラスをエージェントにつなぎ、ショッピングカートへの商品追加、ポスターからのカレンダー予定の作成、IoT デバイスの制御を行います（実験室での研究 N=12、実運用 N=5）。
 
 *この系統が与えるもの：* 実運用されている知覚と、ユーザーが委任を望んでいるという証拠。*欠けているもの：* 行動の経路は API とサービスであり、3D インターフェースの操作ではありません（Galaxy XR 上の Gemini は、詳細が非公開の例外です）。

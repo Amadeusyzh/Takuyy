@@ -98,9 +98,9 @@ related_posts: false
 
 已上市的助手已经能感知很多东西：相机画面、屏幕，有时还有注视。它们如何利用这些信息则各不相同：
 
-- **Samsung Galaxy XR 上的 Gemini**（Android XR，2025 年 10 月 21 日起发售，$1,799）：Google 的发布文章称 Gemini Live “can better understand what you're seeing and doing”（能更好地理解你正在看和正在做的事），能够“take action on your behalf across your apps”（在你的各个应用中代你执行操作），并且说“Hey Google, organize these windows”（Hey Google，整理一下这些窗口）会排列打开的窗口。详见第 2.8 节。
+- **Samsung Galaxy XR 上的 Gemini**（Android XR，2025 年 10 月 21 日起发售，1,799 美元）：Google 的发布文章称 Gemini Live “can better understand what you're seeing and doing”（能更好地理解你正在看和正在做的事），能够“take action on your behalf across your apps”（在你的各个应用中代你执行操作），并且说“Hey Google, organize these windows”（Hey Google，整理一下这些窗口）会排列打开的窗口。详见第 2.8 节。
 - **Apple Vision Pro 上的 Siri AI**（2026 年 6 月 8 日在 WWDC 上发布；visionOS 27 发布说明的日期为 2026 年 11 月 9 日）：你看向 Siri 并说话，询问房间里的物体或屏幕上的内容，Siri 通过应用动作（app actions）“get[s] things done across apps”（跨应用把事情办完）。
-- **Meta**：搭配 Neural Band 腕带的 Meta Ray-Ban Display（2025 年 9 月 30 日在美国发售，$799）在镜片中显示回答和分步指南。在 Connect 2026 上，Meta 发布了面向 AI 眼镜的个人智能体 **Muse**，它将“in the coming months”（在未来几个月内）通过购物、支付和预订连接器执行操作；还发布了 **Meta VR Glasses**（$1,299.99，2027 年春季），其操作系统内置一个 Meta AI 智能体，可以“play a movie, open an app, adjust your workspace”（播放电影、打开应用、调整你的工作区）。在撰写本文时，两者都尚未上市。
+- **Meta**：搭配 Neural Band 腕带的 Meta Ray-Ban Display（2025 年 9 月 30 日在美国发售，799 美元）在镜片中显示回答和分步指南。在 Connect 2026 上，Meta 发布了面向 AI 眼镜的个人智能体 **Muse**，它将“in the coming months”（在未来几个月内）通过购物、支付和预订连接器执行操作；还发布了 **Meta VR Glasses**（1,299.99 美元，2027 年春季），其操作系统内置一个 Meta AI 智能体，可以“play a movie, open an app, adjust your workspace”（播放电影、打开应用、调整你的工作区）。在撰写本文时，两者都尚未上市。
 - **研究**：第一人称 AI（egocentric AI）已经从第一人称视频问答（Ego4D、EgoSchema），经过主动辅助（ProAssist，EMNLP 2025；HoloAssist，一个 166 小时的 HoloLens 2 数据集，记录指导者引导执行者完成任务），发展到执行任务的眼镜智能体：**VisionClaw**（Liu et al.，arXiv 2026）把 Ray-Ban Meta 眼镜连接到智能体，这些智能体能把商品加入购物车、根据海报创建日历事件、控制 IoT 设备（实验室研究 N=12，部署 N=5）。
 
 *这条脉络带来什么：* 已部署的感知能力，以及用户愿意委托的证据。*它缺少什么：* 行动途径是 API 和服务，而不是操作 3D 界面（Galaxy XR 上的 Gemini 是一个细节未公开的例外）。
