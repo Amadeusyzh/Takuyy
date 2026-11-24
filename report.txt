@@ -1,0 +1,22 @@
+1795515887.8 {"t":496,"kind":"context","data":"?/webgl2 parallel"}
+1795515888.3 {"t":900,"kind":"contextlost","data":"?/webgl2"}
+1795515888.3 {"t":903,"kind":"gap","data":"790 ms"}
+1795515888.8 {"t":1512,"kind":"gap","data":"609 ms"}
+1795515889.4 {"kind":"info","data":"UA: Mozilla/5.0 (iPhone; CPU iPhone OS 18_7 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/26.2 Mobile/15E148 Safari/604.1\ndevicePixelRatio: 3\nrenderer: Apple GPU\nKHR_parallel_shader_compile: yes\nmax fragment uniform vectors: 1024"}
+1795515889.4 {"t":2111,"kind":"context","data":"rows/webgl2 parallel"}
+1795515892.5 {"kind":"table","done":false,"rows":["T0 | tiny shader 5 lines | 2825 ms... |  |  | ","OLD | live shader (before this change) 308 lines | run |  |  | ","NA | one secondary loop (shadow inside) 365 lines | run |  |  | ","NB | one secondary loop + shadow loop 361 lines | run |  |  | ","OLD2 | live shader again (warm) 309 lines | run |  |  | "]}
+1795515895.4 {"kind":"table","done":false,"rows":["T0 | tiny shader 5 lines | 5850 ms... |  |  | ","OLD | live shader (before this change) 308 lines | run |  |  | ","NA | one secondary loop (shadow inside) 365 lines | run |  |  | ","NB | one secondary loop + shadow loop 361 lines | run |  |  | ","OLD2 | live shader again (warm) 309 lines | run |  |  | "]}
+1795515898.5 {"kind":"table","done":false,"rows":["T0 | tiny shader 5 lines | 8871 ms... |  |  | ","OLD | live shader (before this change) 308 lines | run |  |  | ","NA | one secondary loop (shadow inside) 365 lines | run |  |  | ","NB | one secondary loop + shadow loop 361 lines | run |  |  | ","OLD2 | live shader again (warm) 309 lines | run |  |  | "]}
+1795515901.5 {"kind":"table","done":false,"rows":["T0 | tiny shader 5 lines | 11908 ms... |  |  | ","OLD | live shader (before this change) 308 lines | run |  |  | ","NA | one secondary loop (shadow inside) 365 lines | run |  |  | ","NB | one secondary loop + shadow loop 361 lines | run |  |  | ","OLD2 | live shader again (warm) 309 lines | run |  |  | "]}
+1795515909.7 {"kind":"table","done":false,"rows":["T0 | tiny shader 5 lines | 14939 ms... |  |  | ","OLD | live shader (before this change) 308 lines | run |  |  | ","NA | one secondary loop (shadow inside) 365 lines | run |  |  | ","NB | one secondary loop + shadow loop 361 lines | run |  |  | ","OLD2 | live shader again (warm) 309 lines | run |  |  | "]}
+1795515910.9 {"t":18412,"kind":"gap","data":"16229 ms"}
+1795515910.9 {"t":19022,"kind":"gap","data":"612 ms"}
+1795515910.9 {"kind":"table","done":false,"rows":["T0 | tiny shader 5 lines | 16315 ms | 488 ms | 90 ms | ","OLD | live shader (before this change) 308 lines | run |  |  | ","NA | one secondary loop (shadow inside) 365 lines | run |  |  | ","NB | one secondary loop + shadow loop 361 lines | run |  |  | ","OLD2 | live shader again (warm) 309 lines | run |  |  | "]}
+1795515911.0 {"t":20247,"kind":"context","data":"rows/webgl2 parallel"}
+1795515911.0 {"t":22584,"kind":"context","data":"rows/webgl2 parallel"}
+1795515911.0 {"kind":"table","done":false,"rows":["T0 | tiny shader 5 lines | 16315 ms | 488 ms | 90 ms | ","OLD | live shader (before this change) 308 lines | 1515 ms | 197 ms | 31 ms | ","NA | one secondary loop (shadow inside) 365 lines | 401 ms... |  |  | ","NB | one secondary loop + shadow loop 361 lines | run |  |  | ","OLD2 | live shader again (warm) 309 lines | run |  |  | "]}
+1795515911.4 {"t":24031,"kind":"gap","data":"430 ms"}
+1795515912.9 {"t":24815,"kind":"context","data":"rows/webgl2 parallel"}
+1795515913.5 {"kind":"table","done":false,"rows":["T0 | tiny shader 5 lines | 16315 ms | 488 ms | 90 ms | ","OLD | live shader (before this change) 308 lines | 1515 ms | 197 ms | 31 ms | ","NA | one secondary loop (shadow inside) 365 lines | 1016 ms | 430 ms | 48 ms | ","NB | one secondary loop + shadow loop 361 lines | 716 ms | 260 ms | 24 ms | ","OLD2 | live shader again (warm) 309 lines | run |  |  | "]}
+1795515913.8 {"t":26348,"kind":"context","data":"rows/webgl2 parallel"}
+1795515917.1 {"kind":"table","done":true,"rows":["T0 | tiny shader 5 lines | 16315 ms | 488 ms | 90 ms | ","OLD | live shader (before this change) 308 lines | 1515 ms | 197 ms | 31 ms | ","NA | one secondary loop (shadow inside) 365 lines | 1016 ms | 430 ms | 48 ms | ","NB | one secondary loop + shadow loop 361 lines | 716 ms | 260 ms | 24 ms | ","OLD2 | live shader again (warm) 309 lines | 171 ms | 148 ms | 63 ms | "]}
