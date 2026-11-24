@@ -1619,7 +1619,7 @@ table records what each platform documents. P-IDs are used in Section 4.
    - The platforms' numeric comfort envelopes (C01–C04) and pointing models with depth terms (A21, A24, A26)
      can serve as constraints and as cost functions for such actions.
 3. **Some operations should be done for the user, some only guided, and some neither.** The catalogue in
-   section 10 classifies 30+ operations.
+   section 10 classifies 30 operations.
    - Agents can most clearly *do*:
      - window placement and arrangement (C22, C23, C30);
      - long or symbolic input such as search queries (D04, D11);
