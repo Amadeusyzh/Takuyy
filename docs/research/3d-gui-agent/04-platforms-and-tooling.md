@@ -202,11 +202,11 @@ personal authors.
 | 26 | Run your app's augmented experiences on the emulator (AI glasses) | Google | [doc] | 2026 | https://developer.android.com/develop/xr/jetpack-xr-sdk/run/emulator/ai-glasses | Touchpad, microphone, custom or webcam environment, Gemini Live trigger. | The glasses form factor in emulation. |
 | 27 | Jetpack Compose Glimmer | Google | [doc] | 2026 | https://developer.android.com/develop/xr/jetpack-xr-sdk/jetpack-compose-glimmer | Compose UI toolkit for display glasses with focus-based tap and swipe input. | Discrete focus navigation is an easy action space for agents. |
 | 28 | Understand permissions for XR | Google | [doc] | 2026 | https://developer.android.com/develop/xr/permissions | Dangerous permissions: `EYE_TRACKING_COARSE/FINE`, `HAND_TRACKING`, `SCENE_UNDERSTANDING_COARSE/FINE`, `FACE_TRACKING`, `BODY_TRACKING`. | Gating for every sensor an agent might want. |
-| 29 | Create your own accessibility service | Google | [doc] | current | https://developer.android.com/guide/topics/ui/accessibility/service | `canRetrieveWindowContent`, `AccessibilityNodeInfo`, `performAction`, `dispatchGesture`, `takeScreenshot`. | The standard observation and action API of 2D Android GUI agents. |
+| 29 | Create your own accessibility service | Google | [doc] | current | https://developer.android.com/guide/topics/ui/accessibility/service | `canRetrieveWindowContent`, `AccessibilityNodeInfo`, `performAction`, `dispatchGesture` (plus `takeScreenshot` in the `AccessibilityService` API reference, API 30+). | The standard observation and action API of 2D Android GUI agents. |
 | 30 | Media projection | Google | [doc] | current | https://developer.android.com/media/grow/media-projection | Per-session consent, `mediaProjection` foreground service, app-window sharing. | Screen-capture route; behaviour on XR undocumented. |
 | 31 | AppFunctions overview | Google | [doc] | 2026 | https://developer.android.com/ai/appfunctions | Apps expose self-describing functions; caller needs `EXECUTE_APP_FUNCTIONS` (privileged). | Semantic action route reserved for system assistants. |
 | 32 | The intelligent OS: making AI agents more helpful for Android apps | Matthew McCullough (Google) | [blog] | 2026-02-25 | https://android-developers.googleblog.com/2026/02/the-intelligent-os-making-ai-agents.html | Gemini UI automation preview (Galaxy S26, select Pixel 10); live view, takeover, alerts before sensitive actions. | First-party GUI agent and its safety UX; no XR mention. |
-| 33 | Introducing Galaxy XR | Google | [blog] | 2025-10 | https://blog.google/products/android/samsung-galaxy-xr | $1,799; Gemini can see what you see and do; Circle to Search on real and virtual objects. | Reference headset; OS-level assistant that sees the view. |
+| 33 | Introducing Galaxy XR, the first Android XR headset | Google | [blog] | Oct 2025 (page undated; launch offer ends 2025-12-31) | https://blog.google/products/android/samsung-galaxy-xr | $1,799; Gemini can see what you see and do; Circle to Search on real and virtual objects. | Reference headset; OS-level assistant that sees the view. |
 | 34 | XREAL AURA on Android XR | Google | [blog] | 2026-10-28 | https://blog.google/products-and-platforms/platforms/android/xreal-aura/ | First wired XR glasses on Android XR: $1,099, <95 g, compute puck. | The glasses form factor with a spatial GUI. |
 
 ### 3.3 Meta Horizon OS / Quest
@@ -215,20 +215,20 @@ personal authors.
 |---|---|---|---|---|---|---|---|
 | 35 | Introducing Meta XR Operator: close the build-test-verify loop for VR | Meta | [blog] | 2026-08-18 | https://developers.meta.com/horizon/blog/meta-xr-operator-close-the-build-test-verify-loop-for-vr/ | OpenXR API layer + in-app MCP server (`localhost:8720`): screenshots, room geometry, Unity hierarchy, controller input, head pose. | The closest existing "agent operates a VR app" tool; developer-facing and experimental. |
 | 36 | Meta XR Operator on Quest | Meta | [doc] | 2026 (v205+) | https://developers.meta.com/horizon/documentation/unity/meta-xr-operator/quest/ | Runs on headset via `adb forward`, MediaProjection screenshots, controller input; head-pose override not on device. | Shows an observe/act loop on real hardware. |
-| 37 | Meta XR Simulator | Meta | [doc] | 2026 | https://developers.meta.com/horizon/documentation/unity/xrsim-intro/ | OpenXR runtime with synthetic rooms, keyboard/mouse/gamepad input, device profiles. | Headset-free environment for Unity/Unreal/native apps. |
-| 38 | Automated testing with Meta XR Simulator | Meta | [doc] | 2026-09-03 | https://developers.meta.com/vr/documentation/native/xrsim-native-automated-testing/ | CI by replaying a recorded VRS session, then requesting OpenXR exit. | Repeatable trajectories; no built-in pass/fail oracle. |
+| 37 | Meta XR Simulator | Meta | [doc] | 2026 | https://developers.meta.com/horizon/documentation/unity/xrsim-intro/ | OpenXR runtime with synthetic rooms, keyboard/mouse/gamepad input, device profiles. | Headset-free environment for Unity apps (this page; other Meta pages cover native, see #38). |
+| 38 | Meta XR Simulator No-Code Automation Testing | Meta | [doc] | 2026-09-03 | https://developers.meta.com/vr/documentation/native/xrsim-native-automated-testing/ | CI by replaying a recorded VRS session, then requesting OpenXR exit. | Repeatable trajectories; no built-in pass/fail oracle. |
 | 39 | Meta XR Simulator session capture | Meta | [doc] | 2026 | https://developers.meta.com/horizon/documentation/native/xrsim-session-capture | Records input to VRS and replays it via `session_capture` settings. | Human demonstration capture for imitation data. |
-| 40 | Passthrough Camera API (Android apps) | Meta | [doc] | 2026 | https://developers.meta.com/horizon/documentation/android-apps/passthrough-camera | Camera2 vendor tags; `horizonos.permission.HEADSET_CAMERA`; data-use rules. | Real-world RGB for an MR agent. |
-| 41 | Unity Passthrough Camera API overview | Meta | [doc] | updated 2026-11-10 | https://developers.meta.com/horizon/documentation/unity/unity-pca-overview/ | Up to 1728×1728 (v209), 60 Hz, 20–40 ms latency; not supported in the simulator. | Perception budget of a camera-based agent. |
+| 40 | AOSP features on Horizon OS (passthrough camera section) | Meta | [doc] | 2026 (Quest 3/3S, Horizon OS v74+) | https://developers.meta.com/horizon/documentation/android-apps/passthrough-camera | Camera2 vendor tags; `horizonos.permission.HEADSET_CAMERA`; data-use rules. | Real-world RGB for an MR agent. |
+| 41 | Unity Passthrough Camera API overview | Meta | [doc] | updated 2026-11-10 | https://developers.meta.com/horizon/documentation/unity/unity-pca-overview/ | Up to 1728×1728 on Quest 3/3S (v209+), up to 1280×1280 on Meta VR Glasses; 60 Hz; 20–40 ms latency. | Perception budget of a camera-based agent. |
 | 42 | Unity-PassthroughCameraApiSamples | Meta (oculus-samples) | [repo] | 2026 | https://github.com/oculus-samples/Unity-PassthroughCameraApiSamples | CameraViewer, CameraToWorld, MultiObjectDetection (YOLO via Unity Inference Engine). | Reference for lifting 2D detections to 3D rays. |
 | 43 | Spatial SDK: MR Utility Kit (MRUK) | Meta | [doc] | 2026 | https://developers.meta.com/horizon/documentation/spatial-sdk/spatial-sdk-mruk | Room/anchor model with semantic labels (TABLE, COUCH, ...), `raycastRoomAll`. | Structured scene observation. |
-| 44 | Meta Spatial SDK explainer | Meta | [doc] | 2026 | https://developers.meta.com/horizon/documentation/spatial-sdk/spatial-sdk-explainer/ | Kotlin ECS SDK; panels are ordinary Android UI. | Panels are more tractable than engine-rendered UI. |
-| 45 | Use ADB with Meta Quest | Meta | [doc] | 2026 | https://developers.meta.com/horizon/documentation/spatial-sdk/ts-adb/ | Developer mode, wireless adb. | Base channel for installs, port forwarding, key events. |
-| 46 | Scriptable Testing Services | Meta | [doc] | 2026 | https://developers.meta.com/horizon/documentation/native/android/ts-scriptable-testing/ | Disable boundary, dialogs and auto-sleep; proximity simulation; AutoDriver. | Needed for unattended device runs. |
+| 44 | Meta Spatial SDK explainer | Meta | [doc] | 2026 | https://developers.meta.com/horizon/documentation/spatial-sdk/spatial-sdk-explainer/ | Kotlin SDK; interactive 2D panels built with your preferred 2D UI framework. | Panels are more tractable than engine-rendered UI. |
+| 45 | Developer Mode and Wireless ADB | Meta | [doc] | 2026 | https://developers.meta.com/horizon/documentation/spatial-sdk/ts-adb/ | Developer mode, wireless adb. | Base channel for installs and port forwarding. |
+| 46 | Use scriptable testing services to enable E2E testing | Meta | [doc] | 2026 | https://developers.meta.com/horizon/documentation/native/android/ts-scriptable-testing/ | Disable boundary, dialogs and auto-sleep; proximity simulation; AutoDriver. | Needed for unattended device runs. |
 | 47 | Accessibility checklist (VRC.Quest.Accessibility.1–9) | Meta | [doc] | 2026-04-13 | https://developers.meta.com/horizon/design/accessibility-checklist/ | Recommended accessibility VRCs; system features (captions, color correction, experimental screen reader). | Alt text and focus order help agents only where apps comply. |
 | 48 | Meta Connect 2026 developer recap | Meta | [blog] | 2026-09-24 | https://developers.meta.com/blog/meta-connect-recap/ | v207 SDKs; Wearables Toolkit 1.0; WebMCP and Meta AI Connectors in preview; Operator. | Meta's direction: apps expose tools to an OS agent. |
 | 49 | Meta VR Glasses announcement | Meta | [blog] | 2026-09-23 | https://www.meta.com/blog/meta-vr-glasses-announcement-meta-connect/ | $1,299.99, spring 2027, Snapdragon Reality Elite, ~100 g + puck, eye/hand/voice input, Meta AI agent built into the OS. | First announced XR glasses with an OS agent that opens apps and adjusts the workspace. |
-| 50 | Wearables Device Access Toolkit FAQ | Meta | [doc] | 2026 | https://developers.meta.com/wearables/faq/ | 1.0: camera, mic, audio, IMU from Meta glasses to iOS/Android apps. | Only official developer route to glasses camera. |
+| 50 | Meta Wearables Device Access Toolkit 1.0 (FAQ) | Meta | [doc] | 2026 | https://developers.meta.com/wearables/faq/ | 1.0: camera, mic, audio, IMU from Meta glasses to iOS/Android apps. | An official developer route to glasses camera data. |
 | 51 | Developer Data Use Policy | Meta | [policy] | current | https://developers.meta.com/vr/policy/data-use/ | Device User Data: no surveillance, no identifying people, deletion duties. | Hard limits for camera-based agents. |
 | 52 | Meta Reports Third Quarter 2026 Results | Meta IR | [filing/PR] | 2026-10-21 | https://investor.atmeta.com/investor-news/press-release-details/2026/Meta-Reports-Third-Quarter-2026-Results/ | Reality Labs revenue $443M, operating loss $4.129B. | Market context. |
 
@@ -238,27 +238,27 @@ personal authors.
 |---|---|---|---|---|---|---|---|
 | 53 | Khronos releases OpenXR 1.1 | Khronos | [blog] press release | 2024-04-15 | https://www.khronos.org/news/press/khronos-releases-openxr-1.1-to-further-streamline-cross-platform-xr-development | Local floor, grip surface, `xrLocateSpaces`, 13 interaction profiles into core. | Stable pose and input semantics for an injection layer. |
 | 54 | OpenXR (conformant products) | Khronos | [doc] | live | https://www.khronos.org/openxr/ | Conformant runtimes incl. SteamVR, Meta, Monado, Android XR, PICO. | Which runtimes an OpenXR-level agent could target. |
-| 55 | OpenXR-SDK-Source: API layers | Khronos | [repo] 1.1.65 | 2026-10-16 | https://github.com/KhronosGroup/OpenXR-SDK-Source/blob/main/src/api_layers/README.md | Reference layers (`api_dump`, core validation); `XR_API_LAYER_PATH`, `XR_ENABLE_API_LAYERS`. | Template for a logging/injection layer. |
-| 56 | OpenXR-Toolkit | Matthieu Bucchia | [repo] MIT | 2022– | https://github.com/mbucchia/OpenXR-Toolkit | Layer-based tweaks, incl. hand-to-controller input simulation. | Existence proof of input rewriting below unmodified apps. |
+| 55 | OpenXR API Layers (OpenXR-SDK-Source) | Khronos | [repo] latest release 1.1.65 (releases page) | 2026-10-16 | https://github.com/KhronosGroup/OpenXR-SDK-Source/blob/main/src/api_layers/README.md | Reference layers (`api_dump`, core validation); `XR_API_LAYER_PATH`, `XR_ENABLE_API_LAYERS`. | Template for a logging/injection layer. |
+| 56 | OpenXR-Toolkit | Matthieu Bucchia | [repo] MIT | n.d. | https://github.com/mbucchia/OpenXR-Toolkit | Layer-based tweaks, incl. hand-to-controller input simulation. | Existence proof of input rewriting below unmodified apps. |
 | 57 | XR_APILAYER_NOVENDOR_hand_to_controller | Matthieu Bucchia | [repo] archived | 2025-12-14 (archived) | https://github.com/mbucchia/XR_APILAYER_NOVENDOR_hand_to_controller | Maps hand tracking to controller actions in a layer. | Same technique an agent layer would use. |
 | 58 | Developing with Monado | Monado (Collabora) | [doc] | live | https://monado.freedesktop.org/developing-with-monado.html | Qwerty driver (`QWERTY_ENABLE=1`), remote driver with pose and finger-curl control (port 4242). | Open-source runtime where poses can be injected without hardware. |
 | 59 | XR_EXT_spatial_entity (Android XR docs) | Google | [doc] | 2025– | https://developer.android.com/develop/xr/openxr/extensions/XR_EXT_spatial_entity | Ratified cross-vendor spatial-entity extension (no. 741). | Standard vocabulary for planes, anchors and markers. |
-| 60 | OpenXR spatial entities extensions (news) | UploadVR | [news] | 2025-06-17 | https://www.uploadvr.com/openxr-spatial-entities-extensions/ | Six spatial-entity extensions with broad vendor support. | Scene semantics becoming portable. |
+| 60 | OpenXR spatial entities extensions (news) | UploadVR | [news] | 2025-06-17 | https://www.uploadvr.com/openxr-spatial-entities-extensions/ | Base `XR_EXT_spatial_entities` plus five extensions (plane tracking, marker tracking, anchors, persistence, persistence operations). | Scene semantics becoming portable. |
 | 61 | WebXR Device API | W3C Immersive Web WG | [doc] W3C Candidate Recommendation Draft | 2026-11-09 | https://www.w3.org/TR/webxr/ | Core WebXR API. | Browser route to a fully controllable, inspectable 3D UI. |
-| 62 | WebXR Test API | Immersive Web CG | [repo] incubation | live | https://github.com/immersive-web/webxr-test-api | Simulated device API (`navigator.xr.test`) used by web-platform-tests. | Browser-internal device simulation. |
-| 63 | Immersive Web Emulation Runtime (IWER) | Meta | [repo] MIT | 2024– | https://github.com/meta-quest/immersive-web-emulation-runtime | TypeScript WebXR runtime: `XRDevice`, `XRController`, `XRHandInput`; packages incl. `@iwer/sem`, `@iwer/extension-bridge` (MCP bridge). | Scriptable headset, controllers and hands for any WebXR page. |
+| 62 | WebXR Test API | Immersive Web CG | [repo] incubation | live | https://github.com/immersive-web/webxr-test-api | "WPT testing API for WebXR": a simulated-device API used by web-platform-tests. | Browser-internal device simulation. |
+| 63 | Immersive Web Emulation Runtime (IWER) | Meta | [repo] MIT | 2024– | https://github.com/meta-quest/immersive-web-emulation-runtime | TypeScript WebXR runtime with a scriptable device (`XRDevice`, `XRController`, `XRHandInput` per its docs site); packages incl. `@iwer/sem` (synthetic environment) and `@iwer/extension-bridge` ("local MCP bridge from coding agents to IWER"). | Scriptable headset, controllers and hands for any WebXR page. |
 | 64 | IWER announcement | Meta | [blog] | 2024-07-02 | https://developers.meta.com/horizon/blog/immersive-web-emulation-runtime-iwer-webxr-meta-quest-developer/ | `ActionRecorder` on Quest and `ActionPlayer` replay elsewhere (experimental). | Record human demonstrations on a headset and replay in a browser. |
-| 65 | Immersive Web Emulator | Meta | [repo] archived | archived 2026-10-01 | https://github.com/meta-quest/immersive-web-emulator | Chromium extension injecting IWER (hands, hit test, anchors, planes, meshes). | Legacy manual tool; IWER/IWSDK are its successors. |
+| 65 | Immersive Web Emulator | Meta | [repo] archived | archived 2026-10-01 | https://github.com/meta-quest/immersive-web-emulator | Chromium extension injecting IWER (hands, hit test, anchors, planes, meshes). | Legacy manual tool; the archive notice points to IWER (and React Three XR) as alternatives. |
 | 66 | IWSDK AI-assisted development tooling | Meta | [doc] | updated 2026-03-10 | https://developers.meta.com/horizon/documentation/web/iwsdk-ai-assisted-dev-tooling | 32 MCP tools: device control, `capture_canvas`, scene hierarchy, ECS query/snapshot/diff. | A ready-made observation and action API for agents in WebXR. |
-| 67 | IWSDK AI (modes and tools) | Meta | [doc] | updated 2026-11-02 | https://developers.meta.com/horizon/documentation/iwsdk/ai/ | `collaborate` (headed) vs `agent` (headless, fixed viewport) modes; CLI starts a managed Playwright browser; `ui_inspect` for UIKitML panels. | Headless, deterministic agent sessions out of the box. |
+| 67 | AI-Native Development (IWSDK) | Meta | [doc] | updated 2026-11-02 | https://developers.meta.com/horizon/documentation/iwsdk/ai/ | `collaborate` (headed) vs `agent` (headless, fixed viewport) modes; CLI starts a managed Playwright browser; `ui_inspect` for UIKitML panels. | Headless, deterministic agent sessions out of the box. |
 | 68 | Immersive Web SDK | Meta | [repo] MIT | 2025– | https://github.com/facebook/immersive-web-sdk | ECS SDK on three.js with an emulation and AI-agent dev plugin. | Open code for building a benchmark host. |
 | 69 | XR Interaction Toolkit changelog | Unity | [doc] 3.5.1 | 2026-06-02 | https://docs.unity3d.com/Packages/com.unity.xr.interaction.toolkit@3.5/changelog/CHANGELOG.html | `XRInteractionSimulator` since 3.1.0-pre.1 (2024-12-12); simulated hands in 3.5; `XRDeviceSimulator` deprecated. | Editor-side input simulation for Unity XR scenes. |
-| 70 | Input System: Testing | Unity | [doc] 1.14 | current | https://docs.unity3d.com/Packages/com.unity.inputsystem@1.14/manual/Testing.html | `InputTestFixture`: `Press`, `Set`, `QueueEvent`. | Programmatic input injection for Unity agents. |
+| 70 | Input System: Testing | Unity | [doc] 1.14 | current | https://docs.unity3d.com/Packages/com.unity.inputsystem@1.14/manual/Testing.html | "Input testing" (1.14.2): `InputTestFixture` with `Press`, `Set`; low-level `InputSystem.QueueEvent`. | Programmatic input injection for Unity agents. |
 | 71 | Unity Accessibility module | Unity | [doc] Unity 6 | current | https://docs.unity.com/en-us/engine/current/manual/accessibility/module-intro | `AccessibilityHierarchy`, `AccessibilityNode`, `AssistiveSupport`. | Pattern for a semantic UI tree in engine apps (built by hand; XR not listed). |
-| 72 | Godot 4.5 release | Godot | [blog] | 2025-09 | https://godotengine.org/releases/4.5/ | Experimental AccessKit screen-reader support for Control nodes; OpenXR improvements. | Open engine with an emerging UI tree. |
+| 72 | Godot 4.5 release | Godot | [blog] | 2025-09-15 (GitHub release `4.5-stable`) | https://godotengine.org/releases/4.5/ | Experimental AccessKit screen-reader support for Control nodes; OpenXR improvements. | Open engine with an emerging UI tree. |
 | 73 | Supporting screen readers in Unreal Engine | Epic Games | [doc] UE 5.9 | current | https://dev.epicgames.com/documentation/unreal-engine/supporting-screen-readers-in-unreal-engine | Experimental Slate accessibility (`FSlateAccessibleWidget`). | Widget text for Unreal UI; no XR statement. |
 | 74 | Running Gauntlet tests in Unreal Engine | Epic Games | [doc] | current | https://dev.epicgames.com/documentation/unreal-engine/running-gauntlet-tests-in-unreal-engine | `RunUAT RunUnreal` automation harness. | CI harness for Unreal-based environments. |
-| 75 | MRTK3 (Mixed Reality Toolkit for Unity) | Mixed Reality Toolkit Org | [repo] BSD-3-Clause | 2023– | https://github.com/MixedRealityToolkit/MixedRealityToolkit-Unity | Community-maintained MRTK3; accessibility package in early preview. | Low priority; legacy HoloLens-era UX toolkit. |
+| 75 | MRTK3 (Mixed Reality Toolkit for Unity) | Mixed Reality Toolkit Org | [repo] BSD-3-Clause | 2023– | https://github.com/MixedRealityToolkit/MixedRealityToolkit-Unity | MRTK3, maintained by the Mixed Reality Toolkit Organization; accessibility package in early preview. | Low priority; legacy HoloLens-era UX toolkit. |
 | 76 | XR Accessibility User Requirements (XAUR) | W3C APA WG | [doc] W3C Group Note | 2021-08-25 | https://www.w3.org/TR/xaur/ | Requirements for queryable objects and device-independent input in XR. | Normative argument for the semantic layer agents need. |
 
 ### 3.5 Agent environments, XR testing and interaction logging
@@ -306,7 +306,7 @@ personal authors.
 | # | Title | First author et al. | Venue / status | Year | Link | Contribution (one line) | Relevance to 3D GUI agents (one line) |
 |---|---|---|---|---|---|---|---|
 | 112 | UI-TARS: Pioneering Automated GUI Interaction with Native Agents | Yujia Qin et al. (ByteDance) | [preprint] arXiv 2501.12326 | 2025 | https://arxiv.org/abs/2501.12326 | Native pixel-only GUI agent. | Baseline perception-to-action loop without accessibility trees. |
-| 113 | UI-TARS-1.5-7B (model card) | ByteDance Seed | [repo] HF, Apache-2.0 | 2025 | https://huggingface.co/ByteDance-Seed/UI-TARS-1.5-7B | Open 7B; OSWorld 27.5, ScreenSpot-Pro 49.6 (card). | Practical open baseline. |
+| 113 | UI-TARS-1.5-7B (model card) | ByteDance Seed | [repo] HF, Apache-2.0 | 2025 | https://huggingface.co/ByteDance-Seed/UI-TARS-1.5-7B | Open "7B" (card lists 8B parameters); OSWorld 27.5, ScreenSpot-Pro 49.6 (card). | Practical open baseline. |
 | 114 | UI-TARS-2 Technical Report | Haoming Wang et al. (ByteDance) | [preprint] arXiv 2509.02544 | 2025 | https://arxiv.org/abs/2509.02544 | Multi-turn RL in a hybrid GUI/game/terminal sandbox; 59.8 mean normalized score on 15 games. | RL in sandboxes transfers to a synthetic 3D UI gym. |
 | 115 | OS-ATLAS | Zhiyong Wu et al. | [preprint] arXiv 2410.23218 | 2024 | https://arxiv.org/abs/2410.23218 | 13M+ cross-platform GUI elements. | Data scale needed; no XR data. |
 | 116 | ShowUI | Kevin Qinghong Lin et al. | [preprint] arXiv 2411.17465 | 2024 | https://arxiv.org/abs/2411.17465 | 2B VLA with UI-guided visual-token selection. | Token pruning for latency. |
@@ -530,7 +530,8 @@ Ordered by usefulness for a first research prototype.
 
 ### 4.6 Meta XR Simulator: record/replay, CI, multi-instance
 
-- **What it is.** An OpenXR runtime that replaces the headset for Unity, Unreal and native apps [#37].
+- **What it is.** An OpenXR runtime that replaces the headset. Meta documents it for Unity [#37] and for native
+  OpenXR apps [#38, #39]. Unreal support is listed in Meta's docs per the research pass (not re-opened).
 - **Features.**
   - Synthetic rooms.
   - Keyboard, mouse and Xbox controller input.
@@ -540,7 +541,7 @@ Ordered by usefulness for a first research prototype.
   - Several clients can attach to one simulator as separate users.
 - **Limits.**
   - No Android or OS layer.
-  - Passthrough is synthetic; the Passthrough Camera API is not supported in the simulator [#41].
+  - Passthrough is synthetic; the research pass reported that the Passthrough Camera API is not supported in the simulator (not stated on the PCA overview page; Section 10).
   - Replay has no pass/fail oracle; the harness must use logs, exit codes and timeouts.
 - **Relevance.**
   - It records human demonstrations of 3D UI operation (VRS) and replays them deterministically.
@@ -577,7 +578,7 @@ Ordered by usefulness for a first research prototype.
     since 3.5.
   - The older `XRDeviceSimulator` is deprecated [#69].
 - **Injection.** The simulator maps keyboard and mouse to Input System actions. An agent can write device state
-  directly with `InputTestFixture`-style `Set`, `Press` and `QueueEvent` [#70]. No dedicated scripting API for
+  directly with `InputTestFixture`-style `Set` and `Press`, or the low-level `InputSystem.QueueEvent` [#70]. No dedicated scripting API for
   the simulator is documented.
 - **Oracles.**
   - XRintTest builds an Interaction Flow Graph (interactors, interactables, actions, conditions) by static
@@ -1093,6 +1094,9 @@ out of the claims above or explicitly flagged there.
   glasses share figures. Secondary, not used in Section 6.
 - Whether OpenXR/Unity apps run in the Android XR emulator.
 
+**Meta (additional)**
+- Passthrough Camera API support in Meta XR Simulator: reported as unsupported by the research pass, not stated on the PCA overview page re-opened in the audit.
+
 **Meta**
 - Whether a sideloaded (developer-mode) third-party AccessibilityService runs on Horizon OS. Store distribution is ruled out: `BIND_ACCESSIBILITY_SERVICE` is a prohibited permission [#156].
 - `adb shell input tap/swipe`, `screencap`, `screenrecord`, `scrcpy` and `uiautomator` on current Quest
@@ -1112,7 +1116,6 @@ out of the claims above or explicitly flagged there.
   is an inference.
 - Monado latest release and the simulated driver (GitLab was bot-blocked).
 - MRTK3 input simulation details and latest release; godot-xr-tools, ML-Agents and Unreal versions.
-- Godot 4.5 release date: sources disagree (5 vs 15 Sep 2025).
 - Unreal royalty terms; Unity accessibility module on XR builds.
 
 **Research and models**
