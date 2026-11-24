@@ -17,10 +17,8 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - { os: macos-14, browser: webkit, device: "iPhone 15", name: mac-webkit }
-          - { os: ubuntu-latest, browser: webkit, device: "iPhone 15", name: linux-webkit }
-          - { os: ubuntu-latest, browser: chromium, device: "Pixel 7", name: linux-chromium }
-          - { os: macos-14, browser: chromium, device: "Pixel 7", name: mac-chromium }
+          - { os: macos-15, browser: webkit, device: "iPhone 15", name: mac-webkit }
+          - { os: ubuntu-24.04, browser: webkit, device: "iPhone 15", name: linux-webkit }
     runs-on: ${{ matrix.os }}
     timeout-minutes: 45
     steps:
@@ -33,7 +31,7 @@ jobs:
       - name: Install Playwright
         shell: bash
         run: |
-          cd ops/mobile && npm init -y >/dev/null && npm install --silent playwright@1.49.1
+          cd ops/mobile && npm init -y >/dev/null && npm install --silent playwright@latest && npx playwright --version
           if [ "$RUNNER_OS" = "Linux" ]; then npx playwright install --with-deps ${{ matrix.browser }} >/dev/null; else npx playwright install ${{ matrix.browser }} >/dev/null; fi
       - name: Measure
         shell: bash

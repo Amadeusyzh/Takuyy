@@ -34,6 +34,15 @@ const INSTRUMENT = () => {
       };
     }
   }
+  // gaps between animation frames: a page whose main thread or compositor stalls shows long gaps
+  window.__m.raf = [];
+  let lastF = 0;
+  const onFrame = (t) => {
+    if (lastF && t - lastF > 100) window.__m.raf.push({ at: Math.round(lastF), ms: Math.round(t - lastF) });
+    lastF = t;
+    requestAnimationFrame(onFrame);
+  };
+  requestAnimationFrame(onFrame);
   let last = performance.now();
   setInterval(() => {
     const now = performance.now(), lag = now - last - 50;
@@ -108,6 +117,8 @@ function withTimeout(p, ms, fallback) {
         rec.lagsAfterTap = m.lags.filter((l) => l.at >= t0 - 50).slice(0, 20);
         rec.lagsBeforeTap = m.lags.filter((l) => l.at < t0 - 50).slice(0, 10);
         rec.maxLag = Math.round(m.maxLag);
+        rec.rafGapsAfterTap = m.raf.filter((l) => l.at >= t0 - 50).slice(0, 20);
+        rec.rafGapsBeforeTap = m.raf.filter((l) => l.at < t0 - 50).slice(0, 10);
       }
       rec.canvas = await withTimeout(page.evaluate((sel) => {
         const c = document.querySelector(sel + ' canvas');
