@@ -53,14 +53,19 @@
         if (typeof window.fitWideInlineMath === "function") window.fitWideInlineMath();
       }).catch(function () {});
     }
-    if (window.jQuery && window.Toc) {
+    // The theme builds the table of contents in jQuery ready handlers (common.js, and bootstrap-toc for every
+    // nav marked data-toggle="toc"), which jQuery runs asynchronously, sometimes after the load event. A body
+    // decrypted before they run (a remembered password) would get one list from each, so the list is rebuilt
+    // from scratch in a ready handler registered now: jQuery runs it after theirs.
+    function toc() {
+      if (!window.jQuery || !window.Toc) return;
       var $nav = window.jQuery("#toc-sidebar");
-      if ($nav.length) {
-        $nav.empty();
-        window.Toc.init($nav);
-        try { window.jQuery("body").scrollspy("refresh"); } catch (e) { /* no scrollspy */ }
-      }
+      if (!$nav.length) return;
+      $nav.empty();
+      window.Toc.init($nav);
+      try { window.jQuery("body").scrollspy("refresh"); } catch (e) { /* no scrollspy */ }
     }
+    if (window.jQuery) window.jQuery(function () { setTimeout(toc, 0); });
     if (location.hash) {
       var target = document.getElementById(decodeURIComponent(location.hash.slice(1)));
       if (target) target.scrollIntoView();
