@@ -1,0 +1,44 @@
+# Opens the SDF shader test page and the home-page Lab in Mobile Safari on the newest iPhone simulator of each
+# macOS image and records what the pages report (blocking WebGL calls, lost contexts, frame gaps, the stats
+# lines), screenshots and WebKit log lines. No AI and no API key involved. Triggered by pushes to
+# ops/iosrun-<name>. Results go to report/<branch>-<job>.
+name: iOS simulator check
+
+on:
+  push:
+    branches: ["ops/iosrun-*"]
+
+permissions:
+  contents: write
+
+jobs:
+  sim:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { os: macos-15, test: sdf }
+          - { os: macos-15, test: lab }
+          - { os: macos-26, test: sdf }
+          - { os: macos-26, test: lab }
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Run in the simulator
+        shell: bash
+        run: bash ops/ios/run.sh ${{ matrix.test }} "$RUNNER_TEMP/rep"
+      - name: Publish report
+        if: always()
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          REP="$RUNNER_TEMP/rep"; mkdir -p "$REP"
+          cd "$REP" && git init -q && git add -A \
+            && git -c user.name=ops-bot -c user.email=ops-bot@users.noreply.github.com commit -q -m "ios simulator report" \
+            && git -c http.extraheader="AUTHORIZATION: basic $(printf 'x-access-token:%s' "$GH_TOKEN" | base64 | tr -d '\n')" \
+                 push -q -f "https://github.com/$GITHUB_REPOSITORY" "HEAD:refs/heads/report/${GITHUB_REF_NAME#ops/}-${{ matrix.os }}-${{ matrix.test }}"
+          echo "report pushed"
