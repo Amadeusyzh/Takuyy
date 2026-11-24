@@ -172,7 +172,7 @@ flowchart TD
   D -.measures.-> A
   D -.measures.-> B
   C -.constrains.-> A
-  E -.explains slow uptake, partly via.-> D
+  E -.partly explained by.-> D
   F -.needs.-> G
   G -.automates / guides.-> A4
   G -.automates.-> C
@@ -1863,7 +1863,41 @@ table records what each platform documents. P-IDs are used in Section 4.
 
 ### 9.1 Automated citation audit (2026-11-24)
 
-Automated pass in progress; see the next commit.
+Method: the `citation-audit` approach, automated.
+- Every DOI and arXiv id in the key-works table was resolved through OpenAlex; arXiv ids were resolved via
+  their `10.48550/arXiv.<id>` DOIs.
+- For each, the returned title, first author and year were compared with the table row.
+- Rows without a DOI or arXiv id are the official pages and reports: A01, A04, B20, C01–C04, E11–E20, F19,
+  F20, G15–G22. The researching part opened and read these; three were re-opened during this audit (below).
+
+**Result.** 164 rows were checked against 165 identifiers. All resolve, and none was invented or wrong.
+- **Title similarity below 0.8**, all benign:
+  - A17 groups three works (Fitts 1954, MacKenzie 1992, Soukoreff & MacKenzie 2004), and each DOI matches
+    its own title.
+  - B01 lists Jacob's 1990 CHI paper and the 1991 ACM TOIS extended version. Both DOIs match.
+  - B19 carries a product suffix in the title cell. The DOI matches the Nature 2025 paper by Kaifosh et al.
+  - A05 (JDCAD, `10.1016/0097-8493(94)90062-0`) was mis-parsed by the script at the parenthesis.
+    Re-checked: Liang, 1994, title matches.
+- **Year mismatches**, both artefacts of OpenAlex:
+  - A03 (VRAIS 1997) and C06 (VRAIS 1998) show 2002 in OpenAlex, an IEEE Xplore indexing date. The DOIs
+    (`10.1109/VRAIS.1997.583043`, `10.1109/VRAIS.1998.658418`) confirm the table years.
+- **First-author mismatches:** none, apart from the hyphen variant "Hennig‐Thurau" (E04).
+- **Duplicates across parts:** E10 = D16 (Saredakis et al. 2020) and G05 = B18 (GazePointAR). They are
+  merged in the key-works table.
+
+**Re-opened web sources (2026-11-24).**
+- E11: the IDC release of 2026-03-23 confirms XR shipments +44.4% in 2025, Meta 72.2% share, Quest
+  shipments −42.3%, display-less glasses "the majority", and 2026 growth 33.5% with a 26.5% CAGR for
+  2026–2030.
+- G21: Google's Galaxy XR post confirms "Hey Google, organize these windows", "take action on your behalf
+  across your apps", and the price "$1799 or $149/month". The Galaxy XR price is therefore also a company
+  statement, not only a press report as given in 6.2.
+- E15: the UploadVR article of 2026-02-11 confirms "more than 7 million smart glasses in 2025", the earlier
+  2 M figure (Oct 2023 – Feb 2025), and the 10 M per year capacity plan. The 20–30 M figure is Bloomberg
+  reporting relayed second-hand.
+- G15: the Apple newsroom release of 2026-06-08 confirms that Siri AI is coming to Vision Pro and visionOS
+  27, with onscreen awareness and actions across apps. It was for developers at announcement, "available
+  as a beta to users later this year".
 
 ### 9.2 Foundations of 3D interaction (A)
 
