@@ -1,0 +1,25 @@
+1795514632.5 {"t":1003,"kind":"contextlost","data":"?/webgl2"}
+1795514633.6 {"t":1005,"kind":"gap","data":"947 ms"}
+1795514634.5 {"kind":"info","data":"UA: Mozilla/5.0 (iPhone; CPU iPhone OS 18_7 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/26.5 Mobile/15E148 Safari/604.1\ndevicePixelRatio: 3\nrenderer: Apple GPU\nKHR_parallel_shader_compile: yes\nmax fragment uniform vectors: 1024"}
+1795514634.8 {"t":2174,"kind":"context","data":"rows/webgl2 parallel"}
+1795514634.9 {"t":516,"kind":"context","data":"?/webgl2 parallel"}
+1795514635.1 {"t":2801,"kind":"slowcall","data":"getProgramParameter 622 ms"}
+1795514635.4 {"t":2878,"kind":"gap","data":"1873 ms"}
+1795514635.8 {"kind":"table","done":false,"rows":["T0 | tiny shader 5 lines | 3496 ms... |  |  | ","T1 | sphere tracing only 97 lines | run |  |  | ","T2 | + normal, colour, light 133 lines | run |  |  | ","T3 | + soft shadow 151 lines | run |  |  | ","T4 | + AO (default look) 161 lines | run |  |  | ","T5 | full shader (live site) 308 lines | run |  |  | ","T6 | original shader (before the fixes) 293 lines | run |  |  | "]}
+1795514636.7 {"t":7835,"kind":"gap","data":"2206 ms"}
+1795514637.2 {"kind":"table","done":false,"rows":["T0 | tiny shader 5 lines | 6181 ms | 319 ms |  | ","T1 | sphere tracing only 97 lines | run |  |  | ","T2 | + normal, colour, light 133 lines | run |  |  | ","T3 | + soft shadow 151 lines | run |  |  | ","T4 | + AO (default look) 161 lines | run |  |  | ","T5 | full shader (live site) 308 lines | run |  |  | ","T6 | original shader (before the fixes) 293 lines | run |  |  | "]}
+1795514638.3 {"t":9371,"kind":"context","data":"rows/webgl2 parallel"}
+1795514638.8 {"t":10517,"kind":"gap","data":"463 ms"}
+1795514640.7 {"kind":"table","done":false,"rows":["T0 | tiny shader 5 lines | 6181 ms | 319 ms | 72 ms | ","T1 | sphere tracing only 97 lines | 680 ms | 460 ms | 211 ms | ","T2 | + normal, colour, light 133 lines | run |  |  | ","T3 | + soft shadow 151 lines | run |  |  | ","T4 | + AO (default look) 161 lines | run |  |  | ","T5 | full shader (live site) 308 lines | run |  |  | ","T6 | original shader (before the fixes) 293 lines | run |  |  | "]}
+1795514640.9 {"t":11880,"kind":"context","data":"rows/webgl2 parallel"}
+1795514641.4 {"t":13050,"kind":"gap","data":"408 ms"}
+1795514642.4 {"t":13922,"kind":"context","data":"rows/webgl2 parallel"}
+1795514643.1 {"kind":"table","done":false,"rows":["T0 | tiny shader 5 lines | 6181 ms | 319 ms | 72 ms | ","T1 | sphere tracing only 97 lines | 680 ms | 460 ms | 211 ms | ","T2 | + normal, colour, light 133 lines | 762 ms | 406 ms | 113 ms | ","T3 | + soft shadow 151 lines | 302 ms | 253 ms |  | ","T4 | + AO (default look) 161 lines | run |  |  | ","T5 | full shader (live site) 308 lines | run |  |  | ","T6 | original shader (before the fixes) 293 lines | run |  |  | "]}
+1795514643.5 {"t":15184,"kind":"context","data":"rows/webgl2 parallel"}
+1795514645.9 {"t":16606,"kind":"context","data":"rows/webgl2 parallel"}
+1795514646.1 {"kind":"table","done":false,"rows":["T0 | tiny shader 5 lines | 6181 ms | 319 ms | 72 ms | ","T1 | sphere tracing only 97 lines | 680 ms | 460 ms | 211 ms | ","T2 | + normal, colour, light 133 lines | 762 ms | 406 ms | 113 ms | ","T3 | + soft shadow 151 lines | 302 ms | 253 ms | 74 ms | ","T4 | + AO (default look) 161 lines | 524 ms | 218 ms | 75 ms | ","T5 | full shader (live site) 308 lines | 918 ms | 159 ms... |  | ","T6 | original shader (before the fixes) 293 lines | run |  |  | "]}
+1795514646.4 {"t":18016,"kind":"gap","data":"490 ms"}
+1795514647.4 {"t":19069,"kind":"context","data":"rows/webgl2 parallel"}
+1795514648.5 {"t":20290,"kind":"gap","data":"540 ms"}
+1795514649.1 {"kind":"table","done":false,"rows":["T0 | tiny shader 5 lines | 6181 ms | 319 ms | 72 ms | ","T1 | sphere tracing only 97 lines | 680 ms | 460 ms | 211 ms | ","T2 | + normal, colour, light 133 lines | 762 ms | 406 ms | 113 ms | ","T3 | + soft shadow 151 lines | 302 ms | 253 ms | 74 ms | ","T4 | + AO (default look) 161 lines | 524 ms | 218 ms | 75 ms | ","T5 | full shader (live site) 308 lines | 918 ms | 489 ms | 149 ms | ","T6 | original shader (before the fixes) 293 lines | 679 ms | 538 ms | 98 ms | "]}
+1795514652.1 {"kind":"table","done":true,"rows":["T0 | tiny shader 5 lines | 6181 ms | 319 ms | 72 ms | ","T1 | sphere tracing only 97 lines | 680 ms | 460 ms | 211 ms | ","T2 | + normal, colour, light 133 lines | 762 ms | 406 ms | 113 ms | ","T3 | + soft shadow 151 lines | 302 ms | 253 ms | 74 ms | ","T4 | + AO (default look) 161 lines | 524 ms | 218 ms | 75 ms | ","T5 | full shader (live site) 308 lines | 918 ms | 489 ms | 149 ms | ","T6 | original shader (before the fixes) 293 lines | 679 ms | 538 ms | 98 ms | "]}
