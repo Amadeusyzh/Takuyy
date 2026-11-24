@@ -825,6 +825,7 @@ agent's decision rate.
 | Galaxy XR: $1,799, US 21 Oct / Korea 22 Oct 2025, Snapdragon XR2+ Gen 2 | Google blog [#33]; Samsung newsroom (search result) |
 | Jetpack SceneCore, ARCore for Jetpack XR, XR Runtime and Android XR emulators stable | Android Developers blog, 2026-11-06 [#20] |
 | XREAL AURA: first wired XR glasses on Android XR, $1,099 launch price, <95 g, compute puck | Google blog, 2026-10-28 [#34]; Android blog [#20] |
+| Samsung/Google Android XR AI glasses (Warby Parker from $395, Gentle Monster $449–$489): preorders 2026-11-12, on sale 2026-12-10 in the US and South Korea; Snapdragon AR1 Gen 1, 12 MP camera with recording LED, Gemini by voice or frame tap. Press reports describe them as display-free. | Android Central, 2026-11-12 (press); TechRepublic (press) |
 | Gemini UI automation preview on Galaxy S26 and select Pixel 10 (US, Korea; food, grocery, rideshare apps) | Android Developers blog, 2026-02-25 [#32] |
 | Meta XR Operator (OpenXR layer + MCP) released as experimental in Meta XR SDK v205 | Meta developer blog, 2026-08-18 [#35] |
 | Meta VR Glasses: $1,299.99, spring 2027, Snapdragon Reality Elite, ~100 g + puck, eye/hand/voice input, Meta AI agent built into the OS ("play a movie, open an app, adjust your workspace") | Meta blog, 2026-09-23 [#49] |
@@ -920,7 +921,16 @@ agent's decision rate.
     - Do it for me.
     - Show me where (highlight or ray hint).
     - Coach me step by step.
-11. **Safety of physical side effects.** No study yet covers an agent rearranging windows, changing immersion
+11. **Form factors diverge.** The "3D GUI" differs by device class:
+    - Headsets (Vision Pro, Galaxy XR, Quest) and wired XR glasses (XREAL AURA; Meta VR Glasses from spring
+      2027) have full spatial GUIs.
+    - Display glasses (Ray-Ban Display, Glimmer-style UIs [#27]) have small, focus-navigated HUDs, whose
+      action space is closer to a TV remote than to a 6-DoF ray.
+    - Display-free AI glasses (Samsung/Google, Ray-Ban Meta) have no GUI. The agent is the interface, and
+      vision serves world understanding.
+    - A research agenda should say which class it targets. The headset/wired-glasses class is where "operating
+      the 3D GUI for the user" is meaningful today.
+12. **Safety of physical side effects.** No study yet covers an agent rearranging windows, changing immersion
     level or boundaries, or starting MR content in a real room. Guardrails are needed: never touch the
     boundary, confirm immersion changes, keep a hazard-aware placement policy.
 
@@ -1090,8 +1100,10 @@ out of the claims above or explicitly flagged there.
   (https://roadtovr.com/google-android-xr-passthrough-camera-access/).
 - Google Play policy text on autonomous use of the Accessibility API (2025 update). Seen only in search
   snippets.
-- Samsung/Google AI glasses preorders (TechRepublic, Nov 2026: $395–$489, no display) and Counterpoint smart
-  glasses share figures. Secondary, not used in Section 6.
+- Samsung/Google AI glasses: launch facts in Section 6.1 come from press (Android Central, TechRepublic). No
+  Samsung or Google primary page was opened. "No display" comes from TechRepublic and search summaries;
+  Android Central does not mention a display.
+- Counterpoint smart glasses share figures (H1 2026): secondary, not used.
 - Whether OpenXR/Unity apps run in the Android XR emulator.
 
 **Meta (additional)**
