@@ -15,10 +15,10 @@
 
 | 论文 | 会议/期刊（状态） | 年份 | 链接 | 说明 |
 | --- | --- | --- | --- | --- |
-| Look Before You Leap: Context-Sensitive GUI Grounding for Boosting Automated XR Testing (Orienter; Li et al.) | FSE 2026（arXiv 题为 Grounded GUI Understanding for Vision-Based Spatial Intelligent Agent） | 2026 | https://arxiv.org/abs/2409.10811 | 零样本检测 VR 截图中的可交互 GUI 元素；IoU 0.75 下 F1 44.1%；唯一经同行评审的 XR 界面像素级定位工作 |
+| Look Before You Leap: Context-Sensitive GUI Grounding for Boosting Automated Extended Reality (XR) Testing (Orienter; Li et al.) | FSE 2026，PACMSE 3(FSE)（arXiv 题为 Grounded GUI Understanding for Vision-Based Spatial Intelligent Agent） | 2026 | https://doi.org/10.1145/3808134 | 零样本检测 VR 截图中的可交互 GUI 元素；IoU 0.75 下 F1 44.1%；唯一经同行评审的 XR 界面像素级定位工作 |
 | ComboBench: Can LLMs Manipulate Physical Devices to Play VR Games? (Li et al.) | arXiv 预印本 | 2025 | https://arxiv.org/abs/2510.24706 | 语义动作 → 手柄/头显操作序列；最佳完全匹配仅 11.7% |
-| NavAI: A Generalizable LLM Framework for Navigation Tasks in Virtual Reality Environments (Qin, DiGiovanni) | arXiv 预印本 | 2026 | https://arxiv.org/abs/2601.03251 | 语言 + VR 截图 → 移动动作的闭环；16/18 任务成功，每轮约 49 s；不涉及界面 |
-| SIAgent: Spatial Interaction Agent via LLM-powered Eye-Hand Motion Intent Understanding in VR (Wang, Gu, Lu) | arXiv 预印本 | 2026 | https://arxiv.org/abs/2603.00522 | 从眼手运动推断意图并由虚拟手执行；意图识别 97.2%，LLM 延迟约 9.1 s |
+| NavAI: A Generalizable LLM Framework for Navigation Tasks in Virtual Reality Environments (Qin, DiGiovanni) | ASE 2025 Workshops（arXiv 2026） | 2025 | https://arxiv.org/abs/2601.03251 | 语言 + VR 截图 → 移动动作的闭环；16/18 任务成功，每轮约 49 s；不涉及界面 |
+| SIAgent: Spatial Interaction Agent via LLM-powered Eye-Hand Motion Intent Understanding in VR (Wang, Gu, Lu) | IEEE TVCG 32(7)（DOI 10.1109/TVCG.2026.3686395） | 2026 | https://arxiv.org/abs/2603.00522 | 从眼手运动推断意图并由虚拟手执行；意图识别 97.2%，LLM 延迟约 9.1 s |
 | Revisiting put-that-there, context aware window interactions via LLMs (Bovo et al.) | ISMAR 2025 Adjunct（据 OpenAlex） | 2025 | https://arxiv.org/abs/2511.02378 | 语音 + 指向 + 注视 → JSON 窗口放置动作；尚无定量评测 |
 | DuoZone: A User-Centric, LLM-Guided Mixed-Initiative XR Window Management System (Qian et al.) | IEEE TVCG（2026-11-03 在线发表，据 OpenAlex） | 2026 | https://arxiv.org/abs/2511.15676 | Vision Pro 上的混合主动窗口布局；N=16，布局匹配快 34.5% |
 | Voice2Action: Language Models as Agent for Efficient Real-Time Interaction in Virtual Reality (Su) | arXiv 预印本 | 2023 | https://arxiv.org/abs/2310.00092 | 早期的语言 → VR 动作智能体（经引擎 API） |
@@ -33,7 +33,7 @@
 | VRCopilot: Authoring 3D Layouts with Generative AI Models in VR (Zhang et al.) | UIST 2024 | 2024 | https://arxiv.org/abs/2408.09382 | 脚手架式协作提高用户主导感 |
 | GenXR-Bench: Benchmarking Coding Agents for Interactive XR Development (Huang et al.) | arXiv 预印本 | 2026 | https://arxiv.org/abs/2610.29014 | 112 个 XR 开发任务；其 VLM「演员」API 是现成的 3D 界面动作空间 |
 | ControlAnything: Generative UI and On-Demand Device Integration for Mixed-Reality Hand Interaction by a Coding Agent (Ryskeldiev) | arXiv 预印本 | 2026 | https://arxiv.org/abs/2611.08321 | 在 Quest 3 上按需生成 AR 控件；中位数 32.5 s |
-| XARP Tools: An Extended Reality Platform for Humans and AI Agents (Caetano et al.) | PACM HCI（EICS，据 arXiv 注释） | 2025 | https://arxiv.org/abs/2508.04108 | 以工具和 MCP 形式向智能体开放 XR 工具包 |
+| XARP: A Human-First and Agent-Ready Extended Reality Toolkit in Python（arXiv 题为 XARP Tools; Caetano et al.） | PACM HCI 10(4)（EICS） | 2026 | https://doi.org/10.1145/3816762 | 以工具和 MCP 形式向智能体开放 XR 工具包 |
 | Introducing Meta XR Operator (Meta 开发者博客) | 产品 / SDK v205，实验性 | 2026 | https://developers.meta.com/horizon/blog/meta-xr-operator-close-the-build-test-verify-loop-for-vr/ | OpenXR API 层 + MCP：截图、房间几何、Unity 层级、手柄输入；「too slowly for real-time interaction」 |
 
 ### 回答 / 引导型 XR 助手
@@ -52,7 +52,7 @@
 | 论文 | 会议/期刊（状态） | 年份 | 链接 | 说明 |
 | --- | --- | --- | --- | --- |
 | VRExplorer (Zhu et al.) | ASE 2025 | 2025 | https://arxiv.org/abs/2607.10174 | 实体-动作-任务模型 + NavMesh 自动抓取/触发 VR 物体 |
-| Automated Testing of Prevalent 3D User Interactions in Virtual Reality Applications (XRintTest; Gu et al.) | arXiv 预印本 | 2026 | https://arxiv.org/abs/2601.23139 | 交互流图；XRBench3D 456 个交互，覆盖 93% |
+| Automated Testing of Prevalent 3D User Interactions in Virtual Reality Applications (XRintTest; Gu et al.) | Automated Software Engineering 33(3)（DOI 10.1007/s10515-026-00620-1） | 2026 | https://arxiv.org/abs/2601.23139 | 交互流图；XRBench3D 456 个交互，覆盖 93% |
 | AUTOVR (Kim et al.) | USENIX Security 2025 | 2025 | https://arxiv.org/abs/2508.12187 | 二进制插桩驱动 366 个商业 Quest 应用的界面 |
 | ExploreAI (Wang et al.) | arXiv 预印本 | 2026 | https://arxiv.org/abs/2608.21628 | LLM 智能体探索黑盒 VR/3D 应用 |
 | VRSight / DISCOVR (Killough et al.) | UIST 2025 | 2025 | https://arxiv.org/abs/2508.02958 | 最大的 VR 界面元素检测数据集（17,691 帧） |

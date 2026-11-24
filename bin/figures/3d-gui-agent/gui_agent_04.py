@@ -142,7 +142,7 @@ TIMELINE = {
         ("EmBARDiment", 2024.62), ("Orienter", 2024.71), ("Satori", 2024.79),
         ("Embodied Web Agents", 2025.46), ("VRSight", 2025.62), ("Sensible Agent", 2025.71),
         ("ComboBench", 2025.79), ("Put-That-There", 2025.87), ("DuoZone", 2025.88), ("SIMA 2", 2025.96),
-        ("NavAI", 2026.04), ("XRintTest", 2026.05), ("SIAgent", 2026.21), ("VisionClaw", 2026.29),
+        ("NavAI", 2025.87), ("XRintTest", 2026.05), ("SIAgent", 2026.21), ("VisionClaw", 2026.29),
         ("ExploreAI", 2026.62), ("GenXR-Bench", 2026.79)],
     # lane 1: infrastructure and tools
     1: [("OpenXR 1.1", 2024.29), ("IWER", 2024.54), ("XARP Tools", 2025.62), ("XR Blocks", 2025.71),
@@ -338,9 +338,9 @@ def fig_pieces():
         ax.set_xticklabels(names, fontsize=11.5)
         ax.set_ylim(0, 100)
         ax.set_ylabel(L(lang, "top-1 intent accuracy (%)", "Top-1 意图准确率 (%)", "Top-1 意図正解率 (%)"))
-        ax.set_title(L(lang, "(c) intent: from eye-hand motion in VR\n(SIAgent, preprint 2026)",
-                       "(c) 意图：从 VR 中的眼手运动推断\n（SIAgent，2026 年预印本）",
-                       "(c) 意図：VR での目と手の動きから推定\n（SIAgent、2026 年プレプリント）"), fontsize=13)
+        ax.set_title(L(lang, "(c) intent: from eye-hand motion in VR\n(SIAgent, IEEE TVCG 2026)",
+                       "(c) 意图：从 VR 中的眼手运动推断\n（SIAgent，IEEE TVCG 2026）",
+                       "(c) 意図：VR での目と手の動きから推定\n（SIAgent、IEEE TVCG 2026）"), fontsize=13)
         ax.grid(axis="x", visible=False)
         # (d) Embodied Web Agents: best model vs human
         ax = axs[1, 1]

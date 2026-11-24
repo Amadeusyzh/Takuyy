@@ -74,7 +74,7 @@ XR における LLM 研究の第一波（2023-2024 年）は、言語を用い�
 
 ### 1.3 すでに XR アプリを操作しているプログラム：自動テスト
 
-ソフトウェア工学の研究は、2022 年から別の目的、すなわち**テストカバレッジ（test coverage）**のために VR アプリを自動で操作してきました。**VRTest**（Wang, ICSE 2022 tool demo）は Unity シーンを読み取り、カメラを動かして探索します。**VRGuide**（Wang, Rafi and Meng, ASE 2023）は計算幾何学を用いて、すべてのインタラクタブルなオブジェクトをカバーするカメラ経路を計画します。**VRExplorer**（Zhu et al., ASE 2025）、**XRintTest**（Gu et al., arXiv 2026）、**AUTOVR**（Kim et al., USENIX Security 2025）、そして LLM 駆動の **ExploreAI**（Wang et al., arXiv 2026）については 2.7 節で説明します。**VRScout**（Wu et al., arXiv 2025）は人間のデモンストレーションから Action Chunking Transformer を学習し、市販の VR ゲームを 60 FPS でプレイします。これは言語を伴わない、ピクセルから 6-DoF への方策です。
+ソフトウェア工学の研究は、2022 年から別の目的、すなわち**テストカバレッジ（test coverage）**のために VR アプリを自動で操作してきました。**VRTest**（Wang, ICSE 2022 tool demo）は Unity シーンを読み取り、カメラを動かして探索します。**VRGuide**（Wang, Rafi and Meng, ASE 2023）は計算幾何学を用いて、すべてのインタラクタブルなオブジェクトをカバーするカメラ経路を計画します。**VRExplorer**（Zhu et al., ASE 2025）、**XRintTest**（Gu et al., Automated Software Engineering 2026）、**AUTOVR**（Kim et al., USENIX Security 2025）、そして LLM 駆動の **ExploreAI**（Wang et al., arXiv 2026）については 2.7 節で説明します。**VRScout**（Wu et al., arXiv 2025）は人間のデモンストレーションから Action Chunking Transformer を学習し、市販の VR ゲームを 60 FPS でプレイします。これは言語を伴わない、ピクセルから 6-DoF への方策です。
 
 動機は現実的です。オープンソースの Unity VR アプリ 314 本を調べた研究では、79% に自動テストがまったくありませんでした（Rzig et al., ISSTA 2023）。VR/AR ソフトウェア工学に関する 2026 年のサーベイ（Guo et al., arXiv, TSE に投稿）は、VR GUI 探索のための LLM エージェントを未解決問題として挙げており、座標の特定（coordinate localization）は解決されていないとしています。
 
@@ -127,7 +127,7 @@ XR における LLM 研究の第一波（2023-2024 年）は、言語を用い�
 
 ### 2.1 Orienter：VR フレーム内の操作可能な要素の接地
 
-**Look Before You Leap: Context-Sensitive GUI Grounding for Boosting Automated XR Testing**（Shuqing Li et al., FSE 2026 research track；arXiv 2409.10811、その arXiv 版のタイトルは *Grounded GUI Understanding for Vision-Based Spatial Intelligent Agent: Exemplified by Extended Reality Apps*）。手法の名前は **Orienter** です。
+**Look Before You Leap: Context-Sensitive GUI Grounding for Boosting Automated Extended Reality (XR) Testing**（Shuqing Li et al., FSE 2026、Proceedings of the ACM on Software Engineering 3(FSE) 掲載、[DOI 10.1145/3808134](https://doi.org/10.1145/3808134)；arXiv 2409.10811、その arXiv 版のタイトルは *Grounded GUI Understanding for Vision-Based Spatial Intelligent Agent: Exemplified by Extended Reality Apps*）。手法の名前は **Orienter** です。
 
 *問題。* VR アプリのスクリーンショット中の*操作可能な GUI 要素（interactable GUI elements, IGE）*を見つけること。スマートフォンの GUI と異なり、XR の要素はオープン語彙（open-vocabulary）であり（レバー、浮遊するパネル、ドアノブ）、ある要素が操作可能かどうかは文脈に依存します。同じ木箱でも、つかめる場合とつかめない場合があります。固定された 2D ウィジェットのクラスで学習した検出器は、うまく転移しません。
 
@@ -157,7 +157,7 @@ XR における LLM 研究の第一波（2023-2024 年）は、言語を用い�
 
 ### 2.3 NavAI：閉ループ、ただし歩行のため
 
-**NavAI: A Generalizable LLM Framework for Navigation Tasks in Virtual Reality Environments**（Xue Qin and M. DiGiovanni, arXiv 2601.03251, 2026 年 1 月；プレプリント）は、自然言語のゴールと VR のスクリーンショットから実行される行動までを結ぶ、唯一の公開済み閉ループです。
+**NavAI: A Generalizable LLM Framework for Navigation Tasks in Virtual Reality Environments**（Xue Qin and Matthew DiGiovanni, ASE 2025 Workshops, [DOI 10.1109/ASEW67777.2025.00067](https://doi.org/10.1109/ASEW67777.2025.00067)；arXiv 2601.03251, 2026 年 1 月）は、自然言語のゴールと VR のスクリーンショットから実行される行動までを結ぶ、唯一の公開済み閉ループです。
 
 *ループ。* グリッドを重ねた視野のスクリーンショットとユーザーの要求が GPT-4o に送られます。GPT-4o、Grok-2、Gemini-2.5-Flash の投票で次のステップが選ばれ、JSON の関数呼び出し（`move`、`rotate`、`look`、`scan_360`）が Unity シミュレータで実行され、新しい視界が返ってきます。グリッドのオーバーレイは Set-of-Mark プロンプティングの 3D 版の親戚であり、モデルが指し示すための番号付きの場所を与えます。
 
@@ -167,7 +167,7 @@ XR における LLM 研究の第一波（2023-2024 年）は、言語を用い�
 
 ### 2.4 SIAgent：エージェントが実行し、意図は目と手から
 
-**SIAgent: Spatial Interaction Agent via LLM-powered Eye-Hand Motion Intent Understanding in VR**（Zhimin Wang, Chenyu Gu and Feng Lu, arXiv 2603.00522, 2026 年 3 月；プレプリント）は、ユーザーがジェスチャーとコマンドの対応づけを学ぶ手間を省けるかを問います。エージェントは自然な目と手の振る舞いを観察し、意図された操作を推論して実行します。
+**SIAgent: Spatial Interaction Agent via LLM-powered Eye-Hand Motion Intent Understanding in VR**（Zhimin Wang, Chenyu Gu and Feng Lu, IEEE TVCG 32(7), 2026, [DOI 10.1109/TVCG.2026.3686395](https://doi.org/10.1109/TVCG.2026.3686395)；arXiv 2603.00522, 2026 年 3 月）は、ユーザーがジェスチャーとコマンドの対応づけを学ぶ手間を省けるかを問います。エージェントは自然な目と手の振る舞いを観察し、意図された操作を推論して実行します。
 
 *パイプライン。* 30 Hz でサンプリングした 3 秒間の視線ウィンドウを 18 点に削減し、手の姿勢と指の状態を言語化します。三つの LLM 呼び出し（ChatGLM-4）が順位付きの六つの意図仮説を返し、エージェントが制御する仮想の手が選ばれたものを実行します。
 
@@ -200,7 +200,7 @@ XR における LLM 研究の第一波（2023-2024 年）は、言語を用い�
 | システム | 知覚の方法 | 行動の方法 | 規模と結果 | 状況 |
 | --- | --- | --- | --- | --- |
 | VRExplorer（Zhu et al.） | Unity のシーンとスクリプトの静的・動的解析。開発者が `IGrabbable` などのインターフェースでオブジェクトにタグを付ける | NavMesh による経路探索、タスクと探索を交互に行う確率的状態機械 | 11 の Unity プロジェクト。VRGuide に対し実行可能行カバレッジが +122.8%。バグ 3 件 | ASE 2025 |
-| XRintTest（Gu et al.） | XR Interaction Toolkit のコンポーネントから解析した Interaction Flow Graph | XRI デバイスシミュレータを通じたシミュレートされたコントローライベント。オラクルが反応しないインタラクションを検出する | XRBench3D：10 シーン、456 インタラクション。93% をカバー（fire 97%、manipulate 94%、socket 83%）、ランダムは 8% | arXiv 2026 |
+| XRintTest（Gu et al.） | XR Interaction Toolkit のコンポーネントから解析した Interaction Flow Graph | XRI デバイスシミュレータを通じたシミュレートされたコントローライベント。オラクルが反応しないインタラクションを検出する | XRBench3D：10 シーン、456 インタラクション。93% をカバー（fire 97%、manipulate 94%、socket 83%）、ランダムは 8% | Automated Software Engineering 33(3), 2026 |
 | AUTOVR（Kim et al.） | Quest 2 上の Unity IL2CPP アプリのバイナリ計装（Frida）により UI イベントハンドラを復元 | ハンドラを直接呼び出し、コライダーの接触を強制し、シーンを再読み込みする | Quest Store と SideQuest の 366 アプリ。発見した機密データ露出は Android Monkey の 117 件に対し 390 件。1 アプリあたり約 222 s | USENIX Security 2025 |
 | ExploreAI（Wang et al.） | LLM が視界とタスクのテキストから対象を選ぶ。ナビゲーションと多視点キャプチャのモジュール | ナビゲートしてキャプチャする。オブジェクトごとのトレース記録 | Unity、AI2-THOR、BeamNG のアプリ | arXiv 2026 |
 
@@ -335,7 +335,7 @@ $$
 | StereoID スクリーンショット | VR アプリのステレオスクリーンショット | 171K スクリーンショット、288 アプリ | FSE 2024 |
 | GUI-World（XR サブセット） | QA 付きの画面録画 GUI 動画 | 393 本の XR 動画、3,930 QA（全 12,379 本の動画のうち） | ICLR 2025 |
 | ComboBench | 意味的な行動と記録されたコントローラ／HMD の系列、テキストのみ | 262 シナリオ | arXiv 2025 |
-| XRBench3D | 実行可能なインタラクションを持つ Unity シーン | 10 シーン、456 インタラクション | arXiv 2026 |
+| XRBench3D | 実行可能なインタラクションを持つ Unity シーン | 10 シーン、456 インタラクション | Automated Software Engineering 2026 |
 | MineXR | ヘッドセット上で作成された個人化 XR レイアウト | 31 名の参加者、695 ウィジェット、109 レイアウト | CHI 2024 |
 | GenXR-Bench | スクリプトと VLM のアクターを伴う WebXR 開発タスク | 112 タスク | arXiv 2026 |
 
@@ -401,23 +401,23 @@ VRSight の DISCOVR セットでは、小さな YOLOv8n 検出器が 67.3 mAP50�
 
 | 論文 | 著者 | 発表先 | 年 | リンク | なぜ重要か |
 | --- | --- | --- | --- | --- | --- |
-| Look Before You Leap: Context-Sensitive GUI Grounding for Boosting Automated XR Testing (Orienter) | Shuqing Li et al. | FSE | 2026 | [arXiv](https://arxiv.org/abs/2409.10811) | レンダリングされた VR フレーム内の GUI 要素を接地する唯一の査読付き研究 |
+| Look Before You Leap: Context-Sensitive GUI Grounding for Boosting Automated Extended Reality (XR) Testing (Orienter) | Shuqing Li et al. | FSE (PACMSE) | 2026 | [DOI](https://doi.org/10.1145/3808134) | レンダリングされた VR フレーム内の GUI 要素を接地する唯一の査読付き研究 |
 | ComboBench: Can LLMs Manipulate Physical Devices to Play VR Games? | Shuqing Li et al. | arXiv | 2025 | [arXiv](https://arxiv.org/abs/2510.24706) | 言語からコントローラ行動への接地を測定：最高でも 11.7% |
-| NavAI: A Generalizable LLM Framework for Navigation Tasks in Virtual Reality Environments | Xue Qin, M. DiGiovanni | arXiv | 2026 | [arXiv](https://arxiv.org/abs/2601.03251) | 言語と VR スクリーンショットからの閉ループ（移動のため） |
-| SIAgent: Spatial Interaction Agent via LLM-powered Eye-Hand Motion Intent Understanding in VR | Zhimin Wang, Chenyu Gu, Feng Lu | arXiv | 2026 | [arXiv](https://arxiv.org/abs/2603.00522) | 推論された意図からエージェントが VR 操作を実行 |
+| NavAI: A Generalizable LLM Framework for Navigation Tasks in Virtual Reality Environments | Xue Qin, Matthew DiGiovanni | ASE Workshops | 2025 | [arXiv](https://arxiv.org/abs/2601.03251) | 言語と VR スクリーンショットからの閉ループ（移動のため） |
+| SIAgent: Spatial Interaction Agent via LLM-powered Eye-Hand Motion Intent Understanding in VR | Zhimin Wang, Chenyu Gu, Feng Lu | IEEE TVCG | 2026 | [arXiv](https://arxiv.org/abs/2603.00522) | 推論された意図からエージェントが VR 操作を実行 |
 | Revisiting put-that-there, context aware window interactions via LLMs | Riccardo Bovo et al. | ISMAR Adjunct | 2025 | [arXiv](https://arxiv.org/abs/2511.02378) | LLM が発話、ポインティング、視線から XR ウィンドウ層に対して行動 |
 | DuoZone: A User-Centric, LLM-Guided Mixed-Initiative XR Window Management System | Jing Qian et al. | IEEE TVCG | 2026 | [arXiv](https://arxiv.org/abs/2511.15676) | 最もよく評価された言語駆動の XR UI システム（N=16） |
 | Voice2Action: Language Models as Agent for Efficient Real-Time Interaction in Virtual Reality | Yang Su | arXiv | 2023 | [arXiv](https://arxiv.org/abs/2310.00092) | エンジンを通じた、言語から VR 行動への初期のエージェント |
 | LLMR: Real-time Prompting of Interactive Worlds using Large Language Models | Fernanda De La Torre et al. | CHI | 2024 | [DOI](https://doi.org/10.1145/3613904.3642579) | LLM が XR のシーングラフを読み取り、世界を変更 |
 | GenXR-Bench: Benchmarking Coding Agents for Interactive XR Development | William Huang et al. | arXiv | 2026 | [arXiv](https://arxiv.org/abs/2610.29014) | XR アプリを操作する VLM アクターを備えたハーネス |
-| XARP Tools: An Extended Reality Platform for Humans and AI Agents | Arthur Caetano et al. | PACM HCI (EICS) | 2025 | [arXiv](https://arxiv.org/abs/2508.04108) | ツールとして、また MCP 経由でエージェントに公開される XR ツールキット |
+| XARP: A Human-First and Agent-Ready Extended Reality Toolkit in Python (arXiv: XARP Tools) | Arthur Caetano et al. | PACM HCI (EICS) | 2026 | [DOI](https://doi.org/10.1145/3816762) | ツールとして、また MCP 経由でエージェントに公開される XR ツールキット |
 | GazePointAR: A Context-Aware Multimodal Voice Assistant for Pronoun Disambiguation in Wearable Augmented Reality | Jaewook Lee et al. | CHI | 2024 | [arXiv](https://arxiv.org/abs/2404.08213) | 視線とポインティングからの直示的な意図 |
 | EmBARDiment: an Embodied AI Agent for Productivity in XR | Riccardo Bovo et al. | IEEE VR | 2025 | [arXiv](https://arxiv.org/abs/2408.08158) | LLM の文脈としての XR ウィンドウ上の視線 |
 | Satori: Towards Proactive AR Assistant with Belief-Desire-Intention User Modeling | Chenyi Li et al. | CHI | 2025 | [DOI](https://doi.org/10.1145/3706598.3714188) | 明示的なユーザーモデルを用いた先回り型の案内 |
 | Sensible Agent: A Framework for Unobtrusive Interaction with Proactive AR Agents | Geonsun Lee et al. | UIST | 2025 | [arXiv](https://arxiv.org/abs/2509.09255) | XR エージェントがどのように、どのチャネルで尋ねるべきか |
 | Guided Reality: Generating Visually-Enriched AR Task Guidance with LLMs and Vision Models | Ada Yi Zhao et al. | UIST | 2025 | [arXiv](https://arxiv.org/abs/2508.03547) | 案内モードのための視覚的な語彙 |
 | VRExplorer: A Model-based Approach for Semi-Automated Testing of Virtual Reality Scenes | Zhengyang Zhu et al. | ASE | 2025 | [arXiv](https://arxiv.org/abs/2607.10174) | Unity VR シーンの自動的なつかむ／トリガー操作 |
-| Automated Testing of Prevalent 3D User Interactions in Virtual Reality Applications (XRintTest) | Ruizhen Gu et al. | arXiv | 2026 | [arXiv](https://arxiv.org/abs/2601.23139) | Interaction Flow Graph と XRBench3D（456 インタラクション） |
+| Automated Testing of Prevalent 3D User Interactions in Virtual Reality Applications (XRintTest) | Ruizhen Gu et al. | Automated Software Engineering | 2026 | [arXiv](https://arxiv.org/abs/2601.23139) | Interaction Flow Graph と XRBench3D（456 インタラクション） |
 | AUTOVR: Automated UI Exploration for Detecting Sensitive Data Flow Exposures in Virtual Reality Apps | John Y. Kim et al. | USENIX Security | 2025 | [arXiv](https://arxiv.org/abs/2508.12187) | バイナリ計装により市販の Quest アプリの UI を操作 |
 | ExploreAI: Agentic Exploration Knowledge Bases for Reproducible Observable-Regression Testing of Black-Box VR and 3D Applications | Jiajie Wang et al. | arXiv | 2026 | [arXiv](https://arxiv.org/abs/2608.21628) | LLM エージェントがブラックボックスの VR アプリを探索 |
 | VRSight: An AI-Driven Scene Description System to Improve Virtual Reality Accessibility for Blind People (DISCOVR) | Daniel Killough et al. | UIST | 2025 | [arXiv](https://arxiv.org/abs/2508.02958) | 最大の VR UI 要素検出データセット |

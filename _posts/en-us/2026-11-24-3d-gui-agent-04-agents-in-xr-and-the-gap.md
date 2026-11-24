@@ -74,7 +74,7 @@ The second line puts a multimodal assistant inside the headset or glasses. These
 
 ### 1.3 Programs that already operate XR apps: automated testing
 
-Software-engineering research has been driving VR apps automatically since 2022, for a different goal: **test coverage**. **VRTest** (Wang, ICSE 2022 tool demo) reads the Unity scene and moves the camera to explore. **VRGuide** (Wang, Rafi and Meng, ASE 2023) plans camera routes with computational geometry to cover all interactable objects. **VRExplorer** (Zhu et al., ASE 2025), **XRintTest** (Gu et al., arXiv 2026), **AUTOVR** (Kim et al., USENIX Security 2025) and the LLM-driven **ExploreAI** (Wang et al., arXiv 2026) are described in section 2.7. **VRScout** (Wu et al., arXiv 2025) learns an Action Chunking Transformer from human demonstrations and plays commercial VR games at 60 FPS, a pixel-to-6-DoF policy without language.
+Software-engineering research has been driving VR apps automatically since 2022, for a different goal: **test coverage**. **VRTest** (Wang, ICSE 2022 tool demo) reads the Unity scene and moves the camera to explore. **VRGuide** (Wang, Rafi and Meng, ASE 2023) plans camera routes with computational geometry to cover all interactable objects. **VRExplorer** (Zhu et al., ASE 2025), **XRintTest** (Gu et al., Automated Software Engineering 2026), **AUTOVR** (Kim et al., USENIX Security 2025) and the LLM-driven **ExploreAI** (Wang et al., arXiv 2026) are described in section 2.7. **VRScout** (Wu et al., arXiv 2025) learns an Action Chunking Transformer from human demonstrations and plays commercial VR games at 60 FPS, a pixel-to-6-DoF policy without language.
 
 The motivation is real: a study of 314 open-source Unity VR apps found that 79% had no automated tests at all (Rzig et al., ISSTA 2023). A 2026 survey of VR/AR software engineering (Guo et al., arXiv, submitted to TSE) lists LLM agents for VR GUI exploration as an open problem, with coordinate localization unsolved.
 
@@ -127,7 +127,7 @@ The interactive map below holds the same works and about twenty more. Each work 
 
 ### 2.1 Orienter: grounding interactable elements in VR frames
 
-**Look Before You Leap: Context-Sensitive GUI Grounding for Boosting Automated XR Testing** (Shuqing Li et al., FSE 2026 research track; arXiv 2409.10811, whose title reads *Grounded GUI Understanding for Vision-Based Spatial Intelligent Agent: Exemplified by Extended Reality Apps*). The method is called **Orienter**.
+**Look Before You Leap: Context-Sensitive GUI Grounding for Boosting Automated Extended Reality (XR) Testing** (Shuqing Li et al., FSE 2026, published in Proceedings of the ACM on Software Engineering 3(FSE), [DOI 10.1145/3808134](https://doi.org/10.1145/3808134); arXiv 2409.10811, whose title reads *Grounded GUI Understanding for Vision-Based Spatial Intelligent Agent: Exemplified by Extended Reality Apps*). The method is called **Orienter**.
 
 *Problem.* Find the *interactable GUI elements* (IGEs) in a screenshot of a VR app. Unlike phone GUIs, XR elements are open-vocabulary (a lever, a floating panel, a door handle), and whether an element is interactable depends on context: the same crate may or may not be grabbable. Detectors trained on fixed 2D widget classes transfer poorly.
 
@@ -157,7 +157,7 @@ This is the 2D GUI-agent recipe of [post 2]({{ '/blog/2026/3d-gui-agent-02-gui-a
 
 ### 2.3 NavAI: a closed loop, but for walking
 
-**NavAI: A Generalizable LLM Framework for Navigation Tasks in Virtual Reality Environments** (Xue Qin and M. DiGiovanni, arXiv 2601.03251, January 2026; preprint) is the only published closed loop from a natural-language goal and VR screenshots to executed actions.
+**NavAI: A Generalizable LLM Framework for Navigation Tasks in Virtual Reality Environments** (Xue Qin and Matthew DiGiovanni, ASE 2025 Workshops, [DOI 10.1109/ASEW67777.2025.00067](https://doi.org/10.1109/ASEW67777.2025.00067); arXiv 2601.03251, January 2026) is the only published closed loop from a natural-language goal and VR screenshots to executed actions.
 
 *Loop.* A field-of-view screenshot with a grid overlay and the user's request go to GPT-4o; a vote across GPT-4o, Grok-2 and Gemini-2.5-Flash picks the next step; JSON function calls (`move`, `rotate`, `look`, `scan_360`) execute in a Unity simulator; the new view comes back. The grid overlay is a 3D cousin of Set-of-Mark prompting: it gives the model numbered places to point at.
 
@@ -167,7 +167,7 @@ This is the 2D GUI-agent recipe of [post 2]({{ '/blog/2026/3d-gui-agent-02-gui-a
 
 ### 2.4 SIAgent: the agent executes, intent from eyes and hands
 
-**SIAgent: Spatial Interaction Agent via LLM-powered Eye-Hand Motion Intent Understanding in VR** (Zhimin Wang, Chenyu Gu and Feng Lu, arXiv 2603.00522, March 2026; preprint) asks whether users can skip learning gesture-to-command mappings: the agent watches natural eye and hand behaviour, infers the intended operation and executes it.
+**SIAgent: Spatial Interaction Agent via LLM-powered Eye-Hand Motion Intent Understanding in VR** (Zhimin Wang, Chenyu Gu and Feng Lu, IEEE TVCG 32(7), 2026, [DOI 10.1109/TVCG.2026.3686395](https://doi.org/10.1109/TVCG.2026.3686395); arXiv 2603.00522, March 2026) asks whether users can skip learning gesture-to-command mappings: the agent watches natural eye and hand behaviour, infers the intended operation and executes it.
 
 *Pipeline.* A 3-second gaze window sampled at 30 Hz is reduced to 18 points; hand pose and finger states are verbalized; three LLM calls (ChatGLM-4) return six ranked intent hypotheses; a virtual hand controlled by the agent executes the chosen one.
 
@@ -200,7 +200,7 @@ Four testing systems show four different ways to get *perception and action* in 
 | System | How it perceives | How it acts | Scale and result | Status |
 | --- | --- | --- | --- | --- |
 | VRExplorer (Zhu et al.) | static and dynamic analysis of Unity scenes and scripts; developers tag objects with interfaces such as `IGrabbable` | NavMesh path finding, a probabilistic state machine alternating tasks and exploration | 11 Unity projects; +122.8% executable-line coverage over VRGuide; 3 bugs | ASE 2025 |
-| XRintTest (Gu et al.) | an Interaction Flow Graph parsed from XR Interaction Toolkit components | simulated controller events through the XRI device simulator; an oracle flags unresponsive interactions | XRBench3D: 10 scenes, 456 interactions; 93% covered (97% fire, 94% manipulate, 83% socket) vs 8% random | arXiv 2026 |
+| XRintTest (Gu et al.) | an Interaction Flow Graph parsed from XR Interaction Toolkit components | simulated controller events through the XRI device simulator; an oracle flags unresponsive interactions | XRBench3D: 10 scenes, 456 interactions; 93% covered (97% fire, 94% manipulate, 83% socket) vs 8% random | Automated Software Engineering 33(3), 2026 |
 | AUTOVR (Kim et al.) | binary instrumentation (Frida) of Unity IL2CPP apps on Quest 2 to recover UI event handlers | invokes handlers directly, forces collider contacts, reloads scenes | 366 Quest Store and SideQuest apps; 390 vs 117 sensitive-data exposures found compared with Android Monkey; about 222 s per app | USENIX Security 2025 |
 | ExploreAI (Wang et al.) | an LLM selects targets from views and task text; navigation and multi-view capture modules | navigates and captures; per-object trace records | Unity, AI2-THOR and BeamNG apps | arXiv 2026 |
 
@@ -335,7 +335,7 @@ so a 2 cm button on a panel 1.5 m away subtends about 0.76°. A 2D grounder that
 | StereoID screenshots | stereo screenshots of VR apps | 171K screenshots, 288 apps | FSE 2024 |
 | GUI-World (XR subset) | screen-recorded GUI videos with QA | 393 XR videos, 3,930 QA (of 12,379 videos) | ICLR 2025 |
 | ComboBench | semantic actions and recorded controller/HMD sequences, text only | 262 scenarios | arXiv 2025 |
-| XRBench3D | Unity scenes with executable interactions | 10 scenes, 456 interactions | arXiv 2026 |
+| XRBench3D | Unity scenes with executable interactions | 10 scenes, 456 interactions | Automated Software Engineering 2026 |
 | MineXR | personalized XR layouts made on a headset | 31 participants, 695 widgets, 109 layouts | CHI 2024 |
 | GenXR-Bench | WebXR development tasks with scripted and VLM actors | 112 tasks | arXiv 2026 |
 
@@ -401,23 +401,23 @@ Status as of November 2026. "arXiv" means preprint only.
 
 | Paper | Authors | Venue | Year | Link | Why it matters |
 | --- | --- | --- | --- | --- | --- |
-| Look Before You Leap: Context-Sensitive GUI Grounding for Boosting Automated XR Testing (Orienter) | Shuqing Li et al. | FSE | 2026 | [arXiv](https://arxiv.org/abs/2409.10811) | Only peer-reviewed grounding of GUI elements in rendered VR frames |
+| Look Before You Leap: Context-Sensitive GUI Grounding for Boosting Automated Extended Reality (XR) Testing (Orienter) | Shuqing Li et al. | FSE (PACMSE) | 2026 | [DOI](https://doi.org/10.1145/3808134) | Only peer-reviewed grounding of GUI elements in rendered VR frames |
 | ComboBench: Can LLMs Manipulate Physical Devices to Play VR Games? | Shuqing Li et al. | arXiv | 2025 | [arXiv](https://arxiv.org/abs/2510.24706) | Measures language-to-controller action grounding: 11.7% at best |
-| NavAI: A Generalizable LLM Framework for Navigation Tasks in Virtual Reality Environments | Xue Qin, M. DiGiovanni | arXiv | 2026 | [arXiv](https://arxiv.org/abs/2601.03251) | Closed loop from language and VR screenshots, for locomotion |
-| SIAgent: Spatial Interaction Agent via LLM-powered Eye-Hand Motion Intent Understanding in VR | Zhimin Wang, Chenyu Gu, Feng Lu | arXiv | 2026 | [arXiv](https://arxiv.org/abs/2603.00522) | An agent executes VR operations from inferred intent |
+| NavAI: A Generalizable LLM Framework for Navigation Tasks in Virtual Reality Environments | Xue Qin, Matthew DiGiovanni | ASE Workshops | 2025 | [arXiv](https://arxiv.org/abs/2601.03251) | Closed loop from language and VR screenshots, for locomotion |
+| SIAgent: Spatial Interaction Agent via LLM-powered Eye-Hand Motion Intent Understanding in VR | Zhimin Wang, Chenyu Gu, Feng Lu | IEEE TVCG | 2026 | [arXiv](https://arxiv.org/abs/2603.00522) | An agent executes VR operations from inferred intent |
 | Revisiting put-that-there, context aware window interactions via LLMs | Riccardo Bovo et al. | ISMAR Adjunct | 2025 | [arXiv](https://arxiv.org/abs/2511.02378) | LLM acts on the XR window layer from speech, pointing and gaze |
 | DuoZone: A User-Centric, LLM-Guided Mixed-Initiative XR Window Management System | Jing Qian et al. | IEEE TVCG | 2026 | [arXiv](https://arxiv.org/abs/2511.15676) | Best-evaluated language-driven XR UI system (N=16) |
 | Voice2Action: Language Models as Agent for Efficient Real-Time Interaction in Virtual Reality | Yang Su | arXiv | 2023 | [arXiv](https://arxiv.org/abs/2310.00092) | Early language-to-VR-action agent through the engine |
 | LLMR: Real-time Prompting of Interactive Worlds using Large Language Models | Fernanda De La Torre et al. | CHI | 2024 | [DOI](https://doi.org/10.1145/3613904.3642579) | LLMs read XR scene graphs and change the world |
 | GenXR-Bench: Benchmarking Coding Agents for Interactive XR Development | William Huang et al. | arXiv | 2026 | [arXiv](https://arxiv.org/abs/2610.29014) | Harness with VLM actors that operate XR apps |
-| XARP Tools: An Extended Reality Platform for Humans and AI Agents | Arthur Caetano et al. | PACM HCI (EICS) | 2025 | [arXiv](https://arxiv.org/abs/2508.04108) | XR toolkit exposed to agents as tools and over MCP |
+| XARP: A Human-First and Agent-Ready Extended Reality Toolkit in Python (arXiv: XARP Tools) | Arthur Caetano et al. | PACM HCI (EICS) | 2026 | [DOI](https://doi.org/10.1145/3816762) | XR toolkit exposed to agents as tools and over MCP |
 | GazePointAR: A Context-Aware Multimodal Voice Assistant for Pronoun Disambiguation in Wearable Augmented Reality | Jaewook Lee et al. | CHI | 2024 | [arXiv](https://arxiv.org/abs/2404.08213) | Deictic intent from gaze and pointing |
 | EmBARDiment: an Embodied AI Agent for Productivity in XR | Riccardo Bovo et al. | IEEE VR | 2025 | [arXiv](https://arxiv.org/abs/2408.08158) | Gaze over XR windows as LLM context |
 | Satori: Towards Proactive AR Assistant with Belief-Desire-Intention User Modeling | Chenyi Li et al. | CHI | 2025 | [DOI](https://doi.org/10.1145/3706598.3714188) | Proactive guidance with an explicit user model |
 | Sensible Agent: A Framework for Unobtrusive Interaction with Proactive AR Agents | Geonsun Lee et al. | UIST | 2025 | [arXiv](https://arxiv.org/abs/2509.09255) | How an XR agent should ask, and through which channel |
 | Guided Reality: Generating Visually-Enriched AR Task Guidance with LLMs and Vision Models | Ada Yi Zhao et al. | UIST | 2025 | [arXiv](https://arxiv.org/abs/2508.03547) | Visual vocabulary for the guide mode |
 | VRExplorer: A Model-based Approach for Semi-Automated Testing of Virtual Reality Scenes | Zhengyang Zhu et al. | ASE | 2025 | [arXiv](https://arxiv.org/abs/2607.10174) | Automated grab/trigger operation of Unity VR scenes |
-| Automated Testing of Prevalent 3D User Interactions in Virtual Reality Applications (XRintTest) | Ruizhen Gu et al. | arXiv | 2026 | [arXiv](https://arxiv.org/abs/2601.23139) | Interaction Flow Graph and XRBench3D (456 interactions) |
+| Automated Testing of Prevalent 3D User Interactions in Virtual Reality Applications (XRintTest) | Ruizhen Gu et al. | Automated Software Engineering | 2026 | [arXiv](https://arxiv.org/abs/2601.23139) | Interaction Flow Graph and XRBench3D (456 interactions) |
 | AUTOVR: Automated UI Exploration for Detecting Sensitive Data Flow Exposures in Virtual Reality Apps | John Y. Kim et al. | USENIX Security | 2025 | [arXiv](https://arxiv.org/abs/2508.12187) | Drives commercial Quest app UIs via binary instrumentation |
 | ExploreAI: Agentic Exploration Knowledge Bases for Reproducible Observable-Regression Testing of Black-Box VR and 3D Applications | Jiajie Wang et al. | arXiv | 2026 | [arXiv](https://arxiv.org/abs/2608.21628) | LLM agent explores black-box VR apps |
 | VRSight: An AI-Driven Scene Description System to Improve Virtual Reality Accessibility for Blind People (DISCOVR) | Daniel Killough et al. | UIST | 2025 | [arXiv](https://arxiv.org/abs/2508.02958) | Largest VR UI-element detection dataset |
