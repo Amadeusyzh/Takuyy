@@ -1,0 +1,156 @@
+1795517103.8 {"t":1203,"kind":"context","data":"lab-cloth/webgl parallel"}
+1795517104.7 {"t":1772,"kind":"slowcall","data":"getShaderParameter 523 ms"}
+1795517107.2 {"t":4636,"kind":"slowcall","data":"getProgramParameter 2855 ms"}
+1795517108.2 {"t":5689,"kind":"slowcall","data":"getProgramParameter 1029 ms"}
+1795517108.8 {"t":6127,"kind":"slowcall","data":"getProgramParameter 426 ms"}
+1795517108.8 {"t":6161,"kind":"context","data":"lab-fov/webgl parallel"}
+1795517109.4 {"t":6546,"kind":"slowcall","data":"getProgramParameter 371 ms"}
+1795517109.7 {"t":7054,"kind":"slowcall","data":"getProgramParameter 491 ms"}
+1795517111.1 {"t":7421,"kind":"gap","data":"7026 ms"}
+1795517113.5 {"t":10807,"kind":"gap","data":"1010 ms"}
+1795517113.7 {"kind":"step","data":"tab pt"}
+1795517113.7 {"t":11044,"kind":"context","data":"lab-pt/webgl2 parallel"}
+1795517114.1 {"t":11573,"kind":"slowcall","data":"getProgramParameter 492 ms"}
+1795517114.3 {"t":11772,"kind":"slowcall","data":"getProgramParameter 193 ms"}
+1795517114.7 {"t":11957,"kind":"slowcall","data":"getProgramParameter 176 ms"}
+1795517114.8 {"t":12054,"kind":"gap","data":"1034 ms"}
+1795517116.9 {"kind":"stats","tab":"pt","s":0,"data":"10 spp · 2.1 M paths/s · 463×260"}
+1795517117.0 {"t":14464,"kind":"gap","data":"1662 ms"}
+1795517118.9 {"kind":"stats","tab":"pt","s":2,"data":"79 spp · 3.6 M paths/s · 324×182"}
+1795517120.9 {"kind":"stats","tab":"pt","s":4,"data":"189 spp · 3.4 M paths/s · 324×182"}
+1795517123.2 {"kind":"stats","tab":"pt","s":6,"data":"299 spp · 3.5 M paths/s · 324×182"}
+1795517125.0 {"kind":"stats","tab":"pt","s":8,"data":"389 spp · 2.8 M paths/s · 324×182"}
+1795517127.1 {"kind":"stats","tab":"pt","s":10,"data":"499 spp · 2.7 M paths/s · 324×182"}
+1795517127.1 {"kind":"step","data":"tab sdf"}
+1795517127.1 {"t":24476,"kind":"context","data":"lab-sdf/webgl2 parallel"}
+1795517129.0 {"kind":"stats","tab":"sdf","s":0,"data":"7 shapes · k = 0.45 · Shaded · 555×312 · AA 16/16 · light shading compiling shaders…"}
+1795517131.0 {"kind":"stats","tab":"sdf","s":2,"data":"7 shapes · k = 0.45 · Shaded · 555×312 · AA 16/16"}
+1795517133.0 {"kind":"stats","tab":"sdf","s":4,"data":"7 shapes · k = 0.45 · Shaded · 555×312 · AA 16/16"}
+1795517135.0 {"kind":"stats","tab":"sdf","s":6,"data":"7 shapes · k = 0.45 · Shaded · 555×312 · AA 16/16"}
+1795517137.0 {"kind":"stats","tab":"sdf","s":8,"data":"7 shapes · k = 0.45 · Shaded · 555×312 · AA 16/16"}
+1795517139.0 {"kind":"stats","tab":"sdf","s":10,"data":"7 shapes · k = 0.45 · Shaded · 555×312 · AA 16/16"}
+1795517141.1 {"kind":"stats","tab":"sdf","s":12,"data":"7 shapes · k = 0.45 · Shaded · 555×312 · AA 16/16"}
+1795517143.0 {"kind":"stats","tab":"sdf","s":14,"data":"7 shapes · k = 0.45 · Shaded · 555×312 · AA 16/16"}
+1795517145.1 {"kind":"stats","tab":"sdf","s":16,"data":"7 shapes · k = 0.45 · Shaded · 555×312 · AA 16/16"}
+1795517147.0 {"kind":"stats","tab":"sdf","s":18,"data":"7 shapes · k = 0.45 · Shaded · 555×312 · AA 16/16"}
+1795517149.1 {"kind":"stats","tab":"sdf","s":20,"data":"7 shapes · k = 0.45 · Shaded · 555×312 · AA 16/16"}
+1795517151.1 {"kind":"stats","tab":"sdf","s":22,"data":"7 shapes · k = 0.45 · Shaded · 555×312 · AA 16/16"}
+1795517153.0 {"kind":"stats","tab":"sdf","s":24,"data":"7 shapes · k = 0.45 · Shaded · 555×312 · AA 16/16"}
+1795517155.1 {"kind":"stats","tab":"sdf","s":26,"data":"7 shapes · k = 0.45 · Shaded · 555×312 · AA 16/16"}
+1795517157.0 {"kind":"stats","tab":"sdf","s":28,"data":"7 shapes · k = 0.45 · Shaded · 555×312 · AA 16/16"}
+1795517159.0 {"kind":"stats","tab":"sdf","s":30,"data":"7 shapes · k = 0.45 · Shaded · 555×312 · AA 16/16"}
+1795517161.1 {"kind":"stats","tab":"sdf","s":32,"data":"7 shapes · k = 0.45 · Shaded · 555×312 · AA 16/16"}
+1795517163.0 {"kind":"stats","tab":"sdf","s":34,"data":"7 shapes · k = 0.45 · Shaded · 555×312 · AA 16/16"}
+1795517165.2 {"kind":"stats","tab":"sdf","s":36,"data":"7 shapes · k = 0.45 · Shaded · 555×312 · AA 16/16"}
+1795517167.1 {"kind":"stats","tab":"sdf","s":38,"data":"7 shapes · k = 0.45 · Shaded · 555×312 · AA 16/16"}
+1795517169.5 {"kind":"stats","tab":"sdf","s":40,"data":"7 shapes · k = 0.45 · Shaded · 555×312 · AA 16/16"}
+1795517169.6 {"kind":"step","data":"tap shape"}
+1795517171.1 {"kind":"stats","tab":"sdf","s":42,"data":"7 shapes · k = 0.45 · Shaded · 231×130 · AA 16/16 compiling shaders…"}
+1795517173.1 {"kind":"stats","tab":"sdf","s":44,"data":"7 shapes · k = 0.45 · Shaded · 231×130 · AA 16/16 compiling shaders…"}
+1795517175.1 {"kind":"stats","tab":"sdf","s":46,"data":"7 shapes · k = 0.45 · Shaded · 231×130 · AA 16/16 compiling shaders…"}
+1795517177.1 {"kind":"stats","tab":"sdf","s":48,"data":"7 shapes · k = 0.45 · Shaded · 231×130 · AA 16/16 compiling shaders…"}
+1795517179.1 {"kind":"stats","tab":"sdf","s":50,"data":"7 shapes · k = 0.45 · Shaded · 231×130 · AA 16/16 compiling shaders…"}
+1795517181.1 {"kind":"stats","tab":"sdf","s":52,"data":"7 shapes · k = 0.45 · Shaded · 231×130 · AA 16/16 compiling shaders…"}
+1795517183.1 {"kind":"stats","tab":"sdf","s":54,"data":"7 shapes · k = 0.45 · Shaded · 231×130 · AA 16/16 compiling shaders…"}
+1795517185.1 {"kind":"stats","tab":"sdf","s":56,"data":"7 shapes · k = 0.45 · Shaded · 231×130 · AA 16/16 compiling shaders…"}
+1795517187.3 {"kind":"stats","tab":"sdf","s":58,"data":"7 shapes · k = 0.45 · Shaded · 231×130 · AA 16/16 compiling shaders…"}
+1795517189.2 {"kind":"stats","tab":"sdf","s":60,"data":"7 shapes · k = 0.45 · Shaded · 555×312 · AA 16/16 · light shading"}
+1795517191.2 {"kind":"stats","tab":"sdf","s":62,"data":"7 shapes · k = 0.45 · Shaded · 555×312 · AA 16/16 · light shading"}
+1795517193.4 {"kind":"stats","tab":"sdf","s":64,"data":"7 shapes · k = 0.45 · Shaded · 555×312 · AA 16/16 · light shading"}
+1795517195.2 {"kind":"stats","tab":"sdf","s":66,"data":"7 shapes · k = 0.45 · Shaded · 555×312 · AA 16/16 · light shading"}
+1795517197.2 {"kind":"stats","tab":"sdf","s":68,"data":"7 shapes · k = 0.45 · Shaded · 555×312 · AA 16/16 · light shading"}
+1795517199.7 {"kind":"step","data":"slice view"}
+1795517199.7 {"kind":"stats","tab":"sdf","s":70,"data":"7 shapes · k = 0.45 · Shaded · 555×312 · AA 16/16 · light shading"}
+1795517201.3 {"kind":"stats","tab":"sdf","s":72,"data":"7 shapes · k = 0.45 · Slice · 253×142 · AA 16/16 · light shading"}
+1795517203.2 {"kind":"stats","tab":"sdf","s":74,"data":"7 shapes · k = 0.45 · Slice · 253×142 · AA 16/16 · light shading"}
+1795517205.2 {"kind":"stats","tab":"sdf","s":76,"data":"7 shapes · k = 0.45 · Slice · 253×142 · AA 16/16 · light shading"}
+1795517207.2 {"kind":"stats","tab":"sdf","s":78,"data":"7 shapes · k = 0.45 · Slice · 253×142 · AA 16/16 · light shading"}
+1795517209.2 {"kind":"stats","tab":"sdf","s":80,"data":"7 shapes · k = 0.45 · Slice · 253×142 · AA 16/16 · light shading"}
+1795517211.3 {"kind":"stats","tab":"sdf","s":82,"data":"7 shapes · k = 0.45 · Slice · 253×142 · AA 16/16 · light shading"}
+1795517213.3 {"kind":"stats","tab":"sdf","s":84,"data":"7 shapes · k = 0.45 · Slice · 253×142 · AA 16/16 · light shading"}
+1795517215.4 {"kind":"stats","tab":"sdf","s":86,"data":"7 shapes · k = 0.45 · Slice · 253×142 · AA 16/16 · light shading"}
+1795517217.3 {"kind":"stats","tab":"sdf","s":88,"data":"7 shapes · k = 0.45 · Slice · 253×142 · AA 16/16 · light shading"}
+1795517219.4 {"kind":"step","data":"shaded view"}
+1795517219.4 {"kind":"stats","tab":"sdf","s":90,"data":"7 shapes · k = 0.45 · Slice · 253×142 · AA 16/16 · light shading"}
+1795517221.3 {"kind":"stats","tab":"sdf","s":92,"data":"7 shapes · k = 0.45 · Shaded · 555×312 · AA 16/16 · light shading"}
+1795517223.3 {"kind":"stats","tab":"sdf","s":94,"data":"7 shapes · k = 0.45 · Shaded · 555×312 · AA 16/16 · light shading"}
+1795517225.4 {"kind":"stats","tab":"sdf","s":96,"data":"7 shapes · k = 0.45 · Shaded · 555×312 · AA 16/16 · light shading"}
+1795517227.3 {"kind":"stats","tab":"sdf","s":98,"data":"7 shapes · k = 0.45 · Shaded · 555×312 · AA 16/16 · light shading"}
+1795517229.3 {"kind":"stats","tab":"sdf","s":100,"data":"7 shapes · k = 0.45 · Shaded · 555×312 · AA 16/16 · light shading"}
+1795517231.3 {"kind":"stats","tab":"sdf","s":102,"data":"7 shapes · k = 0.45 · Shaded · 555×312 · AA 16/16 · light shading"}
+1795517233.3 {"kind":"stats","tab":"sdf","s":104,"data":"7 shapes · k = 0.45 · Shaded · 555×312 · AA 16/16 · light shading"}
+1795517235.4 {"kind":"stats","tab":"sdf","s":106,"data":"7 shapes · k = 0.45 · Shaded · 555×312 · AA 16/16 · light shading"}
+1795517237.3 {"kind":"stats","tab":"sdf","s":108,"data":"7 shapes · k = 0.45 · Shaded · 555×312 · AA 16/16 · light shading"}
+1795517239.3 {"kind":"stats","tab":"sdf","s":110,"data":"7 shapes · k = 0.45 · Shaded · 555×312 · AA 16/16 · light shading"}
+1795517241.4 {"kind":"stats","tab":"sdf","s":112,"data":"7 shapes · k = 0.45 · Shaded · 555×312 · AA 16/16 · light shading"}
+1795517243.4 {"kind":"stats","tab":"sdf","s":114,"data":"7 shapes · k = 0.45 · Shaded · 555×312 · AA 16/16 · light shading"}
+1795517245.4 {"kind":"stats","tab":"sdf","s":116,"data":"7 shapes · k = 0.45 · Shaded · 555×312 · AA 16/16 · light shading"}
+1795517247.4 {"kind":"stats","tab":"sdf","s":118,"data":"7 shapes · k = 0.45 · Shaded · 555×312 · AA 16/16 · light shading"}
+1795517247.5 {"kind":"step","data":"tab pt"}
+1795517249.4 {"kind":"stats","tab":"pt","s":0,"data":"87 spp · 2.7 M paths/s · 324×182"}
+1795517251.5 {"kind":"stats","tab":"pt","s":2,"data":"187 spp · 2.8 M paths/s · 324×182"}
+1795517253.4 {"kind":"stats","tab":"pt","s":4,"data":"307 spp · 3.1 M paths/s · 324×182"}
+1795517255.7 {"kind":"stats","tab":"pt","s":6,"data":"407 spp · 3.7 M paths/s · 324×182"}
+1795517257.4 {"kind":"stats","tab":"pt","s":8,"data":"527 spp · 3.4 M paths/s · 324×182"}
+1795517259.5 {"kind":"stats","tab":"pt","s":10,"data":"627 spp · 3.7 M paths/s · 324×182"}
+1795517261.6 {"kind":"stats","tab":"pt","s":12,"data":"737 spp · 3.6 M paths/s · 324×182"}
+1795517263.6 {"kind":"stats","tab":"pt","s":14,"data":"847 spp · 3.7 M paths/s · 324×182"}
+1795517265.6 {"kind":"stats","tab":"pt","s":16,"data":"937 spp · 2.9 M paths/s · 324×182"}
+1795517267.7 {"kind":"stats","tab":"pt","s":18,"data":"1037 spp · 3.2 M paths/s · 324×182"}
+1795517269.6 {"kind":"stats","tab":"pt","s":20,"data":"1137 spp · 3.1 M paths/s · 324×182"}
+1795517271.8 {"kind":"stats","tab":"pt","s":22,"data":"1227 spp · 3.0 M paths/s · 324×182"}
+1795517273.6 {"kind":"stats","tab":"pt","s":24,"data":"1337 spp · 3.6 M paths/s · 324×182"}
+1795517275.7 {"kind":"stats","tab":"pt","s":26,"data":"1447 spp · 3.5 M paths/s · 324×182"}
+1795517277.8 {"kind":"stats","tab":"pt","s":28,"data":"1557 spp · 3.6 M paths/s · 324×182"}
+1795517277.8 {"t":175000,"kind":"context","data":"lab-rs/webgl2 parallel"}
+1795517277.9 {"kind":"step","data":"tab rs"}
+1795517278.1 {"t":175192,"kind":"slowcall","data":"getProgramParameter 180 ms"}
+1795517278.3 {"t":175567,"kind":"slowcall","data":"getProgramParameter 364 ms"}
+1795517278.5 {"t":175763,"kind":"slowcall","data":"getProgramParameter 186 ms"}
+1795517278.9 {"t":176091,"kind":"slowcall","data":"getProgramParameter 315 ms"}
+1795517279.4 {"t":176493,"kind":"slowcall","data":"getProgramParameter 395 ms"}
+1795517279.5 {"t":176570,"kind":"gap","data":"1586 ms"}
+1795517279.8 {"kind":"stats","tab":"rs","s":0,"data":"512 lights · M=16 candidates/pixel · 1 spp · ReSTIR: temporal + spatial · 0 fps · 370×208"}
+1795517280.5 {"t":177450,"kind":"gap","data":"865 ms"}
+1795517281.6 {"kind":"stats","tab":"rs","s":2,"data":"512 lights · M=16 candidates/pixel · 1 spp · ReSTIR: temporal + spatial · 53 fps · 370×208"}
+1795517283.5 {"kind":"stats","tab":"rs","s":4,"data":"512 lights · M=16 candidates/pixel · 1 spp · ReSTIR: temporal + spatial · 62 fps · 370×208"}
+1795517285.5 {"kind":"stats","tab":"rs","s":6,"data":"512 lights · M=16 candidates/pixel · 1 spp · ReSTIR: temporal + spatial · 60 fps · 370×208"}
+1795517287.5 {"kind":"stats","tab":"rs","s":8,"data":"512 lights · M=16 candidates/pixel · 1 spp · ReSTIR: temporal + spatial · 60 fps · 370×208"}
+1795517289.5 {"kind":"stats","tab":"rs","s":10,"data":"512 lights · M=16 candidates/pixel · 1 spp · ReSTIR: temporal + spatial · 60 fps · 370×208"}
+1795517291.5 {"kind":"stats","tab":"rs","s":12,"data":"512 lights · M=16 candidates/pixel · 1 spp · ReSTIR: temporal + spatial · 60 fps · 370×208"}
+1795517293.7 {"kind":"stats","tab":"rs","s":14,"data":"512 lights · M=16 candidates/pixel · 1 spp · ReSTIR: temporal + spatial · 63 fps · 370×208"}
+1795517295.8 {"kind":"stats","tab":"rs","s":16,"data":"512 lights · M=16 candidates/pixel · 1 spp · ReSTIR: temporal + spatial · 63 fps · 370×208"}
+1795517297.9 {"kind":"stats","tab":"rs","s":18,"data":"512 lights · M=16 candidates/pixel · 1 spp · ReSTIR: temporal + spatial · 63 fps · 370×208"}
+1795517297.9 {"kind":"step","data":"tab cloth"}
+1795517299.7 {"kind":"stats","tab":"cloth","s":0,"data":"1,600 particles · 8,405 constraints · 15 substeps · solver 2.6 ms"}
+1795517301.7 {"kind":"stats","tab":"cloth","s":2,"data":"1,600 particles · 8,405 constraints · 15 substeps · solver 2.7 ms"}
+1795517303.7 {"kind":"stats","tab":"cloth","s":4,"data":"1,600 particles · 8,405 constraints · 15 substeps · solver 2.4 ms"}
+1795517305.6 {"kind":"stats","tab":"cloth","s":6,"data":"1,600 particles · 8,405 constraints · 15 substeps · solver 3.0 ms"}
+1795517307.6 {"kind":"stats","tab":"cloth","s":8,"data":"1,600 particles · 8,405 constraints · 15 substeps · solver 2.5 ms"}
+1795517309.6 {"kind":"stats","tab":"cloth","s":10,"data":"1,600 particles · 8,405 constraints · 15 substeps · solver 2.9 ms"}
+1795517311.7 {"kind":"stats","tab":"cloth","s":12,"data":"1,600 particles · 8,405 constraints · 15 substeps · solver 3.0 ms"}
+1795517313.6 {"kind":"stats","tab":"cloth","s":14,"data":"1,600 particles · 8,405 constraints · 15 substeps · solver 3.0 ms"}
+1795517315.7 {"kind":"stats","tab":"cloth","s":16,"data":"1,600 particles · 8,405 constraints · 15 substeps · solver 2.8 ms"}
+1795517317.6 {"kind":"stats","tab":"cloth","s":18,"data":"1,600 particles · 8,405 constraints · 15 substeps · solver 2.9 ms"}
+1795517317.8 {"kind":"step","data":"tab sdf"}
+1795517319.6 {"kind":"stats","tab":"sdf","s":0,"data":"7 shapes · k = 0.45 · Shaded · 555×312 · AA 16/16 · light shading"}
+1795517321.6 {"kind":"stats","tab":"sdf","s":2,"data":"7 shapes · k = 0.45 · Shaded · 555×312 · AA 16/16 · light shading"}
+1795517323.7 {"kind":"stats","tab":"sdf","s":4,"data":"7 shapes · k = 0.45 · Shaded · 555×312 · AA 16/16 · light shading"}
+1795517325.6 {"kind":"stats","tab":"sdf","s":6,"data":"7 shapes · k = 0.45 · Shaded · 555×312 · AA 16/16 · light shading"}
+1795517327.7 {"kind":"stats","tab":"sdf","s":8,"data":"7 shapes · k = 0.45 · Shaded · 555×312 · AA 16/16 · light shading"}
+1795517329.7 {"kind":"stats","tab":"sdf","s":10,"data":"7 shapes · k = 0.45 · Shaded · 555×312 · AA 16/16 · light shading"}
+1795517331.7 {"kind":"stats","tab":"sdf","s":12,"data":"7 shapes · k = 0.45 · Shaded · 555×312 · AA 16/16 · light shading"}
+1795517333.7 {"kind":"stats","tab":"sdf","s":14,"data":"7 shapes · k = 0.45 · Shaded · 555×312 · AA 16/16 · light shading"}
+1795517335.6 {"kind":"stats","tab":"sdf","s":16,"data":"7 shapes · k = 0.45 · Shaded · 555×312 · AA 16/16 · light shading"}
+1795517337.6 {"kind":"stats","tab":"sdf","s":18,"data":"7 shapes · k = 0.45 · Shaded · 555×312 · AA 16/16 · light shading"}
+1795517339.7 {"kind":"stats","tab":"sdf","s":20,"data":"7 shapes · k = 0.45 · Shaded · 555×312 · AA 16/16 · light shading"}
+1795517341.7 {"kind":"stats","tab":"sdf","s":22,"data":"7 shapes · k = 0.45 · Shaded · 555×312 · AA 16/16 · light shading"}
+1795517343.7 {"kind":"stats","tab":"sdf","s":24,"data":"7 shapes · k = 0.45 · Shaded · 555×312 · AA 16/16 · light shading"}
+1795517345.8 {"kind":"stats","tab":"sdf","s":26,"data":"7 shapes · k = 0.45 · Shaded · 555×312 · AA 16/16 · light shading"}
+1795517347.7 {"kind":"stats","tab":"sdf","s":28,"data":"7 shapes · k = 0.45 · Shaded · 555×312 · AA 16/16 · light shading"}
+1795517350.0 {"kind":"stats","tab":"sdf","s":30,"data":"7 shapes · k = 0.45 · Shaded · 555×312 · AA 16/16 · light shading"}
+1795517352.1 {"kind":"stats","tab":"sdf","s":32,"data":"7 shapes · k = 0.45 · Shaded · 555×312 · AA 16/16 · light shading"}
+1795517353.7 {"kind":"stats","tab":"sdf","s":34,"data":"7 shapes · k = 0.45 · Shaded · 555×312 · AA 16/16 · light shading"}
+1795517355.7 {"kind":"stats","tab":"sdf","s":36,"data":"7 shapes · k = 0.45 · Shaded · 555×312 · AA 16/16 · light shading"}
+1795517357.7 {"kind":"stats","tab":"sdf","s":38,"data":"7 shapes · k = 0.45 · Shaded · 555×312 · AA 16/16 · light shading"}
+1795517357.7 {"kind":"done","done":true}
