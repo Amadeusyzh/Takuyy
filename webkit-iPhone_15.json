@@ -1,0 +1,1676 @@
+[
+ {
+  "browser": "webkit",
+  "device": "iPhone 15",
+  "tab": "pt",
+  "gl": {
+   "webgl2": true,
+   "renderer": "Apple GPU",
+   "parallelCompile": true,
+   "colorBufferFloat": true,
+   "timerQuery": false,
+   "maxTex": 16384
+  },
+  "tabFound": true,
+  "timeline": [
+   [
+    1,
+    "10 spp · 0.8 M paths/s · 451×254"
+   ],
+   [
+    1575,
+    "20 spp · 1.2 M paths/s · 451×254"
+   ],
+   [
+    2078,
+    "9 spp · 1.2 M paths/s · 316×178"
+   ],
+   [
+    2582,
+    "9 spp · 1.2 M paths/s · 221×124"
+   ],
+   [
+    3090,
+    "29 spp · 1.1 M paths/s · 221×124"
+   ],
+   [
+    3606,
+    "49 spp · 1.1 M paths/s · 221×124"
+   ],
+   [
+    4129,
+    "69 spp · 1.1 M paths/s · 221×124"
+   ],
+   [
+    4632,
+    "89 spp · 1.2 M paths/s · 221×124"
+   ],
+   [
+    5144,
+    "119 spp · 1.1 M paths/s · 221×124"
+   ],
+   [
+    5652,
+    "139 spp · 1.2 M paths/s · 221×124"
+   ],
+   [
+    6163,
+    "159 spp · 1.1 M paths/s · 221×124"
+   ],
+   [
+    6685,
+    "179 spp · 1.1 M paths/s · 221×124"
+   ],
+   [
+    7205,
+    "199 spp · 1.1 M paths/s · 221×124"
+   ],
+   [
+    7711,
+    "219 spp · 1.1 M paths/s · 221×124"
+   ],
+   [
+    8225,
+    "239 spp · 1.1 M paths/s · 221×124"
+   ],
+   [
+    8745,
+    "259 spp · 1.1 M paths/s · 221×124"
+   ],
+   [
+    9256,
+    "279 spp · 1.1 M paths/s · 221×124"
+   ],
+   [
+    9760,
+    "299 spp · 1.2 M paths/s · 221×124"
+   ],
+   [
+    10269,
+    "329 spp · 1.1 M paths/s · 221×124"
+   ],
+   [
+    10774,
+    "349 spp · 1.1 M paths/s · 221×124"
+   ]
+  ],
+  "longestEvaluateWait": 32,
+  "blockingCalls": [],
+  "blockingBeforeTap": [
+   {
+    "name": "linkProgram",
+    "ms": 42,
+    "at": 2528,
+    "panel": "lab-pt"
+   },
+   {
+    "name": "drawArrays",
+    "ms": 305,
+    "at": 3030,
+    "panel": "lab-pt"
+   },
+   {
+    "name": "drawArrays",
+    "ms": 92,
+    "at": 3335,
+    "panel": "lab-pt"
+   },
+   {
+    "name": "drawArrays",
+    "ms": 89,
+    "at": 3476,
+    "panel": "lab-pt"
+   }
+  ],
+  "lagsAfterTap": [
+   {
+    "at": 4182,
+    "ms": 258
+   }
+  ],
+  "lagsBeforeTap": [
+   {
+    "at": 345,
+    "ms": 791
+   },
+   {
+    "at": 2998,
+    "ms": 519
+   }
+  ],
+  "maxLag": 791,
+  "rafGapsAfterTap": [
+   {
+    "at": 4405,
+    "ms": 554
+   }
+  ],
+  "rafGapsBeforeTap": [
+   {
+    "at": 896,
+    "ms": 275
+   },
+   {
+    "at": 1171,
+    "ms": 820
+   },
+   {
+    "at": 1991,
+    "ms": 430
+   },
+   {
+    "at": 2515,
+    "ms": 475
+   },
+   {
+    "at": 3024,
+    "ms": 666
+   },
+   {
+    "at": 3770,
+    "ms": 124
+   },
+   {
+    "at": 3894,
+    "ms": 130
+   }
+  ],
+  "canvas": {
+   "w": 221,
+   "h": 124,
+   "cssW": 361,
+   "cssH": 203
+  },
+  "errors": []
+ },
+ {
+  "browser": "webkit",
+  "device": "iPhone 15",
+  "tab": "rs",
+  "gl": {
+   "webgl2": true,
+   "renderer": "Apple GPU",
+   "parallelCompile": true,
+   "colorBufferFloat": true,
+   "timerQuery": false,
+   "maxTex": 16384
+  },
+  "tabFound": true,
+  "timeline": [
+   [
+    4,
+    ""
+   ],
+   [
+    1533,
+    "512 lights · M=16 candidates/pixel · 1 spp · ReSTIR: temporal + spatial · 0 fps · 361×203"
+   ],
+   [
+    2056,
+    "512 lights · M=16 candidates/pixel · 1 spp · ReSTIR: temporal + spatial · 20 fps · 361×203"
+   ],
+   [
+    2578,
+    "512 lights · M=16 candidates/pixel · 1 spp · ReSTIR: temporal + spatial · 23 fps · 361×203"
+   ],
+   [
+    3105,
+    "512 lights · M=16 candidates/pixel · 1 spp · ReSTIR: temporal + spatial · 25 fps · 361×203"
+   ],
+   [
+    5176,
+    "512 lights · M=16 candidates/pixel · 1 spp · ReSTIR: temporal + spatial · 26 fps · 361×203"
+   ],
+   [
+    5702,
+    "512 lights · M=16 candidates/pixel · 1 spp · ReSTIR: temporal + spatial · 25 fps · 361×203"
+   ],
+   [
+    6742,
+    "512 lights · M=16 candidates/pixel · 1 spp · ReSTIR: temporal + spatial · 26 fps · 361×203"
+   ],
+   [
+    21594,
+    "512 lights · M=16 candidates/pixel · 1 spp · ReSTIR: temporal + spatial · 25 fps · 361×203"
+   ]
+  ],
+  "longestEvaluateWait": 483,
+  "blockingCalls": [
+   {
+    "name": "drawArrays",
+    "ms": 270,
+    "at": 3190,
+    "panel": "lab-pt"
+   },
+   {
+    "name": "drawArrays",
+    "ms": 83,
+    "at": 3461,
+    "panel": "lab-pt"
+   },
+   {
+    "name": "drawArrays",
+    "ms": 76,
+    "at": 3545,
+    "panel": "lab-pt"
+   },
+   {
+    "name": "drawArrays",
+    "ms": 317,
+    "at": 3845,
+    "panel": "lab-rs"
+   },
+   {
+    "name": "drawArrays",
+    "ms": 302,
+    "at": 4163,
+    "panel": "lab-rs"
+   },
+   {
+    "name": "drawArrays",
+    "ms": 157,
+    "at": 4465,
+    "panel": "lab-rs"
+   },
+   {
+    "name": "drawArrays",
+    "ms": 43,
+    "at": 4622,
+    "panel": "lab-rs"
+   }
+  ],
+  "blockingBeforeTap": [],
+  "lagsAfterTap": [
+   {
+    "at": 2890,
+    "ms": 187
+   },
+   {
+    "at": 3177,
+    "ms": 459
+   },
+   {
+    "at": 3789,
+    "ms": 828
+   }
+  ],
+  "lagsBeforeTap": [
+   {
+    "at": 472,
+    "ms": 194
+   }
+  ],
+  "maxLag": 828,
+  "rafGapsAfterTap": [
+   {
+    "at": 3082,
+    "ms": 107
+   },
+   {
+    "at": 3189,
+    "ms": 613
+   },
+   {
+    "at": 3818,
+    "ms": 938
+   }
+  ],
+  "rafGapsBeforeTap": [
+   {
+    "at": 461,
+    "ms": 222
+   },
+   {
+    "at": 683,
+    "ms": 149
+   },
+   {
+    "at": 832,
+    "ms": 103
+   },
+   {
+    "at": 1111,
+    "ms": 124
+   },
+   {
+    "at": 1252,
+    "ms": 253
+   }
+  ],
+  "canvas": {
+   "w": 361,
+   "h": 203,
+   "cssW": 361,
+   "cssH": 203
+  },
+  "errors": []
+ },
+ {
+  "browser": "webkit",
+  "device": "iPhone 15",
+  "tab": "gs",
+  "gl": {
+   "webgl2": true,
+   "renderer": "Apple GPU",
+   "parallelCompile": true,
+   "colorBufferFloat": true,
+   "timerQuery": false,
+   "maxTex": 16384
+  },
+  "tabFound": true,
+  "timeline": [
+   [
+    1,
+    ""
+   ],
+   [
+    3597,
+    "244,308 Gaussians · 169 objects · sort 4.2 ms · 34 fps"
+   ],
+   [
+    6444,
+    "244,308 Gaussians · 169 objects · sort 4.2 ms · 21 fps"
+   ],
+   [
+    9380,
+    "244,308 Gaussians · 169 objects · sort 4.2 ms · 15 fps"
+   ],
+   [
+    12151,
+    "244,308 Gaussians · 169 objects · sort 4.2 ms · 12 fps"
+   ],
+   [
+    14962,
+    "244,308 Gaussians · 169 objects · sort 4.2 ms · 11 fps"
+   ],
+   [
+    20540,
+    "244,308 Gaussians · 169 objects · sort 4.2 ms · 10 fps"
+   ]
+  ],
+  "longestEvaluateWait": 173,
+  "blockingCalls": [
+   {
+    "name": "drawArrays",
+    "ms": 120,
+    "at": 3595,
+    "panel": "lab-gs"
+   },
+   {
+    "name": "drawArrays",
+    "ms": 65,
+    "at": 3715,
+    "panel": "lab-gs"
+   }
+  ],
+  "blockingBeforeTap": [],
+  "lagsAfterTap": [
+   {
+    "at": 3286,
+    "ms": 175
+   },
+   {
+    "at": 3561,
+    "ms": 171
+   },
+   {
+    "at": 3833,
+    "ms": 371
+   },
+   {
+    "at": 4254,
+    "ms": 145
+   },
+   {
+    "at": 4449,
+    "ms": 139
+   },
+   {
+    "at": 4638,
+    "ms": 137
+   },
+   {
+    "at": 4825,
+    "ms": 142
+   },
+   {
+    "at": 5017,
+    "ms": 138
+   },
+   {
+    "at": 5205,
+    "ms": 137
+   },
+   {
+    "at": 5392,
+    "ms": 138
+   },
+   {
+    "at": 5580,
+    "ms": 141
+   },
+   {
+    "at": 5771,
+    "ms": 139
+   },
+   {
+    "at": 5960,
+    "ms": 147
+   },
+   {
+    "at": 6157,
+    "ms": 143
+   },
+   {
+    "at": 6350,
+    "ms": 145
+   },
+   {
+    "at": 6545,
+    "ms": 148
+   },
+   {
+    "at": 6743,
+    "ms": 143
+   },
+   {
+    "at": 6936,
+    "ms": 136
+   },
+   {
+    "at": 7122,
+    "ms": 140
+   },
+   {
+    "at": 7312,
+    "ms": 140
+   }
+  ],
+  "lagsBeforeTap": [
+   {
+    "at": 141,
+    "ms": 140
+   },
+   {
+    "at": 331,
+    "ms": 192
+   }
+  ],
+  "maxLag": 371,
+  "rafGapsAfterTap": [
+   {
+    "at": 3093,
+    "ms": 109
+   },
+   {
+    "at": 3202,
+    "ms": 304
+   },
+   {
+    "at": 3591,
+    "ms": 254
+   },
+   {
+    "at": 3845,
+    "ms": 427
+   },
+   {
+    "at": 4272,
+    "ms": 197
+   },
+   {
+    "at": 4469,
+    "ms": 188
+   },
+   {
+    "at": 4657,
+    "ms": 188
+   },
+   {
+    "at": 4845,
+    "ms": 194
+   },
+   {
+    "at": 5039,
+    "ms": 185
+   },
+   {
+    "at": 5224,
+    "ms": 186
+   },
+   {
+    "at": 5410,
+    "ms": 189
+   },
+   {
+    "at": 5599,
+    "ms": 191
+   },
+   {
+    "at": 5790,
+    "ms": 190
+   },
+   {
+    "at": 5980,
+    "ms": 196
+   },
+   {
+    "at": 6176,
+    "ms": 194
+   },
+   {
+    "at": 6370,
+    "ms": 195
+   },
+   {
+    "at": 6565,
+    "ms": 201
+   },
+   {
+    "at": 6766,
+    "ms": 189
+   },
+   {
+    "at": 6955,
+    "ms": 186
+   },
+   {
+    "at": 7141,
+    "ms": 189
+   }
+  ],
+  "rafGapsBeforeTap": [
+   {
+    "at": 324,
+    "ms": 229
+   },
+   {
+    "at": 553,
+    "ms": 114
+   },
+   {
+    "at": 900,
+    "ms": 155
+   },
+   {
+    "at": 1146,
+    "ms": 107
+   },
+   {
+    "at": 1296,
+    "ms": 159
+   }
+  ],
+  "canvas": {
+   "w": 203,
+   "h": 114,
+   "cssW": 361,
+   "cssH": 203
+  },
+  "errors": []
+ },
+ {
+  "browser": "webkit",
+  "device": "iPhone 15",
+  "tab": "cloth",
+  "gl": {
+   "webgl2": true,
+   "renderer": "Apple GPU",
+   "parallelCompile": true,
+   "colorBufferFloat": true,
+   "timerQuery": false,
+   "maxTex": 16384
+  },
+  "tabFound": true,
+  "timeline": [
+   [
+    2,
+    ""
+   ],
+   [
+    1011,
+    "1,600 particles · 8,406 constraints · 15 substeps · solver 2.2 ms"
+   ],
+   [
+    1522,
+    "1,600 particles · 8,406 constraints · 15 substeps · solver 2.4 ms"
+   ],
+   [
+    2036,
+    "1,600 particles · 8,406 constraints · 15 substeps · solver 2.7 ms"
+   ],
+   [
+    2545,
+    "1,600 particles · 8,406 constraints · 15 substeps · solver 2.8 ms"
+   ],
+   [
+    3056,
+    "1,600 particles · 8,406 constraints · 15 substeps · solver 2.7 ms"
+   ],
+   [
+    3561,
+    "1,600 particles · 8,406 constraints · 15 substeps · solver 2.8 ms"
+   ],
+   [
+    4067,
+    "1,600 particles · 8,406 constraints · 15 substeps · solver 2.7 ms"
+   ],
+   [
+    4573,
+    "1,600 particles · 8,406 constraints · 15 substeps · solver 3.1 ms"
+   ],
+   [
+    5081,
+    "1,600 particles · 8,406 constraints · 15 substeps · solver 2.7 ms"
+   ],
+   [
+    5589,
+    "1,600 particles · 8,406 constraints · 15 substeps · solver 2.8 ms"
+   ],
+   [
+    6607,
+    "1,600 particles · 8,406 constraints · 15 substeps · solver 3.0 ms"
+   ],
+   [
+    7115,
+    "1,600 particles · 8,406 constraints · 15 substeps · solver 2.9 ms"
+   ],
+   [
+    8650,
+    "1,600 particles · 8,406 constraints · 15 substeps · solver 3.1 ms"
+   ],
+   [
+    9161,
+    "1,600 particles · 8,406 constraints · 15 substeps · solver 2.8 ms"
+   ],
+   [
+    9669,
+    "1,600 particles · 8,406 constraints · 15 substeps · solver 3.0 ms"
+   ],
+   [
+    10173,
+    "1,600 particles · 8,406 constraints · 15 substeps · solver 2.7 ms"
+   ],
+   [
+    10678,
+    "1,600 particles · 8,406 constraints · 15 substeps · solver 2.8 ms"
+   ],
+   [
+    11684,
+    "1,600 particles · 8,406 constraints · 15 substeps · solver 2.9 ms"
+   ],
+   [
+    12696,
+    "1,600 particles · 8,406 constraints · 15 substeps · solver 3.0 ms"
+   ]
+  ],
+  "longestEvaluateWait": 16,
+  "blockingCalls": [],
+  "blockingBeforeTap": [],
+  "lagsAfterTap": [
+   {
+    "at": 2778,
+    "ms": 110
+   },
+   {
+    "at": 3317,
+    "ms": 266
+   }
+  ],
+  "lagsBeforeTap": [
+   {
+    "at": 217,
+    "ms": 305
+   }
+  ],
+  "maxLag": 305,
+  "rafGapsAfterTap": [
+   {
+    "at": 2895,
+    "ms": 105
+   },
+   {
+    "at": 3323,
+    "ms": 378
+   },
+   {
+    "at": 3931,
+    "ms": 474
+   }
+  ],
+  "rafGapsBeforeTap": [
+   {
+    "at": 300,
+    "ms": 256
+   },
+   {
+    "at": 556,
+    "ms": 107
+   },
+   {
+    "at": 663,
+    "ms": 117
+   },
+   {
+    "at": 967,
+    "ms": 124
+   },
+   {
+    "at": 1107,
+    "ms": 165
+   }
+  ],
+  "canvas": {
+   "w": 722,
+   "h": 406,
+   "cssW": 361,
+   "cssH": 203
+  },
+  "errors": []
+ },
+ {
+  "browser": "webkit",
+  "device": "iPhone 15",
+  "tab": "fov",
+  "gl": {
+   "webgl2": true,
+   "renderer": "Apple GPU",
+   "parallelCompile": true,
+   "colorBufferFloat": true,
+   "timerQuery": false,
+   "maxTex": 16384
+  },
+  "tabFound": true,
+  "timeline": [
+   [
+    1,
+    ""
+   ],
+   [
+    1005,
+    "shaded pixels: 18% of native (5.5× fewer) · 61 fps"
+   ],
+   [
+    1510,
+    "shaded pixels: 19% of native (5.3× fewer) · 62 fps"
+   ],
+   [
+    2516,
+    "shaded pixels: 18% of native (5.6× fewer) · 62 fps"
+   ],
+   [
+    3520,
+    "shaded pixels: 19% of native (5.3× fewer) · 62 fps"
+   ],
+   [
+    4023,
+    "shaded pixels: 18% of native (5.5× fewer) · 62 fps"
+   ],
+   [
+    5030,
+    "shaded pixels: 19% of native (5.3× fewer) · 62 fps"
+   ],
+   [
+    8541,
+    "shaded pixels: 19% of native (5.4× fewer) · 62 fps"
+   ],
+   [
+    9043,
+    "shaded pixels: 19% of native (5.3× fewer) · 62 fps"
+   ],
+   [
+    10051,
+    "shaded pixels: 18% of native (5.7× fewer) · 62 fps"
+   ],
+   [
+    10552,
+    "shaded pixels: 19% of native (5.3× fewer) · 62 fps"
+   ],
+   [
+    13060,
+    "shaded pixels: 18% of native (5.7× fewer) · 62 fps"
+   ],
+   [
+    14065,
+    "shaded pixels: 19% of native (5.3× fewer) · 62 fps"
+   ],
+   [
+    15071,
+    "shaded pixels: 18% of native (5.5× fewer) · 62 fps"
+   ],
+   [
+    16080,
+    "shaded pixels: 19% of native (5.3× fewer) · 62 fps"
+   ],
+   [
+    17590,
+    "shaded pixels: 18% of native (5.5× fewer) · 62 fps"
+   ],
+   [
+    21607,
+    "shaded pixels: 19% of native (5.3× fewer) · 62 fps"
+   ],
+   [
+    22613,
+    "shaded pixels: 18% of native (5.6× fewer) · 62 fps"
+   ],
+   [
+    23115,
+    "shaded pixels: 18% of native (5.5× fewer) · 62 fps"
+   ],
+   [
+    24125,
+    "shaded pixels: 18% of native (5.6× fewer) · 62 fps"
+   ]
+  ],
+  "longestEvaluateWait": 6,
+  "blockingCalls": [],
+  "blockingBeforeTap": [],
+  "lagsAfterTap": [
+   {
+    "at": 3322,
+    "ms": 103
+   }
+  ],
+  "lagsBeforeTap": [
+   {
+    "at": 196,
+    "ms": 342
+   }
+  ],
+  "maxLag": 342,
+  "rafGapsAfterTap": [
+   {
+    "at": 2903,
+    "ms": 105
+   },
+   {
+    "at": 3325,
+    "ms": 216
+   }
+  ],
+  "rafGapsBeforeTap": [
+   {
+    "at": 329,
+    "ms": 244
+   },
+   {
+    "at": 668,
+    "ms": 129
+   },
+   {
+    "at": 977,
+    "ms": 124
+   },
+   {
+    "at": 1115,
+    "ms": 170
+   }
+  ],
+  "canvas": {
+   "w": 722,
+   "h": 406,
+   "cssW": 361,
+   "cssH": 203
+  },
+  "errors": []
+ },
+ {
+  "browser": "webkit",
+  "device": "iPhone 15",
+  "tab": "rc",
+  "gl": {
+   "webgl2": true,
+   "renderer": "Apple GPU",
+   "parallelCompile": true,
+   "colorBufferFloat": true,
+   "timerQuery": false,
+   "maxTex": 16384
+  },
+  "tabFound": true,
+  "timeline": [
+   [
+    1,
+    ""
+   ],
+   [
+    1021,
+    "361×203 · 5 cascades · 1.3M rays · 0 fps"
+   ],
+   [
+    2066,
+    "361×203 · 5 cascades · 1.3M rays · 16 fps"
+   ],
+   [
+    2588,
+    "361×203 · 5 cascades · 1.3M rays · 20 fps"
+   ],
+   [
+    3092,
+    "361×203 · 5 cascades · 1.3M rays · 21 fps"
+   ],
+   [
+    3616,
+    "289×163 · 4 cascades · 634k rays · 26 fps"
+   ],
+   [
+    4189,
+    "231×130 · 4 cascades · 404k rays · 34 fps"
+   ],
+   [
+    4708,
+    "231×130 · 4 cascades · 404k rays · 43 fps"
+   ],
+   [
+    5211,
+    "185×104 · 4 cascades · 257k rays · 46 fps"
+   ],
+   [
+    5730,
+    "185×104 · 4 cascades · 257k rays · 53 fps"
+   ],
+   [
+    6233,
+    "185×104 · 4 cascades · 257k rays · 54 fps"
+   ],
+   [
+    7759,
+    "185×104 · 4 cascades · 257k rays · 53 fps"
+   ],
+   [
+    8265,
+    "185×104 · 4 cascades · 257k rays · 54 fps"
+   ],
+   [
+    9795,
+    "185×104 · 4 cascades · 257k rays · 53 fps"
+   ],
+   [
+    10314,
+    "185×104 · 4 cascades · 257k rays · 54 fps"
+   ],
+   [
+    10820,
+    "185×104 · 4 cascades · 257k rays · 53 fps"
+   ],
+   [
+    11325,
+    "185×104 · 4 cascades · 257k rays · 55 fps"
+   ],
+   [
+    11831,
+    "185×104 · 4 cascades · 257k rays · 54 fps"
+   ],
+   [
+    13373,
+    "185×104 · 4 cascades · 257k rays · 55 fps"
+   ],
+   [
+    13882,
+    "185×104 · 4 cascades · 257k rays · 53 fps"
+   ]
+  ],
+  "longestEvaluateWait": 520,
+  "blockingCalls": [
+   {
+    "name": "drawArrays",
+    "ms": 33,
+    "at": 3376,
+    "panel": "lab-rc"
+   },
+   {
+    "name": "drawArrays",
+    "ms": 42,
+    "at": 3409,
+    "panel": "lab-rc"
+   },
+   {
+    "name": "drawArrays",
+    "ms": 64,
+    "at": 3457,
+    "panel": "lab-rc"
+   },
+   {
+    "name": "drawArrays",
+    "ms": 74,
+    "at": 3521,
+    "panel": "lab-rc"
+   },
+   {
+    "name": "drawArrays",
+    "ms": 113,
+    "at": 3595,
+    "panel": "lab-rc"
+   },
+   {
+    "name": "drawArrays",
+    "ms": 113,
+    "at": 3708,
+    "panel": "lab-rc"
+   },
+   {
+    "name": "drawArrays",
+    "ms": 68,
+    "at": 3845,
+    "panel": "lab-rc"
+   },
+   {
+    "name": "drawArrays",
+    "ms": 123,
+    "at": 3913,
+    "panel": "lab-rc"
+   },
+   {
+    "name": "drawArrays",
+    "ms": 112,
+    "at": 7084,
+    "panel": "lab-rc"
+   }
+  ],
+  "blockingBeforeTap": [],
+  "lagsAfterTap": [
+   {
+    "at": 3295,
+    "ms": 694
+   }
+  ],
+  "lagsBeforeTap": [
+   {
+    "at": 197,
+    "ms": 107
+   },
+   {
+    "at": 354,
+    "ms": 210
+   }
+  ],
+  "maxLag": 694,
+  "rafGapsAfterTap": [
+   {
+    "at": 3046,
+    "ms": 200
+   },
+   {
+    "at": 3346,
+    "ms": 771
+   },
+   {
+    "at": 6023,
+    "ms": 110
+   },
+   {
+    "at": 7077,
+    "ms": 135
+   }
+  ],
+  "rafGapsBeforeTap": [
+   {
+    "at": 350,
+    "ms": 222
+   },
+   {
+    "at": 572,
+    "ms": 110
+   },
+   {
+    "at": 682,
+    "ms": 134
+   },
+   {
+    "at": 995,
+    "ms": 125
+   },
+   {
+    "at": 1139,
+    "ms": 163
+   }
+  ],
+  "canvas": {
+   "w": 722,
+   "h": 406,
+   "cssW": 361,
+   "cssH": 203
+  },
+  "errors": []
+ },
+ {
+  "browser": "webkit",
+  "device": "iPhone 15",
+  "tab": "mpm",
+  "gl": {
+   "webgl2": true,
+   "renderer": "Apple GPU",
+   "parallelCompile": true,
+   "colorBufferFloat": true,
+   "timerQuery": false,
+   "maxTex": 16384
+  },
+  "tabFound": true,
+  "timeline": [
+   [
+    2,
+    ""
+   ],
+   [
+    716,
+    "11630 particles · grid 139×78 · 12 substeps/frame · 60 fps"
+   ],
+   [
+    1791,
+    "11630 particles · grid 139×78 · 24 substeps/frame · 33 fps"
+   ],
+   [
+    2804,
+    "11630 particles · grid 139×78 · 24 substeps/frame · 21 fps"
+   ],
+   [
+    3309,
+    "11630 particles · grid 139×78 · 24 substeps/frame · 16 fps"
+   ],
+   [
+    4435,
+    "11630 particles · grid 139×78 · 25 substeps/frame · 14 fps"
+   ],
+   [
+    4940,
+    "6235 particles · grid 101×57 · 17 substeps/frame · 13 fps"
+   ],
+   [
+    5466,
+    "6235 particles · grid 101×57 · 17 substeps/frame · 19 fps"
+   ],
+   [
+    5996,
+    "6235 particles · grid 101×57 · 18 substeps/frame · 23 fps"
+   ],
+   [
+    6527,
+    "6235 particles · grid 101×57 · 18 substeps/frame · 24 fps"
+   ],
+   [
+    7053,
+    "6235 particles · grid 101×57 · 18 substeps/frame · 25 fps"
+   ],
+   [
+    8065,
+    "6235 particles · grid 101×57 · 17 substeps/frame · 26 fps"
+   ],
+   [
+    10120,
+    "6235 particles · grid 101×57 · 17 substeps/frame · 25 fps"
+   ],
+   [
+    11160,
+    "6235 particles · grid 101×57 · 18 substeps/frame · 25 fps"
+   ],
+   [
+    11671,
+    "6235 particles · grid 101×57 · 18 substeps/frame · 26 fps"
+   ],
+   [
+    12709,
+    "6235 particles · grid 101×57 · 18 substeps/frame · 25 fps"
+   ],
+   [
+    15345,
+    "6235 particles · grid 101×57 · 17 substeps/frame · 25 fps"
+   ],
+   [
+    15873,
+    "6235 particles · grid 101×57 · 18 substeps/frame · 25 fps"
+   ],
+   [
+    16935,
+    "6235 particles · grid 101×57 · 18 substeps/frame · 24 fps"
+   ],
+   [
+    17451,
+    "6235 particles · grid 101×57 · 18 substeps/frame · 25 fps"
+   ]
+  ],
+  "longestEvaluateWait": 214,
+  "blockingCalls": [
+   {
+    "name": "drawArrays",
+    "ms": 42,
+    "at": 3178,
+    "panel": "lab-mpm"
+   },
+   {
+    "name": "drawArrays",
+    "ms": 62,
+    "at": 3221,
+    "panel": "lab-mpm"
+   },
+   {
+    "name": "drawArrays",
+    "ms": 62,
+    "at": 3283,
+    "panel": "lab-mpm"
+   },
+   {
+    "name": "drawArrays",
+    "ms": 61,
+    "at": 3374,
+    "panel": "lab-mpm"
+   },
+   {
+    "name": "drawArrays",
+    "ms": 184,
+    "at": 3494,
+    "panel": "lab-mpm"
+   }
+  ],
+  "blockingBeforeTap": [],
+  "lagsAfterTap": [
+   {
+    "at": 2706,
+    "ms": 190
+   },
+   {
+    "at": 3129,
+    "ms": 501
+   }
+  ],
+  "lagsBeforeTap": [
+   {
+    "at": 138,
+    "ms": 149
+   },
+   {
+    "at": 337,
+    "ms": 189
+   }
+  ],
+  "maxLag": 501,
+  "rafGapsAfterTap": [
+   {
+    "at": 2900,
+    "ms": 119
+   },
+   {
+    "at": 3019,
+    "ms": 149
+   },
+   {
+    "at": 3177,
+    "ms": 580
+   },
+   {
+    "at": 7809,
+    "ms": 103
+   }
+  ],
+  "rafGapsBeforeTap": [
+   {
+    "at": 326,
+    "ms": 211
+   },
+   {
+    "at": 537,
+    "ms": 114
+   },
+   {
+    "at": 651,
+    "ms": 120
+   },
+   {
+    "at": 962,
+    "ms": 128
+   },
+   {
+    "at": 1108,
+    "ms": 166
+   }
+  ],
+  "canvas": {
+   "w": 361,
+   "h": 203,
+   "cssW": 361,
+   "cssH": 203
+  },
+  "errors": []
+ },
+ {
+  "browser": "webkit",
+  "device": "iPhone 15",
+  "tab": "sdf",
+  "gl": {
+   "webgl2": true,
+   "renderer": "Apple GPU",
+   "parallelCompile": true,
+   "colorBufferFloat": true,
+   "timerQuery": false,
+   "maxTex": 16384
+  },
+  "tabFound": true,
+  "timeline": [
+   [
+    2,
+    ""
+   ],
+   [
+    1142,
+    "compiling shaders…"
+   ],
+   [
+    1644,
+    "7 shapes · k = 0.45 · Shaded · 299×168 · 8.3 fps"
+   ],
+   [
+    2146,
+    "7 shapes · k = 0.45 · Shaded · 299×168 · 14 fps"
+   ],
+   [
+    2648,
+    "7 shapes · k = 0.45 · Shaded · 299×168 · AA 16/16"
+   ]
+  ],
+  "longestEvaluateWait": 640,
+  "blockingCalls": [
+   {
+    "name": "drawArrays",
+    "ms": 582,
+    "at": 3186,
+    "panel": "lab-sdf"
+   },
+   {
+    "name": "drawArrays",
+    "ms": 285,
+    "at": 3768,
+    "panel": "lab-sdf"
+   }
+  ],
+  "blockingBeforeTap": [],
+  "lagsAfterTap": [
+   {
+    "at": 2740,
+    "ms": 108
+   },
+   {
+    "at": 3106,
+    "ms": 898
+   }
+  ],
+  "lagsBeforeTap": [
+   {
+    "at": 183,
+    "ms": 107
+   },
+   {
+    "at": 340,
+    "ms": 204
+   }
+  ],
+  "maxLag": 898,
+  "rafGapsAfterTap": [
+   {
+    "at": 2857,
+    "ms": 101
+   },
+   {
+    "at": 2958,
+    "ms": 176
+   },
+   {
+    "at": 3186,
+    "ms": 868
+   }
+  ],
+  "rafGapsBeforeTap": [
+   {
+    "at": 336,
+    "ms": 217
+   },
+   {
+    "at": 553,
+    "ms": 109
+   },
+   {
+    "at": 662,
+    "ms": 111
+   },
+   {
+    "at": 968,
+    "ms": 123
+   },
+   {
+    "at": 1106,
+    "ms": 166
+   }
+  ],
+  "canvas": {
+   "w": 299,
+   "h": 168,
+   "cssW": 361,
+   "cssH": 203
+  },
+  "errors": []
+ },
+ {
+  "browser": "webkit",
+  "device": "iPhone 15",
+  "tab": "sky",
+  "gl": {
+   "webgl2": true,
+   "renderer": "Apple GPU",
+   "parallelCompile": true,
+   "colorBufferFloat": true,
+   "timerQuery": false,
+   "maxTex": 16384
+  },
+  "tabFound": true,
+  "timeline": [
+   [
+    7,
+    ""
+   ],
+   [
+    2118,
+    "building 3D noise textures… 5%"
+   ],
+   [
+    2630,
+    "building 3D noise textures… 78%"
+   ],
+   [
+    3533,
+    "building 3D noise textures… 98%"
+   ],
+   [
+    4050,
+    "sun 7.0° · clouds 181×102 · 56 + 5 steps · 28 fps"
+   ],
+   [
+    4562,
+    "sun 7.0° · clouds 136×76 · 40 + 4 steps · 47 fps"
+   ],
+   [
+    5066,
+    "sun 7.0° · clouds 136×76 · 40 + 4 steps · 51 fps"
+   ],
+   [
+    5571,
+    "sun 7.0° · clouds 136×76 · 40 + 4 steps · 50 fps"
+   ],
+   [
+    6594,
+    "sun 7.0° · clouds 136×76 · 40 + 4 steps · 49 fps"
+   ],
+   [
+    7106,
+    "sun 7.0° · clouds 136×76 · 40 + 4 steps · 51 fps"
+   ],
+   [
+    8128,
+    "sun 7.0° · clouds 136×76 · 40 + 4 steps · 52 fps"
+   ],
+   [
+    8633,
+    "sun 7.0° · clouds 136×76 · 40 + 4 steps · 50 fps"
+   ],
+   [
+    9652,
+    "sun 7.0° · clouds 136×76 · 40 + 4 steps · 51 fps"
+   ],
+   [
+    10163,
+    "sun 7.0° · clouds 136×76 · 40 + 4 steps · 50 fps"
+   ],
+   [
+    11182,
+    "sun 7.0° · clouds 136×76 · 40 + 4 steps · 49 fps"
+   ],
+   [
+    11685,
+    "sun 7.0° · clouds 136×76 · 40 + 4 steps · 51 fps"
+   ],
+   [
+    13735,
+    "sun 7.0° · clouds 136×76 · 40 + 4 steps · 52 fps"
+   ],
+   [
+    14750,
+    "sun 7.0° · clouds 136×76 · 40 + 4 steps · 51 fps"
+   ],
+   [
+    15254,
+    "sun 7.0° · clouds 136×76 · 40 + 4 steps · 52 fps"
+   ],
+   [
+    16779,
+    "sun 7.0° · clouds 136×76 · 40 + 4 steps · 51 fps"
+   ]
+  ],
+  "longestEvaluateWait": 1610,
+  "blockingCalls": [
+   {
+    "name": "linkProgram",
+    "ms": 209,
+    "at": 3062,
+    "panel": "lab-sky"
+   },
+   {
+    "name": "drawArrays",
+    "ms": 1667,
+    "at": 3449,
+    "panel": "lab-sky"
+   },
+   {
+    "name": "drawArrays",
+    "ms": 55,
+    "at": 5760,
+    "panel": "lab-sky"
+   },
+   {
+    "name": "drawArrays",
+    "ms": 59,
+    "at": 5837,
+    "panel": "lab-sky"
+   },
+   {
+    "name": "drawArrays",
+    "ms": 295,
+    "at": 5896,
+    "panel": "lab-sky"
+   },
+   {
+    "name": "drawArrays",
+    "ms": 82,
+    "at": 6191,
+    "panel": "lab-sky"
+   },
+   {
+    "name": "drawArrays",
+    "ms": 258,
+    "at": 6273,
+    "panel": "lab-sky"
+   }
+  ],
+  "blockingBeforeTap": [],
+  "lagsAfterTap": [
+   {
+    "at": 2818,
+    "ms": 115
+   },
+   {
+    "at": 3037,
+    "ms": 268
+   },
+   {
+    "at": 3405,
+    "ms": 1664
+   },
+   {
+    "at": 5632,
+    "ms": 134
+   },
+   {
+    "at": 5816,
+    "ms": 666
+   }
+  ],
+  "lagsBeforeTap": [
+   {
+    "at": 203,
+    "ms": 107
+   },
+   {
+    "at": 360,
+    "ms": 225
+   }
+  ],
+  "maxLag": 1664,
+  "rafGapsAfterTap": [
+   {
+    "at": 2937,
+    "ms": 114
+   },
+   {
+    "at": 3051,
+    "ms": 386
+   },
+   {
+    "at": 3448,
+    "ms": 1753
+   },
+   {
+    "at": 5659,
+    "ms": 177
+   },
+   {
+    "at": 5836,
+    "ms": 715
+   }
+  ],
+  "rafGapsBeforeTap": [
+   {
+    "at": 357,
+    "ms": 221
+   },
+   {
+    "at": 578,
+    "ms": 105
+   },
+   {
+    "at": 683,
+    "ms": 123
+   },
+   {
+    "at": 989,
+    "ms": 125
+   },
+   {
+    "at": 1135,
+    "ms": 161
+   }
+  ],
+  "canvas": {
+   "w": 542,
+   "h": 305,
+   "cssW": 361,
+   "cssH": 203
+  },
+  "errors": []
+ }
+]
