@@ -1,5 +1,6 @@
 {
   "workers": [
-    {"id": "r2-xr-ui", "budget": 40, "mode": "continue", "common": "common-research.md", "cont": "continue-research.md"}
+    {"id": "w2-gui-survey", "budget": 50, "mode": "existing", "common": "common-column.md"},
+    {"id": "w4-xr-agents", "budget": 50, "mode": "existing", "common": "common-column.md"}
   ]
 }
