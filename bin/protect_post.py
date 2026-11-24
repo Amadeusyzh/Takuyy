@@ -7,8 +7,8 @@ Workflow (see docs/protected/README.md):
      the plaintext post, inlines the post's figures as data URIs, gzips it, encrypts it with AES-256-GCM under a
      key derived from the password (PBKDF2-SHA256), and writes a public stub post whose body holds only the
      ciphertext and an unlock form (assets/js/protected.js decrypts it in the browser).
-  3. It also writes docs/protected/<slug>.bundle.json: the plaintext sources (markdown, figure SVGs, scripts)
-     in a deterministic tar.gz, encrypted the same way, so that whoever has the password can recover them
+  3. It also writes docs/protected/<slug>.bundle.json: the plaintext sources (markdown, figure SVGs, scripts, and
+     working notes in notes/ that are never rendered) in a deterministic tar.gz, encrypted the same way, so that whoever has the password can recover them
      (bin/unprotect_bundle.py), and docs/protected/<slug>.sha256.txt: the SHA-256 of each markdown source,
      a public, dated commitment to the content.
   4. Delete the plaintext files, rebuild, and commit only the stubs and docs/protected/.
@@ -18,7 +18,7 @@ Usage:
       --src <dir with posts/{en-us,zh-cn,ja-jp}/*.md, figs/*.svg, scripts/*> --site _site \
       --title-en "..." --title-zh "..." --title-ja "..." [--description-en ...]
 """
-import argparse, base64, gzip, hashlib, io, json, os, re, sys, tarfile
+import argparse, base64, gzip, hashlib, io, json, os, re, sys, tarfile, urllib.parse
 
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.ciphers.aead import AESGCM
@@ -89,15 +89,20 @@ def body_of(html: str) -> str:
 
 
 def inline_images(body: str, figdir: str, slug_series: str) -> str:
+    # SVGs go in as percent-encoded text (gzip then shrinks them about as well as the files themselves;
+    # base64 would not compress); other images as base64
     def rep(m):
         src = m.group(2)
         name = os.path.basename(src.split("?")[0])
         path = os.path.join(figdir, name)
         if "/assets/img/blog/" + slug_series + "/" not in src or not os.path.exists(path):
             return m.group(0)
-        mime = "image/svg+xml" if name.endswith(".svg") else "image/png"
-        data = base64.b64encode(open(path, "rb").read()).decode("ascii")
-        return m.group(1) + "data:" + mime + ";base64," + data + m.group(3)
+        if name.endswith(".svg"):
+            text = open(path, encoding="utf-8").read()
+            uri = "data:image/svg+xml;charset=utf-8," + urllib.parse.quote(text, safe="=:/;.,-_()!*~@+?' ")
+        else:
+            uri = "data:image/png;base64," + base64.b64encode(open(path, "rb").read()).decode("ascii")
+        return m.group(1) + uri + m.group(3)
     out = re.sub(r'(<img\b[^>]*?\bsrc=")([^"]+)(")', rep, body)
     left = re.findall(r'src="([^"]*/assets/img/blog/' + slug_series + r'/[^"]+)"', out)
     if left:
@@ -177,6 +182,11 @@ protected: true
         for lang, _ in LANGS:
             f.write(f"{hashes_[lang]}  {a.date}-{a.slug}.md ({lang})\n")
         f.write(f"{combined}  combined: sha256 of the three hashes above, concatenated as hex in the order en-us, zh-cn, ja-jp\n")
+        notes = os.path.join(a.src, "notes")
+        if os.path.isdir(notes):
+            for name in sorted(os.listdir(notes)):
+                h = hashlib.sha256(open(os.path.join(notes, name), "rb").read()).hexdigest()
+                f.write(f"{h}  notes/{name} (working notes, in the bundle only)\n")
     print("bundle", bpath, "| hashes", hpath, "| combined", combined)
 
 
