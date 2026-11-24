@@ -1,0 +1,10 @@
+UA: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/27.2 Safari/605.1.15
+devicePixelRatio: 1
+renderer: Apple GPU
+KHR_parallel_shader_compile: yes
+max fragment uniform vectors: 1024
+T0 | tiny shader 5 lines | 213 ms | 51 ms | 16 ms
+OLD | live shader (before this change) 308 lines | 241 ms | 130 ms | 16 ms
+NA | one secondary loop (shadow inside) 365 lines | 195 ms | 159 ms | 16 ms
+NB | one secondary loop + shadow loop 361 lines | 195 ms | 242 ms | 16 ms
+OLD2 | live shader again (warm) 309 lines | 14 ms | 104 ms | 16 ms
