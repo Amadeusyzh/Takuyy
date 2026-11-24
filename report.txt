@@ -1,0 +1,155 @@
+1795519824.3 {"t":728,"kind":"context","data":"lab-cloth/webgl parallel"}
+1795519825.4 {"t":1554,"kind":"slowcall","data":"getShaderParameter 802 ms"}
+1795519828.1 {"t":4551,"kind":"slowcall","data":"getProgramParameter 2983 ms"}
+1795519828.4 {"t":4699,"kind":"context","data":"lab-fov/webgl parallel"}
+1795519828.8 {"t":5199,"kind":"slowcall","data":"getProgramParameter 455 ms"}
+1795519829.4 {"t":5487,"kind":"slowcall","data":"getProgramParameter 280 ms"}
+1795519829.9 {"t":5729,"kind":"gap","data":"5419 ms"}
+1795519834.1 {"kind":"step","data":"tab pt"}
+1795519834.2 {"t":9859,"kind":"gap","data":"939 ms"}
+1795519834.3 {"t":9902,"kind":"context","data":"lab-pt/webgl2 parallel"}
+1795519835.2 {"t":11593,"kind":"slowcall","data":"getProgramParameter 1668 ms"}
+1795519835.8 {"t":12125,"kind":"slowcall","data":"getProgramParameter 525 ms"}
+1795519836.1 {"t":12329,"kind":"slowcall","data":"getProgramParameter 200 ms"}
+1795519836.2 {"kind":"stats","tab":"pt","s":0,"data":""}
+1795519836.2 {"t":12432,"kind":"gap","data":"2574 ms"}
+1795519847.6 {"kind":"stats","tab":"pt","s":2,"data":"20 spp · 6.0 M paths/s · 463×260"}
+1795519847.6 {"t":22756,"kind":"gap","data":"9553 ms"}
+1795519848.4 {"kind":"stats","tab":"pt","s":4,"data":"79 spp · 3.4 M paths/s · 324×182"}
+1795519850.3 {"kind":"stats","tab":"pt","s":6,"data":"189 spp · 3.7 M paths/s · 324×182"}
+1795519852.4 {"kind":"stats","tab":"pt","s":8,"data":"289 spp · 3.5 M paths/s · 324×182"}
+1795519854.4 {"kind":"stats","tab":"pt","s":10,"data":"389 spp · 3.4 M paths/s · 324×182"}
+1795519854.4 {"kind":"step","data":"tab sdf"}
+1795519854.4 {"t":30777,"kind":"context","data":"lab-sdf/webgl2 parallel"}
+1795519856.3 {"kind":"stats","tab":"sdf","s":0,"data":"7 shapes · k = 0.45 · Shaded · 227×127 · 58 fps"}
+1795519858.3 {"kind":"stats","tab":"sdf","s":2,"data":"7 shapes · k = 0.45 · Shaded · 227×127 · AA 16/16"}
+1795519860.4 {"kind":"stats","tab":"sdf","s":4,"data":"7 shapes · k = 0.45 · Shaded · 227×127 · AA 16/16"}
+1795519862.4 {"kind":"stats","tab":"sdf","s":6,"data":"7 shapes · k = 0.45 · Shaded · 227×127 · AA 16/16"}
+1795519864.3 {"kind":"stats","tab":"sdf","s":8,"data":"7 shapes · k = 0.45 · Shaded · 227×127 · AA 16/16"}
+1795519866.4 {"kind":"stats","tab":"sdf","s":10,"data":"7 shapes · k = 0.45 · Shaded · 227×127 · AA 16/16"}
+1795519868.3 {"kind":"stats","tab":"sdf","s":12,"data":"7 shapes · k = 0.45 · Shaded · 227×127 · AA 16/16"}
+1795519870.4 {"kind":"stats","tab":"sdf","s":14,"data":"7 shapes · k = 0.45 · Shaded · 227×127 · AA 16/16"}
+1795519872.4 {"kind":"stats","tab":"sdf","s":16,"data":"7 shapes · k = 0.45 · Shaded · 227×127 · AA 16/16"}
+1795519874.4 {"kind":"stats","tab":"sdf","s":18,"data":"7 shapes · k = 0.45 · Shaded · 227×127 · AA 16/16"}
+1795519876.3 {"kind":"stats","tab":"sdf","s":20,"data":"7 shapes · k = 0.45 · Shaded · 227×127 · AA 16/16"}
+1795519878.4 {"kind":"stats","tab":"sdf","s":22,"data":"7 shapes · k = 0.45 · Shaded · 227×127 · AA 16/16"}
+1795519880.4 {"kind":"stats","tab":"sdf","s":24,"data":"7 shapes · k = 0.45 · Shaded · 227×127 · AA 16/16"}
+1795519882.3 {"kind":"stats","tab":"sdf","s":26,"data":"7 shapes · k = 0.45 · Shaded · 227×127 · AA 16/16"}
+1795519884.6 {"kind":"stats","tab":"sdf","s":28,"data":"7 shapes · k = 0.45 · Shaded · 227×127 · AA 16/16"}
+1795519886.4 {"kind":"stats","tab":"sdf","s":30,"data":"7 shapes · k = 0.45 · Shaded · 227×127 · AA 16/16"}
+1795519888.4 {"kind":"stats","tab":"sdf","s":32,"data":"7 shapes · k = 0.45 · Shaded · 227×127 · AA 16/16"}
+1795519890.4 {"kind":"stats","tab":"sdf","s":34,"data":"7 shapes · k = 0.45 · Shaded · 227×127 · AA 16/16"}
+1795519892.5 {"kind":"stats","tab":"sdf","s":36,"data":"7 shapes · k = 0.45 · Shaded · 227×127 · AA 16/16"}
+1795519894.4 {"kind":"stats","tab":"sdf","s":38,"data":"7 shapes · k = 0.45 · Shaded · 227×127 · AA 16/16"}
+1795519896.8 {"kind":"stats","tab":"sdf","s":40,"data":"7 shapes · k = 0.45 · Shaded · 227×127 · AA 16/16"}
+1795519896.8 {"kind":"step","data":"tap shape"}
+1795519898.4 {"kind":"stats","tab":"sdf","s":42,"data":"7 shapes · k = 0.45 · Shaded · 220×124 · AA 16/16 compiling shaders…"}
+1795519900.4 {"kind":"stats","tab":"sdf","s":44,"data":"7 shapes · k = 0.45 · Shaded · 540×304 · 38 fps"}
+1795519902.4 {"kind":"stats","tab":"sdf","s":46,"data":"7 shapes · k = 0.45 · Shaded · 540×304 · AA 16/16"}
+1795519904.4 {"kind":"stats","tab":"sdf","s":48,"data":"7 shapes · k = 0.45 · Shaded · 540×304 · AA 16/16"}
+1795519906.5 {"kind":"stats","tab":"sdf","s":50,"data":"7 shapes · k = 0.45 · Shaded · 540×304 · AA 16/16"}
+1795519908.4 {"kind":"stats","tab":"sdf","s":52,"data":"7 shapes · k = 0.45 · Shaded · 540×304 · AA 16/16"}
+1795519910.5 {"kind":"stats","tab":"sdf","s":54,"data":"7 shapes · k = 0.45 · Shaded · 540×304 · AA 16/16"}
+1795519912.4 {"kind":"stats","tab":"sdf","s":56,"data":"7 shapes · k = 0.45 · Shaded · 540×304 · AA 16/16"}
+1795519914.4 {"kind":"stats","tab":"sdf","s":58,"data":"7 shapes · k = 0.45 · Shaded · 540×304 · AA 16/16"}
+1795519916.4 {"kind":"stats","tab":"sdf","s":60,"data":"7 shapes · k = 0.45 · Shaded · 540×304 · AA 16/16"}
+1795519918.4 {"kind":"stats","tab":"sdf","s":62,"data":"7 shapes · k = 0.45 · Shaded · 540×304 · AA 16/16"}
+1795519920.4 {"kind":"stats","tab":"sdf","s":64,"data":"7 shapes · k = 0.45 · Shaded · 540×304 · AA 16/16"}
+1795519922.4 {"kind":"stats","tab":"sdf","s":66,"data":"7 shapes · k = 0.45 · Shaded · 540×304 · AA 16/16"}
+1795519924.4 {"kind":"stats","tab":"sdf","s":68,"data":"7 shapes · k = 0.45 · Shaded · 540×304 · AA 16/16"}
+1795519926.7 {"kind":"step","data":"slice view"}
+1795519926.8 {"kind":"stats","tab":"sdf","s":70,"data":"7 shapes · k = 0.45 · Shaded · 540×304 · AA 16/16"}
+1795519928.5 {"kind":"stats","tab":"sdf","s":72,"data":"7 shapes · k = 0.45 · Slice · 540×304 · AA 16/16"}
+1795519930.4 {"kind":"stats","tab":"sdf","s":74,"data":"7 shapes · k = 0.45 · Slice · 540×304 · AA 16/16"}
+1795519932.5 {"kind":"stats","tab":"sdf","s":76,"data":"7 shapes · k = 0.45 · Slice · 540×304 · AA 16/16"}
+1795519934.5 {"kind":"stats","tab":"sdf","s":78,"data":"7 shapes · k = 0.45 · Slice · 540×304 · AA 16/16"}
+1795519936.5 {"kind":"stats","tab":"sdf","s":80,"data":"7 shapes · k = 0.45 · Slice · 540×304 · AA 16/16"}
+1795519938.5 {"kind":"stats","tab":"sdf","s":82,"data":"7 shapes · k = 0.45 · Slice · 540×304 · AA 16/16"}
+1795519940.5 {"kind":"stats","tab":"sdf","s":84,"data":"7 shapes · k = 0.45 · Slice · 540×304 · AA 16/16"}
+1795519942.5 {"kind":"stats","tab":"sdf","s":86,"data":"7 shapes · k = 0.45 · Slice · 540×304 · AA 16/16"}
+1795519944.6 {"kind":"stats","tab":"sdf","s":88,"data":"7 shapes · k = 0.45 · Slice · 540×304 · AA 16/16"}
+1795519946.7 {"kind":"step","data":"shaded view"}
+1795519946.7 {"kind":"stats","tab":"sdf","s":90,"data":"7 shapes · k = 0.45 · Slice · 540×304 · AA 16/16"}
+1795519948.6 {"kind":"stats","tab":"sdf","s":92,"data":"7 shapes · k = 0.45 · Shaded · 220×124 · 29 fps"}
+1795519950.6 {"kind":"stats","tab":"sdf","s":94,"data":"7 shapes · k = 0.45 · Shaded · 220×124 · AA 16/16"}
+1795519952.6 {"kind":"stats","tab":"sdf","s":96,"data":"7 shapes · k = 0.45 · Shaded · 220×124 · AA 16/16"}
+1795519954.5 {"kind":"stats","tab":"sdf","s":98,"data":"7 shapes · k = 0.45 · Shaded · 220×124 · AA 16/16"}
+1795519956.5 {"kind":"stats","tab":"sdf","s":100,"data":"7 shapes · k = 0.45 · Shaded · 220×124 · AA 16/16"}
+1795519958.6 {"kind":"stats","tab":"sdf","s":102,"data":"7 shapes · k = 0.45 · Shaded · 220×124 · AA 16/16"}
+1795519960.6 {"kind":"stats","tab":"sdf","s":104,"data":"7 shapes · k = 0.45 · Shaded · 220×124 · AA 16/16"}
+1795519962.6 {"kind":"stats","tab":"sdf","s":106,"data":"7 shapes · k = 0.45 · Shaded · 220×124 · AA 16/16"}
+1795519964.6 {"kind":"stats","tab":"sdf","s":108,"data":"7 shapes · k = 0.45 · Shaded · 220×124 · AA 16/16"}
+1795519966.6 {"kind":"stats","tab":"sdf","s":110,"data":"7 shapes · k = 0.45 · Shaded · 220×124 · AA 16/16"}
+1795519968.5 {"kind":"stats","tab":"sdf","s":112,"data":"7 shapes · k = 0.45 · Shaded · 220×124 · AA 16/16"}
+1795519970.6 {"kind":"stats","tab":"sdf","s":114,"data":"7 shapes · k = 0.45 · Shaded · 220×124 · AA 16/16"}
+1795519972.6 {"kind":"stats","tab":"sdf","s":116,"data":"7 shapes · k = 0.45 · Shaded · 220×124 · AA 16/16"}
+1795519974.6 {"kind":"stats","tab":"sdf","s":118,"data":"7 shapes · k = 0.45 · Shaded · 220×124 · AA 16/16"}
+1795519974.7 {"kind":"step","data":"tab pt"}
+1795519976.6 {"kind":"stats","tab":"pt","s":0,"data":"58 spp · 2.5 M paths/s · 324×182"}
+1795519978.7 {"kind":"stats","tab":"pt","s":2,"data":"148 spp · 2.8 M paths/s · 324×182"}
+1795519980.8 {"kind":"stats","tab":"pt","s":4,"data":"238 spp · 3.1 M paths/s · 324×182"}
+1795519982.7 {"kind":"stats","tab":"pt","s":6,"data":"328 spp · 3.3 M paths/s · 324×182"}
+1795519984.7 {"kind":"stats","tab":"pt","s":8,"data":"418 spp · 2.8 M paths/s · 324×182"}
+1795519986.8 {"kind":"stats","tab":"pt","s":10,"data":"528 spp · 3.1 M paths/s · 324×182"}
+1795519988.7 {"kind":"stats","tab":"pt","s":12,"data":"628 spp · 3.5 M paths/s · 324×182"}
+1795519990.7 {"kind":"stats","tab":"pt","s":14,"data":"748 spp · 3.2 M paths/s · 324×182"}
+1795519992.7 {"kind":"stats","tab":"pt","s":16,"data":"858 spp · 3.7 M paths/s · 324×182"}
+1795519994.7 {"kind":"stats","tab":"pt","s":18,"data":"948 spp · 2.4 M paths/s · 324×182"}
+1795519996.7 {"kind":"stats","tab":"pt","s":20,"data":"1058 spp · 3.5 M paths/s · 324×182"}
+1795519998.7 {"kind":"stats","tab":"pt","s":22,"data":"1158 spp · 3.4 M paths/s · 324×182"}
+1795520000.7 {"kind":"stats","tab":"pt","s":24,"data":"1268 spp · 3.6 M paths/s · 324×182"}
+1795520002.7 {"kind":"stats","tab":"pt","s":26,"data":"1388 spp · 3.6 M paths/s · 324×182"}
+1795520004.7 {"kind":"stats","tab":"pt","s":28,"data":"1488 spp · 3.8 M paths/s · 324×182"}
+1795520004.7 {"kind":"step","data":"tab rs"}
+1795520004.7 {"t":181158,"kind":"context","data":"lab-rs/webgl2 parallel"}
+1795520004.9 {"t":181333,"kind":"slowcall","data":"getProgramParameter 165 ms"}
+1795520005.2 {"t":181660,"kind":"slowcall","data":"getProgramParameter 315 ms"}
+1795520005.6 {"t":181983,"kind":"slowcall","data":"getProgramParameter 307 ms"}
+1795520005.8 {"t":182200,"kind":"slowcall","data":"getProgramParameter 206 ms"}
+1795520006.0 {"t":182422,"kind":"gap","data":"1279 ms"}
+1795520006.0 {"t":182363,"kind":"slowcall","data":"getProgramParameter 157 ms"}
+1795520006.7 {"kind":"stats","tab":"rs","s":0,"data":"512 lights · M=16 candidates/pixel · 1 spp · ReSTIR: temporal + spatial · 0 fps · 370×208"}
+1795520007.0 {"t":183384,"kind":"gap","data":"953 ms"}
+1795520008.7 {"kind":"stats","tab":"rs","s":2,"data":"512 lights · M=16 candidates/pixel · 1 spp · ReSTIR: temporal + spatial · 69 fps · 370×208"}
+1795520010.7 {"kind":"stats","tab":"rs","s":4,"data":"512 lights · M=16 candidates/pixel · 1 spp · ReSTIR: temporal + spatial · 60 fps · 370×208"}
+1795520012.7 {"kind":"stats","tab":"rs","s":6,"data":"512 lights · M=16 candidates/pixel · 1 spp · ReSTIR: temporal + spatial · 61 fps · 370×208"}
+1795520014.7 {"kind":"stats","tab":"rs","s":8,"data":"512 lights · M=16 candidates/pixel · 1 spp · ReSTIR: temporal + spatial · 64 fps · 370×208"}
+1795520016.8 {"kind":"stats","tab":"rs","s":10,"data":"512 lights · M=16 candidates/pixel · 1 spp · ReSTIR: temporal + spatial · 53 fps · 370×208"}
+1795520018.8 {"kind":"stats","tab":"rs","s":12,"data":"512 lights · M=16 candidates/pixel · 1 spp · ReSTIR: temporal + spatial · 56 fps · 370×208"}
+1795520020.8 {"kind":"stats","tab":"rs","s":14,"data":"512 lights · M=16 candidates/pixel · 1 spp · ReSTIR: temporal + spatial · 60 fps · 370×208"}
+1795520023.4 {"kind":"stats","tab":"rs","s":16,"data":"512 lights · M=16 candidates/pixel · 1 spp · ReSTIR: temporal + spatial · 52 fps · 370×208"}
+1795520024.8 {"kind":"stats","tab":"rs","s":18,"data":"512 lights · M=16 candidates/pixel · 1 spp · ReSTIR: temporal + spatial · 62 fps · 370×208"}
+1795520024.8 {"kind":"step","data":"tab cloth"}
+1795520025.4 {"t":201787,"kind":"gap","data":"453 ms"}
+1795520026.8 {"kind":"stats","tab":"cloth","s":0,"data":"1,600 particles · 8,406 constraints · 15 substeps · solver 3.3 ms"}
+1795520028.8 {"kind":"stats","tab":"cloth","s":2,"data":"1,600 particles · 8,406 constraints · 15 substeps · solver 2.7 ms"}
+1795520030.8 {"kind":"stats","tab":"cloth","s":4,"data":"1,600 particles · 8,406 constraints · 15 substeps · solver 3.0 ms"}
+1795520032.8 {"kind":"stats","tab":"cloth","s":6,"data":"1,600 particles · 8,406 constraints · 15 substeps · solver 3.4 ms"}
+1795520034.8 {"kind":"stats","tab":"cloth","s":8,"data":"1,600 particles · 8,406 constraints · 15 substeps · solver 2.7 ms"}
+1795520036.9 {"kind":"stats","tab":"cloth","s":10,"data":"1,600 particles · 8,406 constraints · 15 substeps · solver 3.9 ms"}
+1795520038.8 {"kind":"stats","tab":"cloth","s":12,"data":"1,600 particles · 8,406 constraints · 15 substeps · solver 3.7 ms"}
+1795520040.9 {"kind":"stats","tab":"cloth","s":14,"data":"1,600 particles · 8,406 constraints · 15 substeps · solver 2.8 ms"}
+1795520042.8 {"kind":"stats","tab":"cloth","s":16,"data":"1,600 particles · 8,406 constraints · 15 substeps · solver 3.0 ms"}
+1795520044.9 {"kind":"stats","tab":"cloth","s":18,"data":"1,600 particles · 8,406 constraints · 15 substeps · solver 2.6 ms"}
+1795520044.9 {"kind":"step","data":"tab sdf"}
+1795520046.8 {"kind":"stats","tab":"sdf","s":0,"data":"7 shapes · k = 0.45 · Shaded · 220×124 · AA 16/16"}
+1795520048.8 {"kind":"stats","tab":"sdf","s":2,"data":"7 shapes · k = 0.45 · Shaded · 220×124 · AA 16/16"}
+1795520050.9 {"kind":"stats","tab":"sdf","s":4,"data":"7 shapes · k = 0.45 · Shaded · 220×124 · AA 16/16"}
+1795520052.9 {"kind":"stats","tab":"sdf","s":6,"data":"7 shapes · k = 0.45 · Shaded · 220×124 · AA 16/16"}
+1795520054.9 {"kind":"stats","tab":"sdf","s":8,"data":"7 shapes · k = 0.45 · Shaded · 220×124 · AA 16/16"}
+1795520056.8 {"kind":"stats","tab":"sdf","s":10,"data":"7 shapes · k = 0.45 · Shaded · 220×124 · AA 16/16"}
+1795520058.8 {"kind":"stats","tab":"sdf","s":12,"data":"7 shapes · k = 0.45 · Shaded · 220×124 · AA 16/16"}
+1795520061.0 {"kind":"stats","tab":"sdf","s":14,"data":"7 shapes · k = 0.45 · Shaded · 220×124 · AA 16/16"}
+1795520062.9 {"kind":"stats","tab":"sdf","s":16,"data":"7 shapes · k = 0.45 · Shaded · 220×124 · AA 16/16"}
+1795520064.9 {"kind":"stats","tab":"sdf","s":18,"data":"7 shapes · k = 0.45 · Shaded · 220×124 · AA 16/16"}
+1795520066.9 {"kind":"stats","tab":"sdf","s":20,"data":"7 shapes · k = 0.45 · Shaded · 220×124 · AA 16/16"}
+1795520069.0 {"kind":"stats","tab":"sdf","s":22,"data":"7 shapes · k = 0.45 · Shaded · 220×124 · AA 16/16"}
+1795520070.9 {"kind":"stats","tab":"sdf","s":24,"data":"7 shapes · k = 0.45 · Shaded · 220×124 · AA 16/16"}
+1795520072.9 {"kind":"stats","tab":"sdf","s":26,"data":"7 shapes · k = 0.45 · Shaded · 220×124 · AA 16/16"}
+1795520074.9 {"kind":"stats","tab":"sdf","s":28,"data":"7 shapes · k = 0.45 · Shaded · 220×124 · AA 16/16"}
+1795520076.9 {"kind":"stats","tab":"sdf","s":30,"data":"7 shapes · k = 0.45 · Shaded · 220×124 · AA 16/16"}
+1795520078.9 {"kind":"stats","tab":"sdf","s":32,"data":"7 shapes · k = 0.45 · Shaded · 220×124 · AA 16/16"}
+1795520080.9 {"kind":"stats","tab":"sdf","s":34,"data":"7 shapes · k = 0.45 · Shaded · 220×124 · AA 16/16"}
+1795520083.0 {"kind":"stats","tab":"sdf","s":36,"data":"7 shapes · k = 0.45 · Shaded · 220×124 · AA 16/16"}
+1795520084.9 {"kind":"stats","tab":"sdf","s":38,"data":"7 shapes · k = 0.45 · Shaded · 220×124 · AA 16/16"}
+1795520084.9 {"kind":"done","done":true}
